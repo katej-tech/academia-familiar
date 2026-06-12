@@ -2,6 +2,9 @@
 /* ============ AVATAR PERSONALIZABLE + TIENDA ============ */
 const AV_SKINS=["#FFE0C2","#F1C27D","#C68642","#8D5524"];
 const AV_SHIRTS=["#FF6B6B","#3B82F6","#3EC97C","#FFC93C","#A78BFA","#EC4899"];
+const AV_HAIRS=["#2B1B12","#6B3F1D","#D9A441","#1E2A4A","#B91C1C","#7C3AED"];
+/* dónde se ancla cada accesorio: las gafas van en la CARA, el resto en la mano */
+function accSlot(e){return e==="🕶️"?"face":"hand";}
 const SHOP_ITEMS=[
  // sombreros
  {id:"h_gorra",t:"hat",e:"🧢",n:"Gorra",pr:30},{id:"h_corona",t:"hat",e:"👑",n:"Corona",pr:80},
@@ -26,9 +29,12 @@ function avState(){const p=prof();
  const a=p.avatar;
  if(!a.skin)a.skin=AV_SKINS[0];
  if(!a.shirt)a.shirt=AV_SHIRTS[1];
+ if(!a.hair)a.hair=AV_HAIRS[1];
  if(a.hat===undefined)a.hat=null;
  if(a.acc===undefined)a.acc=null;
  if(a.bg===undefined)a.bg=null;
+ if(!a.hatHue)a.hatHue=0;
+ if(!a.accHue)a.accHue=0;
  if(!p.owned)p.owned=[];
  return a;}
 function legendaryPet(){const p=prof();if(!p||!p.activePet)return null;const it=shopItem(p.activePet);return it?{e:it.e,n:it.n}:null;}
@@ -46,15 +52,22 @@ function avatarHTML(px){const a=avState();const h=Math.round(px*1.45);
  +'<circle cx="89" cy="113" r="7" fill="'+a.skin+'" stroke="#1E2A4A" stroke-width="2.5"/>'
  +'<rect x="36" y="66" width="48" height="56" rx="16" fill="'+a.shirt+'" stroke="#1E2A4A" stroke-width="3"/>'
  +'<circle cx="60" cy="36" r="27" fill="'+a.skin+'" stroke="#1E2A4A" stroke-width="3"/>'
- +'<circle cx="50" cy="32" r="3.4" fill="#1E2A4A"/><circle cx="70" cy="32" r="3.4" fill="#1E2A4A"/>'
- +'<path d="M50 44 Q60 53 70 44" stroke="#1E2A4A" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
- +'<circle cx="43" cy="40" r="3.2" fill="rgba(255,107,107,.45)"/><circle cx="77" cy="40" r="3.2" fill="rgba(255,107,107,.45)"/>'
+ +'<path d="M34 32 Q34 9 60 9 Q86 9 86 32 Q73 17 60 20 Q47 17 34 32 Z" fill="'+a.hair+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<circle cx="50" cy="34" r="3.4" fill="#1E2A4A"/><circle cx="70" cy="34" r="3.4" fill="#1E2A4A"/>'
+ +'<path d="M50 45 Q60 54 70 45" stroke="#1E2A4A" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
+ +'<circle cx="43" cy="41" r="3.2" fill="rgba(255,107,107,.45)"/><circle cx="77" cy="41" r="3.2" fill="rgba(255,107,107,.45)"/>'
  +'</svg>';
+ const hueF=d=>d?'filter:hue-rotate('+d+'deg) saturate(1.15);':'';
+ const accIsFace=a.acc&&accSlot(a.acc)==="face";
  return '<span style="position:relative;display:inline-block;width:'+px+'px;height:'+h+'px;vertical-align:middle">'
  +(a.bg?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.95)+'px;opacity:.4;z-index:0">'+a.bg+'</span>':'')
  +svg
- +(a.hat?'<span style="position:absolute;left:50%;top:-'+Math.round(h*0.085)+'px;transform:translateX(-50%) rotate(-6deg);font-size:'+Math.round(px*0.42)+'px;line-height:1;z-index:2">'+a.hat+'</span>':'')
- +(a.acc?'<span style="position:absolute;left:'+Math.round(px*0.63)+'px;top:'+Math.round(h*0.57)+'px;font-size:'+Math.round(px*0.38)+'px;line-height:1;z-index:2">'+a.acc+'</span>':'')
+ // gorra: pequeña y SOBRE el pelo, nunca tapa la cara
+ +(a.hat?'<span style="position:absolute;left:50%;top:-'+Math.round(h*0.055)+'px;transform:translateX(-50%) rotate(-5deg);font-size:'+Math.round(px*0.3)+'px;line-height:1;z-index:2;'+hueF(a.hatHue)+'">'+a.hat+'</span>':'')
+ // gafas: centradas en los ojos
+ +(accIsFace?'<span style="position:absolute;left:50%;top:'+Math.round(h*0.115)+'px;transform:translateX(-50%);font-size:'+Math.round(px*0.34)+'px;line-height:1;z-index:2;'+hueF(a.accHue)+'">'+a.acc+'</span>':'')
+ // demás accesorios: en la mano
+ +(a.acc&&!accIsFace?'<span style="position:absolute;left:'+Math.round(px*0.62)+'px;top:'+Math.round(h*0.56)+'px;font-size:'+Math.round(px*0.36)+'px;line-height:1;z-index:2;'+hueF(a.accHue)+'">'+a.acc+'</span>':'')
  +'</span>';}
 function screenAvatar(){setTheme("kid");
  const p=prof(),a=avState();
@@ -65,17 +78,23 @@ function screenAvatar(){setTheme("kid");
    '<button class="kbtn '+(a[key]===it.e?'green':'white')+'" style="display:inline-block;width:auto;margin:0;padding:10px 14px;font-size:1.6rem" onclick="avEquip(\''+it.id+'\')">'+it.e+(a[key]===it.e?' ✓':'')+'</button>').join("")+'</div>';};
  const swatch=(colors,key,fn)=>'<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">'
   +colors.map(c=>'<button onclick="'+fn+'(\''+c.replace("#","%23")+'\')" style="width:52px;height:52px;border-radius:50%;border:4px solid var(--kid-ink);background:'+c+';box-shadow:0 4px 0 rgba(30,42,74,.7);'+(a[key]===c?'outline:4px solid var(--kid-green);':'')+'"></button>').join("")+'</div>';
+ const hueDots=(key,fn)=>!a[key.replace("Hue","")]?'':'<p style="font-size:.85rem;margin-top:8px;font-weight:600">Cambiar color:</p><div style="display:flex;gap:8px;margin-top:4px">'
+  +[0,60,120,180,240,300].map(d=>'<button onclick="'+fn+'('+d+')" style="width:38px;height:38px;border-radius:50%;border:3px solid var(--kid-ink);background:hsl('+((210+d)%360)+',75%,55%);'+(a[key]===d?'outline:3px solid var(--kid-green);':'')+'"></button>').join("")+'</div>';
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">😎 Mi personaje</h2>'
  +'<div class="card center" style="padding:20px">'+avatarHTML(150)+'</div>'
  +'<div class="card"><b>🖐️ Tu piel</b>'+swatch(AV_SKINS,"skin","avSetSkin")+'</div>'
+ +'<div class="card"><b>💇 Tu pelo</b>'+swatch(AV_HAIRS,"hair","avSetHair")+'</div>'
  +'<div class="card"><b>👕 Tu camiseta</b>'+swatch(AV_SHIRTS,"shirt","avSetShirt")+'</div>'
- +'<div class="card"><b>🎩 Sombrero</b>'+eqBtns("hat","hat")+'</div>'
- +'<div class="card"><b>🎸 Accesorio</b>'+eqBtns("acc","acc")+'</div>'
+ +'<div class="card"><b>🎩 Sombrero</b>'+eqBtns("hat","hat")+hueDots("hatHue","avSetHatHue")+'</div>'
+ +'<div class="card"><b>🎸 Accesorio</b>'+eqBtns("acc","acc")+hueDots("accHue","avSetAccHue")+'</div>'
  +'<div class="card"><b>🌈 Fondo</b>'+eqBtns("bg","bg")+'</div>'
  +'<button class="kbtn yellow" onclick="screenShop()">🛍️ Ir a la tienda</button>');}
 function avSetSkin(c){avState().skin=decodeURIComponent(c);save();sOK();screenAvatar();}
 function avSetShirt(c){avState().shirt=decodeURIComponent(c);save();sOK();screenAvatar();}
+function avSetHair(c){avState().hair=decodeURIComponent(c);save();sOK();screenAvatar();}
+function avSetHatHue(d){avState().hatHue=d;save();beep([600],.07);screenAvatar();}
+function avSetAccHue(d){avState().accHue=d;save();beep([600],.07);screenAvatar();}
 function avEquip(id){const it=shopItem(id),a=avState();
  if(!it)return;
  const key=it.t==="hat"?"hat":it.t==="acc"?"acc":"bg";

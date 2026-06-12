@@ -62,41 +62,43 @@ function gameWordSearch(){setTheme("kid");
   }}
  const AZ="ABCDEFGHIJKLMNOPRSTUVZ";
  for(let i=0;i<grid.length;i++)if(!grid[i])grid[i]=AZ[rnd(AZ.length)];
- WS={grid,placed:placed,found:[],first:null,fails:0,N,theme};
+ WS={grid,placed:placed,found:[],anchor:null,cur:[],fails:0,N,theme};
  renderWS();}
 function renderWS(){
  const N=WS.N;
  const cells=WS.grid.map((ch,i)=>{
   const foundCell=WS.found.some(f=>f.idxs.includes(i));
-  const sel=WS.first===i;
+  const sel=WS.cur.includes(i);
   return '<button id="ws'+i+'" onclick="tapWS('+i+')" style="aspect-ratio:1;border-radius:8px;border:3px solid var(--kid-ink);font-family:Fredoka;font-weight:700;font-size:clamp(.9rem,3.8vw,1.2rem);background:'+(foundCell?"var(--kid-green);color:#fff":sel?"var(--kid-yellow)":"#fff")+'">'+ch+'</button>';}).join("");
  const list=WS.theme.words.map(w=>{const done=WS.found.some(f=>f.w===w);
   return '<span style="font-family:Fredoka;font-weight:700;padding:4px 10px;border-radius:12px;border:3px solid var(--kid-ink);background:'+(done?"var(--kid-green);color:#fff":"#fff")+';'+(done?"text-decoration:line-through;":"")+'">'+w+'</span>';}).join(" ");
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🔍 Sopa de letras: '+WS.theme.nm+' '+WS.theme.e+'</h2>'
- +'<p class="center" style="font-size:.92rem;margin-bottom:8px">Toca la PRIMERA y la ÚLTIMA letra de cada palabra</p>'
+ +'<p class="center" style="font-size:.92rem;margin-bottom:8px">Toca las letras de la palabra, una por una o de la primera a la última</p>'
  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">'+list+'</div>'
  +'<div style="display:grid;grid-template-columns:repeat('+N+',1fr);gap:5px">'+cells+'</div>');}
 function tapWS(i){
  if(WS.found.some(f=>f.idxs.includes(i)))return;
  beep([520],.06);
- if(WS.first===null){WS.first=i;return renderWS();}
- if(WS.first===i){WS.first=null;return renderWS();}
- const N=WS.N,a=WS.first,b=i;
- const ra=Math.floor(a/N),ca=a%N,rb=Math.floor(b/N),cb=b%N;
+ if(WS.anchor===null){WS.anchor=i;WS.cur=[i];return renderWS();}
+ if(WS.anchor===i){WS.anchor=null;WS.cur=[];return renderWS();} // tocar el inicio de nuevo lo suelta
+ const N=WS.N,a=WS.anchor;
+ const ra=Math.floor(a/N),ca=a%N,rb=Math.floor(i/N),cb=i%N;
  let idxs=null;
  if(ra===rb){const [c1,c2]=[Math.min(ca,cb),Math.max(ca,cb)];idxs=[];for(let c=c1;c<=c2;c++)idxs.push(ra*N+c);}
  else if(ca===cb){const [r1,r2]=[Math.min(ra,rb),Math.max(ra,rb)];idxs=[];for(let r=r1;r<=r2;r++)idxs.push(r*N+ca);}
- WS.first=null;
- if(idxs){
-  const s=idxs.map(x=>WS.grid[x]).join("");
-  const rev=s.split("").reverse().join("");
-  const hit=WS.placed.find(p=>!WS.found.some(f=>f.w===p.w)&&(p.w===s||p.w===rev));
-  if(hit){WS.found.push(hit);sOK();confetti(10);recordAnswer("Letras",true,15);
-   if(WS.found.length===WS.placed.length){renderWS();
-    return setTimeout(()=>nodeWin(WS.fails<=2?3:WS.fails<=5?2:1,"Sopa de letras"),800);}
-   return renderWS();}}
- WS.fails++;sNO();recordAnswer("Letras",false,15);renderWS();}
+ if(!idxs){WS.anchor=i;WS.cur=[i];return renderWS();} // diagonal: empieza de nuevo aquí, sin castigo
+ WS.cur=idxs;
+ const s=idxs.map(x=>WS.grid[x]).join(""),rev=s.split("").reverse().join("");
+ const hit=WS.placed.find(p=>!WS.found.some(f=>f.w===p.w)&&(p.w===s||p.w===rev));
+ if(hit){WS.found.push(hit);WS.anchor=null;WS.cur=[];sOK();confetti(10);recordAnswer("Letras",true,15);
+  if(WS.found.length===WS.placed.length){renderWS();
+   return setTimeout(()=>nodeWin(WS.fails<=2?3:WS.fails<=5?2:1,"Sopa de letras"),800);}
+  return renderWS();}
+ // si la selección ya es más larga que la palabra pendiente más larga, no era: reinicia
+ const maxLen=Math.max(...WS.placed.filter(p=>!WS.found.some(f=>f.w===p.w)).map(p=>p.w.length));
+ if(idxs.length>=maxLen){WS.fails++;sNO();recordAnswer("Letras",false,15);WS.anchor=null;WS.cur=[];toast("Esa no es 🤔 — mira la lista",false,1100);}
+ renderWS();} // si no, la selección sigue creciendo: el niño puede ir letra por letra
 
 /* ---- PINTA CON NÚMEROS (resuelve la operación y pinta) ---- */
 const MP_ART=[
@@ -186,6 +188,85 @@ function tapIM(i){
  if(c.imp){IM.ok++;sOK();confetti(14);toast("🚀 ¡"+c.nm+" era el IMPOSTOR! Expulsado",true,1500);}
  else{sNO();const real=IM.crew.find(x=>x.imp);toast("¡"+c.nm+" decía la verdad! El impostor era "+real.nm,false,1900);}
  IM.round++;setTimeout(nextIM,1900);}
+
+/* ---- CRUCIGRAMA (con pistas de emoji) ---- */
+const CW_PUZZLES=[
+ {size:8,words:[
+  {w:"GATO",r:0,c:0,d:"A",clue:"🐱"},
+  {w:"TAZA",r:0,c:2,d:"D",clue:"🍵"},
+  {w:"ZORRO",r:2,c:2,d:"A",clue:"🦊"},
+  {w:"OSO",r:2,c:3,d:"D",clue:"🐻"},
+  {w:"SOPA",r:3,c:3,d:"A",clue:"🍲"}]},
+ {size:8,words:[
+  {w:"LUNA",r:0,c:0,d:"A",clue:"🌙"},
+  {w:"NUBE",r:0,c:2,d:"D",clue:"☁️"},
+  {w:"BOCA",r:2,c:2,d:"A",clue:"👄"},
+  {w:"CASA",r:2,c:4,d:"D",clue:"🏠"},
+  {w:"SAPO",r:4,c:4,d:"A",clue:"🐸"}]},
+ {size:8,words:[
+  {w:"PERRO",r:0,c:0,d:"A",clue:"🐶"},
+  {w:"RANA",r:0,c:3,d:"D",clue:"🐸"},
+  {w:"NIDO",r:2,c:3,d:"A",clue:"🪺"},
+  {w:"DEDO",r:2,c:5,d:"D",clue:"☝️"},
+  {w:"CODO",r:4,c:3,d:"A",clue:"💪"}]}];
+let CW={};
+function cwCells(word){const out=[];for(let i=0;i<word.w.length;i++)out.push(word.d==="A"?(word.r*CW.N+word.c+i):((word.r+i)*CW.N+word.c));return out;}
+function gameCrossword(){setTheme("kid");
+ const pz=pick(CW_PUZZLES);
+ CW={N:pz.size,words:pz.words,fill:{},locked:new Set(),solved:new Set(),active:0,errs:0};
+ // celdas que pertenecen a alguna palabra
+ CW.used=new Set();
+ pz.words.forEach(w=>cwCells(w).forEach(i=>CW.used.add(i)));
+ renderCW();}
+function renderCW(){
+ const N=CW.N,act=CW.words[CW.active],actCells=act?cwCells(act):[];
+ let html="";
+ for(let i=0;i<N*N;i++){
+  if(!CW.used.has(i)){html+='<span></span>';continue;}
+  const ch=CW.fill[i]||"";
+  const lock=CW.locked.has(i);
+  const sel=actCells.includes(i);
+  html+='<button onclick="tapCWCell('+i+')" style="aspect-ratio:1;border-radius:7px;border:3px solid var(--kid-ink);font-family:Fredoka;font-weight:700;font-size:clamp(.85rem,3.6vw,1.15rem);background:'+(lock?"var(--kid-green);color:#fff":sel?"var(--kid-yellow)":"#fff")+'">'+ch+'</button>';}
+ const clues=CW.words.map((w,k)=>{
+  const done=CW.solved.has(k);
+  return '<button onclick="CW.active='+k+';renderCW()" style="font-family:Fredoka;font-weight:700;font-size:1.1rem;padding:6px 12px;border-radius:14px;border:3px solid var(--kid-ink);background:'+(done?"var(--kid-green)":k===CW.active?"var(--kid-yellow)":"#fff")+';'+(done?"opacity:.7;":"")+'">'+w.clue+' '+(w.d==="A"?"➡️":"⬇️")+(done?" ✓":"")+'</button>';}).join("");
+ const keys="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("").map(c=>'<button class="key" onclick="tapCWKey(\''+c+'\')">'+c+'</button>').join("");
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">📝 Crucigrama</h2>'
+ +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Toca una pista y escribe la palabra del dibujo</p>'
+ +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">'+clues+'</div>'
+ +'<div style="display:grid;grid-template-columns:repeat('+N+',1fr);gap:4px;margin-bottom:10px">'+html+'</div>'
+ +'<div class="keys">'+keys+'</div>'
+ +'<div style="height:8px"></div>'
+ +'<button class="kbtn white" onclick="cwClear()">🧽 Borrar palabra</button>');}
+function tapCWCell(i){
+ const k=CW.words.findIndex((w,idx)=>!CW.solved.has(idx)&&cwCells(w).includes(i));
+ if(k>=0){CW.active=k;beep([520],.06);renderCW();}}
+function tapCWKey(c){
+ const w=CW.words[CW.active];
+ if(!w||CW.solved.has(CW.active))return;
+ const cells=cwCells(w);
+ const empty=cells.find(i=>!CW.locked.has(i)&&!CW.fill[i]);
+ if(empty===undefined)return;
+ CW.fill[empty]=c;beep([560],.06);
+ // ¿palabra completa?
+ if(cells.every(i=>CW.fill[i]||CW.locked.has(i))){
+  const guess=cells.map(i=>CW.fill[i]).join("");
+  if(guess===w.w){
+   CW.solved.add(CW.active);cells.forEach(i=>CW.locked.add(i));
+   sOK();confetti(10);recordAnswer("Letras",true,20);
+   if(CW.solved.size===CW.words.length){renderCW();
+    return setTimeout(()=>nodeWin(CW.errs<=1?3:CW.errs<=3?2:1,"Crucigrama"),800);}
+   // pasar a la siguiente pista pendiente
+   CW.active=CW.words.findIndex((x,idx)=>!CW.solved.has(idx));
+   return renderCW();}
+  CW.errs++;sNO();recordAnswer("Letras",false,20);
+  toast("Mmm, fíjate en el dibujo "+w.clue,false,1300);
+  cells.forEach(i=>{if(!CW.locked.has(i))delete CW.fill[i];});
+ }
+ renderCW();}
+function cwClear(){const w=CW.words[CW.active];if(!w)return;
+ cwCells(w).forEach(i=>{if(!CW.locked.has(i))delete CW.fill[i];});renderCW();}
 
 /* ---- MINA DE BLOQUES (responde para picar) ---- */
 let MN={};

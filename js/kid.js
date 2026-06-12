@@ -80,6 +80,7 @@ function screenGamesPick(){setTheme("kid");
  +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
  +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'
+ +'<button class="kbtn purple" onclick="gameCrossword()">📝 Crucigrama</button>'
  +'<button class="kbtn green" onclick="gameMathPaint()">🎨 Pinta con números</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
  +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>');}
@@ -175,8 +176,9 @@ function nextBalloonRound(){
   const b=document.createElement("div");b.className="balloon";b.textContent=a;
   b.style.background=colors[i%colors.length];
   b.style.left=(4+i*24)+"%";
-  b.style.animationDuration=(7+Math.random()*4)+"s";
-  b.style.animationDelay=(i*0.9)+"s";
+  b.style.top=(8+rnd(48))+"%"; // aparecen YA, flotando y meciéndose
+  b.style.animationDuration=(2+Math.random()*1.5)+"s";
+  b.style.animationDelay=(Math.random()*0.8)+"s";
   b.onclick=()=>popBalloon(b,a===BL.cur.ans);
   sky.appendChild(b);});
  BL.timer=setTimeout(()=>{if(document.getElementById("sky")){toast("¡Se escaparon! 🎈 La respuesta era "+BL.cur.ans,false,1800);sNO();recordAnswer(BL.mode==="ingles"?"Inglés":"Números",false,12);BL.round++;setTimeout(nextBalloonRound,1700);}},12500);}
