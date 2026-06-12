@@ -45,6 +45,7 @@ function signalsBlock(p){
 function screenParentDash(){setTheme("parent");
  render('<div class="topbar"><button class="back" onclick="screenStart()">←</button><b style="font-size:1.1rem">Panel de padres</b></div>'
  +profileReport("nino")+profileReport("nina")
+ +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
  +'<div class="card"><h3>⚙️ Configuración</h3>'
  +'<p class="mut" style="margin:12px 0 4px">Clave de API de Gemini (vive solo en este dispositivo)</p>'
  +'<input type="password" id="gkey" placeholder="AIza..." value="'+esc(S.geminiKey)+'">'

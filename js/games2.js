@@ -1,0 +1,235 @@
+"use strict";
+/* ============ JUEGOS v6: ahorcado, sopa de letras, pinta, impostor, mina ============ */
+
+/* ---- AHORCADO (muñeco de nieve que se derrite) ---- */
+const HG_ES=[["gato","🐱"],["perro","🐶"],["casa","🏠"],["sol","☀️"],["luna","🌙"],["flor","🌸"],["pez","🐟"],["mano","✋"],["libro","📖"],["tren","🚂"],["nube","☁️"],["pan","🍞"],["silla","🪑"],["arbol","🌳"],["leche","🥛"],["rana","🐸"],["uva","🍇"],["queso","🧀"]];
+const HG_MELT=["⛄","⛄","☃️","☃️","🌨️","💦","💧"];
+let HG={};
+function gameHangman(modo){setTheme("kid");
+ HG={modo,round:0,ok:0,total:4};nextHG();}
+function nextHG(){
+ if(HG.round>=HG.total)return nodeWin(starsFor(HG.ok,HG.total),"Ahorcado");
+ if(HG.modo==="en"){const pool=Object.values(EN_VOCAB).flat().filter(w=>/^[a-z]{3,7}$/.test(w[0]));
+  const w=pick(pool);HG.word=w[0].toUpperCase();HG.hint=w[2]+" ("+w[1]+")";HG.en=w[0];}
+ else{const w=pick(HG_ES);HG.word=w[0].toUpperCase();HG.hint=w[1];HG.en=null;}
+ HG.guessed=[];HG.lives=6;renderHG();}
+function renderHG(){
+ const slots=HG.word.split("").map(c=>'<div class="slot'+(HG.guessed.includes(c)?' filled':'')+'">'+(HG.guessed.includes(c)?c:"")+'</div>').join("");
+ const keys="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("").map(c=>'<button class="key'+(HG.guessed.includes(c)||HG.guessed.includes("✗"+c)?' used':'')+'" onclick="guessHG(\''+c+'\')">'+c+'</button>').join("");
+ render(topbar("screenGamesPick()")
+ +'<div class="progressdots">'+dots(HG.total,HG.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">⛄ ¡Salva al muñeco de nieve!</h2>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:8px">Adivina la palabra antes de que se derrita</p>'
+ +'<div style="display:flex;align-items:center;justify-content:center;gap:18px">'
+ +'<span style="font-size:clamp(3rem,14vw,4rem)">'+HG_MELT[6-HG.lives]+'</span>'
+ +'<span style="font-size:clamp(2.4rem,11vw,3.2rem)">'+HG.hint+'</span></div>'
+ +'<div class="letterslots">'+slots+'</div>'
+ +'<div class="keys">'+keys+'</div>');}
+function guessHG(c){
+ if(HG.guessed.includes(c)||HG.guessed.includes("✗"+c))return;
+ if(HG.word.includes(c)){HG.guessed.push(c);beep([700],.08);
+  if(HG.word.split("").every(x=>HG.guessed.includes(x))){
+   HG.ok++;HG.round++;sOK();confetti(14);recordAnswer(HG.modo==="en"?"Inglés":"Letras",true,20);
+   if(HG.en)speakEN(HG.en);
+   toast("✓ ¡"+HG.word+"! 🎉",true,1400);setTimeout(nextHG,1500);return;}
+  renderHG();}
+ else{HG.guessed.push("✗"+c);HG.lives--;sNO();
+  if(HG.lives<=0){HG.round++;recordAnswer(HG.modo==="en"?"Inglés":"Letras",false,20);
+   renderHG();toast("Se derritió 💧 — era "+HG.word,false,1900);setTimeout(nextHG,2000);return;}
+  renderHG();}}
+
+/* ---- SOPA DE LETRAS ---- */
+const WS_THEMES=[
+ {nm:"Animales",e:"🐾",words:["GATO","PERRO","PEZ","OSO","RANA"]},
+ {nm:"Frutas",e:"🍎",words:["UVA","PERA","MANGO","KIWI","PIÑA"]},
+ {nm:"Colores",e:"🎨",words:["ROJO","AZUL","VERDE","ROSA","GRIS"]},
+ {nm:"La casa",e:"🏠",words:["MESA","CAMA","SILLA","PUERTA","SOFA"]},
+ {nm:"El cuerpo",e:"🧍",words:["MANO","OJO","PIE","BOCA","NARIZ"]}];
+let WS={};
+function gameWordSearch(){setTheme("kid");
+ const theme=pick(WS_THEMES),N=8;
+ const grid=Array(N*N).fill(null);
+ const placed=[];
+ for(const w of theme.words){ // colocar horizontal o vertical
+  let ok=false;
+  for(let t=0;t<200&&!ok;t++){
+   const hor=Math.random()<.5,L=w.length;
+   const r=rnd(hor?N:N-L+1),c=rnd(hor?N-L+1:N);
+   const idxs=[];let fits=true;
+   for(let i=0;i<L;i++){const idx=hor?(r*N+c+i):((r+i)*N+c);
+    if(grid[idx]&&grid[idx]!==w[i]){fits=false;break;}idxs.push(idx);}
+   if(fits){idxs.forEach((idx,i)=>grid[idx]=w[i]);placed.push({w,idxs});ok=true;}
+  }}
+ const AZ="ABCDEFGHIJKLMNOPRSTUVZ";
+ for(let i=0;i<grid.length;i++)if(!grid[i])grid[i]=AZ[rnd(AZ.length)];
+ WS={grid,placed:placed,found:[],first:null,fails:0,N,theme};
+ renderWS();}
+function renderWS(){
+ const N=WS.N;
+ const cells=WS.grid.map((ch,i)=>{
+  const foundCell=WS.found.some(f=>f.idxs.includes(i));
+  const sel=WS.first===i;
+  return '<button id="ws'+i+'" onclick="tapWS('+i+')" style="aspect-ratio:1;border-radius:8px;border:3px solid var(--kid-ink);font-family:Fredoka;font-weight:700;font-size:clamp(.9rem,3.8vw,1.2rem);background:'+(foundCell?"var(--kid-green);color:#fff":sel?"var(--kid-yellow)":"#fff")+'">'+ch+'</button>';}).join("");
+ const list=WS.theme.words.map(w=>{const done=WS.found.some(f=>f.w===w);
+  return '<span style="font-family:Fredoka;font-weight:700;padding:4px 10px;border-radius:12px;border:3px solid var(--kid-ink);background:'+(done?"var(--kid-green);color:#fff":"#fff")+';'+(done?"text-decoration:line-through;":"")+'">'+w+'</span>';}).join(" ");
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🔍 Sopa de letras: '+WS.theme.nm+' '+WS.theme.e+'</h2>'
+ +'<p class="center" style="font-size:.92rem;margin-bottom:8px">Toca la PRIMERA y la ÚLTIMA letra de cada palabra</p>'
+ +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">'+list+'</div>'
+ +'<div style="display:grid;grid-template-columns:repeat('+N+',1fr);gap:5px">'+cells+'</div>');}
+function tapWS(i){
+ if(WS.found.some(f=>f.idxs.includes(i)))return;
+ beep([520],.06);
+ if(WS.first===null){WS.first=i;return renderWS();}
+ if(WS.first===i){WS.first=null;return renderWS();}
+ const N=WS.N,a=WS.first,b=i;
+ const ra=Math.floor(a/N),ca=a%N,rb=Math.floor(b/N),cb=b%N;
+ let idxs=null;
+ if(ra===rb){const [c1,c2]=[Math.min(ca,cb),Math.max(ca,cb)];idxs=[];for(let c=c1;c<=c2;c++)idxs.push(ra*N+c);}
+ else if(ca===cb){const [r1,r2]=[Math.min(ra,rb),Math.max(ra,rb)];idxs=[];for(let r=r1;r<=r2;r++)idxs.push(r*N+ca);}
+ WS.first=null;
+ if(idxs){
+  const s=idxs.map(x=>WS.grid[x]).join("");
+  const rev=s.split("").reverse().join("");
+  const hit=WS.placed.find(p=>!WS.found.some(f=>f.w===p.w)&&(p.w===s||p.w===rev));
+  if(hit){WS.found.push(hit);sOK();confetti(10);recordAnswer("Letras",true,15);
+   if(WS.found.length===WS.placed.length){renderWS();
+    return setTimeout(()=>nodeWin(WS.fails<=2?3:WS.fails<=5?2:1,"Sopa de letras"),800);}
+   return renderWS();}}
+ WS.fails++;sNO();recordAnswer("Letras",false,15);renderWS();}
+
+/* ---- PINTA CON NÚMEROS (resuelve la operación y pinta) ---- */
+const MP_ART=[
+ {nm:"Corazón",tpl:["0110110","1111111","1111111","1111111","0111110","0011100","0001000"]},
+ {nm:"Carita",tpl:["0111110","1111111","1211211","1111111","1211121","1122211","0111110"]},
+ {nm:"Flor",tpl:["0020200","0222220","2223222","0222220","0020200","0001000","0331330"]}];
+const MP_COLORS=["#FFFFFF","#FF6B6B","#3B82F6","#3EC97C"];
+let MP={};
+function gameMathPaint(){setTheme("kid");
+ const art=pick(MP_ART);
+ const tpl=art.tpl.join("").split("").map(Number);
+ const colorsUsed=[...new Set(tpl)].filter(x=>x>0);
+ // a cada color le toca un número-resultado distinto, y a las celdas blancas números distractores
+ const results={};const usadosR=new Set();
+ colorsUsed.forEach(c=>{let r;do{r=2+rnd(17);}while(usadosR.has(r));usadosR.add(r);results[c]=r;});
+ const nums=tpl.map(c=>{if(c>0)return results[c];let d;do{d=2+rnd(17);}while(usadosR.has(d));return d;});
+ MP={art,tpl,nums,results,colorsUsed,ci:0,painted:Array(tpl.length).fill(false),errs:0};
+ nextMPColor();}
+function nextMPColor(){
+ if(MP.ci>=MP.colorsUsed.length){
+  sWIN();confetti(30);recordAnswer("Mate",true,20);
+  return setTimeout(()=>nodeWin(MP.errs<=2?3:MP.errs<=5?2:1,"Mate"),900);}
+ const color=MP.colorsUsed[MP.ci],target=MP.results[color];
+ // generar operación cuyo resultado es target
+ const resta=Math.random()<.5&&target<15;
+ let q;
+ if(resta){const a=target+1+rnd(5);q=a+" − "+(a-target);}
+ else{const a=1+rnd(target-1);q=a+" + "+(target-a);}
+ MP.q=q;MP.target=target;renderMP();}
+function renderMP(){
+ const color=MP.colorsUsed[MP.ci];
+ const cells=MP.tpl.map((c,i)=>{
+  const painted=MP.painted[i];
+  return '<button onclick="tapMP('+i+')" style="aspect-ratio:1;border-radius:6px;border:2px solid #B9C2D4;font-family:Fredoka;font-weight:700;font-size:clamp(.75rem,3.2vw,1rem);background:'+(painted?MP_COLORS[MP.tpl[i]]:"#fff")+';color:'+(painted?"transparent":"var(--kid-ink)")+'">'+MP.nums[i]+'</button>';}).join("");
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.1rem,5vw,1.35rem);text-align:center;margin-bottom:2px">🎨 Pinta con números</h2>'
+ +'<p class="center" style="font-size:.92rem;margin-bottom:6px">Resuelve y pinta las casillas con ese resultado</p>'
+ +'<div class="card center" style="padding:12px"><span style="font-family:Fredoka;font-weight:700;font-size:clamp(1.5rem,7vw,2rem)">'+MP.q+' = ?</span>'
+ +'<span style="display:inline-block;width:26px;height:26px;border-radius:8px;border:3px solid var(--kid-ink);background:'+MP_COLORS[MP.colorsUsed[MP.ci]]+';margin-left:12px;vertical-align:middle"></span></div>'
+ +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">'+cells+'</div>'
+ +'<p class="center mut" style="margin-top:8px;font-size:.85rem">Dibujo misterioso: ¡píntalo todo para verlo!</p>');}
+function tapMP(i){
+ if(MP.painted[i])return;
+ const color=MP.colorsUsed[MP.ci];
+ if(MP.nums[i]===MP.target&&MP.tpl[i]===color){
+  MP.painted[i]=true;beep([600+rnd(200)],.07);
+  const restantes=MP.tpl.some((c,k)=>c===color&&!MP.painted[k]);
+  if(!restantes){sOK();confetti(8);MP.ci++;recordAnswer("Mate",true,15);setTimeout(nextMPColor,500);return;}
+  renderMP();}
+ else{MP.errs++;sNO();toast("Busca las casillas con "+MP.target,false,1100);}}
+
+/* ---- EL IMPOSTOR (encuentra al que dice mentiras) ---- */
+const IM_FACTS=[
+ ["2 + 2 = 4","2 + 2 = 5"],["5 + 5 = 10","5 + 5 = 12"],["10 − 5 = 5","10 − 5 = 7"],["3 + 3 = 6","3 + 3 = 8"],
+ ["Los peces viven en el agua","Los peces vuelan por el cielo"],["El sol sale de día","El sol sale solo de noche"],
+ ["Los perros ladran","Los perros maúllan"],["El hielo es frío","El hielo es caliente"],
+ ["La semana tiene 7 días","La semana tiene 2 días"],["5 es mayor que 3","3 es mayor que 5"],
+ ["Las plantas necesitan agua","Las plantas comen dulces"],["La luna se ve de noche","La luna es de queso"],
+ ["Las vacas dan leche","Las vacas ponen huevos"],["El fuego quema","El fuego es de hielo"],
+ ["Caminamos con los pies","Caminamos con las orejas"],["Los pájaros tienen alas","Los pájaros tienen 4 patas"]];
+const IM_COLORS=[["#FF6B6B","Rojo"],["#3B82F6","Azul"],["#3EC97C","Verde"],["#FFC93C","Amarillo"]];
+let IM={};
+function gameImpostor(){setTheme("kid");
+ IM={round:0,ok:0,total:5,usados:new Set()};nextIM();}
+function nextIM(){
+ if(IM.round>=IM.total)return nodeWin(starsFor(IM.ok,IM.total),"Lógica");
+ let facts=shuffled(IM_FACTS.filter((f,i)=>!IM.usados.has(i)));
+ if(facts.length<4){IM.usados=new Set();facts=shuffled(IM_FACTS);}
+ const four=facts.slice(0,4);four.forEach(f=>IM.usados.add(IM_FACTS.indexOf(f)));
+ const impostorIdx=rnd(4);
+ IM.crew=shuffled(IM_COLORS).map((c,i)=>({color:c[0],nm:c[1],txt:i===impostorIdx?four[i][1]:four[i][0],imp:i===impostorIdx}));
+ IM.done=false;renderIM();}
+function renderIM(){
+ const cards=IM.crew.map((c,i)=>
+  '<button onclick="tapIM('+i+')" style="width:100%;text-align:left;display:flex;align-items:center;gap:14px;background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:20px;box-shadow:0 6px 0 rgba(30,42,74,.8);padding:12px 14px;margin-bottom:12px">'
+  +'<span style="width:54px;height:54px;flex:none;border-radius:50% 50% 42% 42%;border:4px solid var(--kid-ink);background:'+c.color+';position:relative"><span style="position:absolute;top:10px;left:8px;width:30px;height:16px;border-radius:8px;background:#BFE8FF;border:3px solid var(--kid-ink)"></span></span>'
+  +'<span style="font-family:Fredoka;font-weight:600;font-size:clamp(1rem,4.4vw,1.2rem)">'+esc(c.txt)+'</span></button>').join("");
+ render(topbar("screenGamesPick()")
+ +'<div class="progressdots">'+dots(IM.total,IM.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🚀 ¿Quién es el impostor?</h2>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:10px">Tres dicen la verdad… ¡uno MIENTE! Tócalo</p>'
+ +cards);}
+function tapIM(i){
+ if(IM.done)return;IM.done=true;
+ const c=IM.crew[i];
+ recordAnswer("Lógica",c.imp,15);
+ if(c.imp){IM.ok++;sOK();confetti(14);toast("🚀 ¡"+c.nm+" era el IMPOSTOR! Expulsado",true,1500);}
+ else{sNO();const real=IM.crew.find(x=>x.imp);toast("¡"+c.nm+" decía la verdad! El impostor era "+real.nm,false,1900);}
+ IM.round++;setTimeout(nextIM,1900);}
+
+/* ---- MINA DE BLOQUES (responde para picar) ---- */
+let MN={};
+function gameMine(){setTheme("kid");
+ const cells=Array(25).fill("⬛");
+ shuffled([...Array(25).keys()]).slice(0,4).forEach(i=>cells[i]="💎");
+ shuffled(cells.map((c,i)=>i).filter(i=>cells[i]==="⬛")).slice(0,4).forEach(i=>cells[i]="🪙");
+ MN={cells,revealed:Array(25).fill(false),picks:12,gems:0,coins:0,sel:null,ok:0,n:0};
+ renderMN();}
+function renderMN(){
+ const grid=MN.cells.map((c,i)=>{
+  const rev=MN.revealed[i];
+  return '<button onclick="tapMN('+i+')" style="aspect-ratio:1;border-radius:8px;border:3px solid #5B4632;font-size:clamp(1.2rem,5.5vw,1.7rem);background:'+(rev?"#2B2B2B":"linear-gradient(180deg,#A9744F,#8B5A2B)")+';'+(MN.sel===i?"outline:4px solid var(--kid-yellow);":"")+'">'+(rev?c:"🟫")+'</button>';}).join("");
+ let qHTML="";
+ if(MN.sel!==null&&MN.q){
+  qHTML='<div class="card center"><b style="font-family:Fredoka;font-size:clamp(1.3rem,6vw,1.7rem)">'+MN.q.q+'</b>'
+  +'<div class="choices2" style="margin-top:10px">'+MN.q.ops.map((o,k)=>'<button class="kbtn yellow" onclick="ansMN('+k+')">'+o+'</button>').join("")+'</div></div>';}
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">⛏️ La mina de bloques</h2>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:8px">Encuentra <b>3 💎</b> — responde bien para picar</p>'
+ +'<div style="display:flex;justify-content:center;gap:14px;margin-bottom:10px;font-family:Fredoka;font-weight:700">'
+ +'<span class="pill">⛏️ '+MN.picks+'</span><span class="pill">💎 '+MN.gems+'/3</span><span class="pill">🪙 +'+MN.coins+'</span></div>'
+ +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px">'+grid+'</div>'
+ +qHTML);}
+function tapMN(i){
+ if(MN.revealed[i]||MN.q)return;
+ MN.sel=i;
+ const resta=Math.random()<.5;
+ let a,b,ans;
+ if(resta){a=5+rnd(15);b=1+rnd(a-1);ans=a-b;MN.q={q:a+" − "+b+" = ?"};}
+ else{a=1+rnd(10);b=1+rnd(10);ans=a+b;MN.q={q:a+" + "+b+" = ?"};}
+ const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ MN.q.opsV=shuffled([...set]);MN.q.ops=MN.q.opsV.map(String);MN.q.ans=ans;
+ beep([440],.07);renderMN();}
+function ansMN(k){
+ const ok=MN.q.opsV[k]===MN.q.ans;
+ recordAnswer("Mate",ok,10);MN.n++;if(ok)MN.ok++;
+ MN.picks--;
+ if(ok){const i=MN.sel;MN.revealed[i]=true;beep([300,500],.1);
+  const c=MN.cells[i];
+  if(c==="💎"){MN.gems++;sOK();confetti(12);toast("¡Un diamante! 💎",true,1100);}
+  else if(c==="🪙"){MN.coins+=3;prof().coins+=3;save();sOK();toast("+3 monedas 🪙",true,1000);}
+ }else{sNO();toast("Era "+MN.q.ans+" — el bloque resistió 🪨",false,1300);}
+ MN.q=null;MN.sel=null;
+ if(MN.gems>=3){renderMN();return setTimeout(()=>nodeWin(3,"Mate"),900);}
+ if(MN.picks<=0){renderMN();return setTimeout(()=>nodeWin(MN.gems>=2?2:1,"Mate"),1200);}
+ renderMN();}

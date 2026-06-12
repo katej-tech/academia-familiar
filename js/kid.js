@@ -23,7 +23,7 @@ const KID_WORLDS=[
  {id:"juegos",ic:"🎮",nm:"Juegos",color:"blue",special:"games",desc:"Robot, memoria, globos y micrófono"}];
 let curNode=null;
 function screenKidMap(){setTheme("kid");
- const p=prof();const pet=petStage(p.xp);
+ const p=prof();const pet=(typeof legendaryPet==="function"&&legendaryPet())||petStage(p.xp);
  const worlds=KID_WORLDS.map(w=>{
   const done=(p.worldWins&&p.worldWins[w.id])||0;
   return '<button class="kbtn '+w.color+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="openWorld(\''+w.id+'\')">'
@@ -31,14 +31,20 @@ function screenKidMap(){setTheme("kid");
    +'<span style="flex:1"><span style="font-size:clamp(1.1rem,5vw,1.35rem)">'+w.nm+'</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">'+w.desc+(done?' · ✅ '+done:'')+'</span></span></button>';
  }).join("");
  render(topbar("screenStart()")
- +'<div class="card" style="display:flex;align-items:center;gap:14px;padding:16px">'
- +'<div style="font-size:clamp(3rem,15vw,4rem)" onclick="screenCritters()">'+pet.e+'</div>'
- +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.3rem,6vw,1.6rem)">¡Hola, '+esc(p.name)+'!</h1>'
- +'<p style="font-size:.95rem">Mascota: <b>'+pet.n+'</b> · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+' criaturas</p></div></div>'
+ +'<div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">'
+ +'<div onclick="screenAvatar()">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'</div>'
+ +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.2rem,5.5vw,1.5rem)">¡Hola, '+esc(p.name)+'!</h1>'
+ +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
+ +'<div style="font-size:clamp(2.2rem,11vw,3rem)" onclick="screenCritters()">'+pet.e+'</div></div>'
  +missionsHTML()
+ +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑 — ¡tu curso A1!</span></span></button>'
  +'<p style="font-size:1.05rem;margin:4px 2px 10px;font-family:Fredoka;font-weight:600">Elige un mundo para explorar 🌍</p>'
  +worlds
- +'<button class="kbtn white" onclick="screenCritters()" style="margin-top:6px">🎒 Ver mi colección</button>');}
+ +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">'
+ +'<button class="kbtn yellow" style="margin:0" onclick="screenShop()">🛍️ Tienda</button>'
+ +'<button class="kbtn white" style="margin:0" onclick="screenAvatar()">😎 Mi personaje</button>'
+ +'<button class="kbtn blue" style="margin:0" onclick="screenVideosKid()">🎬 Videos</button>'
+ +'<button class="kbtn white" style="margin:0" onclick="screenCritters()">🎒 Colección</button></div>');}
 function lockedMsg(){}
 function openWorld(id){
  const w=KID_WORLDS.find(x=>x.id===id);curNode=id;
@@ -70,7 +76,13 @@ function screenGamesPick(){setTheme("kid");
  +'<button class="kbtn blue" onclick="gameRobot(0)">🤖 Robot programador</button>'
  +'<button class="kbtn yellow" onclick="screenMemoryPick()">🃏 Juegos de memoria</button>'
  +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
- +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>');}
+ +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
+ +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
+ +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
+ +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'
+ +'<button class="kbtn green" onclick="gameMathPaint()">🎨 Pinta con números</button>'
+ +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
+ +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>');}
 function screenMemoryPick(){setTheme("kid");
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🃏 Memoria</h2>'
@@ -735,9 +747,10 @@ function renderStory(){
   render(topbar("screenKidMap()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);margin-bottom:8px">📖 '+esc(c.title)+'</h2>'
   +'<div class="progressdots">'+c.pages.map((x,i)=>'<i class="'+(i<=ST.page?"on":"")+'"></i>').join("")+'</div>'
-  +'<div class="scene">'+p.scene+'</div>'
+  +(p.img?'<img src="'+p.img+'" alt="Ilustración" style="display:block;width:100%;border-radius:18px;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.8);margin-bottom:12px">':'<div class="scene">'+p.scene+'</div>')
   +'<div class="card storytext">'+p.text.replace(/</g,"&lt;").replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>")+'</div>'
   +'<button class="speaker" onclick="speakES(\''+esc(stripTags(p.text)).replace(/'/g,"\\'")+'\')"><span class="ic">🔊</span> Escuchar esta parte</button>'
+  +(S.geminiKey&&!p.img?'<button class="kbtn purple" id="illubtn" onclick="illustratePage()">🎨 Ilustrar con IA</button>':'')
   +(last?'<button class="kbtn green" onclick="ST.phase=\'quiz\';renderStory()">Responder preguntas →</button>'
         :'<button class="kbtn blue" onclick="ST.page++;renderStory()">Siguiente página →</button>')
   +(ST.page>0?'<button class="kbtn white" onclick="ST.page--;renderStory()">← Volver atrás</button>':''));

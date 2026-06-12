@@ -6,6 +6,7 @@ function screenTeenHome(){setTheme("teen");
  +'<div><h1 class="title">Hey, '+esc(prof().name)+' '+prof().emoji+'</h1><p class="mut">Reto rápido: responde antes de que acabe el tiempo y arma combos ⚡</p></div>'
  +'<div class="eq"><i></i><i></i><i></i><i></i><i></i></div></div>'
  +missionsHTML()+ai
+ +'<button class="tbtn acc" onclick="screenAcademyTeen()">🎓 &nbsp;English Academy <span class="mut">· unidades y coronas 👑</span></button>'
  +'<button class="tbtn" onclick="startQuiz(\'Química\',B_QUIMICA)">⚗️ &nbsp;Química <span class="mut">· reto cronometrado</span></button>'
  +'<button class="tbtn" onclick="startQuiz(\'Física\',B_FISICA)">🚀 &nbsp;Física <span class="mut">· reto cronometrado</span></button>'
  +'<button class="tbtn" onclick="screenReadList()">📖 &nbsp;Lecturas en inglés <span class="mut">· toca y traduce</span></button>'
