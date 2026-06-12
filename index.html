@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Academia Familiar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --kid-ink:#1E2A4A; --kid-yellow:#FFC93C; --kid-green:#3EC97C; --kid-blue:#3B82F6; --kid-red:#FF6B6B; --kid-purple:#A78BFA;
+  --teen-bg:#0F0D1A; --teen-card:#1C1830; --teen-violet:#8B5CF6; --teen-pink:#EC4899; --teen-cyan:#22D3EE; --teen-ink:#F4F1FF; --teen-mut:#9D95BD;
+  --par-bg:#F4F6FA; --par-ink:#1F2A44; --par-acc:#0E9488; --par-line:#E2E8F0; --par-mut:#5B6B85;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:clamp(17px,4.4vw,22px)}
+body{font-family:'Nunito',sans-serif;background:var(--par-bg);color:var(--par-ink);min-height:100dvh;overflow-x:hidden}
+#app{max-width:640px;margin:0 auto;min-height:100dvh;padding:max(12px,3vw) max(14px,4vw) 40px;position:relative}
+button{font-family:inherit;cursor:pointer;border:none;font-size:1rem;color:inherit}
+input{font-family:inherit;font-size:1rem}
+.hidden{display:none!important}
+.center{text-align:center}
+
+/* ================= TEMA NIÑO: mundo de juego ================= */
+body.kid{font-family:'Fredoka',sans-serif;color:var(--kid-ink);
+  background:linear-gradient(180deg,#5BC0F8 0%,#8ED9F5 45%,#BDF0D8 100%);background-attachment:fixed}
+body.kid .card{background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:26px;box-shadow:0 8px 0 rgba(30,42,74,.85);padding:20px;margin-bottom:18px}
+.kbtn{display:block;width:100%;min-height:68px;padding:16px 20px;border-radius:22px;border:4px solid var(--kid-ink);
+  box-shadow:0 8px 0 var(--kid-ink);font-family:'Fredoka';font-weight:700;font-size:1.35rem;color:var(--kid-ink);
+  background:var(--kid-yellow);transition:transform .07s,box-shadow .07s;margin-bottom:16px;text-align:center;line-height:1.2}
+.kbtn:active{transform:translateY(6px);box-shadow:0 2px 0 var(--kid-ink)}
+.kbtn.blue{background:var(--kid-blue);color:#fff}
+.kbtn.green{background:var(--kid-green);color:#fff}
+.kbtn.red{background:var(--kid-red);color:#fff}
+.kbtn.purple{background:var(--kid-purple);color:#fff}
+.kbtn.white{background:#fff}
+
+/* Mapa de aventura */
+.map{position:relative;padding:10px 0 30px}
+.map::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:8px;transform:translateX(-50%);
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.9) 0 18px,transparent 18px 34px);border-radius:8px}
+.node{position:relative;width:clamp(96px,26vw,120px);height:clamp(96px,26vw,120px);border-radius:50%;border:5px solid var(--kid-ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 34px;
+  box-shadow:0 9px 0 rgba(30,42,74,.85);font-family:'Fredoka';font-weight:700;background:#fff;z-index:1}
+.node .ic{font-size:clamp(2.1rem,7vw,2.6rem);line-height:1}
+.node .nm{font-size:.72rem;margin-top:2px}
+.node.left{transform:translateX(min(-78px,-21vw))}
+.node.right{transform:translateX(max(78px,21vw))}
+@media(min-width:600px){.node.left{transform:translateX(-130px)}.node.right{transform:translateX(130px)}}
+.node.open{background:var(--kid-yellow)}
+.node.open:active{box-shadow:0 2px 0 rgba(30,42,74,.85)}
+.node.locked{background:#D7DCE6;opacity:.85;filter:saturate(.4)}
+.node.done{background:var(--kid-green);color:#fff}
+.node .stars{position:absolute;bottom:-16px;font-size:1rem;letter-spacing:-2px;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.node.current::after{content:"¡JUEGA!";position:absolute;top:-26px;background:var(--kid-red);color:#fff;
+  font-size:.7rem;padding:4px 12px;border-radius:999px;border:3px solid var(--kid-ink);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* Globos */
+#sky{position:relative;height:56vh;min-height:340px;border-radius:26px;overflow:hidden;
+  background:linear-gradient(180deg,#3B82F6,#7DD3FC);border:4px solid var(--kid-ink);box-shadow:0 8px 0 rgba(30,42,74,.85)}
+.balloon{position:absolute;bottom:-150px;width:96px;height:118px;border-radius:50% 50% 48% 48%;
+  display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-weight:700;font-size:1.7rem;color:#fff;
+  border:4px solid rgba(0,0,0,.25);animation:rise linear forwards;text-shadow:0 2px 0 rgba(0,0,0,.3);cursor:pointer}
+.balloon::after{content:"";position:absolute;bottom:-26px;left:50%;width:3px;height:26px;background:rgba(255,255,255,.8)}
+@keyframes rise{from{bottom:-150px}to{bottom:110%}}
+.balloon.pop{animation:pop .3s forwards!important}
+@keyframes pop{to{transform:scale(2.2);opacity:0}}
+.balloon.shake{animation-play-state:paused;animation:none;outline:none}
+@keyframes shakeX{0%,100%{margin-left:0}25%{margin-left:-10px}75%{margin-left:10px}}
+
+/* Memoria */
+.memgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mem{aspect-ratio:3/3.4;perspective:600px;cursor:pointer}
+.mem .in{position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}
+.mem.flip .in{transform:rotateY(180deg)}
+.mem .f,.mem .b{position:absolute;inset:0;border-radius:18px;border:4px solid var(--kid-ink);
+  display:flex;align-items:center;justify-content:center;backface-visibility:hidden;font-family:'Fredoka';font-weight:700;
+  font-size:1.05rem;text-align:center;padding:6px;box-shadow:0 5px 0 rgba(30,42,74,.7)}
+.mem .f{background:var(--kid-blue);color:#fff;font-size:2rem}
+.mem .b{background:#fff;transform:rotateY(180deg)}
+.mem.ok .b{background:var(--kid-green);color:#fff}
+
+
+
+/* Robot */
+.robotgrid{display:grid;gap:8px;margin:14px 0}
+.robotgrid .cell{aspect-ratio:1;border-radius:16px;background:rgba(255,255,255,.85);border:3px solid var(--kid-ink);
+  display:flex;align-items:center;justify-content:center;font-size:2rem}
+.cmdrow{display:flex;flex-wrap:wrap;gap:8px;min-height:58px;padding:10px;border-radius:18px;background:rgba(255,255,255,.7);border:3px dashed var(--kid-ink);margin-bottom:12px}
+.cmd{font-size:1.6rem;padding:4px 10px;border-radius:12px;background:#fff;border:3px solid var(--kid-ink)}
+.cmdbtns{display:flex;gap:10px;margin-bottom:12px}
+.cmdbtns button{flex:1;font-size:1.9rem;padding:14px;border-radius:18px;border:4px solid var(--kid-ink);background:var(--kid-blue);color:#fff;box-shadow:0 6px 0 var(--kid-ink)}
+.cmdbtns button:active{transform:translateY(4px);box-shadow:0 2px 0 var(--kid-ink)}
+
+/* ================= TEMA TEEN ================= */
+body.teen{background:radial-gradient(1100px 500px at 80% -10%,#3A1D6E 0%,var(--teen-bg) 55%);background-attachment:fixed;
+  color:var(--teen-ink);font-family:'Space Grotesk',sans-serif}
+body.teen .card{background:var(--teen-card);border:1px solid #322B52;border-radius:20px;padding:20px;margin-bottom:16px}
+.tbtn{display:block;width:100%;min-height:62px;padding:16px 18px;border-radius:16px;font-weight:600;font-size:1.1rem;
+  background:var(--teen-card);color:var(--teen-ink);border:1px solid #3A3360;margin-bottom:12px;text-align:left;transition:transform .08s,border-color .15s}
+.tbtn:active{transform:scale(.98)}
+.tbtn.acc{background:linear-gradient(120deg,var(--teen-violet),var(--teen-pink));border:none;color:#fff;text-align:center;font-weight:700}
+.tbtn.cyan{border-color:var(--teen-cyan);color:var(--teen-cyan)}
+.tbtn.opt{font-size:1.15rem}
+body.teen .mut{color:var(--teen-mut)}
+.eq{display:flex;align-items:flex-end;gap:4px;height:30px}
+.eq i{width:6px;border-radius:3px;background:linear-gradient(180deg,var(--teen-pink),var(--teen-violet));animation:eq 1s infinite ease-in-out}
+.eq i:nth-child(2){animation-delay:.15s}.eq i:nth-child(3){animation-delay:.3s}.eq i:nth-child(4){animation-delay:.45s}.eq i:nth-child(5){animation-delay:.6s}
+@keyframes eq{0%,100%{height:30%}50%{height:100%}}
+.word{cursor:pointer;border-bottom:2px dashed var(--teen-cyan);border-radius:3px;padding:0 1px}
+.word:active,.word.tapped{background:rgba(34,211,238,.2)}
+.timerbar{height:10px;border-radius:999px;background:#2B2547;overflow:hidden;margin:8px 0 14px}
+.timerbar>div{height:100%;background:linear-gradient(90deg,var(--teen-cyan),var(--teen-violet));transition:width .25s linear}
+.combo{position:fixed;top:64px;right:14px;background:linear-gradient(120deg,var(--teen-violet),var(--teen-pink));color:#fff;
+  font-weight:700;padding:8px 16px;border-radius:999px;font-size:1.05rem;z-index:50;animation:pulse .6s}
+.flash{perspective:800px;height:300px;margin-bottom:14px}
+.flash .in{position:relative;width:100%;height:100%;transition:transform .4s;transform-style:preserve-3d;cursor:pointer}
+.flash.flip .in{transform:rotateY(180deg)}
+.flash .f,.flash .b{position:absolute;inset:0;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  backface-visibility:hidden;padding:20px;text-align:center}
+.flash .f{background:linear-gradient(140deg,#2A2350,#1C1830);border:1px solid #3A3360;font-size:2.1rem;font-weight:700}
+.flash .b{background:linear-gradient(140deg,var(--teen-violet),var(--teen-pink));transform:rotateY(180deg);font-size:1.7rem;font-weight:700;color:#fff}
+.flash .hint{font-size:.85rem;color:var(--teen-mut);margin-top:14px;font-weight:400}
+.flash .b .hint{color:rgba(255,255,255,.8)}
+
+/* ================= TEMA PADRE ================= */
+body.parent .card{background:#fff;border:1px solid var(--par-line);border-radius:14px;padding:18px;margin-bottom:16px}
+.pbtn{display:inline-block;padding:12px 18px;border-radius:10px;font-weight:800;background:var(--par-acc);color:#fff;margin:4px 8px 4px 0;font-size:.95rem}
+.pbtn.ghost{background:#fff;color:var(--par-ink);border:1px solid var(--par-line)}
+.pbtn.danger{background:#DC2626}
+body.parent table{width:100%;border-collapse:collapse;font-size:.85rem}
+body.parent th,body.parent td{padding:9px 6px;text-align:left;border-bottom:1px solid var(--par-line)}
+body.parent th{color:var(--par-mut);font-weight:800;font-size:.72rem;text-transform:uppercase}
+.mut{color:var(--par-mut)}
+.tag{display:inline-block;padding:3px 10px;border-radius:7px;font-size:.78rem;font-weight:800;background:rgba(14,148,136,.12);color:var(--par-acc)}
+.barchart{display:flex;align-items:flex-end;gap:7px;height:120px;margin-top:10px}
+.barchart .bar{flex:1;background:var(--par-acc);border-radius:7px 7px 0 0;min-height:4px;position:relative}
+.barchart .bar span{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:.62rem;color:var(--par-mut)}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:14px;border-radius:12px;border:2px solid rgba(127,127,127,.35);background:transparent;color:inherit;margin-bottom:12px;font-size:1rem}
+
+/* ================= COMUNES ================= */
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:999px;font-weight:800;font-size:1rem}
+body.kid .pill{background:#fff;border:4px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.8);font-family:'Fredoka'}
+body.teen .pill{background:var(--teen-card);border:1px solid #3A3360}
+body.parent .pill{background:#fff;border:1px solid var(--par-line)}
+.back{font-size:1.6rem;background:none;font-weight:800;padding:6px 12px;border-radius:12px}
+body.kid .back{background:#fff;border:4px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.8)}
+body.teen .back{background:var(--teen-card);border:1px solid #3A3360}
+h1.title{font-size:1.7rem;line-height:1.2;margin-bottom:6px}
+.bigq{font-size:1.5rem;font-weight:800;margin:8px 0 18px;line-height:1.3}
+body.teen .bigq{font-weight:700;font-size:1.25rem}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;padding:16px 26px;border-radius:20px;
+  font-weight:800;font-size:1.3rem;text-align:center;min-width:70%;animation:toastIn .25s}
+@keyframes toastIn{from{transform:translate(-50%,30px);opacity:0}}
+.toast.ok{background:var(--kid-green);color:#fff;border:4px solid #1E2A4A}
+.toast.no{background:var(--kid-red);color:#fff;border:4px solid #1E2A4A}
+body.teen .toast.ok{background:#16A34A;border:none}
+body.teen .toast.no{background:#DC2626;border:none}
+.confetti{position:fixed;top:-40px;z-index:70;font-size:1.6rem;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.endcard{text-align:center;padding:34px 22px!important}
+.endcard .big{font-size:4.5rem;line-height:1;margin-bottom:8px}
+.endcard h2{font-size:1.6rem;margin-bottom:6px}
+.progressdots{display:flex;gap:8px;justify-content:center;margin:8px 0 16px}
+.progressdots i{width:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.18)}
+body.teen .progressdots i{background:#332C55}
+.progressdots i.on{background:var(--kid-green)}
+body.teen .progressdots i.on{background:var(--teen-cyan)}
+.misionrow{display:flex;align-items:center;gap:12px;padding:9px 0;font-weight:700;font-size:1.02rem}
+.misionrow .chk{width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:3px solid currentColor;font-size:1rem}
+.misionrow.done{opacity:.8}
+.misionrow.done .chk{background:var(--kid-green);border-color:var(--kid-green);color:#fff}
+.profilecard{text-align:center;padding:26px!important;cursor:pointer}
+.profilecard .av{font-size:3.6rem;display:block;margin-bottom:8px}
+.tip{font-size:.85rem;opacity:.85;margin-top:10px;line-height:1.45}
+.spin{display:inline-block;animation:spinA 1s linear infinite}
+@keyframes spinA{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== Botón de audio grande ===== */
+.speaker{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:clamp(74px,18vw,92px);
+  border-radius:24px;border:4px solid var(--kid-ink);background:var(--kid-blue);color:#fff;box-shadow:0 8px 0 var(--kid-ink);
+  font-family:'Fredoka';font-weight:700;font-size:clamp(1.2rem,5vw,1.5rem);margin-bottom:16px;transition:transform .07s,box-shadow .07s}
+.speaker:active{transform:translateY(6px);box-shadow:0 2px 0 var(--kid-ink)}
+.speaker .ic{font-size:clamp(1.8rem,7vw,2.3rem);animation:wobble 1.6s ease-in-out infinite}
+@keyframes wobble{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.speaker.small{min-height:54px;font-size:1.1rem;width:auto;padding:0 22px;display:inline-flex;margin:0 0 12px}
+
+/* ===== Escena de cuento ilustrado ===== */
+.scene{font-size:clamp(3.4rem,16vw,5.5rem);text-align:center;line-height:1.1;padding:18px;
+  background:linear-gradient(180deg,#FFF7E0,#FFEDD0);border-radius:22px;border:4px solid var(--kid-ink);margin-bottom:14px;
+  min-height:120px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
+.storytext{font-size:clamp(1.25rem,5.3vw,1.6rem);line-height:1.85;font-family:'Fredoka';font-weight:500}
+.storytext b{background:#FFE38A;padding:0 4px;border-radius:6px}
+
+/* ===== Inglés: tarjeta con imagen ===== */
+.encard{text-align:center;padding:clamp(20px,6vw,34px)!important}
+.encard .pic{font-size:clamp(4.5rem,22vw,7rem);line-height:1;margin-bottom:8px}
+.encard .en{font-size:clamp(2.2rem,9vw,3rem);font-weight:700;color:var(--kid-blue);font-family:'Fredoka'}
+.encard .es{font-size:clamp(1.2rem,5vw,1.5rem);color:var(--kid-ink);opacity:.7;margin-top:4px}
+.choices2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choices2 .kbtn{margin-bottom:0;min-height:clamp(80px,22vw,108px);font-size:clamp(1.3rem,6vw,1.7rem)}
+.bigpic{font-size:clamp(4rem,20vw,6.5rem);text-align:center;line-height:1;margin:6px 0 14px}
+
+/* ===== Teclado de letras ===== */
+.letterslots{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+.slot{width:clamp(44px,12vw,58px);height:clamp(54px,14vw,68px);border-radius:14px;border:4px dashed var(--kid-ink);
+  display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-weight:700;font-size:clamp(1.6rem,7vw,2.1rem);background:#fff}
+.slot.filled{border-style:solid;background:var(--kid-yellow)}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:8px}
+.key{aspect-ratio:1;border-radius:14px;border:4px solid var(--kid-ink);background:#fff;box-shadow:0 5px 0 var(--kid-ink);
+  font-family:'Fredoka';font-weight:700;font-size:clamp(1.4rem,6vw,1.9rem)}
+.key:active{transform:translateY(3px);box-shadow:0 2px 0 var(--kid-ink)}
+.key.used{opacity:.3;pointer-events:none}
+
+/* ===== Mate visual ===== */
+.dots{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.dot{width:clamp(30px,9vw,42px);height:clamp(30px,9vw,42px);border-radius:50%;background:var(--kid-red);border:3px solid var(--kid-ink)}
+.seqrow{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:clamp(2.2rem,10vw,3.2rem);margin:14px 0}
+.seqq{width:clamp(58px,16vw,80px);height:clamp(58px,16vw,80px);border-radius:18px;border:4px dashed var(--kid-ink);background:#fff;display:inline-flex;align-items:center;justify-content:center}
+
+/* ===== aviso de audio ===== */
+.audiotip{font-size:.92rem;background:rgba(59,130,246,.12);border:2px solid var(--kid-blue);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-family:'Fredoka';font-weight:500;line-height:1.4}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+/* ============ ESTADO ============ */
+const DEFAULT_STATE={pin:"1234",geminiKey:"",
+ profiles:{
+  nino:{name:"Explorador",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}},
+  nina:{name:"Estrella",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}}
+ },aiBank:{nina:[]}};
+let S=load();
+function load(){try{const r=localStorage.getItem("academiaFam2");if(r){const s=JSON.parse(r);const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,s);return base;}}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_STATE));}
+function deepMerge(t,s){for(const k in s){if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])){if(!t[k])t[k]={};deepMerge(t[k],s[k]);}else t[k]=s[k];}}
+function save(){localStorage.setItem("academiaFam2",JSON.stringify(S));}
+const app=document.getElementById("app");
+let current={profile:null};
+function prof(){return S.profiles[current.profile];}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function seedFromStr(str){let h=1779033703;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return h>>>0;}
+function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+function dailyRng(x){return mulberry32(seedFromStr(todayStr()+(x||"")));}
+function shuffled(arr,rng){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor((rng?rng():Math.random())*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pick(arr,rng){return arr[Math.floor((rng?rng():Math.random())*arr.length)];}
+function rnd(n){return Math.floor(Math.random()*n);}
+
+/* ============ SONIDO + CONFETI ============ */
+let AC=null;
+function beep(freqs,dur){try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();let t=AC.currentTime;
+ freqs.forEach(f=>{const o=AC.createOscillator(),g=AC.createGain();o.type="triangle";o.frequency.value=f;o.connect(g);g.connect(AC.destination);
+ g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.start(t);o.stop(t+dur);t+=dur*0.6;});}catch(e){}}
+function sOK(){beep([523,659,784],.18);}
+function sNO(){beep([196,147],.22);}
+function sWIN(){beep([523,659,784,1047],.16);}
+function tone(f,d){beep([f],d);}
+function confetti(n){const ems=["🎉","⭐","🟡","💙","🟢","✨","🎈"];
+ for(let i=0;i<(n||24);i++){const e=document.createElement("div");e.className="confetti";
+ e.textContent=ems[rnd(ems.length)];e.style.left=rnd(100)+"vw";e.style.animationDuration=(1.4+Math.random()*1.4)+"s";
+ document.body.appendChild(e);setTimeout(()=>e.remove(),3000);}}
+function toast(msg,ok,ms){const t=document.createElement("div");t.className="toast "+(ok?"ok":"no");t.innerHTML=msg;
+ document.body.appendChild(t);setTimeout(()=>t.remove(),ms||1400);}
+
+/* ============ VOZ (Web Speech API) ============ */
+let VOICES=[];
+function loadVoices(){try{VOICES=window.speechSynthesis.getVoices();}catch(e){}}
+if("speechSynthesis"in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
+function speakEN(text,onEnd){
+ if(!("speechSynthesis"in window)){toast("🔇 Tu navegador no tiene voz. Prueba en Chrome.",false,2000);if(onEnd)onEnd();return;}
+ window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.82;u.pitch=1;
+ const v=VOICES.find(x=>/en[-_]US/i.test(x.lang))||VOICES.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;
+ if(onEnd)u.onend=onEnd;
+ window.speechSynthesis.speak(u);}
+function speakES(text){if(!("speechSynthesis"in window))return;window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);u.lang="es-ES";u.rate=.9;
+ const v=VOICES.find(x=>/^es/i.test(x.lang));if(v)u.voice=v;window.speechSynthesis.speak(u);}
+function hasVoice(){return "speechSynthesis"in window;}
+
+/* ============ MOTOR DE CONTENIDO INFINITO (IA + banco fijo + adaptativo) ============ */
+/* Cada "tema" sabe pedirle a Gemini preguntas nuevas, y tiene un respaldo fijo. */
+const KID_TOPICS={
+ sumas2:{name:"Sumas",emoji:"➕",prompt:"sumas de 2 cifras (resultado menor a 100) para un niño de 6-7 años en primero",
+   fallback:()=>{const a=2+rnd(40),b=2+rnd(40);return mcq(a+" + "+b+" = ?",a+b);}},
+ restas2:{name:"Restas",emoji:"➖",prompt:"restas simples sin prestar para un niño de 6-7 años, resultado positivo",
+   fallback:()=>{const a=5+rnd(40),b=1+rnd(a-1);return mcq(a+" − "+b+" = ?",a-b);}},
+ restapres:{name:"Restas prestando",emoji:"🔄",prompt:"restas de 2 cifras que requieren prestar/llevar, para niño de 7 años, resultado positivo",
+   fallback:()=>{let a,b;do{a=20+rnd(70);b=5+rnd(a-5);}while((a%10)>=(b%10));return mcq(a+" − "+b+" = ?",a-b);}},
+ sumas3:{name:"Sumas de 3 cifras",emoji:"🧮",prompt:"sumas de 3 cifras (100-999) para niño de 7 años",
+   fallback:()=>{const a=100+rnd(400),b=100+rnd(400);return mcq(a+" + "+b+" = ?",a+b);}},
+ multi:{name:"Inicio multiplicación",emoji:"✖️",prompt:"multiplicaciones muy fáciles (tablas del 2, 3 y 5, factores hasta 5) explicadas como grupos, para niño de 7 años",
+   fallback:()=>{const t=pick([2,3,5]),n=1+rnd(5);return mcq(t+" × "+n+" = ?",t*n,t+" grupos de "+n);}},
+ ordinales:{name:"Ordinales",emoji:"🥇",prompt:"preguntas de números ordinales (primero a décimo) con ejemplos de carreras o filas, para niño de 6-7 años",
+   fallback:()=>pick([mcq("Si llegas después del 1°, ¿en qué lugar vas?","2°",null,["2°","3°","1°"]),mcq("El que gana la carrera llega…","1°",null,["1°","3°","5°"]),mcq("Después del 3° viene el…","4°",null,["4°","2°","5°"])])},
+ izqder:{name:"Izquierda/Derecha",emoji:"↔️",prompt:"preguntas sobre izquierda y derecha, arriba y abajo, con objetos o animalitos, para niño de 6 años",
+   fallback:()=>pick([mcq("Con qué mano escribes la mayoría: la…","derecha",null,["derecha","de arriba","del pie"]),mcq("🚗➡️ ¿hacia dónde va el carro?","Derecha",null,["Derecha","Izquierda","Arriba"]),mcq("⬅️🐶 ¿hacia dónde mira el perro?","Izquierda",null,["Izquierda","Derecha","Abajo"])])},
+ diasES:{name:"Días (español)",emoji:"📅",prompt:"preguntas sobre los días de la semana en español (orden, antes/después) para niño de 6-7 años",
+   fallback:()=>pick([mcq("¿Qué día viene después del lunes?","Martes",null,["Martes","Domingo","Viernes"]),mcq("¿Qué día va antes del sábado?","Viernes",null,["Viernes","Domingo","Lunes"]),mcq("¿Cuántos días tiene la semana?","7",null,["7","5","10"])])},
+ mesesES:{name:"Meses (español)",emoji:"🗓️",prompt:"preguntas sobre los meses del año en español (orden, cuál va antes/después) para niño de 7 años",
+   fallback:()=>pick([mcq("¿Qué mes viene después de enero?","Febrero",null,["Febrero","Marzo","Diciembre"]),mcq("¿Con qué mes empieza el año?","Enero",null,["Enero","Diciembre","Junio"]),mcq("¿Cuántos meses tiene el año?","12",null,["12","10","7"])])},
+ logica:{name:"Lógica",emoji:"🧩",prompt:"acertijos de lógica simple (cuál no pertenece, el más grande, secuencias cortas) con emojis, para niño de 6-7 años",
+   fallback:()=>pick(LOGIC_KID.map(q=>({q:q.q+" "+q.scene,ops:q.ops,a:q.a})))},
+ secuencias:{name:"Secuencias",emoji:"➡️",prompt:"completar secuencias y patrones de números o figuras para niño de 6-7 años",
+   fallback:()=>{const q=pick(SEQUENCES);return{q:"¿Qué sigue? "+q.show.join(" "),ops:q.ops,a:q.a};}},
+ // INGLÉS (con audio)
+ en_animals:{name:"Animales (EN)",emoji:"🐶",en:true,prompt:"vocabulario de animales en inglés MUY básicos y conocidos (dog, cat, fish, bird, cow, horse) para niño de 6 años principiante absoluto",
+   fallback:()=>enMCQ(EN_VOCAB.animals)},
+ en_colors:{name:"Colores (EN)",emoji:"🎨",en:true,prompt:"colores en inglés básicos para niño de 6 años principiante",
+   fallback:()=>enMCQ(EN_VOCAB.colors)},
+ en_body:{name:"Cuerpo (EN)",emoji:"🧍",en:true,prompt:"partes del cuerpo en inglés básicas (hand, eye, nose, mouth, foot, ear, hair) para niño de 6 años",
+   fallback:()=>enMCQ(EN_VOCAB.body)},
+ en_house:{name:"La casa (EN)",emoji:"🏠",en:true,prompt:"partes de la casa en inglés básicas (door, window, bed, table, chair, kitchen, bathroom) para niño de 7 años",
+   fallback:()=>enMCQ([["door","puerta","🚪"],["window","ventana","🪟"],["bed","cama","🛏️"],["table","mesa","🪑"],["chair","silla","🪑"],["kitchen","cocina","🍳"]])},
+ en_numbers:{name:"Números (EN)",emoji:"🔢",en:true,prompt:"números en inglés del 1 al 10 para niño de 6 años",
+   fallback:()=>enMCQ(EN_VOCAB.numbers)},
+ en_vowels:{name:"Vocales (EN)",emoji:"🔤",en:true,prompt:"las vocales en inglés (a-e-i-o-u) y su sonido, con palabras de ejemplo simples, para niño de 7 años",
+   fallback:()=>pick([enMCQ([["apple","manzana","🍎"]]),enMCQ([["egg","huevo","🥚"]]),enMCQ([["orange","naranja","🍊"]])])},
+ en_days:{name:"Días (EN)",emoji:"📆",en:true,prompt:"días de la semana en inglés (Monday-Sunday) para niño de 7 años principiante",
+   fallback:()=>enMCQ([["Monday","lunes","1️⃣"],["Tuesday","martes","2️⃣"],["Friday","viernes","5️⃣"],["Sunday","domingo","☀️"]])},
+ en_phrases:{name:"Frases (EN)",emoji:"💬",en:true,prompt:"frases de saludo y cortesía MUY básicas en inglés (hello, thank you, good morning) para niño de 6-7 años",
+   fallback:()=>{const p=pick(EN_PHRASES);return enMCQ([[p[0],p[1],"💬"]]);}}
+};
+/* helpers para construir preguntas */
+function mcq(q,ans,hint,fixedOps){
+ let ops;
+ if(fixedOps)ops=fixedOps.slice();
+ else{const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(5))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}ops=[...set].map(String);}
+ ops=shuffled(ops);return{q,ops,a:ops.indexOf(String(ans)),hint};}
+function enMCQ(pool){const w=pick(pool);return{q:'¿Qué significa "'+w[0]+'"?',ops:shuffled([w[1],...pickN(["perro","casa","sol","agua","rojo","mano","mesa","cinco","gato","leche"].filter(x=>x!==w[1]),2)]),a:-1,word:w[0],pic:w[2]||"🔊",es:w[1],en:true,fixAns:w[1]};}
+function pickN(arr,n){return shuffled(arr).slice(0,n);}
+
+/* dominio adaptativo: registra desempeño por tema y decide cuál sale */
+function topicMastery(){const p=prof();if(!p.mastery)p.mastery={};return p.mastery;}
+function recordTopic(topic,correct){const m=topicMastery();
+ if(!m[topic])m[topic]={n:0,ok:0,streak:0};
+ m[topic].n++;if(correct){m[topic].ok++;m[topic].streak++;}else m[topic].streak=0;save();}
+function weakestTopics(keys,count){
+ const m=topicMastery();
+ const scored=keys.map(k=>{const s=m[k];const rate=s&&s.n>=3?s.ok/s.n:0.5;const seen=s?s.n:0;
+  // peso: prioriza baja tasa de acierto y temas poco vistos
+  return{k,w:(1-rate)*2 + (seen<3?1:0) + Math.random()*0.4};});
+ scored.sort((a,b)=>b.w-a.w);
+ return scored.slice(0,count).map(s=>s.k);}
+
+/* generar una tanda de retos de un tema (IA si hay clave, si no fallback) */
+async function buildChallenges(topicKey,n){
+ const topic=KID_TOPICS[topicKey];
+ if(S.geminiKey){
+  try{
+   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple sobre: '+topic.prompt+'. Cada una con 3 opciones y una sola correcta. Lenguaje español sencillo y frases cortas. Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
+   if(obj.items&&obj.items.length){return obj.items.map(it=>{
+    // mezclar opciones para que la correcta no siempre sea la 0
+    const correct=it.ops[it.a];const ops=shuffled(it.ops);
+    return{q:it.q,ops,a:ops.indexOf(correct),word:topic.en?firstEnWord(it.q):null};});}
+  }catch(e){/* cae al fallback */}
+ }
+ // fallback fijo
+ const out=[];for(let i=0;i<n;i++){const f=topic.fallback();
+  if(f.a===-1&&f.fixAns!==undefined)f.a=f.ops.indexOf(f.fixAns);
+  out.push(f);}
+ return out;}
+function firstEnWord(q){const m=q.match(/"([A-Za-z]+)"/);return m?m[1]:null;}
+
+/* ============ GAMIFICACIÓN ============ */
+function touchDay(){const p=prof(),t=todayStr();
+ if(p.lastDay!==t){const y=new Date();y.setDate(y.getDate()-1);
+  const ys=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+  p.streak=(p.lastDay===ys)?p.streak+1:1;p.lastDay=t;}
+ if(!p.days[t])p.days[t]={ex:0,ok:0,sec:0,missions:[],games:0};
+ return p.days[t];}
+function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
+ if(!p.stats[subject])p.stats[subject]={attempts:0,correct:0,sec:0};
+ p.stats[subject].attempts++;d.ex++;p.stats[subject].sec+=(secs||0);d.sec+=(secs||0);
+ if(correct){p.stats[subject].correct++;d.ok++;p.coins+=2;p.xp+=5;}else p.xp+=1;
+ // señales de apoyo (solo niño): tiempos altos y errores por área
+ if(current.profile==="nino"){
+  if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
+  const readSubj=["Comprensión","Letras"].includes(subject);
+  const mathSubj=["Mate","Problemas","Números"].includes(subject);
+  const enSubj=subject==="Inglés";
+  const seqSubj=["Secuencias","Lógica"].includes(subject);
+  if(readSubj){p.signals.read.n++;if(secs>=25)p.signals.read.slow++;if(!correct)p.signals.read.err++;}
+  if(mathSubj){p.signals.math.n++;if(!correct)p.signals.math.err++;}
+  if(enSubj){p.signals.en.n++;if(!correct)p.signals.en.err++;d.enDone=true;}
+  if(seqSubj){p.signals.seq.n++;if(!correct)p.signals.seq.err++;}
+ }
+ save();}
+function level(xp){return Math.floor(Math.sqrt(xp/20))+1;}
+function setTheme(t){document.body.className=t;}
+function render(h){app.innerHTML=h;window.scrollTo(0,0);}
+function topbar(backFn){const p=prof();
+ return '<div class="topbar">'+(backFn?'<button class="back" onclick="'+backFn+'">←</button>':'')
+ +'<span class="pill">🔥 '+p.streak+'</span><span class="pill">🪙 '+p.coins+'</span><span class="pill">⭐ Nv '+level(p.xp)+'</span></div>';}
+
+/* ============ CONTENIDO ============ */
+const MESES=[["enero","January"],["febrero","February"],["marzo","March"],["abril","April"],["mayo","May"],["junio","June"],["julio","July"],["agosto","August"],["septiembre","September"],["octubre","October"],["noviembre","November"],["diciembre","December"]];
+const VOCAL_WORDS=[["A","🐝 Abeja"],["A","🌳 Árbol"],["A","💍 Anillo"],["E","🐘 Elefante"],["E","⭐ Estrella"],["E","🪜 Escalera"],["I","🏝️ Isla"],["I","🧲 Imán"],["I","⛪ Iglesia"],["O","🐻 Oso"],["O","👁️ Ojo"],["O","🌊 Ola"],["U","🍇 Uva"],["U","💅 Uña"],["U","1️⃣ Uno"]];
+const EN_KID=[["red","rojo ❤️"],["blue","azul 💙"],["green","verde 💚"],["yellow","amarillo 💛"],["dog","perro 🐶"],["cat","gato 🐱"],["sun","sol ☀️"],["moon","luna 🌙"],["water","agua 💧"],["apple","manzana 🍎"],["house","casa 🏠"],["one","uno 1️⃣"],["two","dos 2️⃣"],["three","tres 3️⃣"],["star","estrella ⭐"],["fish","pez 🐟"],["bird","pájaro 🐦"],["milk","leche 🥛"]];
+
+/* Inglés con AUDIO: palabra, traducción, imagen */
+const EN_VOCAB={
+ animals:[["dog","perro","🐶"],["cat","gato","🐱"],["bird","pájaro","🐦"],["fish","pez","🐟"],["cow","vaca","🐮"],["horse","caballo","🐴"],["duck","pato","🦆"],["bear","oso","🐻"],["lion","león","🦁"],["frog","rana","🐸"]],
+ colors:[["red","rojo","🔴"],["blue","azul","🔵"],["green","verde","🟢"],["yellow","amarillo","🟡"],["pink","rosado","🩷"],["black","negro","⚫"],["white","blanco","⚪"],["orange","naranja","🟠"]],
+ food:[["apple","manzana","🍎"],["banana","banano","🍌"],["milk","leche","🥛"],["bread","pan","🍞"],["egg","huevo","🥚"],["water","agua","💧"],["cake","torta","🍰"],["rice","arroz","🍚"]],
+ family:[["mom","mamá","👩"],["dad","papá","👨"],["baby","bebé","👶"],["sister","hermana","👧"],["brother","hermano","👦"],["grandma","abuela","👵"],["grandpa","abuelo","👴"]],
+ body:[["hand","mano","✋"],["eye","ojo","👁️"],["nose","nariz","👃"],["mouth","boca","👄"],["foot","pie","🦶"],["ear","oreja","👂"],["hair","cabello","💇"]],
+ numbers:[["one","uno","1️⃣"],["two","dos","2️⃣"],["three","tres","3️⃣"],["four","cuatro","4️⃣"],["five","cinco","5️⃣"],["six","seis","6️⃣"],["seven","siete","7️⃣"],["eight","ocho","8️⃣"]]
+};
+const EN_CATS=[["animals","Animales","🐶"],["colors","Colores","🎨"],["food","Comida","🍎"],["family","Familia","👨‍👩‍👧"],["body","El cuerpo","🧍"],["numbers","Números","🔢"]];
+const EN_PHRASES=[["Hello!","¡Hola!"],["Good morning","Buenos días"],["Thank you","Gracias"],["How are you?","¿Cómo estás?"],["I am happy","Estoy feliz"],["What is your name?","¿Cómo te llamas?"],["My name is...","Me llamo..."],["See you later","Hasta luego"],["I like it","Me gusta"],["Yes, please","Sí, por favor"]];
+
+/* Sonidos y escritura de letras en español */
+const LETTER_SOUNDS=[
+ {letter:"C",cases:[["casa","🏠","la C suena fuerte: /k/"],["cama","🛏️","/k/"],["cono","🍦","/k/"],["cielo","☁️","con E/I suena /s/: ce-ci"],["cine","🎬","/s/"]]},
+ {letter:"S",cases:[["sol","☀️","la S suena /s/"],["sapo","🐸","/s/"],["sopa","🍲","/s/"],["silla","🪑","/s/"]]},
+ {letter:"Q",cases:[["queso","🧀","que suena /ke/"],["quince","1️⃣5️⃣","qui suena /ki/"],["quien","❓","/ki/"]]},
+ {letter:"G",cases:[["gato","🐱","ga suena /ga/"],["goma","✏️","/go/"],["gente","👥","ge/gi suena suave /je/"],["girasol","🌻","/ji/"]]},
+ {letter:"R",cases:[["ratón","🐭","al inicio suena fuerte /rr/"],["rosa","🌹","/rr/"],["perro","🐶","doble rr es fuerte"],["pera","🍐","una r suave"]]}];
+
+/* Mate visual y lógica */
+function genSumImg(){const a=1+rnd(5),b=1+rnd(5);return{type:"dots",a,b,ans:a+b,q:a+" + "+b+" = ?"};}
+const SEQUENCES=[
+ {show:["🔴","🔵","🔴","🔵","❓"],ops:["🔴","🔵","🟢"],a:0},
+ {show:["⭐","⭐","🌙","⭐","⭐","❓"],ops:["🌙","⭐","☀️"],a:0},
+ {show:["1","2","3","4","❓"],ops:["5","6","3"],a:0},
+ {show:["2","4","6","❓"],ops:["8","7","9"],a:0},
+ {show:["🟩","🟨","🟩","🟨","❓"],ops:["🟩","🟨","🟦"],a:0},
+ {show:["🔺","🔺","🔵","🔺","🔺","❓"],ops:["🔵","🔺","🟢"],a:0},
+ {show:["5","10","15","❓"],ops:["20","25","16"],a:0},
+ {show:["🐶","🐱","🐶","🐱","❓"],ops:["🐶","🐱","🐭"],a:0}];
+const LOGIC_KID=[
+ {q:"¿Cuál NO pertenece al grupo?",scene:"🍎🍌🍇🚗",ops:["🚗","🍎","🍇"],a:0,say:"manzana, banano, uva… ¿y un carro?"},
+ {q:"¿Cuál es el más grande?",scene:"🐘🐭🐜",ops:["🐘","🐭","🐜"],a:0,say:"¿elefante, ratón u hormiga?"},
+ {q:"Si hoy es lunes, ¿qué día es mañana?",scene:"📅",ops:["Martes","Domingo","Viernes"],a:0},
+ {q:"¿Qué usas cuando llueve?",scene:"🌧️",ops:["☂️","🕶️","🩴"],a:0},
+ {q:"Primero te pones las medias. ¿Y después?",scene:"🧦",ops:["👟","🧤","🎩"],a:0},
+ {q:"¿Cuál NO pertenece?",scene:"🐶🐱🛏️🐰",ops:["🛏️","🐶","🐰"],a:0},
+ {q:"Ana es más alta que Luis. ¿Quién es más bajito?",scene:"👧🧒",ops:["Luis","Ana","Los dos"],a:0},
+ {q:"¿Cuál flota en el agua?",scene:"💧",ops:["🛟","🪨","🔑"],a:0,say:"¿el salvavidas, la roca o la llave?"}];
+const PROBLEMS_KID=[
+ {q:"Ana tiene 3 globos 🎈🎈🎈 y le regalan 2 más 🎈🎈. ¿Cuántos tiene ahora?",ops:["5","4","6"],a:0},
+ {q:"Hay 6 galletas 🍪 y te comes 2. ¿Cuántas quedan?",ops:["4","3","5"],a:0},
+ {q:"En el árbol hay 4 pájaros 🐦 y llegan 3 más. ¿Cuántos hay?",ops:["7","6","8"],a:0},
+ {q:"Tienes 8 dulces 🍬 y das 5 a tus amigos. ¿Cuántos te quedan?",ops:["3","2","4"],a:0},
+ {q:"Hay 2 cajas 📦 y cada una tiene 2 pelotas. ¿Cuántas pelotas en total?",ops:["4","2","6"],a:0},
+ {q:"5 patos 🦆 nadan y se van 1. ¿Cuántos quedan?",ops:["4","5","3"],a:0},
+ {q:"Tienes 3 lápices ✏️ y compras 3 más. ¿Cuántos tienes?",ops:["6","5","7"],a:0},
+ {q:"Hay 10 estrellas ⭐ y se apagan 4. ¿Cuántas brillan?",ops:["6","5","7"],a:0}];
+
+/* Cuentos largos por escenas, con preguntas de inferencia/causa-efecto */
+const CUENTOS=[
+ {title:"Tomás y la semilla",
+  pages:[
+   {scene:"👦🌱",text:"Tomás encontró una <b>semilla</b> chiquita en el patio. Quería ver si podía crecer."},
+   {scene:"🪴💧☀️",text:"Cada mañana la <b>regaba</b> con agua y la ponía al <b>sol</b>. Esperó muchos días."},
+   {scene:"🌳🍎😊",text:"Una semana después, salió una <b>planta verde</b>. Tomás aprendió que las cosas buenas toman tiempo."}],
+  qs:[
+   {q:"¿Por qué la planta logró crecer?",ops:["Porque Tomás la cuidó cada día 💧☀️","Porque era una planta mágica","Porque la dejó sola"],a:0},
+   {q:"¿Qué crees que sintió Tomás al ver la planta?",ops:["Alegría y orgullo 😊","Miedo","Aburrimiento"],a:0},
+   {q:"¿Qué enseña este cuento?",ops:["Que las cosas buenas toman tiempo","Que no hay que regar las plantas","Que las semillas no crecen"],a:0}]},
+ {title:"Lola la tortuga",
+  pages:[
+   {scene:"🐢🐰",text:"Lola la <b>tortuga</b> caminaba muy <b>despacio</b>. Su amigo el conejo corría rapidísimo."},
+   {scene:"🐰💨😴",text:"El conejo se adelantó tanto que se sintió cansado y se quedó <b>dormido</b> bajo un árbol."},
+   {scene:"🐢🎉🏁",text:"Lola siguió y siguió sin parar. ¡Llegó <b>primero</b> a la fiesta! Despacio pero segura."}],
+  qs:[
+   {q:"¿Por qué Lola llegó primero si era más lenta?",ops:["Porque nunca se detuvo 🐢","Porque corrió muy rápido","Porque el conejo la ayudó"],a:0},
+   {q:"¿Qué hizo el conejo que fue un error?",ops:["Quedarse dormido 😴","Caminar despacio","Llegar a la fiesta"],a:0},
+   {q:"¿Qué aprendemos de Lola?",ops:["Ser constante vale más que ser veloz","Que dormir es bueno","Que correr es malo"],a:0}]},
+ {title:"Beto el robot",
+  pages:[
+   {scene:"🤖🔵",text:"Beto el <b>robot</b> tenía un botón <b>azul</b> en el pecho. Nadie sabía para qué servía."},
+   {scene:"👆🤖🕺",text:"Un día una niña tocó el botón… ¡y Beto empezó a <b>bailar</b>! Todos se rieron mucho."},
+   {scene:"🎉🤖❤️",text:"Desde entonces, cada vez que alguien está triste, tocan el botón de Beto para <b>alegrarse</b>."}],
+  qs:[
+   {q:"¿Para qué usan ahora el botón azul de Beto?",ops:["Para alegrar a quien está triste ❤️","Para apagar a Beto","Para que camine"],a:0},
+   {q:"¿Por qué se rió la gente la primera vez?",ops:["Porque el robot se puso a bailar 🕺","Porque Beto lloró","Porque se rompió"],a:0},
+   {q:"¿Cómo crees que se siente Beto ayudando a otros?",ops:["Feliz y útil 😊","Enojado","Asustado"],a:0}]},
+ {title:"La granja de Trueno",
+  pages:[
+   {scene:"🚜🐮🐷",text:"En la granja vivían <b>tres vacas</b>, <b>dos cerdos</b> y un caballo llamado <b>Trueno</b>."},
+   {scene:"🐴🌧️⛈️",text:"Una noche llegó una <b>tormenta</b>. Los animales tenían miedo de los truenos."},
+   {scene:"🐴🛖🐮",text:"Trueno los llevó a todos al <b>establo</b> calientito. Ahí pasaron la noche seguros y juntos."}],
+  qs:[
+   {q:"¿Cuántos animales vivían en la granja en total?",ops:["Seis 🐮🐮🐮🐷🐷🐴","Tres","Diez"],a:0},
+   {q:"¿Por qué Trueno llevó a todos al establo?",ops:["Para protegerlos de la tormenta ⛈️","Para jugar","Para comer"],a:0},
+   {q:"¿Qué tipo de caballo es Trueno?",ops:["Valiente y buen amigo","Miedoso","Egoísta"],a:0}]}];
+
+const ROBOT_LEVELS=[
+ {w:3,h:3,start:[0,2],goal:[2,2],walls:[],hint:"2 pasos a la derecha"},
+ {w:3,h:3,start:[0,2],goal:[2,0],walls:[],hint:"derecha y arriba"},
+ {w:4,h:3,start:[0,2],goal:[3,0],walls:[[1,1]],hint:"¡esquiva la roca!"},
+ {w:4,h:4,start:[0,3],goal:[3,3],walls:[[1,3],[2,2]],hint:"sube para pasar"},
+ {w:4,h:4,start:[0,0],goal:[3,3],walls:[[1,1],[2,2]],hint:"haz zigzag"},
+ {w:5,h:4,start:[0,3],goal:[4,0],walls:[[1,2],[2,1],[3,2]],hint:"piensa antes de mover"}];
+
+const B_QUIMICA=[
+ {q:"¿Símbolo químico del oxígeno?",ops:["O","Ox","Og"],a:0},{q:"¿Símbolo del sodio?",ops:["Na","So","S"],a:0},
+ {q:"El agua (H₂O) está formada por…",ops:["2 hidrógenos y 1 oxígeno","1 hidrógeno y 2 oxígenos","2 carbonos"],a:0},
+ {q:"¿Partícula con carga negativa?",ops:["Electrón","Protón","Neutrón"],a:0},
+ {q:"El número atómico (Z) lo define la cantidad de…",ops:["Protones","Electrones","Neutrones"],a:0},
+ {q:"Las filas horizontales de la tabla periódica son…",ops:["Periodos","Grupos","Familias"],a:0},
+ {q:"Enlace donde se COMPARTEN electrones:",ops:["Covalente","Iónico","Metálico"],a:0},
+ {q:"Enlace donde se TRANSFIEREN electrones:",ops:["Iónico","Covalente","De hidrógeno"],a:0},
+ {q:"Fórmula de la sal de cocina:",ops:["NaCl","KCl","NaOH"],a:0},
+ {q:"El pH de un ácido es…",ops:["Menor que 7","Igual a 7","Mayor que 7"],a:0},
+ {q:"¿Cuál es un cambio QUÍMICO?",ops:["Quemar papel","Derretir hielo","Romper vidrio"],a:0},
+ {q:"¿Cuál es un cambio FÍSICO?",ops:["Evaporar agua","Oxidar un clavo","Digerir comida"],a:0},
+ {q:"Balanceo correcto:",ops:["2H₂ + O₂ → 2H₂O","H₂ + O₂ → H₂O","H₂ + 2O₂ → H₂O"],a:0},
+ {q:"El número másico (A) es…",ops:["Protones + neutrones","Protones + electrones","Solo electrones"],a:0},
+ {q:"CO₂ es…",ops:["Dióxido de carbono","Monóxido de carbono","Carbonato"],a:0},
+ {q:"Los gases nobles se caracterizan por…",ops:["Ser poco reactivos","Reaccionar con todo","Ser metales"],a:0},
+ {q:"Una mezcla homogénea es…",ops:["Agua con sal disuelta","Agua con arena","Ensalada de frutas"],a:0},
+ {q:"El símbolo Fe es…",ops:["Hierro","Flúor","Fósforo"],a:0},
+ {q:"En 2H₂O hay en total…",ops:["4 H y 2 O","2 H y 1 O","4 O y 2 H"],a:0},
+ {q:"¿Instrumento para medir masa?",ops:["Balanza","Probeta","Termómetro"],a:0}];
+const B_FISICA=[
+ {q:"La velocidad se calcula como…",ops:["distancia ÷ tiempo","tiempo ÷ distancia","masa × aceleración"],a:0},
+ {q:"Unidad de fuerza en el SI:",ops:["Newton (N)","Julio (J)","Vatio (W)"],a:0},
+ {q:"Segunda ley de Newton:",ops:["F = m·a","E = m·c²","V = d/t"],a:0},
+ {q:"\"Un cuerpo en reposo sigue en reposo sin fuerza neta\" es la ley de…",ops:["Inercia (1ª)","Acción-reacción (3ª)","Gravitación"],a:0},
+ {q:"Gravedad en la Tierra ≈",ops:["9.8 m/s²","9.8 km/h","98 m/s"],a:0},
+ {q:"Empujas la pared y ella te empuja igual. Es la…",ops:["3ª ley de Newton","1ª ley","Ley de Ohm"],a:0},
+ {q:"Energía de movimiento:",ops:["Cinética","Potencial","Térmica"],a:0},
+ {q:"Energía almacenada por altura:",ops:["Potencial gravitatoria","Cinética","Eléctrica"],a:0},
+ {q:"Unidad de energía:",ops:["Julio (J)","Newton (N)","Pascal (Pa)"],a:0},
+ {q:"El sonido NO viaja en…",ops:["El vacío","El agua","El aire"],a:0},
+ {q:"En la tormenta, primero…",ops:["Ves el rayo","Oyes el trueno","Llegan juntos"],a:0},
+ {q:"¿Cuál magnitud es VECTORIAL?",ops:["Velocidad","Masa","Temperatura"],a:0},
+ {q:"Densidad =",ops:["masa ÷ volumen","volumen ÷ masa","masa × volumen"],a:0},
+ {q:"El peso es…",ops:["Una fuerza (m·g)","Igual a la masa","Una energía"],a:0},
+ {q:"Rapidez constante + línea recta =",ops:["MRU","Movimiento acelerado","Movimiento circular"],a:0},
+ {q:"¿Qué mide el amperímetro?",ops:["Corriente eléctrica","Voltaje","Presión"],a:0}];
+const B_LOGICA=[
+ {q:"x = 3\nx = x + 2\nimprimir(x)",ops:["5","3","32"],a:0,code:true},
+ {q:"para i de 1 hasta 3:\n  imprimir(\"hola\")\n¿Cuántas veces imprime?",ops:["3","1","Infinitas"],a:0,code:true},
+ {q:"a = 10, b = 4\nsi a > b: imprimir(\"mayor\")\nsino: imprimir(\"menor\")",ops:["mayor","menor","error"],a:0,code:true},
+ {q:"x = 2\nmientras x < 10:\n  x = x * 2\nimprimir(x)",ops:["16","8","10"],a:0,code:true},
+ {q:"lista = [4, 7, 1]\nimprimir(lista[0])",ops:["4","7","1"],a:0,code:true},
+ {q:"x = 7\nimprimir(x % 2)   ← residuo",ops:["1","0","3.5"],a:0,code:true},
+ {q:"s = 0\npara i de 1 hasta 4:\n  s = s + i\nimprimir(s)",ops:["10","4","24"],a:0,code:true},
+ {q:"¿Qué estructura repite instrucciones?",ops:["Un ciclo (bucle)","Un condicional","Una variable"],a:0},
+ {q:"¿Qué estructura decide entre dos caminos?",ops:["Condicional (si/sino)","Ciclo","Comentario"],a:0},
+ {q:"En muchos lenguajes \"5\" + \"5\" da…",ops:["\"55\" (textos pegados)","10","Error siempre"],a:0},
+ {q:"x = 1\nx = x * 3\nx = x * 3\nimprimir(x)",ops:["9","6","3"],a:0,code:true},
+ {q:"Un algoritmo es…",ops:["Pasos ordenados para resolver algo","Un tipo de computador","Un error"],a:0}];
+const B_MUSICA=[
+ {q:"Notas musicales naturales:",ops:["7","5","12"],a:0},
+ {q:"Orden correcto:",ops:["Do Re Mi Fa Sol La Si","Do Mi Re Fa Sol Si La","La Si Do Mi Re Fa Sol"],a:0},
+ {q:"En 4/4, ¿tiempos por compás?",ops:["4","3","8"],a:0},
+ {q:"Si la negra vale 1 tiempo, la blanca vale…",ops:["2 tiempos","1 tiempo","4 tiempos"],a:0},
+ {q:"El pentagrama tiene…",ops:["5 líneas","4 líneas","6 líneas"],a:0},
+ {q:"Clave más usada para melodías agudas:",ops:["Clave de Sol","Clave de Fa","Clave de Do"],a:0},
+ {q:"Más rápido = mayor…",ops:["Tempo","Volumen","Altura"],a:0},
+ {q:"El volumen en música es la…",ops:["Dinámica","Ritmo","Melodía"],a:0},
+ {q:"Notas que suenan juntas y bien =",ops:["Acorde","Escala","Silencio"],a:0},
+ {q:"BPM significa…",ops:["Pulsos por minuto","Bajos por melodía","Bandas por música"],a:0},
+ {q:"¿Instrumento de cuerda?",ops:["Guitarra 🎸","Trompeta 🎺","Tambor 🥁"],a:0},
+ {q:"¿Instrumento de percusión?",ops:["Batería 🥁","Violín 🎻","Flauta"],a:0}];
+const B_GRAMMAR=[
+ {q:"Choose the correct sentence:",ops:["She doesn't like coffee.","She don't likes coffee.","She doesn't likes coffee."],a:0},
+ {q:"Past simple of GO:",ops:["went","goed","gone"],a:0},
+ {q:"\"I ____ to music every day.\"",ops:["listen","listening","listens"],a:0},
+ {q:"\"They ____ watching a movie right now.\"",ops:["are","is","be"],a:0},
+ {q:"\"Borrow\" means…",ops:["Pedir prestado","Prestar","Comprar"],a:0},
+ {q:"Comparative of GOOD:",ops:["better","gooder","more good"],a:0},
+ {q:"\"I have lived here ____ 2020.\"",ops:["since","for","from"],a:0},
+ {q:"\"If it rains, we ____ stay home.\"",ops:["will","would","did"],a:0},
+ {q:"\"However\" means…",ops:["Sin embargo","Por lo tanto","Además"],a:0},
+ {q:"Correct question:",ops:["Where does she live?","Where she lives?","Where does she lives?"],a:0},
+ {q:"Past simple of BUY:",ops:["bought","buyed","buying"],a:0},
+ {q:"\"There isn't ____ milk left.\"",ops:["any","some","no"],a:0}];
+const FLASHCARDS=[["overwhelmed","abrumada"],["achieve","lograr"],["although","aunque"],["improve","mejorar"],["develop","desarrollar"],["behavior","comportamiento"],["knowledge","conocimiento"],["research","investigación"],["available","disponible"],["actually","en realidad"],["awesome","increíble"],["catchy","pegajosa (canción)"],["rehearsal","ensayo"],["audience","público"],["beat","ritmo/pulso"],["release","lanzar (una canción)"],["skills","habilidades"],["spread","difundir"],["succeed","tener éxito"],["fail","fracasar"],["raise","levantar/recaudar"],["share","compartir"],["avoid","evitar"],["trust","confiar"]];
+const B_LECTURAS=[
+ {title:"The Concert",level:"A2",words:{"crowd":"multitud","stage":"escenario","lights":"luces","singer":"cantante","suddenly":"de repente","voice":"voz","whole":"entero/a","goosebumps":"piel de gallina","encore":"otra (bis)","unforgettable":"inolvidable"},
+  text:"The crowd waited in the dark. Then the lights turned on and the singer walked to the stage. Suddenly, her voice filled the whole place. María felt goosebumps. At the end, everyone shouted for an encore. It was an unforgettable night.",
+  qs:[{q:"What did the crowd shout for?",ops:["An encore","More lights","A break"],a:0},{q:"How did María feel?",ops:["She got goosebumps","Bored","Sleepy"],a:0}]},
+ {title:"The Playlist",level:"A2",words:{"playlist":"lista de canciones","mood":"estado de ánimo","upbeat":"animada","lyrics":"letra","share":"compartir","headphones":"audífonos","skip":"saltar","favorite":"favorita"},
+  text:"Sofía makes a playlist for every mood. When she is happy, she chooses upbeat songs. When she is sad, she listens to slow songs with deep lyrics. She likes to share her playlists with friends, but she never lets anyone skip her favorite song.",
+  qs:[{q:"What does Sofía do when she is happy?",ops:["Chooses upbeat songs","Listens to slow songs","Turns off the music"],a:0},{q:"What does she never allow?",ops:["Skipping her favorite song","Sharing playlists","Using headphones"],a:0}]},
+ {title:"The Old Guitar",level:"B1",words:{"attic":"desván","dusty":"polvorienta","strings":"cuerdas","grandfather":"abuelo","tune":"afinar","memories":"recuerdos","lessons":"clases","promise":"promesa"},
+  text:"In the attic, Camila found a dusty guitar with broken strings. Her grandfather smiled and said it was his first guitar. He taught her how to tune it, and with every note, he shared old memories. Camila made a promise: she would take lessons and play his favorite song for his birthday.",
+  qs:[{q:"Where did Camila find the guitar?",ops:["In the attic","At school","In a store"],a:0},{q:"What promise did she make?",ops:["To play his favorite song","To sell the guitar","To buy strings"],a:0}]},
+ {title:"The Science Fair",level:"B1",words:{"experiment":"experimento","mixture":"mezcla","carefully":"cuidadosamente","results":"resultados","judges":"jueces","nervous":"nerviosa","prize":"premio","proud":"orgullosa"},
+  text:"Valentina prepared her experiment for weeks. She mixed the mixture carefully and wrote down the results every day. On the day of the fair, she was nervous, but she explained everything to the judges with confidence. She did not win the first prize, but her teacher said she should feel proud.",
+  qs:[{q:"How long did Valentina prepare?",ops:["For weeks","One day","A year"],a:0},{q:"Did she win first prize?",ops:["No, but she felt proud","Yes","She didn't go"],a:0}]}];
+const B_COMPRENSION=[
+ {t:"Los arrecifes de coral cubren menos del 1% del océano, pero albergan cerca del 25% de las especies marinas. El aumento de la temperatura del agua provoca el 'blanqueamiento': el coral expulsa las algas que le dan color y alimento, y puede morir si el estrés se prolonga.",
+  qs:[{q:"¿Qué porcentaje de especies marinas viven en arrecifes?",ops:["Cerca del 25%","Menos del 1%","El 50%"],a:0},{q:"¿Qué causa el blanqueamiento?",ops:["El aumento de temperatura","El exceso de algas","La falta de peces"],a:0}]},
+ {t:"La música activa más áreas del cerebro que casi cualquier otra actividad: regiones del movimiento, la memoria, el lenguaje y las emociones trabajan a la vez. Por eso, algunas personas con pérdida de memoria pueden recordar canciones completas de su juventud, aunque olviden hechos recientes.",
+  qs:[{q:"La música activa…",ops:["Muchas áreas del cerebro a la vez","Solo el lenguaje","Solo emociones"],a:0},{q:"¿Qué recuerdan algunas personas con pérdida de memoria?",ops:["Canciones de su juventud","Hechos recientes","Teléfonos"],a:0}]},
+ {t:"En 1977 las sondas Voyager partieron con un 'disco de oro' con saludos en 55 idiomas, sonidos de la Tierra y 90 minutos de música, desde Bach hasta Chuck Berry. La Voyager 1 es hoy el objeto humano más lejano: viaja por el espacio interestelar a más de 24.000 millones de kilómetros.",
+  qs:[{q:"¿Qué contiene el disco de oro?",ops:["Saludos, sonidos y música","Mapas","Fotos de astronautas"],a:0},{q:"¿Qué es la Voyager 1 hoy?",ops:["El objeto humano más lejano","Un satélite lunar","Una estación"],a:0}]},
+ {t:"El colibrí es el único pájaro que puede volar hacia atrás. Sus alas baten hasta 80 veces por segundo y su corazón supera los 1.200 latidos por minuto. Necesita visitar cientos de flores al día; por eso es un polinizador clave en América.",
+  qs:[{q:"¿Qué hace el colibrí que ningún otro pájaro?",ops:["Volar hacia atrás","Nadar","Dormir volando"],a:0},{q:"¿Por qué es clave en los ecosistemas?",ops:["Poliniza cientos de flores","Come insectos","Hace nidos grandes"],a:0}]},
+ {t:"El ajedrez llegó a Europa hace más de mil años desde Persia e India. La 'reina' era originalmente un 'visir' que solo se movía una casilla. Se volvió la pieza más poderosa en Europa en el siglo XV, y aceleró tanto el juego que algunos lo llamaron 'el ajedrez de la dama enloquecida'.",
+  qs:[{q:"¿Qué pieza era un visir?",ops:["La reina","El alfil","La torre"],a:0},{q:"¿Cuándo se volvió la más poderosa?",ops:["Siglo XV","Hace mil años","Hoy"],a:0}]}];
+
+/* ============ PANTALLA INICIAL ============ */
+function screenStart(){setTheme("parent");current.profile=null;
+ render('<div style="margin-top:7vh">'
+ +'<h1 class="title center" style="font-size:2rem">🏠 Academia Familiar</h1>'
+ +'<p class="center mut" style="margin-bottom:26px;font-size:1.05rem">¿Quién va a jugar hoy?</p>'
+ +'<div class="card profilecard" onclick="enterKid()"><span class="av">'+S.profiles.nino.emoji+'</span><b style="font-size:1.35rem">'+esc(S.profiles.nino.name)+'</b><br><span class="mut">Mundo de Aventuras · 1°</span></div>'
+ +'<div class="card profilecard" onclick="enterTeen()"><span class="av">'+S.profiles.nina.emoji+'</span><b style="font-size:1.35rem">'+esc(S.profiles.nina.name)+'</b><br><span class="mut">Studio de retos · 9°</span></div>'
+ +'<p class="center" style="margin-top:20px"><button class="pbtn ghost" onclick="screenParentLogin()">👨‍👩‍👧 Panel de padres</button></p></div>');}
+function enterKid(){current.profile="nino";touchDay();save();screenKidMap();}
+function enterTeen(){current.profile="nina";touchDay();save();screenTeenHome();}
+
+/* ============ MAPA DE AVENTURA (NIÑO) ============ */
+/* MUNDOS temáticos: cada uno agrupa temas y se juega con el motor infinito */
+const KID_WORLDS=[
+ {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",topics:["sumas2","restas2","restapres","sumas3","multi"],desc:"Sumas, restas y multiplicar"},
+ {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",topics:["logica","secuencias","ordinales","izqder"],desc:"Acertijos y patrones"},
+ {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",topics:["diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
+ {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
+ {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",special:"stories",desc:"Cuentos y comprensión"},
+ {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",special:"writing",desc:"Ordena frases y letras"},
+ {id:"juegos",ic:"🎮",nm:"Juegos",color:"blue",special:"games",desc:"Robot, memoria y más"}];
+let curNode=null;
+function screenKidMap(){setTheme("kid");
+ const p=prof();const pet=petStage(p.xp);
+ const worlds=KID_WORLDS.map(w=>{
+  const done=(p.worldWins&&p.worldWins[w.id])||0;
+  return '<button class="kbtn '+w.color+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="openWorld(\''+w.id+'\')">'
+   +'<span style="font-size:clamp(2.2rem,10vw,2.8rem)">'+w.ic+'</span>'
+   +'<span style="flex:1"><span style="font-size:clamp(1.1rem,5vw,1.35rem)">'+w.nm+'</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">'+w.desc+(done?' · ✅ '+done:'')+'</span></span></button>';
+ }).join("");
+ render(topbar("screenStart()")
+ +'<div class="card" style="display:flex;align-items:center;gap:14px;padding:16px">'
+ +'<div style="font-size:clamp(3rem,15vw,4rem)" onclick="screenCritters()">'+pet.e+'</div>'
+ +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.3rem,6vw,1.6rem)">¡Hola, '+esc(p.name)+'!</h1>'
+ +'<p style="font-size:.95rem">Mascota: <b>'+pet.n+'</b> · 🎒 '+critters().length+'/'+CRITTERS.length+' criaturas</p></div></div>'
+ +missionsHTML()
+ +'<p style="font-size:1.05rem;margin:4px 2px 10px;font-family:Fredoka;font-weight:600">Elige un mundo para explorar 🌍</p>'
+ +worlds
+ +'<button class="kbtn white" onclick="screenCritters()" style="margin-top:6px">🎒 Ver mi colección</button>');}
+function lockedMsg(){}
+function openWorld(id){
+ const w=KID_WORLDS.find(x=>x.id===id);curNode=id;
+ if(w.special==="stories")return screenStoryPick();
+ if(w.special==="writing")return screenWritingPick();
+ if(w.special==="games")return screenGamesPick();
+ // mundo de retos infinitos adaptativos
+ playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
+function bumpWorld(id){const p=prof();if(!p.worldWins)p.worldWins={};p.worldWins[id]=(p.worldWins[id]||0)+1;save();}
+
+/* sub-menús de mundos especiales */
+function screenStoryPick(){setTheme("kid");
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">📖 Cuentos</h2>'
+ +'<p class="center" style="margin-bottom:14px">Lee, escucha y responde</p>'
+ +CUENTOS.map((c,i)=>'<button class="kbtn yellow" onclick="gameStory('+i+')"><span style="font-size:1.6rem">'+c.pages[0].scene.split(/(?=)/)[0]+'</span> '+esc(c.title)+'</button>').join("")
+ +(S.geminiKey?'<button class="kbtn green" onclick="aiStoryKid()">✨ Cuento nuevo con IA</button>':'<p class="audiotip">💡 Activa la clave de Gemini en el panel de padres para cuentos nuevos infinitos.</p>'));}
+function screenWritingPick(){setTheme("kid");
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✍️ Escribir bien</h2>'
+ +'<p class="center" style="margin-bottom:14px">Frases, letras y palabras</p>'
+ +'<button class="kbtn yellow" onclick="gameOrder()">🧩 Ordena la frase</button>'
+ +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
+ +'<button class="kbtn green" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
+function screenGamesPick(){setTheme("kid");
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🎮 Juegos</h2>'
+ +'<p class="center" style="margin-bottom:14px">Diviértete aprendiendo</p>'
+ +'<button class="kbtn blue" onclick="gameRobot(0)">🤖 Robot programador</button>'
+ +'<button class="kbtn yellow" onclick="gameMemory(\'meses\')">🃏 Memoria de meses</button>'
+ +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
+ +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>');}
+function tapNode(id){if(typeof id==="string"){openWorld(id);}else{const n=KID_NODES&&KID_NODES.find(x=>x.id===id);if(n)n.run();}}
+async function aiStoryKid(){
+ setTheme("kid");
+ render(topbar("screenStoryPick()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Creando un cuento nuevo…</h2></div>');
+ try{
+  const obj=await geminiJSON('Crea un cuento corto infantil en español (3 escenas) para un niño de 7 años, con valores positivos. Responde SOLO JSON: {"title":"título","pages":[{"scene":"2-3 emojis que ilustren","text":"2 frases, marca 1-2 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / qué aprende)","ops":["correcta","mala","mala"],"a":0},{"q":"otra","ops":["correcta","mala","mala"],"a":0}]} con 3 pages y 2 qs.');
+  CUENTOS.push(obj);gameStory(CUENTOS.length-1);
+ }catch(e){toast("No se pudo crear, intenta de nuevo",false,2000);screenStoryPick();}}
+function nodeWin(stars,subject){
+ const p=prof();
+ if(typeof curNode==="string")bumpWorld(curNode);
+ p.coins+=stars*5;p.xp+=stars*10;touchDay().games++;save();
+ sWIN();confetti(34);
+ const got=stars>=2?maybeCritter():null;
+ const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+got.e+'</div><b style="font-size:1.2rem">¡Capturaste a '+got.name+'!</b><p>Una nueva criatura para tu colección 🎒</p></div>':'';
+ if(got)setTimeout(()=>confetti(30),400);
+ render(topbar("screenKidMap()")
+ +'<div class="card endcard"><div class="big">'+(stars===3?"🏆":stars===2?"🌟":"⭐")+'</div>'
+ +'<h2>¡Muy bien!</h2>'
+ +'<div style="font-size:2.4rem;margin:6px 0">'+"⭐".repeat(stars)+"☆".repeat(3-stars)+'</div>'
+ +'<p style="font-size:1.15rem;margin-bottom:16px">Ganaste <b>+'+(stars*5)+' 🪙</b></p>'
+ +'<button class="kbtn green" onclick="replayWorld()">Seguir jugando 🔁</button>'
+ +'<button class="kbtn white" onclick="screenKidMap()">Ir a los mundos 🌍</button></div>'
+ +critterHTML);}
+function replayWorld(){
+ if(typeof curNode==="string"){const w=KID_WORLDS.find(x=>x.id===curNode);
+  if(w&&!w.special)return playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});
+  return openWorld(curNode);}
+ screenKidMap();}
+function afterWin(){screenKidMap();}
+function starsFor(ok,total){const p=ok/total;return p>=0.9?3:p>=0.6?2:1;}
+
+/* ============ MISIONES ============ */
+const MISSIONS={
+ nino:[{id:"m1",label:"Explora 2 mundos hoy",emoji:"🌍",check:d=>d.games>=2,reward:10},
+       {id:"m2",label:"Practica inglés con voz",emoji:"🔊",check:d=>d.enDone,reward:15},
+       {id:"m3",label:"Logra 10 aciertos hoy",emoji:"✅",check:d=>d.ok>=10,reward:15}],
+ nina:[{id:"m1",label:"Completa 10 ejercicios",emoji:"🎯",check:d=>d.ex>=10,reward:10},
+       {id:"m2",label:"Termina una lectura en inglés",emoji:"📖",check:d=>d.readDone,reward:15},
+       {id:"m3",label:"Consigue un combo x3",emoji:"⚡",check:d=>d.combo3,reward:15}]};
+function missionsHTML(){
+ const d=touchDay();const list=MISSIONS[current.profile];
+ let h='<div class="card"><b style="font-size:1.1rem">📅 Misiones de hoy</b>';
+ list.forEach(mi=>{
+  if(mi.check(d)&&!d.missions.includes(mi.id)){d.missions.push(mi.id);prof().coins+=mi.reward;prof().xp+=mi.reward*2;save();}
+  const done=d.missions.includes(mi.id);
+  h+='<div class="misionrow'+(done?" done":"")+'"><span class="chk">'+(done?"✓":"")+'</span><span>'+mi.emoji+' '+mi.label+' <b>+'+mi.reward+'🪙</b></span></div>';});
+ return h+'</div>';}
+
+/* ============ JUEGO: GLOBOS ============ */
+let BL={};
+function balloonQuestion(mode){
+ if(mode==="ingles"){const w=pick(EN_KID);return{q:'¿Qué significa "'+w[0].toUpperCase()+'"?',ans:w[1],pool:EN_KID.map(x=>x[1])};}
+ const r=Math.random();
+ if(r<0.34){const a=1+rnd(9),b=1+rnd(9);return{q:a+" + "+b+" = ?",ans:String(a+b),pool:null,num:a+b};}
+ if(r<0.6){const a=3+rnd(14),b=1+rnd(a-1);return{q:a+" − "+b+" = ?",ans:String(a-b),pool:null,num:a-b};}
+ const v=pick(VOCAL_WORDS);return{q:"¿Con qué vocal empieza "+v[1]+"?",ans:v[0],pool:["A","E","I","O","U"]};}
+function gameBalloons(mode){setTheme("kid");
+ BL={mode,round:0,ok:0,total:6};nextBalloonRound();}
+function nextBalloonRound(){
+ if(BL.round>=BL.total){recordAnswer(BL.mode==="ingles"?"Inglés":"Globos",true,0);return nodeWin(starsFor(BL.ok,BL.total),"Globos");}
+ const Q=balloonQuestion(BL.mode);BL.cur=Q;
+ let answers;
+ if(Q.pool){answers=shuffled(Q.pool.filter(x=>x!==Q.ans)).slice(0,3);answers.push(Q.ans);}
+ else{const set=new Set([Q.num]);while(set.size<4){const d=Q.num+1+rnd(4)*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}answers=[...set].map(String);}
+ answers=shuffled(answers);
+ const colors=["#FF6B6B","#3B82F6","#3EC97C","#A78BFA","#F59E0B"];
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+Array.from({length:BL.total},(x,i)=>'<i class="'+(i<BL.round?"on":"")+'"></i>').join("")+'</div>'
+ +'<div class="bigq center">'+esc(Q.q)+'</div>'
+ +'<div id="sky"></div>'
+ +'<p class="center" style="margin-top:12px;font-size:1.05rem">💥 ¡Revienta el globo correcto!</p>');
+ const sky=document.getElementById("sky");
+ answers.forEach((a,i)=>{
+  const b=document.createElement("div");b.className="balloon";b.textContent=a;
+  b.style.background=colors[i%colors.length];
+  b.style.left=(4+i*24)+"%";
+  b.style.animationDuration=(7+Math.random()*4)+"s";
+  b.style.animationDelay=(i*0.9)+"s";
+  b.onclick=()=>popBalloon(b,a===BL.cur.ans);
+  sky.appendChild(b);});
+ BL.timer=setTimeout(()=>{if(document.getElementById("sky")){toast("¡Se escaparon! 🎈 La respuesta era "+BL.cur.ans,false,1800);sNO();recordAnswer(BL.mode==="ingles"?"Inglés":"Números",false,12);BL.round++;setTimeout(nextBalloonRound,1700);}},12500);}
+function popBalloon(el,ok){
+ if(BL.done)return;
+ if(ok){BL.done=true;clearTimeout(BL.timer);el.classList.add("pop");sOK();confetti(10);
+  recordAnswer(BL.mode==="ingles"?"Inglés":"Números",true,8);BL.ok++;BL.round++;
+  toast("¡Correcto! +2 🪙",true,1000);
+  setTimeout(()=>{BL.done=false;nextBalloonRound();},1000);}
+ else{el.style.animationPlayState="paused";el.style.opacity=".4";sNO();
+  recordAnswer(BL.mode==="ingles"?"Inglés":"Números",false,8);}}
+
+/* ============ JUEGO: MEMORIA ============ */
+let MM={};
+function gameMemory(kind){setTheme("kid");
+ let pares;
+ if(kind==="meses"){pares=shuffled(MESES).slice(0,6).map(p=>[p[0],p[1]]);}
+ else{pares=[];const used=new Set();while(pares.length<6){const n=1+rnd(9);if(!used.has(n)){used.add(n);pares.push([String(n),"🔵".repeat(n)]);}}}
+ const cards=shuffled(pares.flatMap((p,i)=>[{id:i,txt:p[0]},{id:i,txt:p[1]}]));
+ MM={cards,first:null,lock:false,found:0,tries:0,kind};
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:1.4rem;margin-bottom:4px">🃏 ¡Encuentra las parejas!</h2>'
+ +'<p style="margin-bottom:14px;font-size:1.05rem">'+(kind==="meses"?"Mes en español + mes en inglés":"Número + sus puntos")+'</p>'
+ +'<div class="memgrid">'+cards.map((c,k)=>'<div class="mem" id="mm'+k+'" onclick="flipMem('+k+')"><div class="in"><div class="f">❓</div><div class="b">'+esc(c.txt)+'</div></div></div>').join("")+'</div>');}
+function flipMem(k){
+ if(MM.lock)return;const el=document.getElementById("mm"+k);
+ if(el.classList.contains("flip"))return;
+ el.classList.add("flip");beep([440],.08);
+ if(MM.first===null){MM.first=k;return;}
+ const a=MM.cards[MM.first],b=MM.cards[k],elA=document.getElementById("mm"+MM.first);
+ MM.tries++;MM.lock=true;
+ if(a.id===b.id){MM.found++;sOK();el.classList.add("ok");elA.classList.add("ok");
+  recordAnswer(MM.kind==="meses"?"Meses":"Números",true,6);
+  MM.first=null;MM.lock=false;
+  if(MM.found===6){const st=MM.tries<=8?3:MM.tries<=11?2:1;setTimeout(()=>nodeWin(st,"Memoria"),700);}}
+ else{sNO();recordAnswer(MM.kind==="meses"?"Meses":"Números",false,6);
+  setTimeout(()=>{el.classList.remove("flip");elA.classList.remove("flip");MM.first=null;MM.lock=false;},900);}}
+
+/* ============ MATE VISUAL ============ */
+let MV={};
+function gameMathVisual(){setTheme("kid");MV={round:0,ok:0,total:6};nextMV();}
+function nextMV(){
+ if(MV.round>=MV.total)return nodeWin(starsFor(MV.ok,MV.total),"Mate");
+ const Q=genSumImg();MV.cur=Q;
+ const set=new Set([Q.ans]);while(set.size<3){const d=Q.ans+1+rnd(3)*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ const ops=shuffled([...set]);
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(MV.total,MV.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:10px">🧮 Cuenta y suma</h2>'
+ +'<div class="card"><div class="dots">'+'<span class="dot"></span>'.repeat(Q.a)+'</div>'
+ +'<div style="text-align:center;font-size:clamp(2rem,9vw,2.8rem);font-family:Fredoka;font-weight:700">➕</div>'
+ +'<div class="dots">'+'<span class="dot" style="background:var(--kid-blue)"></span>'.repeat(Q.b)+'</div></div>'
+ +'<div class="bigq center">'+Q.q+'</div>'
+ +'<div class="choices2">'+ops.map(o=>'<button class="kbtn" onclick="ansMV('+o+')">'+o+'</button>').join("")+'</div>');}
+function ansMV(v){const ok=v===MV.cur.ans;recordAnswer("Mate",ok,12);
+ if(ok){sOK();confetti(8);toast("¡Correcto! 🎉",true,900);MV.ok++;}
+ else{sNO();toast("Cuenta de nuevo: eran "+MV.cur.ans,false,1500);}
+ MV.round++;setTimeout(nextMV,ok?900:1500);}
+function dots(total,cur){return Array.from({length:total},(x,i)=>'<i class="'+(i<cur?"on":"")+'"></i>').join("");}
+
+/* ============ PROBLEMAS HABLADOS ============ */
+let PR={};
+function gameProblems(){setTheme("kid");PR={qs:shuffled(PROBLEMS_KID).slice(0,5),i:0,ok:0};nextPR();}
+function nextPR(){
+ if(PR.i>=PR.qs.length)return nodeWin(starsFor(PR.ok,PR.qs.length),"Problemas");
+ const q=PR.qs[PR.i];const order=shuffled(q.ops.map((o,i)=>({o,i})));PR.order=order;
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(PR.qs.length,PR.i)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:10px">🔢 Resuelve el problema</h2>'
+ +'<div class="card storytext" style="text-align:center">'+esc(q.q)+'</div>'
+ +'<button class="speaker small" onclick="speakES(\''+esc(q.q).replace(/'/g,"\\'")+'\')">🔊 Leer en voz alta</button>'
+ +'<div class="choices2">'+order.map((it,k)=>'<button class="kbtn white" onclick="ansPR('+k+')">'+esc(it.o)+'</button>').join("")+'</div>');}
+function ansPR(k){const q=PR.qs[PR.i],ok=PR.order[k].i===q.a;recordAnswer("Problemas",ok,20);
+ if(ok){sOK();confetti(8);toast("¡Genio! 🧠✨",true,900);PR.ok++;}else{sNO();toast("Era "+q.ops[q.a],false,1500);}
+ PR.i++;setTimeout(nextPR,ok?900:1500);}
+
+/* ============ LÓGICA ============ */
+let LG={};
+function gameLogic(){setTheme("kid");LG={qs:shuffled(LOGIC_KID).slice(0,5),i:0,ok:0};nextLG();}
+function nextLG(){
+ if(LG.i>=LG.qs.length)return nodeWin(starsFor(LG.ok,LG.qs.length),"Lógica");
+ const q=LG.qs[LG.i];const order=shuffled(q.ops.map((o,i)=>({o,i})));LG.order=order;
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(LG.qs.length,LG.i)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:8px">🧩 Piensa bien</h2>'
+ +'<div class="bigpic">'+q.scene+'</div>'
+ +'<div class="bigq center">'+esc(q.q)+'</div>'
+ +'<button class="speaker small" onclick="speakES(\''+esc(q.q+(q.say?". "+q.say:"")).replace(/'/g,"\\'")+'\')">🔊 Leer</button>'
+ +'<div class="choices2">'+order.map((it,k)=>'<button class="kbtn yellow" onclick="ansLG('+k+')">'+esc(it.o)+'</button>').join("")+'</div>');}
+function ansLG(k){const q=LG.qs[LG.i],ok=LG.order[k].i===q.a;recordAnswer("Lógica",ok,15);
+ if(ok){sOK();confetti(8);toast("¡Exacto! 🎯",true,900);LG.ok++;}else{sNO();toast("Era "+q.ops[q.a],false,1500);}
+ LG.i++;setTimeout(nextLG,ok?900:1500);}
+
+/* ============ SECUENCIAS ============ */
+let SQ={};
+function gameSeq(){setTheme("kid");SQ={qs:shuffled(SEQUENCES).slice(0,5),i:0,ok:0};nextSQ();}
+function nextSQ(){
+ if(SQ.i>=SQ.qs.length)return nodeWin(starsFor(SQ.ok,SQ.qs.length),"Secuencias");
+ const q=SQ.qs[SQ.i];const order=shuffled(q.ops.map((o,i)=>({o,i})));SQ.order=order;
+ const row=q.show.map(x=>x==="❓"?'<span class="seqq">❓</span>':'<span>'+x+'</span>').join("");
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(SQ.qs.length,SQ.i)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">➡️ ¿Qué sigue?</h2>'
+ +'<div class="card"><div class="seqrow">'+row+'</div></div>'
+ +'<div class="choices2">'+order.map((it,k)=>'<button class="kbtn blue" style="font-size:clamp(1.6rem,8vw,2.2rem)" onclick="ansSQ('+k+')">'+it.o+'</button>').join("")+'</div>');}
+function ansSQ(k){const q=SQ.qs[SQ.i],ok=SQ.order[k].i===q.a;recordAnswer("Secuencias",ok,15);
+ if(ok){sOK();confetti(8);toast("¡Buen patrón! 🔥",true,900);SQ.ok++;}else{sNO();toast("Era "+q.ops[q.a],false,1500);}
+ SQ.i++;setTimeout(nextSQ,ok?900:1500);}
+
+/* ============ INGLÉS: ESCUCHA Y TOCA ============ */
+let LS={};
+function gameListen(){setTheme("kid");
+ if(!hasVoice())return noVoiceScreen("screenKidMap()");
+ const pool=Object.values(EN_VOCAB).flat();
+ LS={pool,round:0,ok:0,total:6};nextLS();}
+function nextLS(){
+ if(LS.round>=LS.total)return nodeWin(starsFor(LS.ok,LS.total),"Inglés");
+ const correct=pick(LS.pool);LS.cur=correct;
+ const wrong=shuffled(LS.pool.filter(w=>w[0]!==correct[0])).slice(0,3);
+ LS.opts=shuffled([correct,...wrong]);
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(LS.total,LS.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:4px">🔊 Escucha y toca</h2>'
+ +'<p class="center" style="margin-bottom:12px;font-size:1.05rem">Oye la palabra en inglés y toca el dibujo correcto</p>'
+ +'<button class="speaker" onclick="speakEN(\''+correct[0]+'\')"><span class="ic">🔊</span> Escuchar otra vez</button>'
+ +'<div class="choices2">'+LS.opts.map((o,k)=>'<button class="kbtn white" style="font-size:clamp(3rem,14vw,4rem);min-height:clamp(96px,26vw,130px)" onclick="ansLS('+k+')">'+o[2]+'</button>').join("")+'</div>');
+ setTimeout(()=>speakEN(correct[0]),350);}
+function ansLS(k){const ok=LS.opts[k][0]===LS.cur[0];recordAnswer("Inglés",ok,12);
+ if(ok){sOK();confetti(10);speakEN(LS.cur[0]);toast("✓ "+LS.cur[0]+" = "+LS.cur[1],true,1400);LS.ok++;}
+ else{sNO();toast("Era "+LS.cur[2]+" = "+LS.cur[0],false,1700);}
+ LS.round++;setTimeout(nextLS,ok?1400:1700);}
+
+/* ============ INGLÉS: APRENDER (tarjetas con audio) ============ */
+let EL={};
+function gameEnLearn(){setTheme("kid");
+ if(!hasVoice())return noVoiceScreen("screenKidMap()");
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:6px">🎴 ¿Qué quieres aprender?</h2>'
+ +'<p class="center" style="margin-bottom:14px">Toca un tema, escucha cada palabra y repítela</p>'
+ +'<div class="choices2">'+EN_CATS.map(c=>'<button class="kbtn yellow" onclick="learnCat(\''+c[0]+'\')"><div style="font-size:2.4rem">'+c[2]+'</div>'+c[1]+'</button>').join("")+'</div>');}
+function learnCat(cat){
+ EL={cat,list:EN_VOCAB[cat],i:0};showCard();}
+function showCard(){
+ const w=EL.list[EL.i];const last=EL.i===EL.list.length-1;
+ render(topbar("gameEnLearn()")
+ +'<div class="progressdots">'+dots(EL.list.length,EL.i)+'</div>'
+ +'<div class="card encard"><div class="pic">'+w[2]+'</div><div class="en">'+w[0]+'</div><div class="es">'+w[1]+'</div></div>'
+ +'<button class="speaker" onclick="speakEN(\''+w[0]+'\')"><span class="ic">🔊</span> Escuchar</button>'
+ +(last?'<button class="kbtn green" onclick="learnQuiz()">¡A practicar! 🎯</button>'
+       :'<button class="kbtn blue" onclick="EL.i++;showCard()">Siguiente →</button>')
+ +(EL.i>0?'<button class="kbtn white" onclick="EL.i--;showCard()">← Anterior</button>':''));
+ setTimeout(()=>speakEN(w[0]),300);}
+function learnQuiz(){EL.q={list:shuffled(EL.list),i:0,ok:0};nextLearnQ();}
+function nextLearnQ(){
+ const Q=EL.q;
+ if(Q.i>=Q.list.length)return nodeWin(starsFor(Q.ok,Q.list.length),"Inglés");
+ const correct=Q.list[Q.i];
+ const wrong=shuffled(EL.list.filter(w=>w[0]!==correct[0])).slice(0,2);
+ const opts=shuffled([correct,...wrong]);EL.q.opts=opts;EL.q.cur=correct;
+ render(topbar("gameEnLearn()")
+ +'<div class="progressdots">'+dots(Q.list.length,Q.i)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:10px">¿Cuál es <span style="color:var(--kid-blue)">'+correct[0]+'</span>?</h2>'
+ +'<button class="speaker small" onclick="speakEN(\''+correct[0]+'\')">🔊 Oír</button>'
+ +'<div class="choices2">'+opts.map((o,k)=>'<button class="kbtn white" style="font-size:clamp(3rem,14vw,4rem);min-height:clamp(96px,26vw,130px)" onclick="ansLearnQ('+k+')">'+o[2]+'</button>').join("")+'</div>');
+ setTimeout(()=>speakEN(correct[0]),300);}
+function ansLearnQ(k){const ok=EL.q.opts[k][0]===EL.q.cur[0];recordAnswer("Inglés",ok,12);
+ if(ok){sOK();confetti(8);speakEN(EL.q.cur[0]);toast("✓ "+EL.q.cur[0],true,1200);EL.q.ok++;}
+ else{sNO();toast("Era "+EL.q.cur[2],false,1500);}
+ EL.q.i++;setTimeout(nextLearnQ,ok?1200:1500);}
+
+/* ============ INGLÉS: ESCRIBIR (deletreo) ============ */
+let SP={};
+function gameSpell(){setTheme("kid");
+ if(!hasVoice())return noVoiceScreen("screenKidMap()");
+ const pool=[...EN_VOCAB.animals,...EN_VOCAB.colors,...EN_VOCAB.food,...EN_VOCAB.numbers].filter(w=>w[0].length<=5);
+ SP={pool,round:0,ok:0,total:5};nextSP();}
+function nextSP(){
+ if(SP.round>=SP.total)return nodeWin(starsFor(SP.ok,SP.total),"Inglés");
+ const w=pick(SP.pool);SP.cur=w;SP.typed=[];
+ const letters=shuffled(w[0].toUpperCase().split(""));
+ // añadir 2 letras señuelo
+ const extra="ABCDEFGHIJKLMNOPRSTUW".split("").filter(c=>!w[0].toUpperCase().includes(c));
+ const keys=shuffled([...letters,...shuffled(extra).slice(0,2)]);SP.keys=keys;
+ renderSP();}
+function renderSP(){
+ const w=SP.cur;
+ const slots=w[0].split("").map((_,i)=>'<div class="slot'+(SP.typed[i]?' filled':'')+'">'+(SP.typed[i]||"")+'</div>').join("");
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(SP.total,SP.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.1rem,5vw,1.4rem);text-align:center;margin-bottom:4px">✍️ Escribe la palabra</h2>'
+ +'<div class="bigpic">'+w[2]+'</div>'
+ +'<button class="speaker small" onclick="speakEN(\''+w[0]+'\')">🔊 '+w[0]+' ('+w[1]+')</button>'
+ +'<div class="letterslots">'+slots+'</div>'
+ +'<div class="keys">'+SP.keys.map((c,k)=>'<button class="key'+(SP.usedKeys&&SP.usedKeys.includes(k)?' used':'')+'" onclick="tapKey('+k+',\''+c+'\')">'+c+'</button>').join("")+'</div>'
+ +'<div style="height:10px"></div>'
+ +'<button class="kbtn white" onclick="SP.typed=[];SP.usedKeys=[];renderSP()">🧽 Borrar</button>');
+ setTimeout(()=>speakEN(w[0]),300);}
+function tapKey(k,c){
+ if(!SP.usedKeys)SP.usedKeys=[];
+ if(SP.usedKeys.includes(k))return;
+ if(SP.typed.length>=SP.cur[0].length)return;
+ SP.typed.push(c);SP.usedKeys.push(k);beep([500+SP.typed.length*50],.07);
+ renderSP();
+ if(SP.typed.length===SP.cur[0].length)setTimeout(checkSP,300);}
+function checkSP(){
+ const guess=SP.typed.join("").toLowerCase(),ok=guess===SP.cur[0].toLowerCase();
+ recordAnswer("Inglés",ok,25);
+ if(ok){sOK();confetti(12);speakEN(SP.cur[0]);toast("✓ ¡"+SP.cur[0]+"! 🎉",true,1400);SP.ok++;SP.round++;setTimeout(nextSP,1500);}
+ else{sNO();toast("Casi… se escribe "+SP.cur[0].toUpperCase(),false,1800);SP.typed=[];SP.usedKeys=[];setTimeout(renderSP,1000);}}
+
+/* ============ INGLÉS: FRASES ============ */
+let PH={};
+function gamePhrases(){setTheme("kid");
+ if(!hasVoice())return noVoiceScreen("screenKidMap()");
+ PH={qs:shuffled(EN_PHRASES).slice(0,6),i:0,ok:0};nextPH();}
+function nextPH(){
+ if(PH.i>=PH.qs.length)return nodeWin(starsFor(PH.ok,PH.qs.length),"Inglés");
+ const p=PH.qs[PH.i];PH.cur=p;
+ const wrong=shuffled(EN_PHRASES.filter(x=>x[0]!==p[0])).slice(0,2);
+ const opts=shuffled([p,...wrong]);PH.opts=opts;
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(PH.qs.length,PH.i)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">💬 ¿Qué significa?</h2>'
+ +'<div class="card encard"><div style="font-size:clamp(1.6rem,7vw,2.2rem);font-weight:700;color:var(--kid-blue);font-family:Fredoka">"'+esc(p[0])+'"</div></div>'
+ +'<button class="speaker" onclick="speakEN(\''+esc(p[0]).replace(/'/g,"")+'\')"><span class="ic">🔊</span> Escuchar la frase</button>'
+ +opts.map((o,k)=>'<button class="kbtn white" onclick="ansPH('+k+')">'+esc(o[1])+'</button>').join(""));
+ setTimeout(()=>speakEN(p[0].replace(/'/g,"")),350);}
+function ansPH(k){const ok=PH.opts[k][0]===PH.cur[0];recordAnswer("Inglés",ok,15);
+ if(ok){sOK();confetti(8);toast("✓ "+PH.cur[1],true,1300);PH.ok++;}else{sNO();toast("Era: "+PH.cur[1],false,1700);}
+ PH.i++;setTimeout(nextPH,ok?1300:1700);}
+
+/* ============ SONIDOS DE LETRAS (C, S, Q...) ============ */
+let LT={};
+function gameLetters(){setTheme("kid");
+ LT={set:shuffled(LETTER_SOUNDS).slice(0,3),i:0,phase:"learn",ci:0,ok:0,total:0};
+ LT.set.forEach(s=>LT.total+=Math.min(2,s.cases.length));renderLetters();}
+function renderLetters(){
+ const grp=LT.set[LT.i];
+ if(!grp)return nodeWin(starsFor(LT.ok,Math.max(1,LT.qpool?LT.qpool.length:LT.ok)),"Letras");
+ if(LT.phase==="learn"){
+  const c=grp.cases[LT.ci];const last=LT.ci===grp.cases.length-1;
+  render(topbar("screenKidMap()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🔡 El sonido de la <span style="color:var(--kid-blue);font-size:1.4em">'+grp.letter+'</span></h2>'
+  +'<div class="card encard"><div class="pic">'+c[1]+'</div><div class="en" style="color:var(--kid-ink)">'+c[0]+'</div><div class="es">'+c[2]+'</div></div>'
+  +'<button class="speaker" onclick="speakES(\''+c[0]+'\')"><span class="ic">🔊</span> Escuchar "'+c[0]+'"</button>'
+  +(last?'<button class="kbtn green" onclick="lettersToQuiz()">¡A practicar! 🎯</button>'
+        :'<button class="kbtn blue" onclick="LT.ci++;renderLetters()">Siguiente →</button>'));
+  return;}
+ // quiz: ¿con qué letra empieza?
+ const q=LT.qpool[LT.qi];
+ if(!q)return nodeWin(starsFor(LT.ok,LT.qpool.length),"Letras");
+ const order=shuffled(q.ops);LT.order=order;
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(LT.qpool.length,LT.qi)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">¿Con qué letra empieza?</h2>'
+ +'<div class="bigpic">'+q.pic+'</div>'
+ +'<button class="speaker small" onclick="speakES(\''+q.word+'\')">🔊 '+q.word+'</button>'
+ +'<div class="choices2">'+order.map(o=>'<button class="kbtn yellow" style="font-size:clamp(2rem,9vw,2.6rem)" onclick="ansLetters(\''+o+'\')">'+o+'</button>').join("")+'</div>');}
+function lettersToQuiz(){
+ // construir preguntas de los grupos vistos
+ LT.qpool=[];const letters=LETTER_SOUNDS.map(s=>s.letter);
+ LT.set.forEach(g=>{g.cases.slice(0,2).forEach(c=>{
+  const correct=c[0][0].toUpperCase();
+  const others=shuffled(letters.filter(l=>l!==correct)).slice(0,2);
+  LT.qpool.push({word:c[0],pic:c[1],correct,ops:shuffled([correct,...others])});});});
+ LT.qpool=shuffled(LT.qpool);LT.qi=0;LT.phase="quiz";LT.ok=0;renderLetters();}
+function ansLetters(o){const q=LT.qpool[LT.qi],ok=o===q.correct;recordAnswer("Letras",ok,15);
+ if(ok){sOK();confetti(8);speakES(q.word);toast("✓ "+q.word+" empieza con "+q.correct,true,1400);LT.ok++;}
+ else{sNO();toast(q.word+" empieza con "+q.correct,false,1700);}
+ LT.qi++;setTimeout(renderLetters,ok?1400:1700);}
+
+/* ============ pantalla sin voz ============ */
+function noVoiceScreen(back){
+ render(topbar(back)
+ +'<div class="card" style="text-align:center"><div style="font-size:3rem">🔇</div>'
+ +'<h2 style="margin:8px 0">Este juego necesita voz</h2>'
+ +'<p style="font-size:1.05rem;line-height:1.5">Tu navegador no tiene síntesis de voz. Ábrela en <b>Google Chrome</b> (Android) o <b>Safari</b> (iPad) para escuchar el inglés.</p>'
+ +'<button class="kbtn green" style="margin-top:14px" onclick="screenKidMap()">Volver al mapa</button></div>');}
+
+/* ============ CRIATURAS COLECCIONABLES + MASCOTA ============ */
+const CRITTERS=[
+ {id:"flamy",e:"🔥",name:"Flamy"},{id:"aqua",e:"💧",name:"Aqua"},{id:"leafy",e:"🍃",name:"Leafy"},
+ {id:"sparky",e:"⚡",name:"Sparky"},{id:"rocky",e:"🪨",name:"Rocky"},{id:"star",e:"⭐",name:"Estela"},
+ {id:"drako",e:"🐲",name:"Drako"},{id:"foxy",e:"🦊",name:"Foxy"},{id:"buho",e:"🦉",name:"Búho"},
+ {id:"crab",e:"🦀",name:"Pinza"},{id:"uni",e:"🦄",name:"Uny"},{id:"robi",e:"🤖",name:"Robi"},
+ {id:"dino",e:"🦕",name:"Dino"},{id:"cat",e:"🐱",name:"Michi"},{id:"frog",e:"🐸",name:"Brinco"},
+ {id:"bee",e:"🐝",name:"Zumby"},{id:"pingu",e:"🐧",name:"Pingu"},{id:"ghost",e:"👻",name:"Boo"}];
+function critters(){const p=prof();if(!p.critters)p.critters=[];return p.critters;}
+function maybeCritter(){
+ // aparece de vez en cuando (no siempre): ~1 de cada 4 juegos ganados
+ const owned=critters();
+ if(owned.length>=CRITTERS.length)return null;
+ if(Math.random()<0.28){
+  const avail=CRITTERS.filter(c=>!owned.includes(c.id));
+  const c=pick(avail);owned.push(c.id);save();return c;}
+ return null;}
+/* mascota que evoluciona según XP total */
+function petStage(xp){const lv=level(xp);return lv>=12?{e:"🐉",n:"Dragón"}:lv>=8?{e:"🦅",n:"Águila"}:lv>=5?{e:"🐯",n:"Tigre"}:lv>=3?{e:"🐺",n:"Lobo"}:{e:"🥚",n:"Huevo"};}
+function screenCritters(){setTheme("kid");
+ const owned=critters();
+ const grid=CRITTERS.map(c=>{
+  const has=owned.includes(c.id);
+  return '<div style="text-align:center;padding:10px;border-radius:18px;border:4px solid var(--kid-ink);background:'+(has?"#FFF":"#D7DCE6")+';box-shadow:0 5px 0 rgba(30,42,74,.7)">'
+   +'<div style="font-size:clamp(2.2rem,10vw,3rem);filter:'+(has?"none":"grayscale(1) opacity(.4)")+'">'+(has?c.e:"❓")+'</div>'
+   +'<div style="font-family:Fredoka;font-weight:700;font-size:.8rem">'+(has?c.name:"???")+'</div></div>';}).join("");
+ const pet=petStage(prof().xp);
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🎒 Mi colección</h2>'
+ +'<div class="card center"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+pet.e+'</div><b style="font-size:1.2rem">Tu mascota: '+pet.n+'</b><p style="margin-top:4px">Sigue aprendiendo para que evolucione 🌟</p></div>'
+ +'<div class="card"><b style="font-size:1.1rem">Criaturas capturadas: '+owned.length+'/'+CRITTERS.length+'</b>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">'+grid+'</div></div>'
+ +'<button class="kbtn green" onclick="screenKidMap()">← Volver al mapa</button>');}
+
+/* ============ MOTOR DE RETO ADAPTATIVO UNIVERSAL ============ */
+/* Toma uno o varios temas, pide retos (IA o fallback) y los juega con audio si es inglés. */
+let CH={};
+async function playTopics(label,topicKeys,opts){
+ opts=opts||{};
+ setTheme("kid");
+ render(topbar("screenKidMap()")
+  +'<div class="card center" style="padding:40px"><div style="font-size:3rem" class="spin">⏳</div>'
+  +'<h2 style="margin-top:10px">Preparando tus retos…</h2>'
+  +'<p class="mut">'+(S.geminiKey?"Creando preguntas nuevas con IA ✨":"Cargando retos")+'</p></div>');
+ // elige los temas más débiles si son varios
+ const chosen = topicKeys.length>1 ? weakestTopics(topicKeys, Math.min(opts.topicsPerSession||2,topicKeys.length)) : topicKeys;
+ let items=[];
+ for(const tk of chosen){
+  const part=await buildChallenges(tk, opts.perTopic||4);
+  part.forEach(it=>it._topic=tk);
+  items=items.concat(part);
+ }
+ items=shuffled(items).slice(0,opts.total||8);
+ if(!items.length){toast("No se pudo cargar. Intenta de nuevo.",false,2000);return screenKidMap();}
+ CH={label,items,i:0,ok:0,wrongTopics:{}};
+ renderCH();}
+function renderCH(){
+ const it=CH.items[CH.i];
+ if(!it)return finishCH();
+ const order=it.ops.map((o,k)=>({o,k}));
+ const shown=shuffled(order);CH.order=shown;CH.correctK=it.a;
+ const isEN=it.word||KID_TOPICS[it._topic]&&KID_TOPICS[it._topic].en;
+ const topic=KID_TOPICS[it._topic];
+ const head=topic?topic.emoji+" "+topic.name:CH.label;
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(CH.items.length,CH.i)+'</div>'
+ +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+head+' · '+(CH.i+1)+'/'+CH.items.length+'</p>'
+ +(isEN&&it.pic?'<div class="bigpic">'+it.pic+'</div>':'')
+ +'<div class="bigq center">'+esc(it.q)+'</div>'
+ +(isEN&&it.word?'<button class="speaker" onclick="speakEN(\''+esc(it.word).replace(/'/g,"")+'\')"><span class="ic">🔊</span> Escuchar en inglés</button>'
+   :'<button class="speaker small" onclick="speakES(\''+esc(it.q).replace(/'/g,"\\'")+'\')">🔊 Leer pregunta</button>')
+ +'<div class="choices2">'+shown.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.15rem,5vw,1.45rem)" onclick="ansCH('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>');
+ if(isEN&&it.word)setTimeout(()=>speakEN(it.word.replace(/'/g,"")),350);}
+function ansCH(vi){
+ const it=CH.items[CH.i];
+ const ok=CH.order[vi].k===CH.correctK;
+ const subj=(KID_TOPICS[it._topic]&&KID_TOPICS[it._topic].en)?"Inglés":(KID_TOPICS[it._topic]?KID_TOPICS[it._topic].name:CH.label);
+ recordAnswer(subj,ok,it.word?12:15);
+ if(it._topic)recordTopic(it._topic,ok);
+ if(ok){sOK();confetti(8);if(it.word)speakEN(it.word.replace(/'/g,""));toast("¡Correcto! 🎉",true,1000);CH.ok++;}
+ else{sNO();CH.wrongTopics[it._topic]=(CH.wrongTopics[it._topic]||0)+1;
+  toast("Era: "+it.ops[it.a],false,1800);}
+ CH.i++;setTimeout(renderCH,ok?1000:1800);}
+async function finishCH(){
+ // refuerzo adaptativo: si falló mucho un tema, añade 2 retos extra de ese tema al final
+ const worst=Object.entries(CH.wrongTopics).sort((a,b)=>b[1]-a[1])[0];
+ if(worst&&worst[1]>=2&&!CH.reinforced){
+  CH.reinforced=true;
+  toast("💪 ¡Vamos a practicar "+(KID_TOPICS[worst[0]]?KID_TOPICS[worst[0]].name:"esto")+" un poco más!",false,2200);
+  const extra=await buildChallenges(worst[0],2);extra.forEach(it=>it._topic=worst[0]);
+  CH.items=CH.items.concat(extra);
+  return setTimeout(renderCH,2200);
+ }
+ nodeWin(starsFor(CH.ok,CH.items.length),CH.label);}
+
+/* ============ ORDENA LA FRASE ============ */
+const SENTENCES_ES=[["El","gato","duerme","en","la","cama"],["Yo","tomo","leche","caliente"],["La","niña","juega","con","la","pelota"],["Mi","perro","corre","muy","rápido"],["El","sol","brilla","en","el","cielo"],["Ana","come","una","manzana","roja"]];
+let OS={};
+function gameOrder(){setTheme("kid");OS={qs:shuffled(SENTENCES_ES).slice(0,4),i:0,ok:0};nextOS();}
+function nextOS(){
+ if(OS.i>=OS.qs.length)return nodeWin(starsFor(OS.ok,OS.qs.length),"Ordenar");
+ const correct=OS.qs[OS.i];OS.correct=correct;OS.built=[];
+ OS.pool=shuffled(correct.map((w,idx)=>({w,idx})));
+ renderOS();}
+function renderOS(){
+ const sentence=OS.built.map(b=>b.w).join(" ");
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(OS.qs.length,OS.i)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">🧩 Ordena la frase</h2>'
+ +'<button class="speaker small" onclick="speakES(\''+OS.correct.join(" ")+'\')">🔊 Escuchar cómo suena</button>'
+ +'<div class="card" style="min-height:70px;font-size:clamp(1.3rem,6vw,1.7rem);font-family:Fredoka;font-weight:600;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px">'+(sentence||'<span class="mut">Toca las palabras en orden…</span>')+'</div>'
+ +'<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px">'
+ + OS.pool.map((p,k)=>'<button class="kbtn yellow" style="display:inline-block;width:auto;margin:0;padding:12px 18px;font-size:clamp(1.1rem,5vw,1.4rem)'+(OS.used&&OS.used.includes(k)?';opacity:.3;pointer-events:none':'')+'" onclick="tapWord('+k+')">'+esc(p.w)+'</button>').join("")
+ +'</div><div style="height:14px"></div>'
+ +(OS.built.length?'<button class="kbtn white" onclick="OS.built=[];OS.used=[];renderOS()">🧽 Borrar</button>':''));}
+function tapWord(k){
+ if(!OS.used)OS.used=[];if(OS.used.includes(k))return;
+ OS.used.push(k);OS.built.push(OS.pool[k]);beep([480+OS.built.length*40],.07);
+ if(OS.built.length===OS.correct.length){
+  const ok=OS.built.every((b,idx)=>b.w===OS.correct[idx]);
+  recordAnswer("Ordenar",ok,25);
+  if(ok){sOK();confetti(12);speakES(OS.correct.join(" "));toast("¡Frase perfecta! 🌟",true,1500);OS.ok++;OS.i++;setTimeout(nextOS,1600);}
+  else{sNO();toast("Casi… escucha cómo va y prueba de nuevo",false,2000);OS.built=[];OS.used=[];setTimeout(renderOS,1200);}
+ }else renderOS();}
+
+/* ============ TRANSCRIPCIÓN POR VOZ (di la palabra) ============ */
+let VR={};
+function gameSay(){setTheme("kid");
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){return render(topbar("screenKidMap()")
+  +'<div class="card center"><div style="font-size:3rem">🎤</div><h2 style="margin:8px 0">Este juego usa el micrófono</h2>'
+  +'<p style="font-size:1.05rem;line-height:1.5">Funciona en <b>Google Chrome (Android)</b>. Abre la app ahí y permite el micrófono.</p>'
+  +'<button class="kbtn green" style="margin-top:14px" onclick="screenKidMap()">Volver</button></div>');}
+ const pool=[...EN_VOCAB.animals,...EN_VOCAB.colors,...EN_VOCAB.numbers];
+ VR={pool,round:0,ok:0,total:5};nextVR();}
+function nextVR(){
+ if(VR.round>=VR.total)return nodeWin(starsFor(VR.ok,VR.total),"Pronunciación");
+ const w=pick(VR.pool);VR.cur=w;
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(VR.total,VR.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">🎤 Di la palabra en inglés</h2>'
+ +'<div class="card encard"><div class="pic">'+w[2]+'</div><div class="en">'+w[0]+'</div><div class="es">'+w[1]+'</div></div>'
+ +'<button class="speaker" onclick="speakEN(\''+w[0]+'\')"><span class="ic">🔊</span> Escuchar primero</button>'
+ +'<button class="kbtn green" id="micbtn" onclick="startListen()">🎤 ¡Tocar y hablar!</button>'
+ +'<div id="vrfb"></div>');}
+function startListen(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const rec=new SR();rec.lang="en-US";rec.maxAlternatives=3;
+ document.getElementById("micbtn").textContent="🔴 Escuchando… ¡habla!";
+ document.getElementById("vrfb").innerHTML="";
+ rec.onresult=(e)=>{
+  const alts=[];for(let i=0;i<e.results[0].length;i++)alts.push(e.results[0][i].transcript.toLowerCase().trim());
+  const target=VR.cur[0].toLowerCase();
+  const ok=alts.some(a=>a===target||a.includes(target)||target.includes(a));
+  recordAnswer("Pronunciación",ok,20);
+  if(ok){sOK();confetti(12);VR.ok++;document.getElementById("vrfb").innerHTML='<div class="feedback fb-ok" style="background:var(--kid-green);color:#fff;border:4px solid var(--kid-ink);border-radius:16px;padding:14px;text-align:center;font-family:Fredoka;margin-top:12px">¡Muy bien dicho! 🎉</div>';}
+  else{sNO();document.getElementById("vrfb").innerHTML='<div style="background:var(--kid-red);color:#fff;border:4px solid var(--kid-ink);border-radius:16px;padding:14px;text-align:center;font-family:Fredoka;margin-top:12px">Escuché "'+esc(alts[0]||"...")+'". Escucha e intenta otra vez 🔊</div>';}
+  VR.round++;setTimeout(nextVR,2000);};
+ rec.onerror=()=>{document.getElementById("micbtn").textContent="🎤 ¡Tocar y hablar!";toast("No escuché bien, intenta de nuevo",false,1500);};
+ rec.onend=()=>{const b=document.getElementById("micbtn");if(b)b.textContent="🎤 ¡Tocar y hablar!";};
+ try{rec.start();}catch(e){}}
+
+/* ============ JUEGO: ROBOT ============ */
+let RB={};
+function gameRobot(startLvl){setTheme("kid");RB={lvl:startLvl,cmds:[],wins:0};renderRobot();}
+function renderRobot(){
+ const L=ROBOT_LEVELS[RB.lvl%ROBOT_LEVELS.length];
+ let cells="";
+ for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){
+  let c="";
+  if(x===L.start[0]&&y===L.start[1])c="🤖";
+  else if(x===L.goal[0]&&y===L.goal[1])c="⭐";
+  else if(L.walls.some(w=>w[0]===x&&w[1]===y))c="🪨";
+  cells+='<div class="cell" id="c'+x+'_'+y+'">'+c+'</div>';}
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:1.4rem">🤖 Programa al robot</h2>'
+ +'<p style="margin:4px 0 8px;font-size:1.05rem">Llévalo a la ⭐ — Pista: '+L.hint+'</p>'
+ +'<div class="robotgrid" style="grid-template-columns:repeat('+L.w+',1fr)">'+cells+'</div>'
+ +'<div class="cmdrow" id="cmdrow"></div>'
+ +'<div class="cmdbtns"><button onclick="addCmd(0)">⬆️</button><button onclick="addCmd(1)">⬇️</button><button onclick="addCmd(2)">⬅️</button><button onclick="addCmd(3)">➡️</button></div>'
+ +'<button class="kbtn green" onclick="runRobot()">▶️ ¡EJECUTAR!</button>'
+ +'<button class="kbtn white" onclick="RB.cmds=[];drawCmds()">🧽 Borrar programa</button>');
+ drawCmds();}
+const ARROWS=["⬆️","⬇️","⬅️","➡️"];
+function addCmd(i){if(RB.cmds.length<12){RB.cmds.push(i);beep([500+i*60],.08);drawCmds();}}
+function drawCmds(){document.getElementById("cmdrow").innerHTML=RB.cmds.map(c=>'<span class="cmd">'+ARROWS[c]+'</span>').join("")||'<span style="opacity:.5;font-size:1rem;padding:8px">Toca las flechas para armar tu programa…</span>';}
+function runRobot(){
+ const L=ROBOT_LEVELS[RB.lvl%ROBOT_LEVELS.length];
+ let[x,y]=L.start.slice();let i=0;
+ const step=()=>{
+  if(i>=RB.cmds.length)return finish();
+  const c=RB.cmds[i++];
+  const nx=x+(c===3?1:c===2?-1:0),ny=y+(c===1?1:c===0?-1:0);
+  if(nx<0||ny<0||nx>=L.w||ny>=L.h||L.walls.some(w=>w[0]===nx&&w[1]===ny)){
+   sNO();toast("💥 ¡Chocó! Revisa los pasos",false,1500);recordAnswer("Robot",false,25);
+   setTimeout(renderRobot,1400);return;}
+  document.getElementById("c"+x+"_"+y).textContent=(x===L.goal[0]&&y===L.goal[1])?"⭐":"";
+  x=nx;y=ny;document.getElementById("c"+x+"_"+y).textContent="🤖";beep([400],.06);
+  setTimeout(step,360);};
+ const finish=()=>{
+  const win=(x===L.goal[0]&&y===L.goal[1]);recordAnswer("Robot",win,25);
+  if(win){RB.wins++;sWIN();confetti(16);
+   if(RB.wins>=2)return nodeWin(3,"Robot");
+   toast("¡Llegó! 🎉 Uno más…",true,1300);
+   setTimeout(()=>{RB.lvl++;RB.cmds=[];renderRobot();},1400);}
+  else{sNO();toast("No llegó a la ⭐ — ¡ajusta el programa!",false,1500);}};
+ step();}
+
+/* ============ JUEGO: CUENTO LARGO ILUSTRADO ============ */
+let ST={};
+function gameStory(idx){setTheme("kid");
+ const c=CUENTOS[idx%CUENTOS.length];
+ ST={c,page:0,phase:"read",qi:0,ok:0};renderStory();}
+function renderStory(){
+ const c=ST.c;
+ if(ST.phase==="read"){
+  const p=c.pages[ST.page];
+  const last=ST.page===c.pages.length-1;
+  render(topbar("screenKidMap()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);margin-bottom:8px">📖 '+esc(c.title)+'</h2>'
+  +'<div class="progressdots">'+c.pages.map((x,i)=>'<i class="'+(i<=ST.page?"on":"")+'"></i>').join("")+'</div>'
+  +'<div class="scene">'+p.scene+'</div>'
+  +'<div class="card storytext">'+p.text.replace(/</g,"&lt;").replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>")+'</div>'
+  +'<button class="speaker" onclick="speakES(\''+esc(stripTags(p.text)).replace(/'/g,"\\'")+'\')"><span class="ic">🔊</span> Escuchar esta parte</button>'
+  +(last?'<button class="kbtn green" onclick="ST.phase=\'quiz\';renderStory()">Responder preguntas →</button>'
+        :'<button class="kbtn blue" onclick="ST.page++;renderStory()">Siguiente página →</button>')
+  +(ST.page>0?'<button class="kbtn white" onclick="ST.page--;renderStory()">← Volver atrás</button>':''));
+  return;}
+ // fase quiz
+ const q=c.qs[ST.qi];
+ if(!q)return nodeWin(starsFor(ST.ok,c.qs.length),"Comprensión");
+ const order=shuffled(q.ops.map((o,i)=>({o,i})));ST.order=order;
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.1rem,5vw,1.4rem);margin-bottom:8px">🧠 '+esc(c.title)+' — pregunta '+(ST.qi+1)+'/'+c.qs.length+'</h2>'
+ +'<div class="scene" style="font-size:clamp(2.4rem,11vw,3.6rem);min-height:80px">'+c.pages.map(p=>p.scene).join("")+'</div>'
+ +'<div class="bigq">'+esc(q.q)+'</div>'
+ +'<button class="speaker small" onclick="speakES(\''+esc(q.q).replace(/'/g,"\\'")+'\')">🔊 Leer pregunta</button>'
+ +order.map((it,k)=>'<button class="kbtn white" onclick="ansStory('+k+')" style="font-size:clamp(1.1rem,5vw,1.4rem)">'+esc(it.o)+'</button>').join(""));}
+function stripTags(s){return s.replace(/<\/?b>/g,"");}
+function ansStory(k){
+ const c=ST.c,q=c.qs[ST.qi],ok=ST.order[k].i===q.a;
+ recordAnswer("Comprensión",ok,30);
+ if(ok){sOK();confetti(10);toast("¡Muy bien pensado! 🌟",true,1200);ST.ok++;}
+ else{sNO();toast("La respuesta era: "+q.ops[q.a],false,2200);}
+ ST.qi++;setTimeout(renderStory,ok?1300:2300);}
+
+/* ============ HOME TEEN ============ */
+function screenTeenHome(){setTheme("teen");
+ const ai=S.geminiKey?'<button class="tbtn acc" onclick="screenAIGen()">✨ Generar reto nuevo con IA</button>':'';
+ render(topbar("screenStart()")
+ +'<div class="card" style="display:flex;align-items:center;justify-content:space-between">'
+ +'<div><h1 class="title">Hey, '+esc(prof().name)+' '+prof().emoji+'</h1><p class="mut">Reto rápido: responde antes de que acabe el tiempo y arma combos ⚡</p></div>'
+ +'<div class="eq"><i></i><i></i><i></i><i></i><i></i></div></div>'
+ +missionsHTML()+ai
+ +'<button class="tbtn" onclick="startQuiz(\'Química\',B_QUIMICA)">⚗️ &nbsp;Química <span class="mut">· reto cronometrado</span></button>'
+ +'<button class="tbtn" onclick="startQuiz(\'Física\',B_FISICA)">🚀 &nbsp;Física <span class="mut">· reto cronometrado</span></button>'
+ +'<button class="tbtn" onclick="screenReadList()">📖 &nbsp;Lecturas en inglés <span class="mut">· toca y traduce</span></button>'
+ +'<button class="tbtn" onclick="startFlash()">🎴 &nbsp;Flashcards de vocabulario</button>'
+ +'<button class="tbtn" onclick="startQuiz(\'Grammar\',B_GRAMMAR)">🇬🇧 &nbsp;Grammar challenge</button>'
+ +'<button class="tbtn" onclick="startComprension()">🧠 &nbsp;Comprensión lectora</button>'
+ +'<button class="tbtn" onclick="startQuiz(\'Lógica\',B_LOGICA)">💻 &nbsp;Lógica & código</button>'
+ +'<button class="tbtn" onclick="startQuiz(\'Música\',B_MUSICA)">🎧 &nbsp;Teoría musical</button>'
+ +'<button class="tbtn" onclick="startEar()">🎹 &nbsp;Entrena tu oído</button>');}
+
+/* ============ QUIZ TEEN: cronómetro + combos ============ */
+let QZ={};
+function startQuiz(subject,bank){setTheme("teen");
+ const rng=dailyRng(subject);
+ QZ={subject,bank,qs:shuffled(bank,rng).slice(0,8),i:0,ok:0,combo:0,maxCombo:0,score:0,t0:Date.now()};
+ renderQ();}
+function renderQ(){
+ clearInterval(QZ.tick);
+ const q=QZ.qs[QZ.i];
+ if(!q)return quizEnd();
+ QZ.order=shuffled(q.ops.map((o,i)=>({o,i})));
+ QZ.timeLeft=100;
+ const qtext=q.code?'<pre style="white-space:pre-wrap;background:#141127;border:1px solid #322B52;padding:14px;border-radius:14px;font-size:1rem;line-height:1.5">'+esc(q.q)+'</pre>':'<div class="bigq">'+esc(q.q)+'</div>';
+ const textBlock=q.t?'<div class="card" style="line-height:1.7;font-size:1.05rem">'+esc(q.t)+'</div>':'';
+ render(topbar("screenTeenHome()")
+ +'<div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(QZ.subject)+' · '+(QZ.i+1)+'/'+QZ.qs.length+'</b><b style="color:var(--teen-cyan)">'+QZ.score+' pts</b></div>'
+ +'<div class="timerbar"><div id="tb" style="width:100%"></div></div>'
+ +textBlock+qtext
+ +QZ.order.map((it,k)=>'<button class="tbtn opt" id="op'+k+'" onclick="ansQ('+k+')">'+esc(it.o)+'</button>').join(""));
+ QZ.tick=setInterval(()=>{QZ.timeLeft-=1.25;
+  const el=document.getElementById("tb");if(el)el.style.width=Math.max(0,QZ.timeLeft)+"%";
+  if(QZ.timeLeft<=0){clearInterval(QZ.tick);timeUp();}},250);}
+function timeUp(){
+ const q=QZ.qs[QZ.i];QZ.combo=0;sNO();
+ recordAnswer(QZ.subject,false,20);
+ toast("⏱️ ¡Tiempo! Era: "+esc(q.ops[q.a]),false,1900);
+ QZ.i++;setTimeout(renderQ,1800);}
+function ansQ(k){
+ clearInterval(QZ.tick);
+ const q=QZ.qs[QZ.i],ok=QZ.order[k].i===q.a;
+ const secs=Math.round((100-QZ.timeLeft)/5);
+ recordAnswer(QZ.subject,ok,secs);
+ document.querySelectorAll(".opt").forEach(b=>b.disabled=true);
+ if(ok){QZ.ok++;QZ.combo++;QZ.maxCombo=Math.max(QZ.maxCombo,QZ.combo);
+  const mult=Math.min(QZ.combo,4);
+  const pts=10*mult+Math.round(QZ.timeLeft/10);
+  QZ.score+=pts;prof().coins+=mult-1;
+  if(QZ.combo>=3)touchDay().combo3=true;
+  save();sOK();
+  if(QZ.combo>=2){const c=document.createElement("div");c.className="combo";c.textContent="⚡ COMBO x"+QZ.combo;document.body.appendChild(c);setTimeout(()=>c.remove(),900);}
+  toast("✓ +"+pts+" pts"+(QZ.combo>=2?" · combo x"+QZ.combo:""),true,900);}
+ else{QZ.combo=0;sNO();toast("Era: "+esc(q.ops[q.a]),false,2000);}
+ QZ.i++;setTimeout(renderQ,ok?950:1950);}
+function quizEnd(){
+ const pct=Math.round(QZ.ok/QZ.qs.length*100);
+ const best=prof().best[QZ.subject]||0;
+ const isRecord=QZ.score>best;
+ if(isRecord){prof().best[QZ.subject]=QZ.score;save();}
+ if(pct>=70){sWIN();confetti(26);}
+ render(topbar("screenTeenHome()")
+ +'<div class="card endcard"><div class="big">'+(pct>=80?"🏆":pct>=50?"🌟":"💪")+'</div>'
+ +'<h2>'+QZ.score+' puntos'+(isRecord?" · ¡NUEVO RÉCORD! 🎉":"")+'</h2>'
+ +'<p class="mut" style="margin-bottom:6px">'+QZ.ok+'/'+QZ.qs.length+' correctas ('+pct+'%) · mejor combo x'+QZ.maxCombo+'</p>'
+ +(best&&!isRecord?'<p class="mut" style="margin-bottom:14px">Tu récord en '+esc(QZ.subject)+': '+best+' pts</p>':'<div style="height:10px"></div>')
+ +(QZ.bank?'<button class="tbtn acc" onclick="startQuiz(QZ.subject,QZ.bank)">🔁 Superar mi puntaje</button>':'')
+ +'<button class="tbtn" style="text-align:center" onclick="screenTeenHome()">Volver al menú</button></div>');}
+
+/* ============ FLASHCARDS ============ */
+let FC={};
+function startFlash(){setTheme("teen");
+ FC={deck:shuffled(FLASHCARDS).slice(0,10),i:0,known:0};renderFlash();}
+function renderFlash(){
+ if(FC.i>=FC.deck.length){
+  sWIN();if(FC.known>=7)confetti(20);
+  return render(topbar("screenTeenHome()")
+  +'<div class="card endcard"><div class="big">🎴</div><h2>'+FC.known+' de '+FC.deck.length+' palabras dominadas</h2>'
+  +'<p class="mut" style="margin-bottom:16px">Las que marcaste como difíciles volverán a salir otro día</p>'
+  +'<button class="tbtn acc" onclick="startFlash()">Otra ronda 🔁</button>'
+  +'<button class="tbtn" style="text-align:center" onclick="screenTeenHome()">Volver</button></div>');}
+ const c=FC.deck[FC.i];
+ render(topbar("screenTeenHome()")
+ +'<p class="mut center" style="margin-bottom:10px">Carta '+(FC.i+1)+' de '+FC.deck.length+' · toca para voltear</p>'
+ +'<div class="flash" id="fc" onclick="document.getElementById(\'fc\').classList.toggle(\'flip\')"><div class="in">'
+ +'<div class="f">'+esc(c[0])+'<span class="hint">🇬🇧 inglés — toca para ver el significado</span></div>'
+ +'<div class="b">'+esc(c[1])+'<span class="hint">🇪🇸 español</span></div></div></div>'
+ +'<div style="display:flex;gap:12px">'
+ +'<button class="tbtn" style="flex:1;text-align:center;border-color:#DC2626;color:#FCA5A5" onclick="flashAns(false)">😅 No la sabía</button>'
+ +'<button class="tbtn" style="flex:1;text-align:center;border-color:#16A34A;color:#86EFAC" onclick="flashAns(true)">😎 ¡La sabía!</button></div>');}
+function flashAns(knew){
+ recordAnswer("Vocabulario",knew,8);
+ if(knew){FC.known++;sOK();}else sNO();
+ FC.i++;renderFlash();}
+
+/* ============ LECTURAS TAP-TRANSLATE ============ */
+function allReadings(){return B_LECTURAS.concat(S.aiBank.nina.filter(x=>x.type==="reading"));}
+function screenReadList(){setTheme("teen");
+ render(topbar("screenTeenHome()")
+ +'<h2 style="margin-bottom:4px">📖 Lecturas en inglés</h2>'
+ +'<p class="mut" style="margin-bottom:14px">Toca cualquier palabra punteada para ver su traducción al instante</p>'
+ +allReadings().map((r,i)=>'<button class="tbtn" onclick="openReading('+i+')">'+esc(r.title)+' <span class="mut">· nivel '+esc(r.level||"A2")+'</span></button>').join(""));}
+function openReading(i){
+ const r=allReadings()[i];
+ const html=r.text.split(/(\s+)/).map(tok=>{
+  const clean=tok.toLowerCase().replace(/[^a-z']/g,"");
+  if(r.words&&r.words[clean])return '<span class="word" onclick="showWord(this,\''+clean+'\','+i+')">'+esc(tok)+'</span>';
+  return esc(tok);}).join("");
+ render(topbar("screenReadList()")
+ +'<h2 style="margin-bottom:10px">'+esc(r.title)+'</h2>'
+ +'<div class="card" style="line-height:2.1;font-size:1.12rem">'+html+'</div>'
+ +'<div id="wordbox"></div>'
+ +'<button class="tbtn acc" onclick="readingQuiz('+i+')">Responder las preguntas →</button>');}
+function showWord(el,w,i){
+ el.classList.add("tapped");beep([880],.07);
+ const r=allReadings()[i];
+ document.getElementById("wordbox").innerHTML='<div class="card" style="border-color:var(--teen-cyan)"><b style="color:var(--teen-cyan);font-size:1.2rem">'+esc(w)+'</b> &nbsp;=&nbsp; <span style="font-size:1.1rem">'+esc(r.words[w])+'</span></div>';}
+function readingQuiz(i){
+ const r=allReadings()[i];touchDay().readDone=true;save();
+ QZ={subject:"Inglés-Lectura",qs:r.qs,i:0,ok:0,combo:0,maxCombo:0,score:0};renderQ();}
+function startComprension(){setTheme("teen");
+ const item=pick(B_COMPRENSION.concat(S.aiBank.nina.filter(x=>x.type==="comp")),dailyRng("comp"));
+ QZ={subject:"Comprensión",qs:item.qs.map(q=>({t:item.t,q:q.q,ops:q.ops,a:q.a})),i:0,ok:0,combo:0,maxCombo:0,score:0};renderQ();}
+
+/* ============ OÍDO MUSICAL ============ */
+const NOTES={"Do":261.6,"Re":293.7,"Mi":329.6,"Fa":349.2,"Sol":392,"La":440,"Si":493.9};
+let ER={};
+function startEar(){setTheme("teen");ER={i:0,ok:0,total:6};nextEar();}
+function nextEar(){
+ if(ER.i>=ER.total){sWIN();if(ER.ok>=4)confetti(18);
+  return render(topbar("screenTeenHome()")
+  +'<div class="card endcard"><div class="big">🎧</div><h2>'+ER.ok+'/'+ER.total+' notas identificadas</h2>'
+  +'<button class="tbtn acc" onclick="startEar()">Otra ronda 🔁</button>'
+  +'<button class="tbtn" style="text-align:center" onclick="screenTeenHome()">Volver</button></div>');}
+ const names=Object.keys(NOTES);ER.note=pick(names);
+ ER.opts=shuffled([ER.note,...shuffled(names.filter(n=>n!==ER.note)).slice(0,2)]);
+ render(topbar("screenTeenHome()")
+ +'<h2 style="margin-bottom:4px">🎹 ¿Qué nota suena?</h2>'
+ +'<p class="mut" style="margin-bottom:14px">Ronda '+(ER.i+1)+' de '+ER.total+' · compárala con el Do</p>'
+ +'<div style="display:flex;gap:12px"><button class="tbtn cyan" style="flex:1;text-align:center" onclick="tone(NOTES.Do,.8)">🔉 Do de referencia</button>'
+ +'<button class="tbtn acc" style="flex:1" onclick="tone(NOTES[ER.note],1)">🔊 Nota misteriosa</button></div>'
+ +ER.opts.map((n,k)=>'<button class="tbtn opt" style="text-align:center;font-size:1.25rem" onclick="ansEar('+k+')">'+n+'</button>').join(""));}
+function ansEar(k){
+ const ok=ER.opts[k]===ER.note;recordAnswer("Oído",ok,10);
+ if(ok){ER.ok++;sOK();toast("¡Exacto! Era "+ER.note,true,1100);}
+ else{sNO();toast("Era "+ER.note+" — escúchala de nuevo 👂",false,1500);tone(NOTES[ER.note],1);}
+ ER.i++;setTimeout(nextEar,1400);}
+
+/* ============ IA GEMINI ============ */
+async function geminiJSON(promptText){
+ const models=["gemini-2.0-flash","gemini-1.5-flash-latest","gemini-1.5-flash"];
+ let res=null;
+ for(const m of models){
+  res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
+   {method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({contents:[{parts:[{text:promptText}]}],generationConfig:{temperature:0.9}})});
+  if(res.ok)break;if(res.status!==404)break;}
+ if(!res||!res.ok)throw new Error("Error de la API ("+(res?res.status:"red")+"). Revisa la clave en el panel de padres.");
+ const data=await res.json();
+ let txt=(data.candidates&&data.candidates[0].content.parts.map(p=>p.text||"").join(""))||"";
+ txt=txt.replace(/```json|```/g,"").trim();
+ const a=txt.indexOf("{"),b=txt.lastIndexOf("}");
+ return JSON.parse(txt.slice(a,b+1));}
+function screenAIGen(){setTheme("teen");
+ render(topbar("screenTeenHome()")
+ +'<h2 style="margin-bottom:4px">✨ Reto generado por IA</h2><p class="mut" style="margin-bottom:14px">Gemini crea contenido nuevo solo para ti:</p>'
+ +'<button class="tbtn" onclick="aiGen(\'reading\')">📖 Nueva lectura en inglés (música / series)</button>'
+ +'<button class="tbtn" onclick="aiGen(\'comp\')">🧠 Nueva lectura de curiosidades científicas</button>'
+ +'<button class="tbtn" onclick="aiGen(\'quiz_quimica\')">⚗️ Quiz nuevo de química</button>'
+ +'<button class="tbtn" onclick="aiGen(\'quiz_fisica\')">🚀 Quiz nuevo de física</button>'
+ +'<div id="fb"></div>');}
+async function aiGen(kind){
+ document.getElementById("fb").innerHTML='<div class="card center"><span class="spin">⏳</span> Generando con IA…</div>';
+ const P={
+  reading:'Crea una lectura corta en inglés nivel A2-B1 para una estudiante de 14 años fan de la música. Responde SOLO JSON válido sin markdown: {"type":"reading","title":"Título","level":"A2","text":"70-100 palabras en inglés","words":{"palabra":"traducción español (mínimo 8 palabras que aparezcan en el texto, en minúscula)"},"qs":[{"q":"pregunta en inglés","ops":["correcta","mala","mala"],"a":0},{"q":"otra","ops":["correcta","mala","mala"],"a":0}]}',
+  comp:'Crea un texto breve en español (80-110 palabras) sobre una curiosidad científica real, nivel 9° grado. SOLO JSON: {"type":"comp","t":"texto","qs":[{"q":"pregunta","ops":["correcta","mala","mala"],"a":0},{"q":"pregunta2","ops":["correcta","mala","mala"],"a":0}]}',
+  quiz_quimica:'Crea 6 preguntas de química de 9° (tabla periódica, enlaces, reacciones, pH). SOLO JSON: {"type":"quiz","subject":"Química IA","qs":[{"q":"...","ops":["correcta","mala","mala"],"a":0}]} con 6 en qs.',
+  quiz_fisica:'Crea 6 preguntas de física de 9° (cinemática, Newton, energía). SOLO JSON: {"type":"quiz","subject":"Física IA","qs":[{"q":"...","ops":["correcta","mala","mala"],"a":0}]} con 6 en qs.'};
+ try{
+  const obj=await geminiJSON(P[kind]);
+  if(obj.type==="reading"||obj.type==="comp"){S.aiBank.nina.push(obj);save();
+   toast("✨ ¡Nuevo contenido agregado!",true,1300);
+   setTimeout(obj.type==="reading"?screenReadList:startComprension,1200);}
+  else if(obj.type==="quiz"){QZ={subject:obj.subject,qs:obj.qs,i:0,ok:0,combo:0,maxCombo:0,score:0};renderQ();}
+ }catch(e){document.getElementById("fb").innerHTML='<div class="card" style="border-color:#DC2626">'+esc(e.message||"No se pudo generar, intenta de nuevo.")+'</div>';}}
+
+/* ============ PANEL DE PADRES ============ */
+function screenParentLogin(){setTheme("parent");
+ render('<div style="margin-top:9vh"><div class="card"><h2>👨‍👩‍👧 Panel de padres</h2>'
+ +'<p class="mut" style="margin:8px 0 14px">Ingresa tu PIN (inicial: 1234)</p>'
+ +'<input type="password" id="pin" inputmode="numeric" placeholder="PIN">'
+ +'<button class="pbtn" onclick="checkPin()">Entrar</button>'
+ +'<button class="pbtn ghost" onclick="screenStart()">Volver</button><p id="fb"></p></div></div>');}
+function checkPin(){
+ if(document.getElementById("pin").value===S.pin){current.profile=null;screenParentDash();}
+ else document.getElementById("fb").innerHTML='<b style="color:#DC2626">PIN incorrecto</b>';}
+function last7(){const ds=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);
+ ds.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"));}return ds;}
+function profileReport(key){
+ const p=S.profiles[key];
+ const rows=Object.keys(p.stats).map(s=>{const st=p.stats[s];const pct=st.attempts?Math.round(st.correct/st.attempts*100):0;
+  return '<tr><td>'+esc(s)+'</td><td>'+st.attempts+'</td><td>'+st.correct+'</td><td><span class="tag">'+pct+'%</span></td><td>'+Math.round(st.sec/60)+' min</td></tr>';}).join("")
+  ||'<tr><td colspan="5" class="mut">Sin actividad todavía</td></tr>';
+ const days=last7(),vals=days.map(d=>p.days[d]?p.days[d].ex:0),max=Math.max(1,...vals);
+ const bars=days.map((d,i)=>'<div class="bar" style="height:'+(vals[i]/max*100)+'%"><span>'+d.slice(8)+'</span></div>').join("");
+ const extra=key==="nino"?' · 🌍 '+(p.worldWins?Object.values(p.worldWins).reduce((a,b)=>a+b,0):0)+' rondas · 🎒 '+((p.critters||[]).length)+' criaturas':'';
+ const signals=key==="nino"?signalsBlock(p):"";
+ return '<div class="card"><h3>'+p.emoji+' '+esc(p.name)+' <span class="mut" style="font-weight:600">· 🔥 '+p.streak+' días · 🪙 '+p.coins+' · Nv '+level(p.xp)+extra+'</span></h3>'
+ +'<table><tr><th>Tema</th><th>Intentos</th><th>Aciertos</th><th>%</th><th>Tiempo</th></tr>'+rows+'</table>'
+ +'<p class="mut" style="margin-top:16px"><b>Ejercicios por día — últimos 7 días</b></p>'
+ +'<div class="barchart">'+bars+'</div><div style="height:24px"></div>'+signals+'</div>';}
+function signalsBlock(p){
+ const s=p.signals;if(!s)return'';
+ const items=[];
+ const pct=(o)=>o.n>=6?Math.round(o.err/o.n*100):null;
+ const checkArea=(o,label,hint)=>{
+  if(!o||o.n<6){items.push('<li><span class="tag" style="background:rgba(100,116,139,.12);color:#64748B">Sin datos aún</span> '+label+' <span class="mut">(necesita más práctica para evaluar)</span></li>');return;}
+  const e=Math.round(o.err/o.n*100);
+  const slow=o.slow?Math.round(o.slow/o.n*100):0;
+  let color,word;
+  if(e>=45){color="#DC2626";word="Atención";}else if(e>=25){color="#D97706";word="En proceso";}else{color="#16A34A";word="Bien";}
+  items.push('<li><span class="tag" style="background:'+color+'22;color:'+color+'">'+word+'</span> <b>'+label+'</b>: '+e+'% de errores'+(slow>30?', y lee/responde despacio ('+slow+'% lento)':'')+'. <span class="mut">'+hint+'</span></li>');};
+ checkArea(s.read,"Lectura y letras","Si hay muchos errores o lentitud constante, vale la pena que un profesional evalúe la lectura.");
+ checkArea(s.math,"Matemáticas","Refuerza contando objetos reales antes de los números abstractos.");
+ checkArea(s.en,"Inglés","Repetir el audio en voz alta cada día acelera mucho el progreso.");
+ checkArea(s.seq,"Lógica y patrones","Los patrones desarrollan el razonamiento; juéguenlos juntos.");
+ return '<details style="margin-top:6px"><summary style="cursor:pointer;font-weight:800;color:var(--par-acc)">🔎 Señales de apoyo (orientativas)</summary>'
+ +'<div style="background:#FEF9F3;border:1px solid #F0E0CC;border-radius:12px;padding:14px;margin-top:10px">'
+ +'<p class="mut" style="margin-bottom:10px;font-size:.85rem"><b>Importante:</b> esto NO es un diagnóstico. Es solo un resumen de cómo le va por área para que tú decidas dónde reforzar o si consultar a un docente o especialista. Las dificultades de aprendizaje solo las diagnostica un profesional.</p>'
+ +'<ul style="margin-left:18px;line-height:1.7;font-size:.92rem">'+items.join("")+'</ul></div></details>';}
+function screenParentDash(){setTheme("parent");
+ render('<div class="topbar"><button class="back" onclick="screenStart()">←</button><b style="font-size:1.1rem">Panel de padres</b></div>'
+ +profileReport("nino")+profileReport("nina")
+ +'<div class="card"><h3>⚙️ Configuración</h3>'
+ +'<p class="mut" style="margin:12px 0 4px">Clave de API de Gemini (vive solo en este dispositivo)</p>'
+ +'<input type="password" id="gkey" placeholder="AIza..." value="'+esc(S.geminiKey)+'">'
+ +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
+ +'<p class="mut" style="margin:6px 0 4px">Nombres</p>'
+ +'<input type="text" id="nName" value="'+esc(S.profiles.nino.name)+'" placeholder="Nombre del niño">'
+ +'<input type="text" id="aName" value="'+esc(S.profiles.nina.name)+'" placeholder="Nombre de la niña">'
+ +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
+ +'<p class="tip">💡 Clave gratuita: <b>aistudio.google.com</b> → Get API key. Nunca la escribas dentro del archivo ni la subas a GitHub.</p></div>'
+ +'<div class="card"><h3>🗂️ Datos</h3><p class="mut" style="margin:8px 0">El progreso se guarda en cada dispositivo. Respáldalo o muévelo:</p>'
+ +'<button class="pbtn ghost" onclick="exportData()">⬇️ Exportar respaldo</button>'
+ +'<button class="pbtn ghost" onclick="document.getElementById(\'impfile\').click()">⬆️ Importar</button>'
+ +'<input type="file" id="impfile" class="hidden" accept=".json" onchange="importData(event)">'
+ +'<button class="pbtn danger" onclick="if(confirm(\'¿Borrar TODO el progreso?\')){localStorage.removeItem(\'academiaFam2\');location.reload();}">🗑️ Reiniciar todo</button>'
+ +'<p class="mut" style="margin-top:10px">Contenido creado por IA: '+S.aiBank.nina.length+' elementos</p></div>');}
+function saveSettings(){
+ S.geminiKey=document.getElementById("gkey").value.trim();
+ const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;
+ S.profiles.nino.name=document.getElementById("nName").value.trim()||"Explorador";
+ S.profiles.nina.name=document.getElementById("aName").value.trim()||"Estrella";
+ save();document.getElementById("fb").innerHTML=' <b style="color:var(--par-acc)">✓ Guardado</b>';}
+function exportData(){
+ const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="academia-respaldo-"+todayStr()+".json";a.click();}
+function importData(ev){
+ const f=ev.target.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{try{const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,JSON.parse(r.result));S=base;save();screenParentDash();}catch(e){alert("Archivo no válido");}};
+ r.readAsText(f);}
+
+/* ============ ARRANQUE ============ */
+screenStart();
+</script>
+</body>
+</html>
