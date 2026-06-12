@@ -1,107 +1,144 @@
 "use strict";
-/* ============ AVATAR PERSONALIZABLE + TIENDA ============ */
-const AV_SKINS=["#FFE0C2","#F1C27D","#C68642","#8D5524"];
-const AV_SHIRTS=["#FF6B6B","#3B82F6","#3EC97C","#FFC93C","#A78BFA","#EC4899"];
-const AV_HAIRS=["#2B1B12","#6B3F1D","#D9A441","#1E2A4A","#B91C1C","#7C3AED"];
-/* dónde se ancla cada accesorio: las gafas van en la CARA, el resto en la mano */
-function accSlot(e){return e==="🕶️"?"face":"hand";}
+/* ============ AVATAR DICEBEAR (estilo avataaars) + TIENDA ============ */
+/* El personaje se genera con DiceBear (open source, MIT): https://github.com/dicebear/dicebear
+   El SVG se descarga una vez y se guarda en el perfil → funciona offline después. */
+
+const DB_API="https://api.dicebear.com/9.x/avataaars/svg";
+const AV_SKINS=["614335","ae5d29","d08b5b","edb98a","fd9841","ffdbb4","f8d25c"];
+const AV_HAIR_STYLES=[["shortFlat","Clásico"],["shortRound","Redondito"],["shortWaved","Ondulado"],["shortCurly","Rizos cortos"],["theCaesar","César"],["curly","Rizado"],["fro","Afro"],["frizzle","Despeinado"],["bob","Bob"],["bun","Moño"],["longButNotTooLong","Largo"],["dreads01","Rastas"]];
+const AV_HAIR_COLORS=["2c1b18","4a312c","724133","a55728","b58143","d6b370","c93305","e8e1e1","ecdcbf","f59797"];
+const AV_EYES=[["default","Normal"],["happy","Feliz"],["hearts","Enamorado"],["squint","Pícaro"],["surprised","Sorprendido"],["wink","Guiño"]];
+const AV_MOUTHS=[["smile","Sonrisa"],["default","Normal"],["twinkle","Tierna"],["eating","Comiendo"],["tongue","Lengua"],["serious","Serio"]];
+const AV_CLOTHES=[["hoodie","Buzo"],["graphicShirt","Camiseta estampada"],["shirtCrewNeck","Camiseta"],["overall","Overol"],["blazerAndShirt","Blazer"],["collarAndSweater","Suéter"]];
+const AV_CLOTHES_COLORS=["ff5c5c","5199e4","a7ffc4","ffffb1","ff488e","929598","25557c","ffdeb5"];
+const AV_HAT_COLORS=["c93305","2c1b18","4a312c","724133","a55728","b58143","d6b370","e8e1e1","f59797","ecdcbf"];
+
 const SHOP_ITEMS=[
- // sombreros
- {id:"h_gorra",t:"hat",e:"🧢",n:"Gorra",pr:30},{id:"h_corona",t:"hat",e:"👑",n:"Corona",pr:80},
- {id:"h_mago",t:"hat",e:"🎩",n:"Sombrero de mago",pr:50},{id:"h_grad",t:"hat",e:"🎓",n:"Birrete",pr:40},
- {id:"h_casco",t:"hat",e:"⛑️",n:"Casco",pr:35},{id:"h_fiesta",t:"hat",e:"🎉",n:"Gorro de fiesta",pr:30},
- // accesorios
- {id:"a_gafas",t:"acc",e:"🕶️",n:"Gafas geniales",pr:25},{id:"a_guitarra",t:"acc",e:"🎸",n:"Guitarra",pr:45},
- {id:"a_balon",t:"acc",e:"⚽",n:"Balón",pr:25},{id:"a_patineta",t:"acc",e:"🛹",n:"Patineta",pr:40},
- {id:"a_varita",t:"acc",e:"🪄",n:"Varita mágica",pr:50},{id:"a_mochila",t:"acc",e:"🎒",n:"Mochila",pr:20},
- // fondos
- {id:"b_castillo",t:"bg",e:"🏰",n:"Castillo",pr:60},{id:"b_volcan",t:"bg",e:"🌋",n:"Volcán",pr:70},
- {id:"b_isla",t:"bg",e:"🏝️",n:"Isla",pr:60},{id:"b_cohete",t:"bg",e:"🚀",n:"Espacio",pr:90},
- {id:"b_arcoiris",t:"bg",e:"🌈",n:"Arcoíris",pr:50},{id:"b_campamento",t:"bg",e:"⛺",n:"Campamento",pr:50},
+ // gorros (DiceBear "top") — el color se cambia de verdad con hatColor
+ {id:"h_hat",t:"hat",e:"🤠",n:"Sombrero aventurero",pr:40,db:"hat"},
+ {id:"h_win1",t:"hat",e:"🥶",n:"Gorro polar",pr:30,db:"winterHat1"},
+ {id:"h_win2",t:"hat",e:"🧢",n:"Gorro de lana",pr:30,db:"winterHat02"},
+ {id:"h_win3",t:"hat",e:"🎿",n:"Gorro esquiador",pr:35,db:"winterHat03"},
+ {id:"h_win4",t:"hat",e:"❄️",n:"Gorro con pompón",pr:35,db:"winterHat04"},
+ {id:"h_turb",t:"hat",e:"🧞",n:"Turbante",pr:50,db:"turban"},
+ // gafas (DiceBear "accessories") — van en la cara de verdad
+ {id:"g_round",t:"face",e:"🤓",n:"Gafas redondas",pr:25,db:"round"},
+ {id:"g_sun",t:"face",e:"🕶️",n:"Gafas de sol",pr:30,db:"sunglasses"},
+ {id:"g_way",t:"face",e:"😎",n:"Wayfarer",pr:30,db:"wayfarers"},
+ {id:"g_p1",t:"face",e:"👓",n:"Gafas clásicas",pr:25,db:"prescription01"},
+ {id:"g_p2",t:"face",e:"🧐",n:"Gafas modernas",pr:25,db:"prescription02"},
+ {id:"g_kurt",t:"face",e:"🎸",n:"Gafas de rockstar",pr:45,db:"kurt"},
+ // compañeros de mano (se muestran junto al personaje)
+ {id:"a_guitarra",t:"hand",e:"🎸",n:"Guitarra",pr:45},{id:"a_balon",t:"hand",e:"⚽",n:"Balón",pr:25},
+ {id:"a_patineta",t:"hand",e:"🛹",n:"Patineta",pr:40},{id:"a_varita",t:"hand",e:"🪄",n:"Varita mágica",pr:50},
+ {id:"a_mochila",t:"hand",e:"🎒",n:"Mochila",pr:20},{id:"a_robot",t:"hand",e:"🤖",n:"Mini robot",pr:60},
+ // fondos degradados (DiceBear backgroundColor)
+ {id:"b_castillo",t:"bg",e:"🏰",n:"Castillo",pr:60,db:["b6e3f4","c0aede"]},
+ {id:"b_volcan",t:"bg",e:"🌋",n:"Volcán",pr:70,db:["ffdfbf","ff8a80"]},
+ {id:"b_isla",t:"bg",e:"🏝️",n:"Isla",pr:60,db:["a7ffc4","65c9ff"]},
+ {id:"b_cohete",t:"bg",e:"🚀",n:"Espacio",pr:90,db:["25557c","c0aede"]},
+ {id:"b_arcoiris",t:"bg",e:"🌈",n:"Arcoíris",pr:50,db:["ffafb9","b1e2ff"]},
+ {id:"b_campamento",t:"bg",e:"⛺",n:"Campamento",pr:50,db:["d1d4f9","a7ffc4"]},
  // mascotas legendarias
  {id:"p_uni",t:"pet",e:"🦄",n:"Unicornio Real",pr:200},{id:"p_dragon",t:"pet",e:"🐲",n:"Dragón Celeste",pr:300},
  {id:"p_fenix",t:"pet",e:"🦅",n:"Fénix Dorado",pr:350},{id:"p_lobo",t:"pet",e:"🐺",n:"Lobo Lunar",pr:250},
  {id:"p_leon",t:"pet",e:"🦁",n:"León Estelar",pr:500}];
-const SHOP_CATS=[["hat","🎩 Sombreros"],["acc","🎸 Accesorios"],["bg","🌈 Fondos"],["pet","✨ Mascotas legendarias"]];
+const SHOP_CATS=[["hat","🎩 Gorros (¡con color!)"],["face","🕶️ Gafas"],["hand","🎸 Compañeros"],["bg","🌈 Fondos"],["pet","✨ Mascotas legendarias"]];
+/* compras de la versión anterior → su equivalente nuevo */
+const SHOP_OLD_MAP={h_gorra:"h_win2",h_corona:"h_hat",h_mago:"h_hat",h_grad:"h_hat",h_casco:"h_win1",h_fiesta:"h_win4",a_gafas:"g_sun"};
 function shopItem(id){return SHOP_ITEMS.find(x=>x.id===id);}
 function avState(){const p=prof();
  if(!p.avatar)p.avatar={};
  const a=p.avatar;
- if(!a.skin)a.skin=AV_SKINS[0];
- if(!a.shirt)a.shirt=AV_SHIRTS[1];
- if(!a.hair)a.hair=AV_HAIRS[1];
- if(a.hat===undefined)a.hat=null;
- if(a.acc===undefined)a.acc=null;
- if(a.bg===undefined)a.bg=null;
- if(!a.hatHue)a.hatHue=0;
- if(!a.accHue)a.accHue=0;
+ if(!a.skin||!AV_SKINS.includes(a.skin))a.skin=AV_SKINS[3];
+ if(!a.hairStyle)a.hairStyle=AV_HAIR_STYLES[0][0];
+ if(!a.hairColor)a.hairColor=AV_HAIR_COLORS[1];
+ if(!a.eyes)a.eyes=AV_EYES[0][0];
+ if(!a.mouth)a.mouth=AV_MOUTHS[0][0];
+ if(!a.clothing)a.clothing=AV_CLOTHES[0][0];
+ if(!a.clothesColor)a.clothesColor=AV_CLOTHES_COLORS[1];
+ if(!a.hatColor)a.hatColor=AV_HAT_COLORS[0];
+ if(a.hatId===undefined)a.hatId=null;
+ if(a.glassId===undefined)a.glassId=null;
+ if(a.handId===undefined)a.handId=null;
+ if(a.bgId===undefined)a.bgId=null;
  if(!p.owned)p.owned=[];
+ // migrar compras viejas al catálogo nuevo
+ p.owned=p.owned.map(id=>SHOP_OLD_MAP[id]||id).filter(id=>shopItem(id));
  return a;}
 function legendaryPet(){const p=prof();if(!p||!p.activePet)return null;const it=shopItem(p.activePet);return it?{e:it.e,n:it.n}:null;}
-/* Personaje de CUERPO COMPLETO en SVG: la gorra se ancla a la cabeza y el accesorio a la mano */
-function avatarHTML(px){const a=avState();const h=Math.round(px*1.45);
- const svg='<svg viewBox="0 0 120 174" style="width:100%;height:100%;position:relative;z-index:1;display:block">'
- +'<ellipse cx="60" cy="166" rx="34" ry="6" fill="rgba(30,42,74,.18)"/>'
- +'<rect x="44" y="116" width="13" height="36" rx="6" fill="#39466B"/>'
- +'<rect x="63" y="116" width="13" height="36" rx="6" fill="#39466B"/>'
- +'<ellipse cx="50" cy="156" rx="11" ry="6" fill="#1E2A4A"/>'
- +'<ellipse cx="70" cy="156" rx="11" ry="6" fill="#1E2A4A"/>'
- +'<rect x="25" y="72" width="12" height="38" rx="6" fill="'+a.shirt+'" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<rect x="83" y="72" width="12" height="38" rx="6" fill="'+a.shirt+'" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<circle cx="31" cy="113" r="7" fill="'+a.skin+'" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<circle cx="89" cy="113" r="7" fill="'+a.skin+'" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<rect x="36" y="66" width="48" height="56" rx="16" fill="'+a.shirt+'" stroke="#1E2A4A" stroke-width="3"/>'
- +'<circle cx="60" cy="36" r="27" fill="'+a.skin+'" stroke="#1E2A4A" stroke-width="3"/>'
- +'<path d="M34 32 Q34 9 60 9 Q86 9 86 32 Q73 17 60 20 Q47 17 34 32 Z" fill="'+a.hair+'" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<circle cx="50" cy="34" r="3.4" fill="#1E2A4A"/><circle cx="70" cy="34" r="3.4" fill="#1E2A4A"/>'
- +'<path d="M50 45 Q60 54 70 45" stroke="#1E2A4A" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
- +'<circle cx="43" cy="41" r="3.2" fill="rgba(255,107,107,.45)"/><circle cx="77" cy="41" r="3.2" fill="rgba(255,107,107,.45)"/>'
- +'</svg>';
- const hueF=d=>d?'filter:hue-rotate('+d+'deg) saturate(1.15);':'';
- const accIsFace=a.acc&&accSlot(a.acc)==="face";
- return '<span style="position:relative;display:inline-block;width:'+px+'px;height:'+h+'px;vertical-align:middle">'
- +(a.bg?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.95)+'px;opacity:.4;z-index:0">'+a.bg+'</span>':'')
- +svg
- // gorra: pequeña y SOBRE el pelo, nunca tapa la cara
- +(a.hat?'<span style="position:absolute;left:50%;top:-'+Math.round(h*0.055)+'px;transform:translateX(-50%) rotate(-5deg);font-size:'+Math.round(px*0.3)+'px;line-height:1;z-index:2;'+hueF(a.hatHue)+'">'+a.hat+'</span>':'')
- // gafas: centradas en los ojos
- +(accIsFace?'<span style="position:absolute;left:50%;top:'+Math.round(h*0.115)+'px;transform:translateX(-50%);font-size:'+Math.round(px*0.34)+'px;line-height:1;z-index:2;'+hueF(a.accHue)+'">'+a.acc+'</span>':'')
- // demás accesorios: en la mano
- +(a.acc&&!accIsFace?'<span style="position:absolute;left:'+Math.round(px*0.62)+'px;top:'+Math.round(h*0.56)+'px;font-size:'+Math.round(px*0.36)+'px;line-height:1;z-index:2;'+hueF(a.accHue)+'">'+a.acc+'</span>':'')
+/* URL de DiceBear según el look actual */
+function avatarKey(){const a=avState();
+ const ps=["seed=academia","eyes="+a.eyes,"mouth="+a.mouth,"skinColor="+a.skin,
+  "clothing="+a.clothing,"clothesColor="+a.clothesColor,"eyebrows=default"];
+ const hat=a.hatId&&shopItem(a.hatId);
+ if(hat){ps.push("top="+hat.db,"hatColor="+a.hatColor);}
+ else ps.push("top="+a.hairStyle,"hairColor="+a.hairColor);
+ const gl=a.glassId&&shopItem(a.glassId);
+ if(gl)ps.push("accessories="+gl.db,"accessoriesProbability=100");
+ const bg=a.bgId&&shopItem(a.bgId);
+ if(bg)ps.push("backgroundColor="+bg.db.join(","),"backgroundType=gradientLinear");
+ return DB_API+"?"+ps.join("&");}
+/* descarga el SVG una vez y lo guarda en el perfil (offline después) */
+function avatarEnsure(cb){const p=prof();const key=avatarKey();
+ if(p.avatarSvg&&p.avatarKey===key)return;
+ fetch(key).then(r=>r.text()).then(t=>{
+  if(t&&t.indexOf("<svg")>=0){p.avatarSvg=t;p.avatarKey=key;save();if(cb)cb();}
+ }).catch(()=>{});}
+function avatarHTML(px){const p=prof();const a=avState();
+ const ready=p.avatarSvg&&p.avatarKey===avatarKey();
+ const inner=ready
+  ?p.avatarSvg.replace("<svg",'<svg style="width:100%;height:100%;display:block" ')
+  :'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.5)+'px;background:#EAF2FF;border-radius:18px">🙂</div>';
+ const hand=a.handId&&shopItem(a.handId);
+ return '<span style="position:relative;display:inline-block;width:'+px+'px;height:'+px+'px;vertical-align:middle;border-radius:18px;overflow:visible">'
+ +'<span style="position:absolute;inset:0;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#fff">'+inner+'</span>'
+ +(hand?'<span style="position:absolute;right:-'+Math.round(px*0.08)+'px;bottom:-'+Math.round(px*0.05)+'px;font-size:'+Math.round(px*0.34)+'px;line-height:1;z-index:2;filter:drop-shadow(0 2px 0 rgba(30,42,74,.5))">'+hand.e+'</span>':'')
  +'</span>';}
+/* ---- Pantalla MI PERSONAJE ---- */
+const AV_FIELD_ARRS={hairStyle:()=>AV_HAIR_STYLES,eyes:()=>AV_EYES,mouth:()=>AV_MOUTHS,clothing:()=>AV_CLOTHES};
+function avCycle(field,dir){const a=avState();
+ const vals=AV_FIELD_ARRS[field]().map(x=>x[0]);
+ let i=vals.indexOf(a[field]);i=(i+dir+vals.length)%vals.length;
+ a[field]=vals[i];save();beep([560],.06);avatarEnsure(screenAvatar);screenAvatar();}
+function avSet(field,v){const a=avState();a[field]=v;save();sOK();avatarEnsure(screenAvatar);screenAvatar();}
 function screenAvatar(){setTheme("kid");
  const p=prof(),a=avState();
+ avatarEnsure(screenAvatar);
+ const cyc=(label,field,arr)=>{
+  const cur=arr.find(x=>x[0]===a[field]);
+  return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0"><b style="flex:1">'+label+'</b>'
+  +'<button class="kbtn white" style="display:inline-block;width:auto;margin:0;padding:8px 16px;min-height:44px" onclick="avCycle(\''+field+'\',-1)">◀</button>'
+  +'<span style="font-family:Fredoka;font-weight:600;min-width:110px;text-align:center">'+(cur?cur[1]:a[field])+'</span>'
+  +'<button class="kbtn white" style="display:inline-block;width:auto;margin:0;padding:8px 16px;min-height:44px" onclick="avCycle(\''+field+'\',1)">▶</button></div>';};
+ const swatch=(hexes,field)=>'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">'
+  +hexes.map(c=>'<button onclick="avSet(\''+field+'\',\''+c+'\')" style="width:44px;height:44px;border-radius:50%;border:3px solid var(--kid-ink);background:#'+c+';box-shadow:0 3px 0 rgba(30,42,74,.6);'+(a[field]===c?'outline:4px solid var(--kid-green);':'')+'"></button>').join("")+'</div>';
  const ownedBy=t=>p.owned.map(shopItem).filter(x=>x&&x.t===t);
  const eqBtns=(t,key)=>{const its=ownedBy(t);
-  if(!its.length)return '<p class="mut" style="font-size:.9rem;margin:4px 0">Aún no tienes — ¡cómpralos en la tienda! 🛍️</p>';
+  if(!its.length)return '<p class="mut" style="font-size:.9rem;margin:4px 0">Aún no tienes — ¡míralos en la tienda! 🛍️</p>';
   return '<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0">'+its.map(it=>
-   '<button class="kbtn '+(a[key]===it.e?'green':'white')+'" style="display:inline-block;width:auto;margin:0;padding:10px 14px;font-size:1.6rem" onclick="avEquip(\''+it.id+'\')">'+it.e+(a[key]===it.e?' ✓':'')+'</button>').join("")+'</div>';};
- const swatch=(colors,key,fn)=>'<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">'
-  +colors.map(c=>'<button onclick="'+fn+'(\''+c.replace("#","%23")+'\')" style="width:52px;height:52px;border-radius:50%;border:4px solid var(--kid-ink);background:'+c+';box-shadow:0 4px 0 rgba(30,42,74,.7);'+(a[key]===c?'outline:4px solid var(--kid-green);':'')+'"></button>').join("")+'</div>';
- const hueDots=(key,fn)=>!a[key.replace("Hue","")]?'':'<p style="font-size:.85rem;margin-top:8px;font-weight:600">Cambiar color:</p><div style="display:flex;gap:8px;margin-top:4px">'
-  +[0,60,120,180,240,300].map(d=>'<button onclick="'+fn+'('+d+')" style="width:38px;height:38px;border-radius:50%;border:3px solid var(--kid-ink);background:hsl('+((210+d)%360)+',75%,55%);'+(a[key]===d?'outline:3px solid var(--kid-green);':'')+'"></button>').join("")+'</div>';
+   '<button class="kbtn '+(a[key]===it.id?'green':'white')+'" style="display:inline-block;width:auto;margin:0;padding:10px 14px;font-size:1rem" onclick="avEquip(\''+it.id+'\')">'+it.e+' '+it.n+(a[key]===it.id?' ✓':'')+'</button>').join("")+'</div>';};
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">😎 Mi personaje</h2>'
- +'<div class="card center" style="padding:20px">'+avatarHTML(150)+'</div>'
- +'<div class="card"><b>🖐️ Tu piel</b>'+swatch(AV_SKINS,"skin","avSetSkin")+'</div>'
- +'<div class="card"><b>💇 Tu pelo</b>'+swatch(AV_HAIRS,"hair","avSetHair")+'</div>'
- +'<div class="card"><b>👕 Tu camiseta</b>'+swatch(AV_SHIRTS,"shirt","avSetShirt")+'</div>'
- +'<div class="card"><b>🎩 Sombrero</b>'+eqBtns("hat","hat")+hueDots("hatHue","avSetHatHue")+'</div>'
- +'<div class="card"><b>🎸 Accesorio</b>'+eqBtns("acc","acc")+hueDots("accHue","avSetAccHue")+'</div>'
- +'<div class="card"><b>🌈 Fondo</b>'+eqBtns("bg","bg")+'</div>'
+ +'<div class="card center" style="padding:18px">'+avatarHTML(170)+'</div>'
+ +'<div class="card">'+cyc("💇 Peinado","hairStyle",AV_HAIR_STYLES)+cyc("👀 Ojos","eyes",AV_EYES)+cyc("👄 Boca","mouth",AV_MOUTHS)+cyc("👕 Ropa","clothing",AV_CLOTHES)+'</div>'
+ +'<div class="card"><b>🖐️ Color de piel</b>'+swatch(AV_SKINS,"skin")+'</div>'
+ +'<div class="card"><b>💇 Color de pelo</b>'+swatch(AV_HAIR_COLORS,"hairColor")+'</div>'
+ +'<div class="card"><b>👕 Color de ropa</b>'+swatch(AV_CLOTHES_COLORS,"clothesColor")+'</div>'
+ +'<div class="card"><b>🎩 Gorro</b>'+eqBtns("hat","hatId")+(a.hatId?'<p style="font-size:.85rem;margin-top:6px;font-weight:600">Color del gorro:</p>'+swatch(AV_HAT_COLORS,"hatColor"):'')+'</div>'
+ +'<div class="card"><b>🕶️ Gafas</b>'+eqBtns("face","glassId")+'</div>'
+ +'<div class="card"><b>🎸 Compañero</b>'+eqBtns("hand","handId")+'</div>'
+ +'<div class="card"><b>🌈 Fondo</b>'+eqBtns("bg","bgId")+'</div>'
+ +'<p class="audiotip">💡 Cambiar el look necesita internet una vez; después tu personaje queda guardado y se ve sin conexión.</p>'
  +'<button class="kbtn yellow" onclick="screenShop()">🛍️ Ir a la tienda</button>');}
-function avSetSkin(c){avState().skin=decodeURIComponent(c);save();sOK();screenAvatar();}
-function avSetShirt(c){avState().shirt=decodeURIComponent(c);save();sOK();screenAvatar();}
-function avSetHair(c){avState().hair=decodeURIComponent(c);save();sOK();screenAvatar();}
-function avSetHatHue(d){avState().hatHue=d;save();beep([600],.07);screenAvatar();}
-function avSetAccHue(d){avState().accHue=d;save();beep([600],.07);screenAvatar();}
 function avEquip(id){const it=shopItem(id),a=avState();
  if(!it)return;
- const key=it.t==="hat"?"hat":it.t==="acc"?"acc":"bg";
- a[key]=a[key]===it.e?null:it.e; // tocar de nuevo lo quita
- save();beep([600],.08);screenAvatar();}
+ const key=it.t==="hat"?"hatId":it.t==="face"?"glassId":it.t==="hand"?"handId":"bgId";
+ a[key]=a[key]===id?null:id; // tocar de nuevo lo quita
+ save();beep([600],.08);avatarEnsure(screenAvatar);screenAvatar();}
+/* ---- TIENDA ---- */
 function screenShop(){setTheme("kid");
- const p=prof();avState();
+ const p=prof();avState();avatarEnsure(screenShop);
  const cats=SHOP_CATS.map(([t,title])=>{
   const items=SHOP_ITEMS.filter(x=>x.t===t).map(it=>{
    const owned=p.owned.includes(it.id)||(p.legendaries||[]).includes(it.id);
@@ -117,7 +154,7 @@ function screenShop(){setTheme("kid");
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🛍️ La tienda</h2>'
  +'<p class="center" style="margin-bottom:12px">Tienes <b>'+p.coins+' 🪙</b> — gana más jugando y aprendiendo</p>'
- +'<div class="card center" style="padding:14px">'+avatarHTML(90)+'<br><button class="kbtn blue" style="margin-top:10px" onclick="screenAvatar()">😎 Personalizar mi personaje</button></div>'
+ +'<div class="card center" style="padding:14px">'+avatarHTML(110)+'<br><button class="kbtn blue" style="margin-top:12px" onclick="screenAvatar()">😎 Personalizar mi personaje</button></div>'
  +cats);}
 function shopBuy(id){const it=shopItem(id),p=prof();
  if(!it)return;
@@ -129,5 +166,5 @@ function shopBuy(id){const it=shopItem(id),p=prof();
  setTimeout(screenShop,600);}
 function shopPet(id){const p=prof();p.activePet=p.activePet===id?null:id;save();beep([600],.08);screenShop();}
 function avEquipFromShop(id){const it=shopItem(id),a=avState();
- const key=it.t==="hat"?"hat":it.t==="acc"?"acc":"bg";
- a[key]=it.e;save();sOK();toast("¡Equipado! 😎",true,1000);screenShop();}
+ const key=it.t==="hat"?"hatId":it.t==="face"?"glassId":it.t==="hand"?"handId":"bgId";
+ a[key]=id;save();sOK();toast("¡Equipado! 😎",true,1000);avatarEnsure(screenShop);screenShop();}
