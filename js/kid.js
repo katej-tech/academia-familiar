@@ -478,8 +478,11 @@ function critterCount(id){return critters().filter(x=>x===id).length;}
 function uniqueCritters(){return new Set(critters()).size;}
 function critterForm(c,count){return c.forms[count>=5?2:count>=3?1:0];}
 function maybeCritter(){
- // aparece de vez en cuando (no siempre): ~1 de cada 4 juegos ganados
- if(Math.random()>=0.28)return null;
+ // aparece seguido pero no siempre (~1 de cada 3), y NUNCA más de 4 victorias sin premio
+ const p=prof();
+ p.sinceCritter=(p.sinceCritter||0)+1;
+ if(Math.random()>=0.35&&p.sinceCritter<4){save();return null;}
+ p.sinceCritter=0;
  const owned=critters();
  const news=CRITTERS.filter(c=>!owned.includes(c.id));
  let c;
