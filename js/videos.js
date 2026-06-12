@@ -59,11 +59,14 @@ async function geminiImage(promptText){
   }catch(e){}}
  throw new Error("No se pudo generar la imagen");}
 async function illustratePage(){
- if(!S.geminiKey)return toast("Activa la clave de Gemini en el panel de padres",false,1800);
- const c=ST.c,p=c.pages[ST.page];
- if(p.img)return;
- const btn=document.getElementById("illubtn");if(btn){btn.disabled=true;btn.textContent="🎨 Pintando…";}
+ if(!S.geminiKey)return;
+ const c=ST.c,p=c.pages[ST.page],myPage=ST.page;
+ if(p.img||p.imgBusy)return;
+ p.imgBusy=true;
  try{
-  p.img=await geminiImage("Ilustración infantil tierna y colorida, estilo libro de cuentos, sin texto: "+stripTags(p.text)+" (cuento: "+c.title+")");
-  renderStory();
- }catch(e){toast("No se pudo ilustrar, intenta de nuevo",false,1600);if(btn){btn.disabled=false;btn.textContent="🎨 Ilustrar con IA";}}}
+  p.img=await geminiImage("Ilustración infantil tierna y colorida, estilo libro de cuentos, sin texto ni letras: "+stripTags(p.text)+" (cuento: "+c.title+")");
+  p.imgBusy=false;
+  // solo re-pinta si el niño sigue en esa página
+  if(ST.c===c&&ST.page===myPage&&ST.phase==="read")renderStory();
+ }catch(e){p.imgBusy=false;p.imgFail=true;
+  if(ST.c===c&&ST.page===myPage&&ST.phase==="read")renderStory();}}

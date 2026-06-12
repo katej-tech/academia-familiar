@@ -29,8 +29,8 @@ function renderQ(){
  if(!q)return quizEnd();
  QZ.order=shuffled(q.ops.map((o,i)=>({o,i})));
  QZ.timeLeft=100;
- const qtext=q.code?'<pre style="white-space:pre-wrap;background:#141127;border:1px solid #322B52;padding:14px;border-radius:14px;font-size:1rem;line-height:1.5">'+esc(q.q)+'</pre>':'<div class="bigq">'+esc(q.q)+'</div>';
- const textBlock=q.t?'<div class="card" style="line-height:1.7;font-size:1.05rem">'+esc(q.t)+'</div>':'';
+ const qtext=q.code?'<pre style="white-space:pre-wrap;background:#141127;border:1px solid #322B52;padding:14px;border-radius:14px;font-size:1rem;line-height:1.5">'+esc(q.q)+'</pre>':'<div class="bigq">'+esc(stripHTML(q.q))+'</div>';
+ const textBlock=q.t?'<div class="card" style="line-height:1.7;font-size:1.05rem">'+esc(stripHTML(q.t))+'</div>':'';
  render(topbar("screenTeenHome()")
  +'<div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(QZ.subject)+' · '+(QZ.i+1)+'/'+QZ.qs.length+'</b><b style="color:var(--teen-cyan)">'+QZ.score+' pts</b></div>'
  +'<div class="timerbar"><div id="tb" style="width:100%"></div></div>'
@@ -155,14 +155,16 @@ function ansEar(k){
 
 /* ============ IA GEMINI ============ */
 async function geminiJSON(promptText){
- const models=["gemini-2.0-flash","gemini-1.5-flash-latest","gemini-1.5-flash"];
+ const models=["gemini-2.5-flash","gemini-2.0-flash","gemini-flash-latest"];
  let res=null;
  for(const m of models){
   res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
    {method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({contents:[{parts:[{text:promptText}]}],generationConfig:{temperature:0.9}})});
   if(res.ok)break;if(res.status!==404)break;}
- if(!res||!res.ok)throw new Error("Error de la API ("+(res?res.status:"red")+"). Revisa la clave en el panel de padres.");
+ if(!res||!res.ok){
+  let detalle="";try{const j=await res.json();detalle=(j.error&&j.error.message)||"";}catch(e){}
+  throw new Error("Error de la API ("+(res?res.status:"red")+")"+(detalle?": "+detalle.slice(0,130):"")+" — prueba la clave en el panel de padres.");}
  const data=await res.json();
  let txt=(data.candidates&&data.candidates[0].content.parts.map(p=>p.text||"").join(""))||"";
  txt=txt.replace(/```json|```/g,"").trim();

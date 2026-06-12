@@ -48,7 +48,9 @@ function screenParentDash(){setTheme("parent");
  +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
  +'<div class="card"><h3>⚙️ Configuración</h3>'
  +'<p class="mut" style="margin:12px 0 4px">Clave de API de Gemini (vive solo en este dispositivo)</p>'
- +'<input type="password" id="gkey" placeholder="AIza..." value="'+esc(S.geminiKey)+'">'
+ +'<div style="display:flex;gap:8px;align-items:stretch"><input type="password" id="gkey" style="flex:1;margin:0" placeholder="AIza..." value="'+esc(S.geminiKey)+'">'
+ +'<button class="pbtn ghost" style="width:auto;padding:0 14px;margin:0" onclick="toggleKeyVisible()" title="Mostrar/ocultar">👁</button></div>'
+ +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button><div id="keyfb" style="margin:4px 0"></div>'
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
  +'<p class="mut" style="margin:6px 0 4px">Nombres</p>'
  +'<input type="text" id="nName" value="'+esc(S.profiles.nino.name)+'" placeholder="Nombre del niño">'
@@ -64,6 +66,20 @@ function screenParentDash(){setTheme("parent");
  +'<div class="card"><h3>📱 Instalar como app</h3>'
  +'<p class="mut" style="margin:8px 0;line-height:1.6">En el celular o tablet (Chrome de Android): abre la página, toca el menú <b>⋮</b> y elige <b>"Agregar a pantalla de inicio"</b> o <b>"Instalar app"</b>. Queda con su icono, a pantalla completa y funciona sin internet (la IA sí necesita conexión).</p>'
  +'<p class="mut">Versión '+APP_VERSION+'</p></div>');}
+function toggleKeyVisible(){const i=document.getElementById("gkey");i.type=i.type==="password"?"text":"password";}
+async function testGeminiKey(){
+ const k=document.getElementById("gkey").value.trim();
+ const fb=document.getElementById("keyfb");
+ if(!k){fb.innerHTML='<b style="color:#DC2626">Escribe la clave primero</b>';return;}
+ fb.innerHTML='⏳ Probando con Google…';
+ try{
+  const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(k),
+   {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Responde solo: OK"}]}]})});
+  if(res.ok){S.geminiKey=k;save();fb.innerHTML='<b style="color:#16A34A">✓ ¡Funciona! Clave guardada — la IA ya está activa</b>';}
+  else{let m="";try{const j=await res.json();m=(j.error&&j.error.message)||"";}catch(e){}
+   fb.innerHTML='<b style="color:#DC2626">✗ Error '+res.status+'</b> <span class="mut" style="font-size:.85rem">'+esc(m.slice(0,140))+'</span>'
+   +'<p class="mut" style="font-size:.85rem;margin-top:4px">Tip: cópiala de nuevo completa desde aistudio.google.com (empieza por AIza, sin espacios).</p>';}
+ }catch(e){fb.innerHTML='<b style="color:#DC2626">Sin conexión — intenta de nuevo</b>';}}
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;

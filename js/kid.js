@@ -1,8 +1,18 @@
 /* ============ PANTALLA INICIAL ============ */
+/* recordatorio: si jugó ayer y hoy no, avisa que la racha está en riesgo */
+function streakReminderHTML(){
+ const y=new Date();y.setDate(y.getDate()-1);
+ const ys=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+ const msgs=[];
+ ["nino","nina"].forEach(k=>{const p=S.profiles[k];
+  if(p.streak>0&&p.lastDay===ys)msgs.push("🔥 <b>"+esc(p.name)+"</b>: ¡juega hoy para no perder tu racha de "+p.streak+(p.streak===1?" día":" días")+"!");});
+ if(!msgs.length)return "";
+ return '<div class="card" style="border:3px solid #F59E0B;background:#FFF7E0;font-size:1rem;line-height:1.6">'+msgs.join("<br>")+'</div>';}
 function screenStart(){setTheme("parent");current.profile=null;
  render('<div style="margin-top:7vh">'
  +'<h1 class="title center" style="font-size:2rem">🏠 Academia Familiar</h1>'
  +'<p class="center mut" style="margin-bottom:26px;font-size:1.05rem">¿Quién va a jugar hoy?</p>'
+ +streakReminderHTML()
  +'<div class="card profilecard" onclick="enterKid()"><span class="av">'+S.profiles.nino.emoji+'</span><b style="font-size:1.35rem">'+esc(S.profiles.nino.name)+'</b><br><span class="mut">Mundo de Aventuras · 1°</span></div>'
  +'<div class="card profilecard" onclick="enterTeen()"><span class="av">'+S.profiles.nina.emoji+'</span><b style="font-size:1.35rem">'+esc(S.profiles.nina.name)+'</b><br><span class="mut">Studio de retos · 9°</span></div>'
  +'<p class="center" style="margin-top:20px"><button class="pbtn ghost" onclick="screenParentLogin()">👨‍👩‍👧 Panel de padres</button></p></div>');}
@@ -61,7 +71,8 @@ function screenStoryPick(){setTheme("kid");
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">📖 Cuentos</h2>'
  +'<p class="center" style="margin-bottom:14px">Lee, escucha y responde</p>'
  +CUENTOS.map((c,i)=>'<button class="kbtn yellow" onclick="gameStory('+i+')"><span style="font-size:1.6rem">'+c.pages[0].scene.split(/(?=)/)[0]+'</span> '+esc(c.title)+'</button>').join("")
- +(S.geminiKey?'<button class="kbtn green" onclick="aiStoryKid()">✨ Cuento nuevo con IA</button>':'<p class="audiotip">💡 Activa la clave de Gemini en el panel de padres para cuentos nuevos infinitos.</p>'));}
+ +'<button class="kbtn blue" onclick="screenStoryEN()">🇬🇧 Cuentos en inglés (toca y traduce)</button>'
+ +(S.geminiKey?'<button class="kbtn green" onclick="aiStoryKid()">✨ Cuento nuevo con IA</button>':'<p class="audiotip">💡 Activa la clave de Gemini en el panel de padres para cuentos nuevos infinitos e ilustrados.</p>'));}
 function screenWritingPick(){setTheme("kid");
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✍️ Escribir bien</h2>'
@@ -98,7 +109,7 @@ async function aiStoryKid(){
  setTheme("kid");
  render(topbar("screenStoryPick()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Creando un cuento nuevo…</h2></div>');
  try{
-  const obj=await geminiJSON('Crea un cuento corto infantil en español (3 escenas) para un niño de 7 años, con valores positivos. Responde SOLO JSON: {"title":"título","pages":[{"scene":"2-3 emojis que ilustren","text":"2 frases, marca 1-2 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / qué aprende)","ops":["correcta","mala","mala"],"a":0},{"q":"otra","ops":["correcta","mala","mala"],"a":0}]} con 3 pages y 2 qs.');
+  const obj=await geminiJSON('Crea un cuento infantil en español para un niño de 7 años (primero de primaria), con valores positivos, personajes con nombre y un problema que se resuelve. Debe ser LARGO: 5 escenas y cada escena con 3 o 4 frases sencillas. Responde SOLO JSON: {"title":"título","pages":[{"scene":"2-3 emojis que ilustren la escena","text":"3-4 frases, marca 1-2 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / causa-efecto / qué aprende)","ops":["correcta","mala","mala"],"a":0}]} con 5 pages y 3 qs.');
   // sanitizar lo que devuelve la IA (solo se permite <b> en el texto)
   obj.title=stripHTML(obj.title||"Cuento");
   obj.pages=(obj.pages||[]).map(p=>({scene:stripHTML(p.scene||"✨"),text:keepBold(p.text||"")}));
@@ -752,13 +763,15 @@ function renderStory(){
   render(topbar("screenKidMap()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);margin-bottom:8px">📖 '+esc(c.title)+'</h2>'
   +'<div class="progressdots">'+c.pages.map((x,i)=>'<i class="'+(i<=ST.page?"on":"")+'"></i>').join("")+'</div>'
-  +(p.img?'<img src="'+p.img+'" alt="Ilustración" style="display:block;width:100%;border-radius:18px;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.8);margin-bottom:12px">':'<div class="scene">'+p.scene+'</div>')
-  +'<div class="card storytext">'+p.text.replace(/</g,"&lt;").replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>")+'</div>'
+  +(p.img?'<img src="'+p.img+'" alt="Ilustración" style="display:block;width:100%;border-radius:18px;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.8);margin-bottom:12px">'
+    :'<div class="scene">'+p.scene+(S.geminiKey&&!p.imgFail?'<div style="font-size:.8rem;font-family:Nunito;font-weight:700;opacity:.65">🎨 pintando la escena con IA…</div>':'')+'</div>')
+  +'<div class="card storytext">'+keepBold(p.text).replace(/</g,"&lt;").replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>")+'</div>'
   +'<button class="speaker" onclick="speakES(\''+esc(stripTags(p.text)).replace(/'/g,"\\'")+'\')"><span class="ic">🔊</span> Escuchar esta parte</button>'
-  +(S.geminiKey&&!p.img?'<button class="kbtn purple" id="illubtn" onclick="illustratePage()">🎨 Ilustrar con IA</button>':'')
   +(last?'<button class="kbtn green" onclick="ST.phase=\'quiz\';renderStory()">Responder preguntas →</button>'
         :'<button class="kbtn blue" onclick="ST.page++;renderStory()">Siguiente página →</button>')
   +(ST.page>0?'<button class="kbtn white" onclick="ST.page--;renderStory()">← Volver atrás</button>':''));
+  // ilustración automática con IA (si hay clave): no hay que tocar nada
+  if(S.geminiKey&&!p.img&&!p.imgFail)illustratePage();
   return;}
  // fase quiz
  const q=c.qs[ST.qi];

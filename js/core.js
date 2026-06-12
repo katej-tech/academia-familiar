@@ -16,7 +16,10 @@ function prof(){return S.profiles[current.profile];}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 /* limpia etiquetas HTML que a veces devuelve la IA (arregla el bug de <b> visible en lecturas) */
 function stripHTML(s){return String(s).replace(/<[^>]*>/g," ").replace(/\s{2,}/g," ").trim();}
-function keepBold(s){return String(s).replace(/<(?!\/?b>)[^>]*>/g,"");}
+function keepBold(s){return String(s)
+ .replace(/<\s*(?:b|strong)[^>]*>/gi,"<b>")
+ .replace(/<\s*\/\s*(?:b|strong)\s*>/gi,"</b>")
+ .replace(/<(?!\/?b>)[^>]*>/g,"");}
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function seedFromStr(str){let h=1779033703;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return h>>>0;}
 function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}

@@ -18,13 +18,21 @@ function renderHG(){
  const keys="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("").map(c=>'<button class="key'+(HG.guessed.includes(c)||HG.guessed.includes("✗"+c)?' used':'')+'" onclick="guessHG(\''+c+'\')">'+c+'</button>').join("");
  render(topbar("screenGamesPick()")
  +'<div class="progressdots">'+dots(HG.total,HG.round)+'</div>'
- +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">⛄ ¡Salva al muñeco de nieve!</h2>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">¡Salva al muñeco de nieve!</h2>'
  +'<p class="center" style="font-size:.95rem;margin-bottom:8px">Adivina la palabra antes de que se derrita</p>'
- +'<div style="display:flex;align-items:center;justify-content:center;gap:18px">'
- +'<span style="font-size:clamp(3rem,14vw,4rem)">'+HG_MELT[6-HG.lives]+'</span>'
- +'<span style="font-size:clamp(2.4rem,11vw,3.2rem)">'+HG.hint+'</span></div>'
+ +'<div style="display:flex;justify-content:center;gap:10px;margin-bottom:8px">'
+ +'<span class="pill">'+HG_MELT[6-HG.lives]+' '+"❤️".repeat(HG.lives)+'</span></div>'
+ +'<div class="card center" style="padding:10px 14px;margin-bottom:12px"><span style="font-family:Fredoka;font-weight:700;font-size:.9rem;opacity:.7">LA PISTA ES:</span><br><span style="font-size:clamp(2.4rem,11vw,3.2rem)">'+HG.hint+'</span></div>'
  +'<div class="letterslots">'+slots+'</div>'
- +'<div class="keys">'+keys+'</div>');}
+ +'<div class="keys">'+keys+'</div>'
+ +'<div style="height:10px"></div>'
+ +'<button class="kbtn white" style="min-height:50px;font-size:1rem" onclick="hintHG()">💡 Pista: muéstrame una letra (cuesta 1 ❤️)</button>');}
+function hintHG(){
+ if(HG.lives<=1)return toast("¡Es tu última vida! 🥶 Piensa bien",false,1300);
+ const missing=[...new Set(HG.word.split(""))].filter(c=>!HG.guessed.includes(c));
+ if(!missing.length)return;
+ HG.lives--; // la pista cuesta una vida, pero la letra revelada no resta otra
+ guessHG(pick(missing));}
 function guessHG(c){
  if(HG.guessed.includes(c)||HG.guessed.includes("✗"+c))return;
  if(HG.word.includes(c)){HG.guessed.push(c);beep([700],.08);
