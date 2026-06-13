@@ -90,6 +90,143 @@ function ansObby(k){
  else{OB.lives--;sNO();toast(OB.lives>0?"¡Casi caes! ❤️ -1":"¡Uy!",false,1200);}
  setTimeout(nextObby,ok?800:1250);}
 
+/* ---- APRENDE LA HORA (reloj analógico) ---- */
+function clockSVG(h,m,px){
+ const cx=60,cy=60;let ticks="";
+ for(let i=1;i<=12;i++){
+  const a=i*30*Math.PI/180;
+  const x1=cx+44*Math.sin(a),y1=cy-44*Math.cos(a),x2=cx+50*Math.sin(a),y2=cy-50*Math.cos(a);
+  const lx=cx+37*Math.sin(a),ly=cy-37*Math.cos(a);
+  ticks+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="#1E2A4A" stroke-width="2"/>';
+  ticks+='<text x="'+lx.toFixed(1)+'" y="'+(ly+3.5).toFixed(1)+'" text-anchor="middle" font-size="10" font-family="Fredoka,sans-serif" font-weight="700" fill="#1E2A4A">'+i+'</text>';
+ }
+ const ma=m*6*Math.PI/180,ha=((h%12)*30+m*0.5)*Math.PI/180;
+ const hx=cx+24*Math.sin(ha),hy=cy-24*Math.cos(ha),mx=cx+38*Math.sin(ma),my=cy-38*Math.cos(ma);
+ return '<svg viewBox="0 0 120 120" style="width:'+px+'px;height:'+px+'px;display:block;margin:0 auto">'
+  +'<circle cx="60" cy="60" r="56" fill="#FFFEF8" stroke="#1E2A4A" stroke-width="4"/>'+ticks
+  +'<line x1="60" y1="60" x2="'+hx.toFixed(1)+'" y2="'+hy.toFixed(1)+'" stroke="#FF6B6B" stroke-width="5" stroke-linecap="round"/>'
+  +'<line x1="60" y1="60" x2="'+mx.toFixed(1)+'" y2="'+my.toFixed(1)+'" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round"/>'
+  +'<circle cx="60" cy="60" r="4" fill="#1E2A4A"/></svg>';
+}
+function timeWords(h,m){const L=h===1?"La ":"Las ";return m===0?(L+h+" en punto"):m===30?(L+h+" y media"):m===15?(L+h+" y cuarto"):(L+h+" y "+m);}
+let CL={};
+function gameClock(){setTheme("kid");CL={round:0,ok:0,total:6};nextClock();}
+function nextClock(){
+ if(CL.round>=CL.total)return nodeWin(starsFor(CL.ok,CL.total),"El tiempo");
+ const h=1+rnd(12),m=pick([0,0,0,30,30,15]); // sobre todo en punto y media
+ CL.h=h;CL.m=m;const correct=timeWords(h,m);
+ const set=new Set([correct]);
+ let guard=0;
+ while(set.size<3&&guard++<40){const hh=1+rnd(12),mm=pick([0,30,15]);set.add(timeWords(hh,mm));}
+ const ops=shuffled([...set]);CL.ops=ops;CL.a=ops.indexOf(correct);
+ render(topbar("screenKidMap()")
+ +'<div class="progressdots">'+dots(CL.total,CL.round)+'</div>'
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🕐 ¿Qué hora es?</h2>'
+ +'<p class="center" style="font-size:.82rem;margin-bottom:8px">La aguja <span style="color:#FF6B6B;font-weight:700">roja</span> (corta) marca la HORA, la <span style="color:#3B82F6;font-weight:700">azul</span> (larga) los MINUTOS</p>'
+ +'<div class="card" style="padding:14px">'+clockSVG(h,m,200)+'</div>'
+ +'<button class="speaker small" onclick="speakES(\''+timeWords(h,m)+'\')">🔊 Pista</button>'
+ +'<div class="choices2">'+ops.map((o,k)=>'<button class="kbtn white" style="font-size:1.05rem" onclick="ansClock('+k+')">'+esc(o)+'</button>').join("")+'</div>');}
+function ansClock(k){
+ const ok=k===CL.a;recordAnswer("El tiempo",ok,15);
+ if(ok){sOK();confetti(8);speakES(CL.ops[CL.a]);toast("¡Correcto! 🎉",true,1000);CL.ok++;}
+ else{sNO();speakES(CL.ops[CL.a]);toast("Era: "+CL.ops[CL.a],false,1800);}
+ CL.round++;setTimeout(nextClock,ok?1100:1900);}
+
+/* ---- LA CULEBRITA (Snake) ---- */
+let SN={};
+function gameSnake(){setTheme("kid");
+ const N=11;
+ SN={N,snake:[{x:5,y:5}],dir:{x:1,y:0},nd:{x:1,y:0},food:null,score:0,started:false,timer:null};
+ snPlaceFood();
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🐍 La Culebrita</h2>'
+ +'<p class="center" style="font-size:.9rem;margin-bottom:6px">Come las 🍎 y crece. ¡No choques con las paredes ni contigo!</p>'
+ +'<div id="snscore" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.1rem;margin-bottom:6px">🍎 0</div>'
+ +'<div id="snboard" style="max-width:360px;margin:0 auto"></div>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:12px auto 0">'
+ +'<span></span><button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(0,-1)">⬆️</button><span></span>'
+ +'<button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(-1,0)">⬅️</button>'
+ +'<button class="kbtn green" style="margin:0;min-height:54px" onclick="snStart()">▶️</button>'
+ +'<button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(1,0)">➡️</button>'
+ +'<span></span><button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(0,1)">⬇️</button><span></span>'
+ +'</div>');
+ drawSnake();}
+function snPlaceFood(){const N=SN.N;let f;do{f={x:rnd(N),y:rnd(N)};}while(SN.snake.some(s=>s.x===f.x&&s.y===f.y));SN.food=f;}
+function drawSnake(){
+ const b=document.getElementById("snboard");if(!b)return;const N=SN.N;let cells="";
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+  const head=SN.snake[0].x===x&&SN.snake[0].y===y;
+  const body=!head&&SN.snake.some(s=>s.x===x&&s.y===y);
+  const food=SN.food.x===x&&SN.food.y===y;
+  cells+='<div style="aspect-ratio:1;border-radius:5px;background:'+(head?"#1E2A4A":body?"#3EC97C":"#EAF2FF")+';display:flex;align-items:center;justify-content:center;font-size:.9rem">'+(food?"🍎":head?"👀":"")+'</div>';
+ }
+ b.innerHTML='<div style="display:grid;grid-template-columns:repeat('+N+',1fr);gap:3px;background:#CDE3FF;padding:6px;border-radius:14px;border:4px solid var(--kid-ink)">'+cells+'</div>';
+ const sc=document.getElementById("snscore");if(sc)sc.textContent="🍎 "+SN.score;}
+function snDir(x,y){if(SN.dir.x===-x&&SN.dir.y===-y)return;SN.nd={x,y};if(!SN.started)snStart();}
+function snStart(){if(SN.started)return;SN.started=true;SN.timer=setInterval(snStep,200);}
+function snStep(){
+ if(!document.getElementById("snboard")){clearInterval(SN.timer);return;}
+ SN.dir=SN.nd;
+ const head={x:SN.snake[0].x+SN.dir.x,y:SN.snake[0].y+SN.dir.y};
+ if(head.x<0||head.y<0||head.x>=SN.N||head.y>=SN.N||SN.snake.some(s=>s.x===head.x&&s.y===head.y)){
+  clearInterval(SN.timer);SN.started=false;sNO();recordAnswer("Lógica",SN.score>=3,10);
+  const st=SN.score>=8?3:SN.score>=4?2:1;
+  return setTimeout(()=>nodeWin(st,"Lógica"),700);}
+ SN.snake.unshift(head);
+ if(head.x===SN.food.x&&head.y===SN.food.y){SN.score++;beep([700],.08);snPlaceFood();}
+ else SN.snake.pop();
+ drawSnake();}
+
+/* ---- SALTARÍN (estilo Doodle Jump) ---- */
+let DJ={};
+function gameDoodle(){setTheme("kid");
+ const W=300,H=440;
+ DJ={W,H,x:W/2,y:H-60,vy:0,move:0,plats:[],score:0,run:true,last:null};
+ DJ.plats.push({x:W/2-35,y:H-26,w:70});
+ for(let i=1;i<10;i++)DJ.plats.push({x:rnd(W-70),y:H-26-i*46,w:70});
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🦘 Saltarín</h2>'
+ +'<p class="center" style="font-size:.9rem;margin-bottom:6px">Mantén los botones para moverte. ¡Salta y sube lo más alto!</p>'
+ +'<div id="djscore" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.1rem;margin-bottom:6px">⬆️ 0</div>'
+ +'<div id="djwrap" style="position:relative;width:300px;height:440px;max-width:100%;margin:0 auto;background:linear-gradient(180deg,#BFE8FF,#E8F7FF);border:4px solid var(--kid-ink);border-radius:16px;overflow:hidden;touch-action:none"></div>'
+ +'<div style="display:flex;gap:12px;max-width:320px;margin:12px auto 0">'
+ +'<button class="kbtn blue" style="flex:1;margin:0;min-height:62px" onpointerdown="djMove(-1)" onpointerup="djMove(0)" onpointerleave="djMove(0)">⬅️</button>'
+ +'<button class="kbtn blue" style="flex:1;margin:0;min-height:62px" onpointerdown="djMove(1)" onpointerup="djMove(0)" onpointerleave="djMove(0)">➡️</button>'
+ +'</div>');
+ const wrap=document.getElementById("djwrap");
+ if(wrap){
+  wrap.addEventListener("pointerdown",e=>{const r=wrap.getBoundingClientRect();djMove((e.clientX-r.left)<r.width/2?-1:1);});
+  wrap.addEventListener("pointerup",()=>djMove(0));
+  wrap.addEventListener("pointerleave",()=>djMove(0));
+ }
+ djRender();
+ requestAnimationFrame(djLoop);}
+function djMove(d){DJ.move=d;}
+function djLoop(t){
+ if(!document.getElementById("djwrap")||!DJ.run)return;
+ if(DJ.last==null)DJ.last=t;
+ let dt=(t-DJ.last)/16.7;if(dt>3)dt=3;if(dt<0)dt=1;DJ.last=t;
+ djStep(dt);djRender();
+ if(DJ.run)requestAnimationFrame(djLoop);}
+function djStep(dt){
+ const W=DJ.W,H=DJ.H;
+ DJ.vy+=0.5*dt;
+ DJ.x+=DJ.move*5*dt;
+ DJ.y+=DJ.vy*dt;
+ if(DJ.x<0)DJ.x=W;if(DJ.x>W)DJ.x=0;
+ if(DJ.vy>0){for(const p of DJ.plats){if(DJ.x>p.x-6&&DJ.x<p.x+p.w+6&&DJ.y>=p.y-8&&DJ.y<=p.y+12){DJ.vy=-11;break;}}}
+ if(DJ.y<H*0.42){const d=(H*0.42-DJ.y);DJ.y=H*0.42;DJ.plats.forEach(p=>p.y+=d);DJ.score+=Math.round(d);}
+ DJ.plats=DJ.plats.filter(p=>p.y<H+20);
+ while(DJ.plats.length<10){const top=Math.min.apply(null,DJ.plats.map(p=>p.y));DJ.plats.push({x:rnd(W-70),y:top-46,w:70});}
+ if(DJ.y>H+30){DJ.run=false;sNO();recordAnswer("Lógica",DJ.score>=200,10);
+  const st=DJ.score>=600?3:DJ.score>=250?2:1;setTimeout(()=>nodeWin(st,"Lógica"),200);}}
+function djRender(){
+ const wrap=document.getElementById("djwrap");if(!wrap)return;
+ let html='<div style="position:absolute;left:'+DJ.x.toFixed(0)+'px;top:'+DJ.y.toFixed(0)+'px;font-size:30px;transform:translate(-50%,-50%);z-index:2">🐸</div>';
+ html+=DJ.plats.map(p=>'<div style="position:absolute;left:'+p.x.toFixed(0)+'px;top:'+p.y.toFixed(0)+'px;width:'+p.w+'px;height:12px;background:#3EC97C;border:3px solid #1E2A4A;border-radius:8px"></div>').join("");
+ wrap.innerHTML=html;
+ const sc=document.getElementById("djscore");if(sc)sc.textContent="⬆️ "+DJ.score;}
+
 /* ---- TRES EN LÍNEA (Tic-Tac-Toe) contra la máquina ---- */
 let TT={};
 function gameTicTac(){setTheme("kid");

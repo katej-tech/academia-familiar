@@ -22,24 +22,32 @@ function enterTeen(){current.profile="nina";touchDay();save();screenTeenHome();}
 /* ============ MAPA DE AVENTURA (NIÑO) ============ */
 /* MUNDOS temáticos: cada uno agrupa temas y se juega con el motor infinito */
 const KID_WORLDS=[
- {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",topics:["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra"],desc:"Sumas, restas, decenas y leer números"},
- {id:"lenguaje",ic:"📚",nm:"Lenguaje",color:"red",topics:["sustantivos","silabas","ortografia","narracion"],desc:"Sustantivos, sílabas, ortografía y cuentos"},
- {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",topics:["logica","secuencias","ordinales","izqder","acertijos"],desc:"Acertijos, adivinanzas y patrones"},
- {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
- {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",topics:["ciclo_agua","cuerpo_es","natura"],desc:"Ciclo del agua, el cuerpo y naturaleza"},
- {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",topics:["tiempo","diasES","mesesES","ordinales"],desc:"El reloj, días, meses y orden"},
- {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
- {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",special:"stories",desc:"Cuentos y comprensión"},
- {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",special:"writing",desc:"Ordena frases y letras"},
- {id:"juegos",ic:"🎮",nm:"Juegos",color:"blue",special:"games",desc:"Robot, memoria, globos y micrófono"}];
+ {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",cat:"cole",topics:["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra"],desc:"Sumas, restas, decenas y leer números"},
+ {id:"lenguaje",ic:"📚",nm:"Lenguaje",color:"red",cat:"cole",topics:["sustantivos","silabas","ortografia","narracion"],desc:"Sustantivos, sílabas, ortografía y cuentos"},
+ {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",cat:"cole",topics:["ciclo_agua","cuerpo_es","natura"],desc:"Ciclo del agua, el cuerpo y naturaleza"},
+ {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",cat:"cole",topics:["tiempo","diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
+ {id:"reloj",ic:"🕐",nm:"Aprende la hora",color:"yellow",cat:"cole",special:"clock",desc:"Lee el reloj: en punto y y media"},
+ {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",cat:"en",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
+ {id:"cuentosen",ic:"🇬🇧",nm:"Cuentos en inglés",color:"blue",cat:"en",special:"storiesEN",desc:"Lee y toca para traducir"},
+ {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",cat:"leer",special:"stories",desc:"Cuentos ilustrados y comprensión"},
+ {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",cat:"leer",special:"writing",desc:"Ordena frases y letras"},
+ {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",cat:"pensar",topics:["logica","secuencias","ordinales","izqder","acertijos"],desc:"Acertijos, adivinanzas y patrones"},
+ {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",cat:"pensar",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
+ {id:"juegos",ic:"🎮",nm:"Todos los juegos",color:"blue",cat:"jugar",special:"games",desc:"Robot, arcade, impostor y más"}];
+const KID_CATS=[["cole","📚 Aprende para el cole"],["en","🇬🇧 Inglés"],["leer","📖 Leer y escribir"],["pensar","🧩 Pensar"],["jugar","🎮 Jugar"]];
 let curNode=null;
+function worldBtn(w,p){
+ const done=(p.worldWins&&p.worldWins[w.id])||0;
+ return '<button class="kbtn '+w.color+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="openWorld(\''+w.id+'\')">'
+  +'<span style="font-size:clamp(2.2rem,10vw,2.8rem)">'+w.ic+'</span>'
+  +'<span style="flex:1"><span style="font-size:clamp(1.1rem,5vw,1.35rem)">'+w.nm+'</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">'+w.desc+(done?' · ✅ '+done:'')+'</span></span></button>';}
 function screenKidMap(){setTheme("kid");
  const p=prof();const pet=(typeof legendaryPet==="function"&&legendaryPet())||petStage(p.xp);
- const worlds=KID_WORLDS.map(w=>{
-  const done=(p.worldWins&&p.worldWins[w.id])||0;
-  return '<button class="kbtn '+w.color+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="openWorld(\''+w.id+'\')">'
-   +'<span style="font-size:clamp(2.2rem,10vw,2.8rem)">'+w.ic+'</span>'
-   +'<span style="flex:1"><span style="font-size:clamp(1.1rem,5vw,1.35rem)">'+w.nm+'</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">'+w.desc+(done?' · ✅ '+done:'')+'</span></span></button>';
+ const sections=KID_CATS.map(([cat,title])=>{
+  const ws=KID_WORLDS.filter(w=>w.cat===cat);
+  if(!ws.length)return"";
+  return '<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700;color:var(--kid-ink)">'+title+'</p>'
+   +ws.map(w=>worldBtn(w,p)).join("");
  }).join("");
  render(topbar("screenStart()")
  +'<div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">'
@@ -49,9 +57,9 @@ function screenKidMap(){setTheme("kid");
  +'<div style="font-size:clamp(2.2rem,11vw,3rem)" onclick="screenCritters()">'+pet.e+'</div></div>'
  +missionsHTML()
  +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑 — ¡tu curso A1!</span></span></button>'
- +'<p style="font-size:1.05rem;margin:4px 2px 10px;font-family:Fredoka;font-weight:600">Elige un mundo para explorar 🌍</p>'
- +worlds
- +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">'
+ +sections
+ +'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">⭐ Tus cosas</p>'
+ +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
  +'<button class="kbtn yellow" style="margin:0" onclick="screenShop()">🛍️ Tienda</button>'
  +'<button class="kbtn white" style="margin:0" onclick="screenAvatar()">😎 Mi personaje</button>'
  +'<button class="kbtn blue" style="margin:0" onclick="screenVideosKid()">🎬 Videos</button>'
@@ -60,8 +68,10 @@ function lockedMsg(){}
 function openWorld(id){
  const w=KID_WORLDS.find(x=>x.id===id);curNode=id;
  if(w.special==="stories")return screenStoryPick();
+ if(w.special==="storiesEN")return screenStoryEN();
  if(w.special==="writing")return screenWritingPick();
  if(w.special==="games")return screenGamesPick();
+ if(w.special==="clock")return gameClock();
  // mundo de retos infinitos adaptativos
  playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
 function bumpWorld(id){const p=prof();if(!p.worldWins)p.worldWins={};p.worldWins[id]=(p.worldWins[id]||0)+1;save();}
@@ -82,24 +92,31 @@ function screenWritingPick(){setTheme("kid");
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
  +'<button class="kbtn green" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
 function screenGamesPick(){setTheme("kid");
+ const sub=t=>'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+t+'</p>';
  render(topbar("screenKidMap()")
- +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🎮 Juegos</h2>'
- +'<p class="center" style="margin-bottom:14px">Diviértete aprendiendo</p>'
- +'<button class="kbtn blue" onclick="gameRobot(0)">🤖 Robot programador</button>'
- +'<button class="kbtn yellow" onclick="screenMemoryPick()">🃏 Juegos de memoria</button>'
- +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
- +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎮 Juegos</h2>'
+ +'<p class="center" style="margin-bottom:6px">Diviértete aprendiendo</p>'
+ +sub("🧠 Letras y palabras")
  +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
- +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
  +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'
  +'<button class="kbtn purple" onclick="gameCrossword()">📝 Crucigrama</button>'
+ +'<button class="kbtn yellow" onclick="screenMemoryPick()">🃏 Juegos de memoria</button>'
+ +sub("🔢 Números y lógica")
  +'<button class="kbtn green" onclick="gameMathPaint()">🎨 Pinta con números</button>'
- +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
  +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>'
- +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice (memoria)</button>'
- +'<button class="kbtn green" onclick="gameObby(\'mate\')">🏃 Carrera de obstáculos</button>'
+ +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
+ +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice</button>'
+ +'<button class="kbtn yellow" onclick="gameTicTac()">⭕ Tres en Línea ❌</button>'
+ +'<button class="kbtn blue" onclick="gameRobot(0)">🤖 Robot programador</button>'
+ +sub("🇬🇧 Inglés")
+ +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
+ +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
  +'<button class="kbtn blue" onclick="gameObby(\'en\')">🏃 Carrera en inglés</button>'
- +'<button class="kbtn yellow" onclick="gameTicTac()">⭕ Tres en Línea ❌</button>');}
+ +sub("🕹️ Arcade (pura diversión)")
+ +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
+ +'<button class="kbtn green" onclick="gameObby(\'mate\')">🏃 Carrera de obstáculos</button>'
+ +'<button class="kbtn yellow" onclick="gameSnake()">🐍 La Culebrita</button>'
+ +'<button class="kbtn purple" onclick="gameDoodle()">🦘 Saltarín</button>');}
 function screenMemoryPick(){setTheme("kid");
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🃏 Memoria</h2>'
