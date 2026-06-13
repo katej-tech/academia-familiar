@@ -22,11 +22,12 @@ function enterTeen(){current.profile="nina";touchDay();save();screenTeenHome();}
 /* ============ MAPA DE AVENTURA (NIÑO) ============ */
 /* MUNDOS temáticos: cada uno agrupa temas y se juega con el motor infinito */
 const KID_WORLDS=[
- {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",topics:["sumas2","restas2","restapres","sumas3","multi","mayorMenor"],desc:"Sumas, restas, multiplicar y comparar"},
+ {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",topics:["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra"],desc:"Sumas, restas, decenas y leer números"},
+ {id:"lenguaje",ic:"📚",nm:"Lenguaje",color:"red",topics:["sustantivos","silabas","ortografia","narracion"],desc:"Sustantivos, sílabas, ortografía y cuentos"},
  {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",topics:["logica","secuencias","ordinales","izqder","acertijos"],desc:"Acertijos, adivinanzas y patrones"},
  {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
  {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",topics:["ciclo_agua","cuerpo_es","natura"],desc:"Ciclo del agua, el cuerpo y naturaleza"},
- {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",topics:["diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
+ {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",topics:["tiempo","diasES","mesesES","ordinales"],desc:"El reloj, días, meses y orden"},
  {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
  {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",special:"stories",desc:"Cuentos y comprensión"},
  {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",special:"writing",desc:"Ordena frases y letras"},
@@ -97,7 +98,8 @@ function screenGamesPick(){setTheme("kid");
  +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>'
  +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice (memoria)</button>'
  +'<button class="kbtn green" onclick="gameObby(\'mate\')">🏃 Carrera de obstáculos</button>'
- +'<button class="kbtn blue" onclick="gameObby(\'en\')">🏃 Carrera en inglés</button>');}
+ +'<button class="kbtn blue" onclick="gameObby(\'en\')">🏃 Carrera en inglés</button>'
+ +'<button class="kbtn yellow" onclick="gameTicTac()">⭕ Tres en Línea ❌</button>');}
 function screenMemoryPick(){setTheme("kid");
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🃏 Memoria</h2>'

@@ -89,3 +89,42 @@ function ansObby(k){
  if(ok){OB.pos++;OB.ok++;sOK();confetti(8);if(OB.cur.en)speakEN(OB.cur.en);toast("¡Salto! 🦘",true,800);}
  else{OB.lives--;sNO();toast(OB.lives>0?"¡Casi caes! ❤️ -1":"¡Uy!",false,1200);}
  setTimeout(nextObby,ok?800:1250);}
+
+/* ---- TRES EN LÍNEA (Tic-Tac-Toe) contra la máquina ---- */
+let TT={};
+function gameTicTac(){setTheme("kid");
+ TT={board:Array(9).fill(""),over:false,wins:0};renderTT();}
+function ttWinner(b){
+ const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ for(const[a,c,d]of L)if(b[a]&&b[a]===b[c]&&b[a]===b[d])return b[a];
+ return b.every(x=>x)?"empate":null;}
+function renderTT(){
+ const cells=TT.board.map((c,i)=>'<button onclick="ttTap('+i+')" style="aspect-ratio:1;border-radius:16px;border:5px solid var(--kid-ink);background:#FFFEF8;box-shadow:0 6px 0 rgba(30,42,74,.7);font-size:clamp(2.4rem,14vw,3.6rem)">'+(c||"")+'</button>').join("");
+ render(topbar("screenGamesPick()")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">⭕ Tres en Línea ❌</h2>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:12px">Tú eres ❌. ¡Haz 3 en fila antes que la máquina ⭕!</p>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:0 auto">'+cells+'</div>'
+ +'<div id="ttmsg" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.2rem;min-height:34px;margin-top:14px"></div>');}
+function ttTap(i){
+ if(TT.over||TT.board[i])return;
+ TT.board[i]="❌";beep([560],.07);
+ let w=ttWinner(TT.board);
+ if(w)return ttEnd(w);
+ // jugada de la máquina: gana si puede, bloquea si debe, si no juega al azar inteligente
+ const m=ttBestMove(TT.board);
+ if(m>=0)TT.board[m]="⭕";
+ w=ttWinner(TT.board);renderTT();
+ if(w)return ttEnd(w);}
+function ttBestMove(b){
+ const empty=b.map((c,i)=>c?-1:i).filter(i=>i>=0);
+ const tryWin=(mark)=>{for(const i of empty){const t=b.slice();t[i]=mark;if(ttWinner(t)===mark)return i;}return -1;};
+ let m=tryWin("⭕");if(m>=0)return m; // ganar
+ m=tryWin("❌");if(m>=0)return m;     // bloquear
+ if(b[4]==="")return 4;               // centro
+ return pick(empty);}
+function ttEnd(w){
+ TT.over=true;
+ const msg=document.getElementById("ttmsg");
+ if(w==="❌"){sWIN();confetti(24);recordAnswer("Lógica",true,15);if(msg)msg.textContent="🎉 ¡Ganaste!";setTimeout(()=>nodeWin(3,"Lógica"),1400);}
+ else if(w==="⭕"){sNO();recordAnswer("Lógica",false,15);if(msg)msg.textContent="🤖 Ganó la máquina… ¡otra!";setTimeout(()=>nodeWin(1,"Lógica"),1400);}
+ else{tone(440,.2);recordAnswer("Lógica",true,15);if(msg)msg.textContent="🤝 ¡Empate! Bien jugado";setTimeout(()=>nodeWin(2,"Lógica"),1400);}}

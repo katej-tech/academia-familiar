@@ -41,7 +41,25 @@ function parentVideosHTML(){
  +(vids.length?vids.map((v,i)=>'<p style="display:flex;align-items:center;gap:8px;margin:6px 0"><span style="flex:1">▶️ '+esc(v.title)+'</span><button class="pbtn ghost" style="width:auto;padding:6px 12px" onclick="parentDelVideo('+i+')">🗑️</button></p>').join(""):'<p class="mut">Sin videos aún.</p>')
  +'<input type="text" id="vidtitle" placeholder="Título (ej: Los planetas)">'
  +'<input type="text" id="vidurl" placeholder="https://www.youtube.com/watch?v=...">'
- +'<button class="pbtn" onclick="parentAddVideo()">➕ Agregar video</button></div>';}
+ +'<button class="pbtn" onclick="parentAddVideo()">➕ Agregar video</button>'
+ +(S.geminiKey?'<button class="pbtn ghost" onclick="parentSuggestVideos()">🤖 Sugerir videos con IA (según lo que debe reforzar)</button>':'<p class="tip">💡 Activa la clave de Gemini arriba para que la IA sugiera videos según las falencias del niño.</p>')
+ +'<div id="vidsug"></div></div>';}
+/* La IA sugiere TEMAS de video y abre la búsqueda en YouTube (el padre elige y pega el bueno).
+   No incrustamos IDs inventados: la IA recomienda, el padre cura. */
+async function parentSuggestVideos(){
+ const box=document.getElementById("vidsug");
+ box.innerHTML='<div class="card center"><span class="spin">⏳</span> La IA está pensando en buenos videos…</div>';
+ // detectar áreas débiles desde las estadísticas del niño
+ const p=S.profiles.nino,st=p.stats||{};
+ const debiles=Object.keys(st).filter(s=>st[s].attempts>=3&&st[s].correct/st[s].attempts<0.7);
+ const foco=debiles.length?debiles.join(", "):"sílabas trabadas, ortografía, sumas llevando, restas prestando, secuencias, el reloj y los números";
+ try{
+  const obj=await geminiJSON('Recomienda 6 videos educativos de YouTube en ESPAÑOL LATINO para un niño de 7 años de primero de primaria, para reforzar estos temas: '+foco+'. Para cada uno da un título descriptivo y una frase de búsqueda exacta para encontrarlo en YouTube. Responde SOLO JSON: {"videos":[{"titulo":"...","busqueda":"frase para buscar en youtube en español"}]} con 6 elementos.');
+  const vs=(obj.videos||[]).slice(0,6);
+  box.innerHTML='<div class="card"><b>🤖 Sugerencias de la IA</b><p class="mut" style="font-size:.85rem;margin:6px 0">Toca para ver en YouTube. Si te gusta uno, copia su enlace y pégalo arriba para que el niño lo vea dentro de la app.</p>'
+   +vs.map(v=>'<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(v.busqueda)+'" target="_blank" rel="noopener" style="display:block;padding:10px;margin:6px 0;border:1px solid var(--par-line);border-radius:10px;text-decoration:none;color:var(--par-acc)">🔎 '+esc(v.titulo)+'</a>').join("")
+   +'</div>';
+ }catch(e){box.innerHTML='<div class="card" style="border-color:#DC2626">'+esc(e.message||"No se pudo, intenta de nuevo")+'</div>';}}
 
 /* ============ ILUSTRACIONES CON IA (Gemini genera imágenes) ============ */
 async function geminiImage(promptText){

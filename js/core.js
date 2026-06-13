@@ -55,9 +55,17 @@ function speakEN(text,onEnd){
  const v=VOICES.find(x=>/en[-_]US/i.test(x.lang))||VOICES.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;
  if(onEnd)u.onend=onEnd;
  window.speechSynthesis.speak(u);}
+function pickLatinVoice(){
+ const latin=/es[-_](US|MX|419|CO|AR|CL|PE|VE|EC|GT|LA)/i;
+ const byName=/(latino|america|mexic|estados unidos|paulina)/i;
+ return VOICES.find(x=>latin.test(x.lang))
+  ||VOICES.find(x=>/^es/i.test(x.lang)&&byName.test(x.name))
+  ||VOICES.find(x=>/^es/i.test(x.lang)&&!/es[-_]ES/i.test(x.lang))
+  ||VOICES.find(x=>/^es/i.test(x.lang));}
 function speakES(text){if(!("speechSynthesis"in window))return;window.speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);u.lang="es-ES";u.rate=.9;
- const v=VOICES.find(x=>/^es/i.test(x.lang));if(v)u.voice=v;window.speechSynthesis.speak(u);}
+ const u=new SpeechSynthesisUtterance(text);
+ const v=pickLatinVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang="es-419";
+ u.rate=.9;window.speechSynthesis.speak(u);}
 function hasVoice(){return "speechSynthesis"in window;}
 
 /* ============ MOTOR DE CONTENIDO INFINITO (IA + banco fijo + adaptativo) ============ */
@@ -93,8 +101,22 @@ const KID_TOPICS={
    fallback:()=>{const x=pick(CUERPO_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}},
  natura:{name:"Naturaleza",emoji:"🌿",prompt:"preguntas de ciencias naturales muy simples (animales y dónde viven, qué necesitan las plantas, día y noche, reciclaje) para niño de 6-7 años",
    fallback:()=>{const x=pick(NATURA_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}},
- secuencias:{name:"Secuencias",emoji:"➡️",prompt:"completar secuencias y patrones de números o figuras para niño de 6-7 años",
-   fallback:()=>{const q=pick(SEQUENCES);return{q:"¿Qué sigue? "+q.show.join(" "),ops:q.ops,a:q.a};}},
+ secuencias:{name:"Secuencias",emoji:"➡️",prompt:"completar secuencias numéricas con patrones (sumar 2, 4, 5 o 10, o restar de 2 en 2) para niño de 7 años, como '2, 6, 10, 14, ___'",
+   fallback:()=>Math.random()<.7?genSecuenciaNum():(()=>{const q=pick(SEQUENCES);return{q:"¿Qué sigue? "+q.show.join(" "),ops:q.ops.slice(),a:q.a};})()},
+ sustantivos:{name:"Sustantivos",emoji:"🏷️",prompt:"identificar sustantivos (nombres de personas, animales o cosas) frente a verbos o adjetivos, para niño de 6-7 años de primero",
+   fallback:()=>genSustantivo()},
+ silabas:{name:"Sílabas trabadas",emoji:"🔤",prompt:"sílabas trabadas o combinadas (fr, br, cr, tr, pl, bl, cl, gl, gr, pr, fl, dr) reconociéndolas en palabras, para niño de 6-7 años",
+   fallback:()=>genSilaba()},
+ ortografia:{name:"Ortografía",emoji:"✏️",prompt:"escritura correcta de palabras comunes (b/v, c/s/z, ll/y, g/j, h) eligiendo la forma bien escrita, para niño de 7 años",
+   fallback:()=>genOrtografia()},
+ narracion:{name:"La narración",emoji:"📖",prompt:"elementos de la narración (qué es una narración, personajes, narrador, y los géneros narrativo, dramático y lírico de forma muy simple) para niño de 7 años",
+   fallback:()=>genNarracion()},
+ numpalabra:{name:"Leer números",emoji:"🔢",prompt:"leer números del 10 al 99 escritos en palabras (por ejemplo 54 = cincuenta y cuatro) para niño de 7 años",
+   fallback:()=>genNumPalabra()},
+ decenas:{name:"Decenas",emoji:"🔟",prompt:"sumas de decenas exactas (10+20, 40+30) para niño de 7 años",
+   fallback:()=>genDecenas()},
+ tiempo:{name:"El tiempo",emoji:"🕐",prompt:"medición del tiempo (el reloj, 24 horas en un día, 12 meses, 7 días, y los tiempos pasado, presente y futuro) para niño de 7 años",
+   fallback:()=>genTiempo()},
  // INGLÉS (con audio)
  en_animals:{name:"Animales (EN)",emoji:"🐶",en:true,prompt:"vocabulario de animales en inglés MUY básicos y conocidos (dog, cat, fish, bird, cow, horse) para niño de 6 años principiante absoluto",
    fallback:()=>enMCQ(EN_VOCAB.animals)},
@@ -170,10 +192,10 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
  // señales de apoyo (solo niño): tiempos altos y errores por área
  if(current.profile==="nino"){
   if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
-  const readSubj=["Comprensión","Letras","Ordenar"].includes(subject);
-  const mathSubj=["Mate","Problemas","Números","Sumas","Restas","Restas prestando","Sumas de 3 cifras","Inicio multiplicación","Mayor y menor","Globos"].includes(subject);
+  const readSubj=["Comprensión","Letras","Ordenar","Sustantivos","Sílabas trabadas","Ortografía","La narración"].includes(subject);
+  const mathSubj=["Mate","Problemas","Números","Sumas","Restas","Restas prestando","Sumas de 3 cifras","Inicio multiplicación","Mayor y menor","Globos","Leer números","Decenas"].includes(subject);
   const enSubj=["Inglés","Pronunciación"].includes(subject);
-  const seqSubj=["Secuencias","Lógica","Acertijos","Ordinales","Ubicación","Robot","Memoria"].includes(subject);
+  const seqSubj=["Secuencias","Lógica","Acertijos","Ordinales","Ubicación","Robot","Memoria","El tiempo"].includes(subject);
   if(readSubj){p.signals.read.n++;if(secs>=25)p.signals.read.slow++;if(!correct)p.signals.read.err++;}
   if(mathSubj){p.signals.math.n++;if(!correct)p.signals.math.err++;}
   if(enSubj){p.signals.en.n++;if(!correct)p.signals.en.err++;d.enDone=true;}
