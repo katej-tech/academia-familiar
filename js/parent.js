@@ -71,15 +71,39 @@ async function testGeminiKey(){
  const k=document.getElementById("gkey").value.trim();
  const fb=document.getElementById("keyfb");
  if(!k){fb.innerHTML='<b style="color:#DC2626">Escribe la clave primero</b>';return;}
+ if(!/^AIza[\w-]{30,}$/.test(k)){
+  fb.innerHTML='<b style="color:#D97706">⚠ Esa clave no tiene el formato correcto</b>'
+  +'<p class="mut" style="font-size:.85rem;margin-top:4px">Una clave de Google empieza por <b>AIza</b> y tiene 39 caracteres sin espacios. Cópiala con el botón 📋 desde <b>aistudio.google.com/apikey</b> (no la escribas a mano).</p>';return;}
  fb.innerHTML='⏳ Probando con Google…';
+ const models=["gemini-2.5-flash","gemini-2.0-flash","gemini-flash-latest"];
+ let res=null,m="",status=0;
  try{
-  const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(k),
-   {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Responde solo: OK"}]}]})});
-  if(res.ok){S.geminiKey=k;save();fb.innerHTML='<b style="color:#16A34A">✓ ¡Funciona! Clave guardada — la IA ya está activa</b>';}
-  else{let m="";try{const j=await res.json();m=(j.error&&j.error.message)||"";}catch(e){}
-   fb.innerHTML='<b style="color:#DC2626">✗ Error '+res.status+'</b> <span class="mut" style="font-size:.85rem">'+esc(m.slice(0,140))+'</span>'
-   +'<p class="mut" style="font-size:.85rem;margin-top:4px">Tip: cópiala de nuevo completa desde aistudio.google.com (empieza por AIza, sin espacios).</p>';}
- }catch(e){fb.innerHTML='<b style="color:#DC2626">Sin conexión — intenta de nuevo</b>';}}
+  for(const mod of models){
+   res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+mod+":generateContent?key="+encodeURIComponent(k),
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Responde solo: OK"}]}]})});
+   status=res.status;
+   if(res.ok)break;
+   try{const j=await res.json();m=(j.error&&j.error.message)||"";}catch(e){}
+   if(status!==404)break; // 404 = ese modelo no existe, probar el siguiente; otro error = parar
+  }
+  if(res&&res.ok){S.geminiKey=k;save();
+   fb.innerHTML='<b style="color:#16A34A">✓ ¡Funciona! Clave guardada — la IA ya está activa en este dispositivo</b>';return;}
+  // diagnóstico en español según el motivo real
+  const low=(m||"").toLowerCase();
+  let hint;
+  if(/referer|referrer|blocked/.test(low))
+   hint='Tu clave tiene <b>restricción de sitios web</b> y bloquea esta app. Solución: en Google Cloud → Credenciales → tu clave → <b>Restricciones de aplicación</b>, elige <b>"Ninguna"</b>, o agrega <code>katej-tech.github.io/*</code> y <code>localhost/*</code> a los sitios permitidos.';
+  else if(/api[\s_]*key[\s_]*not[\s_]*valid|invalid.*key|api_key_invalid/.test(low))
+   hint='La clave está <b>mal copiada o es de otro tipo</b>. Bórrala y pega de nuevo la de <b>aistudio.google.com/apikey</b> con el botón 📋 (no a mano).';
+  else if(/permission|disabled|service|not been used|enable/.test(low))
+   hint='Falta <b>habilitar la API</b>. Entra a <b>aistudio.google.com/apikey</b> y crea la clave ahí (eso activa la API solo). Si la creaste en Google Cloud, habilita <b>"Generative Language API"</b>.';
+  else if(/quota|exceeded|resource_exhausted/.test(low))
+   hint='Llegaste al <b>límite gratuito de hoy</b>. Espera unas horas o crea otra clave.';
+  else hint='Copia la clave de nuevo desde <b>aistudio.google.com/apikey</b>. Si persiste, crea una clave nueva ahí.';
+  fb.innerHTML='<b style="color:#DC2626">✗ No funcionó (error '+status+')</b>'
+   +(m?'<br><span class="mut" style="font-size:.8rem">'+esc(m.slice(0,150))+'</span>':'')
+   +'<p style="font-size:.88rem;margin-top:6px;line-height:1.5">'+hint+'</p>';
+ }catch(e){fb.innerHTML='<b style="color:#DC2626">Sin conexión a internet — intenta de nuevo</b>';}}
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;

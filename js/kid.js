@@ -94,7 +94,10 @@ function screenGamesPick(){setTheme("kid");
  +'<button class="kbtn purple" onclick="gameCrossword()">📝 Crucigrama</button>'
  +'<button class="kbtn green" onclick="gameMathPaint()">🎨 Pinta con números</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
- +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>');}
+ +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>'
+ +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice (memoria)</button>'
+ +'<button class="kbtn green" onclick="gameObby(\'mate\')">🏃 Carrera de obstáculos</button>'
+ +'<button class="kbtn blue" onclick="gameObby(\'en\')">🏃 Carrera en inglés</button>');}
 function screenMemoryPick(){setTheme("kid");
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🃏 Memoria</h2>'

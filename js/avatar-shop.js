@@ -85,6 +85,14 @@ function avatarEnsure(cb){const p=prof();const key=avatarKey();
  fetch(key).then(r=>r.text()).then(t=>{
   if(t&&t.indexOf("<svg")>=0){p.avatarSvg=t;p.avatarKey=key;save();if(cb)cb();}
  }).catch(()=>{});}
+/* escena grande con el fondo comprado bien visible + el personaje encima */
+function avatarScene(px){const a=avState();
+ const bg=a.bgId&&shopItem(a.bgId);
+ if(!bg)return '<div style="display:flex;justify-content:center">'+avatarHTML(px)+'</div>';
+ const [c1,c2]=bg.db;
+ const deco=Array.from({length:8},(_,i)=>'<span style="position:absolute;font-size:'+(18+(i%3)*10)+'px;left:'+(6+i*12)+'%;top:'+(8+((i*37)%70))+'%;opacity:.5">'+bg.e+'</span>').join("");
+ return '<div style="position:relative;border-radius:20px;overflow:hidden;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.7);background:linear-gradient(160deg,#'+c1+',#'+c2+');padding:16px 0;display:flex;justify-content:center">'
+  +deco+'<div style="position:relative;z-index:1">'+avatarHTML(px)+'</div></div>';}
 function avatarHTML(px){const p=prof();const a=avState();
  const ready=p.avatarSvg&&p.avatarKey===avatarKey();
  const inner=ready
@@ -120,7 +128,7 @@ function screenAvatar(){setTheme("kid");
    '<button class="kbtn '+(a[key]===it.id?'green':'white')+'" style="display:inline-block;width:auto;margin:0;padding:10px 14px;font-size:1rem" onclick="avEquip(\''+it.id+'\')">'+it.e+' '+it.n+(a[key]===it.id?' ✓':'')+'</button>').join("")+'</div>';};
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">😎 Mi personaje</h2>'
- +'<div class="card center" style="padding:18px">'+avatarHTML(170)+'</div>'
+ +'<div class="card center" style="padding:14px">'+avatarScene(180)+'</div>'
  +'<div class="card">'+cyc("💇 Peinado","hairStyle",AV_HAIR_STYLES)+cyc("👀 Ojos","eyes",AV_EYES)+cyc("👄 Boca","mouth",AV_MOUTHS)+cyc("👕 Ropa","clothing",AV_CLOTHES)+'</div>'
  +'<div class="card"><b>🖐️ Color de piel</b>'+swatch(AV_SKINS,"skin")+'</div>'
  +'<div class="card"><b>💇 Color de pelo</b>'+swatch(AV_HAIR_COLORS,"hairColor")+'</div>'
