@@ -167,7 +167,9 @@ async function aiStoryKid(){
  setTheme("kid");
  render(topbar("screenStoryPick()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Creando un cuento nuevo…</h2></div>');
  try{
-  const obj=await geminiJSON('Crea un cuento infantil en español para un niño de 7 años (primero de primaria), con valores positivos, personajes con nombre y un problema que se resuelve. Debe ser LARGO: 5 escenas y cada escena con 3 o 4 frases sencillas. Responde SOLO JSON: {"title":"título","pages":[{"scene":"2-3 emojis que ilustren la escena","text":"3-4 frases, marca 1-2 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / causa-efecto / qué aprende)","ops":["correcta","mala","mala"],"a":0}]} con 5 pages y 3 qs.');
+  const temas=["la amistad","el valor de la honestidad","cuidar la naturaleza","el trabajo en equipo","superar el miedo","la importancia de compartir","la perseverancia","ser amable con los demás","la curiosidad por aprender","cuidar a los animales"];
+  const tema=temas[Math.floor(Math.random()*temas.length)];
+  const obj=await geminiJSON('Crea un cuento infantil ORIGINAL en español para un niño de 7 años (primero de primaria), sobre el tema: '+tema+'. Con valores positivos, personajes con nombre, un problema que se resuelve y una enseñanza clara. Debe ser LARGO y entretenido: 7 escenas, y cada escena con 4 o 5 frases sencillas y descriptivas (que de verdad se pueda leer despacio antes de dormir). Responde SOLO JSON: {"title":"título lindo","pages":[{"scene":"2-3 emojis que ilustren la escena","text":"4-5 frases, marca 2-3 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / causa-efecto / qué sintió / qué aprende)","ops":["correcta","mala","mala"],"a":0}]} con 7 pages y 4 qs.');
   // sanitizar lo que devuelve la IA (solo se permite <b> en el texto)
   obj.title=stripHTML(obj.title||"Cuento");
   obj.pages=(obj.pages||[]).map(p=>({scene:stripHTML(p.scene||"✨"),text:keepBold(p.text||"")}));

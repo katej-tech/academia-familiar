@@ -37,6 +37,11 @@ const SHOP_ITEMS=[
  {id:"a_control",t:"hand",e:"🎮",n:"Control de juegos",pr:55},{id:"a_dino",t:"hand",e:"🦖",n:"Dino bebé",pr:70},
  {id:"a_loro",t:"hand",e:"🦜",n:"Loro parlanchín",pr:65},{id:"a_basket",t:"hand",e:"🏀",n:"Balón de básquet",pr:30},
  {id:"a_trompeta",t:"hand",e:"🎺",n:"Trompeta",pr:50},{id:"a_espada",t:"hand",e:"⚔️",n:"Espada de héroe",pr:75},
+ {id:"a_globo",t:"hand",e:"🎈",n:"Globo",pr:20},{id:"a_helado",t:"hand",e:"🍦",n:"Helado",pr:25},
+ {id:"a_libro",t:"hand",e:"📖",n:"Libro mágico",pr:35},{id:"a_micro",t:"hand",e:"🎤",n:"Micrófono",pr:45},
+ {id:"a_camara",t:"hand",e:"📷",n:"Cámara",pr:40},{id:"a_pincel",t:"hand",e:"🖌️",n:"Pincel de artista",pr:35},
+ {id:"a_lupa",t:"hand",e:"🔍",n:"Lupa detective",pr:30},{id:"a_cohete2",t:"hand",e:"🚀",n:"Cohete de juguete",pr:80},
+ {id:"a_gatito",t:"hand",e:"🐱",n:"Gatito",pr:60},{id:"a_perrito",t:"hand",e:"🐶",n:"Perrito",pr:60},
  // fondos degradados (DiceBear backgroundColor)
  {id:"b_castillo",t:"bg",e:"🏰",n:"Castillo",pr:60,db:["b6e3f4","c0aede"]},
  {id:"b_volcan",t:"bg",e:"🌋",n:"Volcán",pr:70,db:["ffdfbf","ff8a80"]},
@@ -49,13 +54,23 @@ const SHOP_ITEMS=[
  {id:"b_desierto",t:"bg",e:"🏜️",n:"Desierto",pr:55,db:["ffdeb5","ff8a80"]},
  {id:"b_oceano",t:"bg",e:"🌊",n:"Fondo del mar",pr:70,db:["65c9ff","25557c"]},
  {id:"b_fuegos",t:"bg",e:"🎆",n:"Fuegos artificiales",pr:100,db:["c0aede","ff488e"]},
+ {id:"b_nieve",t:"bg",e:"❄️",n:"Montaña nevada",pr:60,db:["e6f1fb","b5d4f4"]},
+ {id:"b_jungla",t:"bg",e:"🌴",n:"Jungla",pr:65,db:["a7ffc4","0f6e56"]},
+ {id:"b_galaxia",t:"bg",e:"🌌",n:"Galaxia",pr:110,db:["534ab7","26215c"]},
+ {id:"b_dulce",t:"bg",e:"🍭",n:"Mundo de dulces",pr:75,db:["ffafb9","f4c0d1"]},
+ {id:"b_estadio",t:"bg",e:"🏟️",n:"Estadio",pr:70,db:["a7ffc4","378add"]},
+ {id:"b_atardecer",t:"bg",e:"🌅",n:"Atardecer",pr:80,db:["ffc975","ff488e"]},
  // mascotas legendarias (las más caras toman tiempo)
  {id:"p_uni",t:"pet",e:"🦄",n:"Unicornio Real",pr:200},{id:"p_dragon",t:"pet",e:"🐲",n:"Dragón Celeste",pr:300},
  {id:"p_fenix",t:"pet",e:"🦅",n:"Fénix Dorado",pr:350},{id:"p_lobo",t:"pet",e:"🐺",n:"Lobo Lunar",pr:250},
  {id:"p_leon",t:"pet",e:"🦁",n:"León Estelar",pr:500},
  {id:"p_kraken",t:"pet",e:"🐙",n:"Kraken del Abismo",pr:650},{id:"p_mamut",t:"pet",e:"🦣",n:"Mamut Helado",pr:700},
  {id:"p_ballena",t:"pet",e:"🐳",n:"Ballena Cósmica",pr:850},{id:"p_pavo",t:"pet",e:"🦚",n:"Pavo Real Místico",pr:600},
- {id:"p_tigre",t:"pet",e:"🐯",n:"Tigre de Fuego",pr:900},{id:"p_grifo",t:"pet",e:"🦅",n:"Grifo Dorado",pr:1000}];
+ {id:"p_tigre",t:"pet",e:"🐯",n:"Tigre de Fuego",pr:900},{id:"p_grifo",t:"pet",e:"🦅",n:"Grifo Dorado",pr:1000},
+ {id:"p_panda",t:"pet",e:"🐼",n:"Panda Guardián",pr:400},{id:"p_zorro",t:"pet",e:"🦊",n:"Zorro Místico",pr:300},
+ {id:"p_buho",t:"pet",e:"🦉",n:"Búho Sabio",pr:350},{id:"p_serpiente",t:"pet",e:"🐍",n:"Serpiente Esmeralda",pr:450},
+ {id:"p_pinguino",t:"pet",e:"🐧",n:"Pingüino Polar",pr:300},{id:"p_rana",t:"pet",e:"🐸",n:"Rana Saltarina",pr:250},
+ {id:"p_estrella",t:"pet",e:"🌟",n:"Estrella Viviente",pr:1200},{id:"p_robot",t:"pet",e:"🤖",n:"Robot Compañero",pr:550}];
 const SHOP_CATS=[["hat","🎩 Gorros (¡con color!)"],["face","🕶️ Gafas"],["hand","🎸 Compañeros"],["bg","🌈 Fondos"],["pet","✨ Mascotas legendarias"]];
 /* compras de la versión anterior → su equivalente nuevo */
 const SHOP_OLD_MAP={h_gorra:"h_win2",h_corona:"h_hat",h_mago:"h_hat",h_grad:"h_hat",h_casco:"h_win1",h_fiesta:"h_win4",a_gafas:"g_sun"};

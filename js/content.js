@@ -90,7 +90,35 @@ const CUENTOS=[
   qs:[
    {q:"¿Cuántos animales vivían en la granja en total?",ops:["Seis 🐮🐮🐮🐷🐷🐴","Tres","Diez"],a:0},
    {q:"¿Por qué Trueno llevó a todos al establo?",ops:["Para protegerlos de la tormenta ⛈️","Para jugar","Para comer"],a:0},
-   {q:"¿Qué tipo de caballo es Trueno?",ops:["Valiente y buen amigo","Miedoso","Egoísta"],a:0}]}];
+   {q:"¿Qué tipo de caballo es Trueno?",ops:["Valiente y buen amigo","Miedoso","Egoísta"],a:0}]},
+ {title:"Mateo y el árbol de los deseos",
+  pages:[
+   {scene:"👦🌳",text:"Mateo era un niño <b>curioso</b> que vivía cerca de un bosque. Todos los días pasaba junto a un árbol muy viejo y muy grande. Un día, el árbol le habló con una voz suave. Mateo se sorprendió mucho."},
+   {scene:"🌳✨",text:"—Soy el <b>árbol de los deseos</b> —dijo el árbol—. Puedo darte un deseo, pero solo si me ayudas primero. Mis hojas están tristes porque el río se secó. Mateo miró el río y, en efecto, estaba casi vacío."},
+   {scene:"👦💧",text:"Mateo no sabía qué hacer. Pensó y pensó. Entonces recordó que más arriba había una <b>piedra</b> grande tapando el agua. Decidió subir la colina para verla de cerca, aunque estaba cansado."},
+   {scene:"🪨💪",text:"La piedra era pesada, pero Mateo no se rindió. Empujó con todas sus fuerzas, una y otra vez. Llamó a sus amigos y, <b>trabajando juntos</b>, por fin movieron la piedra. ¡El agua volvió a correr!"},
+   {scene:"🌊🌳",text:"El río bajó otra vez hasta el árbol. Sus hojas se pusieron <b>verdes</b> y brillantes de alegría. —Gracias, Mateo —dijo el árbol—. Has cumplido tu parte con esfuerzo y bondad."},
+   {scene:"🌳🎁",text:"—Ahora pide tu <b>deseo</b> —dijo el árbol. Mateo lo pensó un momento y sonrió. —Mi deseo es que el bosque siempre tenga agua para todos los animales. El árbol se emocionó con su deseo tan generoso."},
+   {scene:"👦😊🌳",text:"Desde ese día, el bosque estuvo siempre <b>verde</b> y lleno de vida. Mateo aprendió que las cosas buenas se logran con esfuerzo, y que pensar en los demás es el deseo más bonito de todos."}],
+  qs:[
+   {q:"¿Por qué estaban tristes las hojas del árbol?",ops:["Porque el río se había secado 💧","Porque hacía frío","Porque era de noche"],a:0},
+   {q:"¿Cómo logró Mateo mover la piedra?",ops:["Trabajando junto a sus amigos 💪","Solo y sin ayuda","Con magia"],a:0},
+   {q:"¿Qué deseo pidió Mateo?",ops:["Que el bosque siempre tuviera agua 🌳","Muchos juguetes","Ser rico"],a:0},
+   {q:"¿Qué enseña este cuento?",ops:["Las cosas buenas se logran con esfuerzo y pensando en los demás","Que no hay que ayudar","Que los árboles no hablan"],a:0}]},
+ {title:"La estrella que no brillaba",
+  pages:[
+   {scene:"🌌⭐",text:"En lo alto del cielo vivían miles de estrellas. Todas brillaban con fuerza por las noches. Pero había una estrella pequeña, llamada <b>Lumi</b>, que casi no brillaba. Las otras estrellas se reían un poco de ella."},
+   {scene:"⭐😢",text:"Lumi se sentía <b>triste</b>. —¿Por qué yo no brillo como las demás? —se preguntaba. Cada noche lo intentaba, pero su luz era muy débil. Una nube la vio llorar y se acercó despacio."},
+   {scene:"☁️⭐",text:"—No estés triste —le dijo la <b>nube</b>—. Tal vez no brillas porque aún no encontraste para qué eres especial. Lumi la miró con curiosidad. —¿Y cómo lo encuentro? —preguntó. La nube le sonrió."},
+   {scene:"🌍🚢",text:"Esa noche, muy abajo en el mar, un <b>barquito</b> estaba perdido en la oscuridad. El marinero buscaba una luz para encontrar el camino a casa. Las estrellas grandes estaban tapadas por las nubes."},
+   {scene:"⭐💡",text:"Solo Lumi, pequeña y bajita, podía verse por un huequito entre las nubes. Con todo su corazón, Lumi <b>brilló</b> tan fuerte como pudo. Su lucecita guió al barquito por el mar oscuro."},
+   {scene:"🚢🏠",text:"El marinero siguió la luz de Lumi y llegó <b>sano y salvo</b> a su casa. Su familia lo abrazó feliz. —Gracias, pequeña estrella —dijo mirando al cielo. Lumi se sintió muy orgullosa."},
+   {scene:"⭐✨🌟",text:"Desde esa noche, Lumi entendió que su luz, aunque pequeña, podía hacer cosas grandes. Y mientras más ayudaba, más <b>brillaba</b>. Aprendió que todos somos especiales a nuestra manera."}],
+  qs:[
+   {q:"¿Por qué estaba triste Lumi al principio?",ops:["Porque casi no brillaba 😢","Porque tenía sueño","Porque era muy grande"],a:0},
+   {q:"¿A quién ayudó Lumi con su luz?",ops:["A un barquito perdido en el mar 🚢","A un avión","A un tren"],a:0},
+   {q:"¿Qué pasó cuando Lumi ayudó a los demás?",ops:["Brilló cada vez más ✨","Se apagó","Se puso triste"],a:0},
+   {q:"¿Qué nos enseña Lumi?",ops:["Todos somos especiales y podemos ayudar a nuestra manera","Que ser pequeño es malo","Que no hay que brillar"],a:0}]}];
 
 const ROBOT_LEVELS=[
  {w:3,h:3,start:[0,2],goal:[2,2],walls:[],hint:"2 pasos a la derecha"},
