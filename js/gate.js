@@ -28,10 +28,18 @@ function boot(){
 /* lo llama firebase-sync en cada cambio de sesión */
 function afRoute(u){
  _gateRouted=true;
- if(u){S.hasAccount=true;save();
-  if(typeof afPull==="function")afPull(function(){if(current.profile===null&&!document.getElementById("acctbox"))screenStart();});
-  else if(current.profile===null)screenStart();
- }else{screenGate();}}
+ if(!u){if(typeof afMember!=="undefined")afMember=null;screenGate();return;}
+ // ¿es un hijo invitado (tiene su propia cuenta amarrada a una familia)?
+ if(typeof afCheckMember==="function"){
+  afCheckMember(u,function(member){
+   if(member&&member.familyId){afMember={familyId:member.familyId};afLoadChild(u.uid,member.familyId);return;}
+   afMember=null;S.hasAccount=true;save();
+   if(typeof afPull==="function")afPull(function(){if(current.profile===null&&!document.getElementById("acctbox"))screenStart();});
+   else if(current.profile===null)screenStart();
+  });return;}
+ S.hasAccount=true;save();
+ if(typeof afPull==="function")afPull(function(){if(current.profile===null&&!document.getElementById("acctbox"))screenStart();});
+ else if(current.profile===null)screenStart();}
 function screenGate(mode){setTheme("parent");current.profile=null;
  const offline=!(typeof afCloudAvailable==="function"&&afCloudAvailable());
  const hero='<div style="text-align:center;margin-top:5vh"><div style="font-size:3rem">🏠</div>'

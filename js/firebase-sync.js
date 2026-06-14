@@ -30,7 +30,13 @@ function afOnSave(){if(!afUser())return;clearTimeout(afPushT);afPushT=setTimeout
 window.afOnSave=afOnSave;
 /* la clave de Gemini se guarda en el espacio PRIVADO de la familia (solo el dueño lo lee, por las reglas) */
 function afPush(){var u=afUser();if(!u)return;
- try{afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S))).catch(function(){});}catch(e){}}
+ try{
+  if(afMember){ // hijo invitado: guarda SOLO su propio perfil
+   var pid=S.childProfile||u.uid;var prof=S.profiles&&S.profiles[pid];
+   if(prof){prof.updatedAt=Date.now();afDB.collection("families").doc(afMember.familyId).collection("profiles").doc(u.uid).set(JSON.parse(JSON.stringify(prof))).catch(function(){});}
+   return;}
+  afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S))).catch(function(){});
+ }catch(e){}}
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
   if(snap.exists){var cloud=snap.data();var lt=S.updatedAt||0,ct=cloud.updatedAt||0;
@@ -48,6 +54,63 @@ function afLogin(email,pass,cb){afAuth.signInWithEmailAndPassword(email,pass)
 function afLogout(){if(afReady)afAuth.signOut();}
 function afReset(email,cb){if(!afReady){cb({message:"Sin conexión a internet"});return;}
  afAuth.sendPasswordResetEmail(email).then(function(){cb(null);}).catch(cb);}
+
+/* ============ HIJOS CON SU PROPIA CUENTA (miembros de la familia) ============ */
+var afMember=null; // {familyId} si esta sesión es de un hijo invitado
+function afValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e||"");}
+function afSecondaryApp(){try{return firebase.app("secondary");}catch(e){return firebase.initializeApp(AF_CFG,"secondary");}}
+function afNewMemberProfile(name,age,type){
+ var a=parseInt(age,10)||0;
+ if(type==="teen")return {name:name,alias:"",age:a||13,type:"teen",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{},updatedAt:Date.now()};
+ return {name:name,alias:"",age:a||7,type:"kid",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}},updatedAt:Date.now()};}
+/* el padre invita a un hijo: crea su cuenta (sin cerrar su propia sesión), lo amarra a la familia
+   y le envía un correo para que cree su contraseña */
+function afInviteChild(email,name,age,cb){
+ if(!afReady){cb({message:"Sin conexión"});return;}
+ var parent=afUser();if(!parent){cb({message:"Inicia sesión primero"});return;}
+ email=(email||"").trim().toLowerCase();name=(name||"").trim();
+ if(!name){cb({message:"Escribe el nombre del hijo"});return;}
+ if(!afValidEmail(email)){cb({code:"auth/invalid-email"});return;}
+ var temp="Af"+Math.random().toString(36).slice(2,12)+"X9";
+ var sAuth=afSecondaryApp().auth();
+ sAuth.createUserWithEmailAndPassword(email,temp).then(function(cred){
+  var cuid=cred.user.uid;
+  var type=(parseInt(age,10)||7)>=11?"teen":"kid";
+  var prof=afNewMemberProfile(name,age,type);
+  var fid=parent.uid;
+  var meta={};meta[cuid]={name:name,email:email,age:(parseInt(age,10)||null),type:type,since:Date.now()};
+  return Promise.all([
+   afDB.collection("families").doc(fid).collection("profiles").doc(cuid).set(prof),
+   afDB.collection("families").doc(fid).set({memberIndex:meta},{merge:true}),
+   afDB.collection("memberships").doc(cuid).set({familyId:fid,name:name,email:email})
+  ]).then(function(){
+   sAuth.signOut().catch(function(){});
+   afAuth.sendPasswordResetEmail(email).then(function(){cb(null,cuid);}).catch(function(){cb(null,cuid);});
+  });
+ }).catch(function(e){try{sAuth.signOut();}catch(_){}cb(e);});}
+/* lee los perfiles de los hijos invitados (para que el padre vea sus estadísticas) */
+function afLoadMembers(cb){
+ var u=afUser();if(!u||!afReady){cb([]);return;}
+ afDB.collection("families").doc(u.uid).collection("profiles").get().then(function(qs){
+  var arr=[];qs.forEach(function(d){arr.push(Object.assign({uid:d.id},d.data()));});cb(arr);
+ }).catch(function(){cb([]);});}
+/* reenviar el correo para crear contraseña */
+function afResendChild(email,cb){afReset(email,cb);}
+/* ¿esta sesión es de un hijo invitado? devuelve su vínculo de familia o null */
+function afCheckMember(u,cb){
+ if(!afReady){cb(null);return;}
+ afDB.collection("memberships").doc(u.uid).get().then(function(m){cb(m.exists?m.data():null);}).catch(function(){cb(null);});}
+/* el hijo invitado inicia sesión: carga SOLO su perfil desde la familia */
+function afLoadChild(uid,fid){
+ afDB.collection("families").doc(fid).collection("profiles").doc(uid).get().then(function(snap){
+  var prof=snap.exists?snap.data():afNewMemberProfile("Estudiante",7,"kid");
+  var base=JSON.parse(JSON.stringify(DEFAULT_STATE));
+  base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
+  S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();
+  localStorage.setItem("academiaFam2",JSON.stringify(S));
+  current.profile=uid;if(typeof touchDay==="function")touchDay();
+  if(profType()==="teen")screenTeenHome();else screenKidMap();
+ }).catch(function(){if(typeof screenGate==="function")screenGate();});}
 function afErr(e){var c=(e&&e.code)||"";
  if(/wrong-password|invalid-cred|invalid-login/.test(c))return "Correo o contraseña incorrectos";
  if(/user-not-found/.test(c))return "No existe esa cuenta — usa \"Crear cuenta\"";

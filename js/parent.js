@@ -102,12 +102,45 @@ function saveChild(id){const p=S.profiles[id];if(!p)return;
  save();screenParentDash();}
 function askDeleteChild(id){const p=S.profiles[id];if(!p)return;
  if(confirm('¿Eliminar a "'+p.name+'" y todo su progreso? No se puede deshacer.')){deleteProfile(id);screenParentDash();}}
+function inviteChildCard(){
+ if(typeof afCloudAvailable!=="function"||!afCloudAvailable()||!afUser())
+  return '<div class="card"><h3>📧 Hijos con su propia cuenta</h3><p class="mut" style="margin-top:8px">Inicia sesión con tu cuenta (arriba) para invitar a tus hijos con su propio correo.</p></div>';
+ return '<div class="card"><h3>📧 Hijos con su propia cuenta</h3>'
+  +'<p class="mut" style="margin:8px 0;line-height:1.6">Invita a cada hijo con su correo. Le llegará un correo para crear su contraseña y entrar con su <b>propia cuenta</b>; tú verás sus estadísticas aquí.</p>'
+  +'<input type="text" id="icName" placeholder="Nombre del hijo">'
+  +'<input type="number" id="icAge" inputmode="numeric" placeholder="Edad" min="3" max="18">'
+  +'<input type="email" id="icMail" placeholder="Correo del hijo">'
+  +'<button class="pbtn" onclick="inviteChild()">📨 Enviar invitación por correo</button>'
+  +'<p id="icfb" style="margin-top:6px"></p>'
+  +'<div id="membersBox" style="margin-top:10px"><p class="mut" style="font-size:.85rem">Cargando…</p></div></div>';}
+function inviteChild(){
+ const name=document.getElementById("icName").value,age=document.getElementById("icAge").value,mail=document.getElementById("icMail").value;
+ const fb=document.getElementById("icfb");
+ if(typeof afInviteChild!=="function"||!afUser()){fb.innerHTML='Inicia sesión con tu cuenta primero';return;}
+ fb.innerHTML='⏳ Creando la cuenta y enviando el correo…';
+ afInviteChild(mail,name,age,function(err){
+  if(err){fb.innerHTML='<b style="color:#DC2626">'+esc(typeof afErr==="function"?afErr(err):(err.message||"Error"))+'</b>';return;}
+  fb.innerHTML='<b style="color:var(--par-acc)">✓ ¡Invitación enviada! '+esc((name||"").trim())+' recibirá un correo para crear su contraseña.</b>';
+  document.getElementById("icName").value="";document.getElementById("icMail").value="";document.getElementById("icAge").value="";
+  loadMembersInto();});}
+function loadMembersInto(){
+ const box=document.getElementById("membersBox");if(!box||typeof afLoadMembers!=="function")return;
+ afLoadMembers(function(list){
+  if(!box)return;
+  if(!list.length){box.innerHTML='<p class="mut" style="font-size:.85rem">Aún no has invitado a ningún hijo con su propia cuenta.</p>';return;}
+  box.innerHTML='<p class="mut" style="font-size:.85rem;margin-bottom:6px">Hijos con cuenta propia:</p>'+list.map(function(m){
+   const st=m.stats||{};let tot=0,ok=0;Object.keys(st).forEach(function(k){tot+=st[k].attempts||0;ok+=st[k].correct||0;});
+   const pct=tot?Math.round(ok/tot*100):0;
+   return '<div style="border:1px solid var(--par-line);border-radius:10px;padding:8px 10px;margin:5px 0"><b>'+(m.emoji||"🙂")+' '+esc(m.name||"Hijo")+'</b> <span class="mut" style="font-size:.85rem">· 🔥 '+(m.streak||0)+' · 🪙 '+(m.coins||0)+' · Nv '+(typeof level==="function"?level(m.xp||0):1)+' · '+tot+' ejercicios ('+pct+'%)</span></div>';
+  }).join("");});}
 function screenParentDash(){setTheme("parent");
  const reports=Object.keys(S.profiles).map(profileReport).join("");
  const aiTotal=S.aiBank?Object.keys(S.aiBank).reduce((a,k)=>a+(S.aiBank[k]?S.aiBank[k].length:0),0):0;
+ setTimeout(function(){if(typeof loadMembersInto==="function")loadMembersInto();},150);
  render('<div class="topbar"><button class="back" onclick="screenStart()">←</button><b style="font-size:1.1rem">Panel de padres</b></div>'
  +(typeof afAccountCard==="function"?afAccountCard():"")
  +(typeof inviteCard==="function"?inviteCard():"")
+ +inviteChildCard()
  +childrenCard()
  +reports
  +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
