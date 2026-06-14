@@ -107,6 +107,7 @@ function screenParentDash(){setTheme("parent");
  const aiTotal=S.aiBank?Object.keys(S.aiBank).reduce((a,k)=>a+(S.aiBank[k]?S.aiBank[k].length:0),0):0;
  render('<div class="topbar"><button class="back" onclick="screenStart()">←</button><b style="font-size:1.1rem">Panel de padres</b></div>'
  +(typeof afAccountCard==="function"?afAccountCard():"")
+ +(typeof inviteCard==="function"?inviteCard():"")
  +childrenCard()
  +reports
  +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
