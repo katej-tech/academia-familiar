@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin internet y se actualiza sola al abrir con conexión. */
-const VERSION = "af-v9.4.0";
+const VERSION = "af-v9.5.0";
 const CORE = [
   ".",
   "index.html",

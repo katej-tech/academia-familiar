@@ -40,7 +40,9 @@ function afRoute(u){
  S.hasAccount=true;save();
  if(typeof afPull==="function")afPull(function(){if(current.profile===null&&!document.getElementById("acctbox"))screenStart();});
  else if(current.profile===null)screenStart();}
+function gateInitialMode(){try{var g=new URLSearchParams(location.search).get("go");if(g==="login"||g==="signup")return g;}catch(e){}return undefined;}
 function screenGate(mode){setTheme("parent");current.profile=null;
+ if(mode===undefined)mode=gateInitialMode();
  const offline=!(typeof afCloudAvailable==="function"&&afCloudAvailable());
  const hero='<div style="text-align:center;margin-top:5vh"><div style="font-size:3rem">🏠</div>'
   +'<h1 class="title" style="font-size:1.9rem;margin-top:4px">Academia Familiar</h1>'

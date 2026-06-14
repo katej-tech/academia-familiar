@@ -65,15 +65,16 @@ function afNewMemberProfile(name,age,type){
  return {name:name,alias:"",age:a||7,type:"kid",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}},updatedAt:Date.now()};}
 /* el padre invita a un hijo: crea su cuenta (sin cerrar su propia sesión), lo amarra a la familia
    y le envía un correo para que cree su contraseña */
-function afInviteChild(email,name,age,cb){
+function afGenPass(name){var base=(name||"").replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ]/g,"");base=base?base.charAt(0).toUpperCase()+base.slice(1,7).toLowerCase():"Clave";while(base.length<4)base+="x";return base+Math.floor(100+Math.random()*900);}
+function afInviteChild(email,name,age,password,cb){
  if(!afReady){cb({message:"Sin conexión"});return;}
  var parent=afUser();if(!parent){cb({message:"Inicia sesión primero"});return;}
  email=(email||"").trim().toLowerCase();name=(name||"").trim();
  if(!name){cb({message:"Escribe el nombre del hijo"});return;}
  if(!afValidEmail(email)){cb({code:"auth/invalid-email"});return;}
- var temp="Af"+Math.random().toString(36).slice(2,12)+"X9";
+ var pass=(password&&(""+password).length>=6)?(""+password):afGenPass(name);
  var sAuth=afSecondaryApp().auth();
- sAuth.createUserWithEmailAndPassword(email,temp).then(function(cred){
+ sAuth.createUserWithEmailAndPassword(email,pass).then(function(cred){
   var cuid=cred.user.uid;
   var type=(parseInt(age,10)||7)>=11?"teen":"kid";
   var prof=afNewMemberProfile(name,age,type);
@@ -85,7 +86,8 @@ function afInviteChild(email,name,age,cb){
    afDB.collection("memberships").doc(cuid).set({familyId:fid,name:name,email:email})
   ]).then(function(){
    sAuth.signOut().catch(function(){});
-   afAuth.sendPasswordResetEmail(email).then(function(){cb(null,cuid);}).catch(function(){cb(null,cuid);});
+   afAuth.sendPasswordResetEmail(email).catch(function(){}); // correo opcional de respaldo
+   cb(null,cuid,pass);
   });
  }).catch(function(e){try{sAuth.signOut();}catch(_){}cb(e);});}
 /* lee los perfiles de los hijos invitados (para que el padre vea sus estadísticas) */

@@ -106,22 +106,28 @@ function inviteChildCard(){
  if(typeof afCloudAvailable!=="function"||!afCloudAvailable()||!afUser())
   return '<div class="card"><h3>📧 Hijos con su propia cuenta</h3><p class="mut" style="margin-top:8px">Inicia sesión con tu cuenta (arriba) para invitar a tus hijos con su propio correo.</p></div>';
  return '<div class="card"><h3>📧 Hijos con su propia cuenta</h3>'
-  +'<p class="mut" style="margin:8px 0;line-height:1.6">Invita a cada hijo con su correo. Le llegará un correo para crear su contraseña y entrar con su <b>propia cuenta</b>; tú verás sus estadísticas aquí.</p>'
+  +'<p class="mut" style="margin:8px 0;line-height:1.6">Crea la cuenta de cada hijo. Tú defines su contraseña (o la genera la app) y se la das directo; entra con su <b>propia cuenta</b> y tú ves sus estadísticas aquí. <b>No depende de correos.</b></p>'
   +'<input type="text" id="icName" placeholder="Nombre del hijo">'
   +'<input type="number" id="icAge" inputmode="numeric" placeholder="Edad" min="3" max="18">'
   +'<input type="email" id="icMail" placeholder="Correo del hijo">'
-  +'<button class="pbtn" onclick="inviteChild()">📨 Enviar invitación por correo</button>'
+  +'<input type="text" id="icPass" placeholder="Contraseña para el hijo (opcional, mín 6)">'
+  +'<button class="pbtn" onclick="inviteChild()">👶 Crear la cuenta del hijo</button>'
   +'<p id="icfb" style="margin-top:6px"></p>'
   +'<div id="membersBox" style="margin-top:10px"><p class="mut" style="font-size:.85rem">Cargando…</p></div></div>';}
 function inviteChild(){
- const name=document.getElementById("icName").value,age=document.getElementById("icAge").value,mail=document.getElementById("icMail").value;
+ const name=document.getElementById("icName").value,age=document.getElementById("icAge").value,mail=document.getElementById("icMail").value,pass=document.getElementById("icPass").value;
  const fb=document.getElementById("icfb");
  if(typeof afInviteChild!=="function"||!afUser()){fb.innerHTML='Inicia sesión con tu cuenta primero';return;}
- fb.innerHTML='⏳ Creando la cuenta y enviando el correo…';
- afInviteChild(mail,name,age,function(err){
+ fb.innerHTML='⏳ Creando la cuenta del hijo…';
+ afInviteChild(mail,name,age,pass,function(err,uid,finalPass){
   if(err){fb.innerHTML='<b style="color:#DC2626">'+esc(typeof afErr==="function"?afErr(err):(err.message||"Error"))+'</b>';return;}
-  fb.innerHTML='<b style="color:var(--par-acc)">✓ ¡Invitación enviada! '+esc((name||"").trim())+' recibirá un correo para crear su contraseña.</b>';
-  document.getElementById("icName").value="";document.getElementById("icMail").value="";document.getElementById("icAge").value="";
+  const correo=(mail||"").trim().toLowerCase();
+  fb.innerHTML='<div style="background:#E9F8F1;border:2px solid var(--par-acc);border-radius:12px;padding:12px;margin-top:6px">'
+   +'<b style="color:var(--par-acc)">✓ ¡Cuenta de '+esc((name||"").trim())+' creada!</b>'
+   +'<p style="margin:8px 0 4px">Dale estos datos para que entre con su propia cuenta:</p>'
+   +'<p style="font-family:monospace;font-size:1rem">📧 Correo: <b>'+esc(correo)+'</b><br>🔑 Contraseña: <b>'+esc(finalPass)+'</b></p>'
+   +'<p class="mut" style="font-size:.82rem;margin-top:6px">Anótala o cópiala ahora. Tu hijo puede cambiarla después con "¿Olvidaste tu contraseña?".</p></div>';
+  document.getElementById("icName").value="";document.getElementById("icMail").value="";document.getElementById("icAge").value="";document.getElementById("icPass").value="";
   loadMembersInto();});}
 function loadMembersInto(){
  const box=document.getElementById("membersBox");if(!box||typeof afLoadMembers!=="function")return;
