@@ -98,6 +98,16 @@ function afLoadMembers(cb){
  }).catch(function(){cb([]);});}
 /* reenviar el correo para crear contraseña */
 function afResendChild(email,cb){afReset(email,cb);}
+/* el padre quita a un hijo: borra sus datos de la familia (la cuenta de acceso se borra aparte en la consola) */
+function afRemoveMember(childUid,cb){
+ var u=afUser();if(!u||!afReady){if(cb)cb({message:"Sin sesión"});return;}
+ var fid=u.uid;var meta={};meta[childUid]=firebase.firestore.FieldValue.delete();
+ // borrado resistente: cada parte por su cuenta (no falla todo si una regla bloquea)
+ Promise.all([
+  afDB.collection("families").doc(fid).collection("profiles").doc(childUid).delete().catch(function(){}),
+  afDB.collection("memberships").doc(childUid).delete().catch(function(){}),
+  afDB.collection("families").doc(fid).set({memberIndex:meta},{merge:true}).catch(function(){})
+ ]).then(function(){if(cb)cb(null);});}
 /* ¿esta sesión es de un hijo invitado? devuelve su vínculo de familia o null */
 function afCheckMember(u,cb){
  if(!afReady){cb(null);return;}

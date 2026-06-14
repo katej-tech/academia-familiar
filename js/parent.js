@@ -120,7 +120,12 @@ function inviteChild(){
  if(typeof afInviteChild!=="function"||!afUser()){fb.innerHTML='Inicia sesión con tu cuenta primero';return;}
  fb.innerHTML='⏳ Creando la cuenta del hijo…';
  afInviteChild(mail,name,age,pass,function(err,uid,finalPass){
-  if(err){fb.innerHTML='<b style="color:#DC2626">'+esc(typeof afErr==="function"?afErr(err):(err.message||"Error"))+'</b>';return;}
+  if(err){
+   if((err.code||"").indexOf("email-already-in-use")>=0){
+    fb.innerHTML='<div style="background:#FFF6E5;border:2px solid #D97706;border-radius:12px;padding:12px;margin-top:6px"><b style="color:#B45309">Ese correo ya tiene una cuenta</b>'
+     +'<p class="mut" style="font-size:.85rem;margin-top:6px;line-height:1.5">Es de un intento anterior. Para volver a crearla con una contraseña que tú definas: ve a la <b>consola de Firebase → Authentication → Users</b>, busca ese correo, bórralo (🗑️) y vuelve a crear el hijo aquí.<br>O si tu hijo ya sabe su contraseña, entra directo con ella.</p></div>';
+    return;}
+   fb.innerHTML='<b style="color:#DC2626">'+esc(typeof afErr==="function"?afErr(err):(err.message||"Error"))+'</b>';return;}
   const correo=(mail||"").trim().toLowerCase();
   fb.innerHTML='<div style="background:#E9F8F1;border:2px solid var(--par-acc);border-radius:12px;padding:12px;margin-top:6px">'
    +'<b style="color:var(--par-acc)">✓ ¡Cuenta de '+esc((name||"").trim())+' creada!</b>'
@@ -137,8 +142,16 @@ function loadMembersInto(){
   box.innerHTML='<p class="mut" style="font-size:.85rem;margin-bottom:6px">Hijos con cuenta propia:</p>'+list.map(function(m){
    const st=m.stats||{};let tot=0,ok=0;Object.keys(st).forEach(function(k){tot+=st[k].attempts||0;ok+=st[k].correct||0;});
    const pct=tot?Math.round(ok/tot*100):0;
-   return '<div style="border:1px solid var(--par-line);border-radius:10px;padding:8px 10px;margin:5px 0"><b>'+(m.emoji||"🙂")+' '+esc(m.name||"Hijo")+'</b> <span class="mut" style="font-size:.85rem">· 🔥 '+(m.streak||0)+' · 🪙 '+(m.coins||0)+' · Nv '+(typeof level==="function"?level(m.xp||0):1)+' · '+tot+' ejercicios ('+pct+'%)</span></div>';
+   return '<div style="display:flex;align-items:center;gap:8px;border:1px solid var(--par-line);border-radius:10px;padding:8px 10px;margin:5px 0">'
+    +'<span style="flex:1"><b>'+(m.emoji||"🙂")+' '+esc(m.name||"Hijo")+'</b> <span class="mut" style="font-size:.85rem">· 🔥 '+(m.streak||0)+' · 🪙 '+(m.coins||0)+' · Nv '+(typeof level==="function"?level(m.xp||0):1)+' · '+tot+' ejercicios ('+pct+'%)</span></span>'
+    +'<button class="pbtn ghost" style="width:auto;padding:6px 10px;margin:0" onclick="removeMember(\''+m.uid+'\',\''+esc(m.name||"")+'\')">🗑️</button></div>';
   }).join("");});}
+function removeMember(uid,name){
+ if(!confirm('¿Quitar a "'+name+'" de tu familia? Se borrará su progreso aquí.\n\nNOTA: su cuenta de acceso (correo) se elimina aparte en la consola de Firebase si quieres volver a usar ese mismo correo.'))return;
+ if(typeof afRemoveMember!=="function")return;
+ afRemoveMember(uid,function(err){
+  if(err){alert("No se pudo quitar: "+(err.message||err.code));return;}
+  if(typeof loadMembersInto==="function")loadMembersInto();});}
 function screenParentDash(){setTheme("parent");
  const reports=Object.keys(S.profiles).map(profileReport).join("");
  const aiTotal=S.aiBank?Object.keys(S.aiBank).reduce((a,k)=>a+(S.aiBank[k]?S.aiBank[k].length:0),0):0;
