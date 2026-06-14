@@ -122,54 +122,76 @@ function tapWS(i){
  renderWS();} // si no, la selección sigue creciendo: el niño puede ir letra por letra
 
 /* ---- PINTA CON NÚMEROS (resuelve la operación y pinta) ---- */
+const MP_COLORS=["#FFFFFF","#FF5C5C","#5199E4","#3EC97C","#FFC93C","#C77DD6","#FF8FB1"];
+const MP_NAMES={1:"rojo",2:"azul",3:"verde",4:"amarillo",5:"morado",6:"rosado"};
 const MP_ART=[
- {nm:"Corazón",tpl:["0110110","1111111","1111111","1111111","0111110","0011100","0001000"]},
- {nm:"Carita",tpl:["0111110","1111111","1211211","1111111","1211121","1122211","0111110"]},
- {nm:"Flor",tpl:["0020200","0222220","2223222","0222220","0020200","0001000","0331330"]}];
-const MP_COLORS=["#FFFFFF","#FF6B6B","#3B82F6","#3EC97C"];
+ {nm:"un corazón",pic:"❤️",tpl:["011000110","111101111","111111111","111111111","011111110","001111100","000111000","000010000"]},
+ {nm:"una estrella",pic:"⭐",tpl:["000040000","000444000","444444444","044444440","004444400","044444440","040000040","000000000"]},
+ {nm:"una flor",pic:"🌸",tpl:["006660000","066466000","064446000","066466000","006360000","000300000","003330000","000000000"]},
+ {nm:"un pez",pic:"🐟",tpl:["000222000","002222200","022222220","422222220","422222220","022222220","002222200","000222000"]},
+ {nm:"una mariposa",pic:"🦋",tpl:["550000055","555050555","555555555","055535550","000535000","055535550","555555555","550000055"]}];
 let MP={};
 function gameMathPaint(){setTheme("kid");
  const art=pick(MP_ART);
  const tpl=art.tpl.join("").split("").map(Number);
  const colorsUsed=[...new Set(tpl)].filter(x=>x>0);
- // a cada color le toca un número-resultado distinto, y a las celdas blancas números distractores
  const results={};const usadosR=new Set();
- colorsUsed.forEach(c=>{let r;do{r=2+rnd(17);}while(usadosR.has(r));usadosR.add(r);results[c]=r;});
- const nums=tpl.map(c=>{if(c>0)return results[c];let d;do{d=2+rnd(17);}while(usadosR.has(d));return d;});
- MP={art,tpl,nums,results,colorsUsed,ci:0,painted:Array(tpl.length).fill(false),errs:0};
+ colorsUsed.forEach(c=>{let r;do{r=2+rnd(diffMax?diffMax([12,15,18,18,18]):17);}while(usadosR.has(r));usadosR.add(r);results[c]=r;});
+ const nums=tpl.map(c=>{if(c>0)return results[c];let d;do{d=2+rnd(18);}while(usadosR.has(d));return d;});
+ MP={art,tpl,nums,results,colorsUsed,ci:0,painted:Array(tpl.length).fill(false),errs:0,W:9};
  nextMPColor();}
 function nextMPColor(){
- if(MP.ci>=MP.colorsUsed.length){
-  sWIN();confetti(30);recordAnswer("Mate",true,20);
-  return setTimeout(()=>nodeWin(MP.errs<=2?3:MP.errs<=5?2:1,"Mate"),900);}
+ if(MP.ci>=MP.colorsUsed.length)return mpFinish();
  const color=MP.colorsUsed[MP.ci],target=MP.results[color];
- // generar operación cuyo resultado es target
  const resta=Math.random()<.5&&target<15;
  let q;
  if(resta){const a=target+1+rnd(5);q=a+" − "+(a-target);}
  else{const a=1+rnd(target-1);q=a+" + "+(target-a);}
  MP.q=q;MP.target=target;renderMP();}
 function renderMP(){
- const color=MP.colorsUsed[MP.ci];
+ const col=MP.colorsUsed[MP.ci];
  const cells=MP.tpl.map((c,i)=>{
   const painted=MP.painted[i];
-  return '<button onclick="tapMP('+i+')" style="aspect-ratio:1;border-radius:6px;border:2px solid #B9C2D4;font-family:Fredoka;font-weight:700;font-size:clamp(.75rem,3.2vw,1rem);background:'+(painted?MP_COLORS[MP.tpl[i]]:"#fff")+';color:'+(painted?"transparent":"var(--kid-ink)")+'">'+MP.nums[i]+'</button>';}).join("");
+  const bg=painted?MP_COLORS[MP.tpl[i]]:(MP.tpl[i]===0?"#F0F3F8":"#fff");
+  const txt=(painted||MP.tpl[i]===0)?"transparent":"var(--kid-ink)";
+  return '<button onclick="tapMP('+i+')" style="aspect-ratio:1;border-radius:9px;border:none;outline:1px solid #DCE3EE;font-family:Fredoka;font-weight:700;font-size:clamp(.8rem,3.4vw,1.05rem);background:'+bg+';color:'+txt+';transition:background .15s">'+(MP.tpl[i]===0?"":MP.nums[i])+'</button>';}).join("");
+ const done=MP.painted.filter((p,i)=>MP.tpl[i]>0&&p).length;
+ const total=MP.tpl.filter(c=>c>0).length;
  render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.1rem,5vw,1.35rem);text-align:center;margin-bottom:2px">🎨 Pinta con números</h2>'
- +'<p class="center" style="font-size:.92rem;margin-bottom:6px">Resuelve y pinta las casillas con ese resultado</p>'
- +'<div class="card center" style="padding:12px"><span style="font-family:Fredoka;font-weight:700;font-size:clamp(1.5rem,7vw,2rem)">'+MP.q+' = ?</span>'
- +'<span style="display:inline-block;width:26px;height:26px;border-radius:8px;border:3px solid var(--kid-ink);background:'+MP_COLORS[MP.colorsUsed[MP.ci]]+';margin-left:12px;vertical-align:middle"></span></div>'
- +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">'+cells+'</div>'
- +'<p class="center mut" style="margin-top:8px;font-size:.85rem">Dibujo misterioso: ¡píntalo todo para verlo!</p>');}
+ +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Resuelve y toca las casillas con ese resultado para pintarlas de <b>'+MP_NAMES[col]+'</b></p>'
+ +'<div class="card center" style="padding:14px;display:flex;align-items:center;justify-content:center;gap:14px">'
+ +'<span style="font-family:Fredoka;font-weight:700;font-size:clamp(1.6rem,8vw,2.3rem)">'+MP.q+' = ?</span>'
+ +'<span style="display:inline-block;width:34px;height:34px;border-radius:10px;border:3px solid var(--kid-ink);background:'+MP_COLORS[col]+'"></span></div>'
+ +'<div style="display:grid;grid-template-columns:repeat('+MP.W+',1fr);gap:4px;max-width:360px;margin:0 auto">'+cells+'</div>'
+ +'<p class="center mut" style="margin-top:10px;font-size:.85rem">Pintadas: '+done+'/'+total+' · ¡termina para ver el dibujo sorpresa!</p>');}
 function tapMP(i){
- if(MP.painted[i])return;
+ if(MP.painted[i]||MP.tpl[i]===0)return;
  const color=MP.colorsUsed[MP.ci];
  if(MP.nums[i]===MP.target&&MP.tpl[i]===color){
   MP.painted[i]=true;beep([600+rnd(200)],.07);
   const restantes=MP.tpl.some((c,k)=>c===color&&!MP.painted[k]);
-  if(!restantes){sOK();confetti(8);MP.ci++;recordAnswer("Mate",true,15);setTimeout(nextMPColor,500);return;}
+  if(!restantes){sOK();confetti(8);MP.ci++;recordAnswer("Mate",true,15);setTimeout(nextMPColor,450);return;}
   renderMP();}
- else{MP.errs++;sNO();toast("Busca las casillas con "+MP.target,false,1100);}}
+ else{MP.errs++;sNO();toast("Esas no… busca las que dan "+MP.target,false,1100);}}
+function mpFinish(){
+ const stars=MP.errs<=2?3:MP.errs<=5?2:1;
+ const p=prof();p.coins+=stars*5;p.xp+=stars*10;
+ try{touchDay().games=(touchDay().games||0)+1;}catch(e){}
+ recordAnswer("Mate",true,20);save();
+ sWIN();confetti(36);
+ const got=(stars>=2&&typeof maybeCritter==="function")?maybeCritter():null;
+ if(got)setTimeout(()=>confetti(24),400);
+ const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:12px;text-align:center"><div style="font-size:clamp(3rem,15vw,4rem)">'+got.e+'</div><b>'+(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" evolucionó! 🌟":"¡"+got.name+" subió de nivel!")+'</b></div>':'';
+ const cells=MP.tpl.map((c)=>'<div style="aspect-ratio:1;border-radius:9px;background:'+(c===0?"transparent":MP_COLORS[c])+'"></div>').join("");
+ render(topbar("exitGame('games')")
+ +'<div class="card endcard"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+MP.art.pic+'</div>'
+ +'<h2>¡Es '+MP.art.nm+'!</h2>'
+ +'<div style="display:grid;grid-template-columns:repeat('+MP.W+',1fr);gap:3px;max-width:280px;margin:12px auto">'+cells+'</div>'
+ +'<p style="font-size:1.1rem;margin-bottom:6px">Ganaste <b>+'+(stars*5)+' 🪙</b></p>'
+ +'<button class="kbtn green" onclick="gameMathPaint()">Pintar otro 🔁</button>'
+ +'<button class="kbtn white" onclick="screenGamesPick()">Volver a los juegos</button></div>'
+ +critterHTML);}
 
 /* ---- EL IMPOSTOR (encuentra al que dice mentiras) ---- */
 const IM_FACTS=[

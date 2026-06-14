@@ -74,7 +74,9 @@ function screenGate(mode){setTheme("parent");current.profile=null;
   +'<li>☁️ Progreso <b>seguro en la nube</b>, sincronizado entre tablet, celular y PC</li>'
   +'</ul></div>'
   +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="screenGate(\'signup\')">✨ Crear cuenta gratis</button>'
-  +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'+adBanner());}
+  +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'
+  +'<p class="center" style="margin-top:14px;font-size:.82rem"><a href="https://katej-tech.github.io/privacy.html" target="_blank" rel="noopener" style="color:var(--par-mut);text-decoration:underline">Política de privacidad</a></p>'
+  +adBanner());}
 let _gateRole="parent";
 function gateSetRole(r){_gateRole=r;
  const a=document.getElementById("roleP"),b=document.getElementById("roleH");

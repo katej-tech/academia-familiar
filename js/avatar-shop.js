@@ -75,13 +75,22 @@ function avState(){const p=prof();
  if(a.glassId===undefined)a.glassId=null;
  if(a.handId===undefined)a.handId=null;
  if(a.bgId===undefined)a.bgId=null;
+ if(!a.kind)a.kind="person";
+ if(!a.animal)a.animal="🦊";
+ if(!a.robotSeed)a.robotSeed="robi";
  if(!p.owned)p.owned=[];
  // migrar compras viejas al catálogo nuevo
  p.owned=p.owned.map(id=>SHOP_OLD_MAP[id]||id).filter(id=>shopItem(id));
  return a;}
 function legendaryPet(){const p=prof();if(!p||!p.activePet)return null;const it=shopItem(p.activePet);return it?{e:it.e,n:it.n}:null;}
+const AV_ANIMALS=["🦊","🐶","🐱","🦁","🐯","🐻","🐼","🐨","🐰","🐹","🐸","🐵","🐮","🐷","🐧","🦄","🐲","🦖","🐢","🦉","🦋","🐝","🐙","🦈","🦓","🦒","🐺","🐔"];
 /* URL de DiceBear según el look actual */
 function avatarKey(){const a=avState();
+ if(a.kind==="robot"){
+  const rp=["seed="+encodeURIComponent(a.robotSeed||"robi")];
+  const bgR=a.bgId&&shopItem(a.bgId);
+  if(bgR)rp.push("backgroundColor="+bgR.db.join(","),"backgroundType=gradientLinear");
+  return "https://api.dicebear.com/9.x/bottts/svg?"+rp.join("&");}
  const ps=["seed=academia","eyes="+a.eyes,"mouth="+a.mouth,"skinColor="+a.skin,
   "clothing="+a.clothing,"clothesColor="+a.clothesColor,"eyebrows=default"];
  const hat=a.hatId&&shopItem(a.hatId);
@@ -93,7 +102,9 @@ function avatarKey(){const a=avState();
  if(bg)ps.push("backgroundColor="+bg.db.join(","),"backgroundType=gradientLinear");
  return DB_API+"?"+ps.join("&");}
 /* descarga el SVG una vez y lo guarda en el perfil (offline después) */
-function avatarEnsure(cb){const p=prof();const key=avatarKey();
+function avatarEnsure(cb){const p=prof();
+ if(avState().kind==="animal")return; // los animalitos son emoji, no necesitan descarga
+ const key=avatarKey();
  if(p.avatarSvg&&p.avatarKey===key)return;
  fetch(key).then(r=>r.text()).then(t=>{
   if(t&&t.indexOf("<svg")>=0){p.avatarSvg=t;p.avatarKey=key;save();if(cb)cb();}
@@ -107,13 +118,19 @@ function avatarScene(px){const a=avState();
  return '<div style="position:relative;border-radius:20px;overflow:hidden;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.7);background:linear-gradient(160deg,#'+c1+',#'+c2+');padding:16px 0;display:flex;justify-content:center">'
   +deco+'<div style="position:relative;z-index:1">'+avatarHTML(px)+'</div></div>';}
 function avatarHTML(px){const p=prof();const a=avState();
- const ready=p.avatarSvg&&p.avatarKey===avatarKey();
- const inner=ready
-  ?p.avatarSvg.replace("<svg",'<svg style="width:100%;height:100%;display:block" ')
-  :'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.5)+'px;background:#EAF2FF;border-radius:18px">🙂</div>';
  const hand=a.handId&&shopItem(a.handId);
+ let face;
+ if(a.kind==="animal"){
+  face='<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.62)+'px;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#EAF2FF">'+(a.animal||"🦊")+'</span>';
+ }else{
+  const ready=p.avatarSvg&&p.avatarKey===avatarKey();
+  const inner=ready
+   ?p.avatarSvg.replace("<svg",'<svg style="width:100%;height:100%;display:block" ')
+   :'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.5)+'px;background:#EAF2FF;border-radius:18px">'+(a.kind==="robot"?"🤖":"🙂")+'</div>';
+  face='<span style="position:absolute;inset:0;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#fff">'+inner+'</span>';
+ }
  return '<span style="position:relative;display:inline-block;width:'+px+'px;height:'+px+'px;vertical-align:middle;border-radius:18px;overflow:visible">'
- +'<span style="position:absolute;inset:0;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#fff">'+inner+'</span>'
+ +face
  +(hand?'<span style="position:absolute;right:-'+Math.round(px*0.08)+'px;bottom:-'+Math.round(px*0.05)+'px;font-size:'+Math.round(px*0.34)+'px;line-height:1;z-index:2;filter:drop-shadow(0 2px 0 rgba(30,42,74,.5))">'+hand.e+'</span>':'')
  +'</span>';}
 /* ---- Pantalla MI PERSONAJE ---- */
@@ -123,6 +140,9 @@ function avCycle(field,dir){const a=avState();
  let i=vals.indexOf(a[field]);i=(i+dir+vals.length)%vals.length;
  a[field]=vals[i];save();beep([560],.06);avatarEnsure(screenAvatar);screenAvatar();}
 function avSet(field,v){const a=avState();a[field]=v;save();sOK();avatarEnsure(screenAvatar);screenAvatar();}
+function avSetKind(k){const a=avState();a.kind=k;save();sOK();avatarEnsure(screenAvatar);screenAvatar();}
+function avSetAnimal(e){const a=avState();a.animal=e;save();sOK();screenAvatar();}
+function avShuffleRobot(){const a=avState();a.robotSeed="r"+Math.floor(Math.random()*1000000);save();beep([560],.06);avatarEnsure(screenAvatar);screenAvatar();}
 function screenAvatar(){setTheme("kid");
  const p=prof(),a=avState();
  avatarEnsure(screenAvatar);
@@ -139,15 +159,28 @@ function screenAvatar(){setTheme("kid");
   if(!its.length)return '<p class="mut" style="font-size:.9rem;margin:4px 0">Aún no tienes — ¡míralos en la tienda! 🛍️</p>';
   return '<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0">'+its.map(it=>
    '<button class="kbtn '+(a[key]===it.id?'green':'white')+'" style="display:inline-block;width:auto;margin:0;padding:10px 14px;font-size:1rem" onclick="avEquip(\''+it.id+'\')">'+it.e+' '+it.n+(a[key]===it.id?' ✓':'')+'</button>').join("")+'</div>';};
+ const kindBtn=(k,label)=>'<button class="kbtn '+(a.kind===k?'green':'white')+'" style="display:inline-block;width:auto;margin:0 6px 6px 0;padding:8px 14px;font-size:1rem" onclick="avSetKind(\''+k+'\')">'+label+'</button>';
+ const animalGrid='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px">'
+  +AV_ANIMALS.map(e=>'<button onclick="avSetAnimal(\''+e+'\')" style="aspect-ratio:1;border-radius:14px;border:3px solid var(--kid-ink);background:'+(a.animal===e?"var(--kid-green)":"#fff")+';box-shadow:0 3px 0 rgba(30,42,74,.6);font-size:clamp(1.3rem,6vw,1.8rem)">'+e+'</button>').join("")+'</div>';
+ let personaCards="";
+ if(a.kind==="person"){
+  personaCards='<div class="card">'+cyc("💇 Peinado","hairStyle",AV_HAIR_STYLES)+cyc("👀 Ojos","eyes",AV_EYES)+cyc("👄 Boca","mouth",AV_MOUTHS)+cyc("👕 Ropa","clothing",AV_CLOTHES)+'</div>'
+   +'<div class="card"><b>🖐️ Color de piel</b>'+swatch(AV_SKINS,"skin")+'</div>'
+   +'<div class="card"><b>💇 Color de pelo</b>'+swatch(AV_HAIR_COLORS,"hairColor")+'</div>'
+   +'<div class="card"><b>👕 Color de ropa</b>'+swatch(AV_CLOTHES_COLORS,"clothesColor")+'</div>'
+   +'<div class="card"><b>🎩 Gorro</b>'+eqBtns("hat","hatId")+(a.hatId?'<p style="font-size:.85rem;margin-top:6px;font-weight:600">Color del gorro:</p>'+swatch(AV_HAT_COLORS,"hatColor"):'')+'</div>'
+   +'<div class="card"><b>🕶️ Gafas</b>'+eqBtns("face","glassId")+'</div>';
+ }else if(a.kind==="animal"){
+  personaCards='<div class="card"><b>🐾 Elige tu animalito</b>'+animalGrid+'</div>';
+ }else{
+  personaCards='<div class="card center"><b>🤖 Tu robot</b><p class="mut" style="margin:6px 0 10px">Cada toque crea un robot nuevo</p><button class="kbtn blue" onclick="avShuffleRobot()">🎲 Cambiar robot</button></div>';
+ }
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">😎 Mi personaje</h2>'
  +'<div class="card center" style="padding:14px">'+avatarScene(180)+'</div>'
- +'<div class="card">'+cyc("💇 Peinado","hairStyle",AV_HAIR_STYLES)+cyc("👀 Ojos","eyes",AV_EYES)+cyc("👄 Boca","mouth",AV_MOUTHS)+cyc("👕 Ropa","clothing",AV_CLOTHES)+'</div>'
- +'<div class="card"><b>🖐️ Color de piel</b>'+swatch(AV_SKINS,"skin")+'</div>'
- +'<div class="card"><b>💇 Color de pelo</b>'+swatch(AV_HAIR_COLORS,"hairColor")+'</div>'
- +'<div class="card"><b>👕 Color de ropa</b>'+swatch(AV_CLOTHES_COLORS,"clothesColor")+'</div>'
- +'<div class="card"><b>🎩 Gorro</b>'+eqBtns("hat","hatId")+(a.hatId?'<p style="font-size:.85rem;margin-top:6px;font-weight:600">Color del gorro:</p>'+swatch(AV_HAT_COLORS,"hatColor"):'')+'</div>'
- +'<div class="card"><b>🕶️ Gafas</b>'+eqBtns("face","glassId")+'</div>'
+ +'<div class="card"><b>¿Qué quieres ser?</b><div style="margin-top:8px">'+kindBtn("person","🧑 Persona")+kindBtn("animal","🦊 Animalito")+kindBtn("robot","🤖 Robot")+'</div>'
+ +(a.kind==="person"?'<p class="mut" style="font-size:.85rem;margin-top:6px">Para niña: elige un peinado largo (Bob, Moño o Largo) 👧</p>':'')+'</div>'
+ +personaCards
  +'<div class="card"><b>🎸 Compañero</b>'+eqBtns("hand","handId")+'</div>'
  +'<div class="card"><b>🌈 Fondo</b>'+eqBtns("bg","bgId")+'</div>'
  +'<p class="audiotip">💡 Cambiar el look necesita internet una vez; después tu personaje queda guardado y se ve sin conexión.</p>'
