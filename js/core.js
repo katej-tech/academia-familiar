@@ -9,7 +9,7 @@ const DEFAULT_STATE={pin:"1234",geminiKey:"",
 let S=load();
 function load(){try{const r=localStorage.getItem("academiaFam2");if(r){const s=JSON.parse(r);const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,s);return base;}}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_STATE));}
 function deepMerge(t,s){for(const k in s){if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])){if(!t[k])t[k]={};deepMerge(t[k],s[k]);}else t[k]=s[k];}}
-function save(){localStorage.setItem("academiaFam2",JSON.stringify(S));}
+function save(){S.updatedAt=Date.now();localStorage.setItem("academiaFam2",JSON.stringify(S));if(typeof window!=="undefined"&&window.afOnSave)window.afOnSave();}
 const app=document.getElementById("app");
 let current={profile:null};
 function prof(){return S.profiles[current.profile];}

@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin internet y se actualiza sola al abrir con conexión. */
-const VERSION = "af-v8.4.0";
+const VERSION = "af-v8.5.0";
 const CORE = [
   ".",
   "index.html",
@@ -18,6 +18,7 @@ const CORE = [
   "js/english-levels.js",
   "js/videos.js",
   "js/parent.js",
+  "js/firebase-sync.js",
   "js/app.js",
   "manifest.webmanifest",
   "icons/icon-192.png",

@@ -47,6 +47,7 @@ function signalsBlock(p){
  +'<ul style="margin-left:18px;line-height:1.7;font-size:.92rem">'+items.join("")+'</ul></div></details>';}
 function screenParentDash(){setTheme("parent");
  render('<div class="topbar"><button class="back" onclick="screenStart()">←</button><b style="font-size:1.1rem">Panel de padres</b></div>'
+ +(typeof afAccountCard==="function"?afAccountCard():"")
  +profileReport("nino")+profileReport("nina")
  +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
  +'<div class="card"><h3>⚙️ Configuración</h3>'
