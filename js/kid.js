@@ -9,7 +9,14 @@ function streakReminderHTML(){
  if(!msgs.length)return "";
  return '<div class="card" style="border:3px solid #F59E0B;background:#FFF7E0;font-size:1rem;line-height:1.6">'+msgs.join("<br>")+'</div>';}
 function screenStart(){setTheme("parent");current.profile=null;
+ if(typeof stopGames==="function")stopGames();
  if(typeof startUsageTracking==="function")startUsageTracking();
+ // si la cuenta es de un ESTUDIANTE: entra directo a su perfil (no ve a sus hermanos)
+ if(S.role==="child"){
+  const ids=Object.keys(S.profiles);
+  const pid=(S.childProfile&&S.profiles[S.childProfile])?S.childProfile:ids[0];
+  if(pid){current.profile=pid;touchDay();save();return (profType()==="teen")?screenTeenHome():screenKidMap();}
+ }
  const cards=childProfiles().map(p=>{
   const sub=p.type==="teen"?"Studio de retos":"Mundo de Aventuras";
   const agetxt=p.age?(" · "+p.age+" años"):"";
@@ -55,7 +62,7 @@ function hubTile(onclick,ic,title,sub,color){
   +'<span style="flex:1"><span style="font-size:clamp(1.15rem,5.2vw,1.4rem)">'+title+'</span><br><span style="font-size:.76rem;opacity:.85;font-weight:500">'+sub+'</span></span>'
   +'<span style="font-size:1.4rem;opacity:.6">›</span></button>';}
 /* ===== HUB principal: pocas opciones, sin scroll largo ===== */
-function screenKidMap(){setTheme("kid");
+function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGames();
  const p=prof();const pet=(typeof legendaryPet==="function"&&legendaryPet())||petStage(p.xp);
  render(topbar("screenStart()")
  +'<div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">'
@@ -120,7 +127,7 @@ function screenWritingPick(){setTheme("kid");
  +'<button class="kbtn yellow" onclick="gameOrder()">🧩 Ordena la frase</button>'
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
  +'<button class="kbtn green" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
-function screenGamesPick(){setTheme("kid");
+function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stopGames();
  const sub=t=>'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+t+'</p>';
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎮 Juegos</h2>'
@@ -829,7 +836,7 @@ function renderStory(){
   +'<div class="progressdots">'+c.pages.map((x,i)=>'<i class="'+(i<=ST.page?"on":"")+'"></i>').join("")+'</div>'
   +(p.img?'<img src="'+p.img+'" alt="Ilustración" style="display:block;width:100%;border-radius:18px;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.8);margin-bottom:12px">'
     :'<div class="scene">'+p.scene+(S.geminiKey&&!p.imgFail?'<div style="font-size:.8rem;font-family:Nunito;font-weight:700;opacity:.65">🎨 pintando la escena con IA…</div>':'')+'</div>')
-  +'<div class="card storytext">'+keepBold(p.text).replace(/</g,"&lt;").replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>")+'</div>'
+  +'<div class="card storytext">'+boldHTML(p.text)+'</div>'
   +'<button class="speaker" onclick="speakES(\''+esc(stripTags(p.text)).replace(/'/g,"\\'")+'\')"><span class="ic">🔊</span> Escuchar esta parte</button>'
   +(last?'<button class="kbtn green" onclick="ST.phase=\'quiz\';renderStory()">Responder preguntas →</button>'
         :'<button class="kbtn blue" onclick="ST.page++;renderStory()">Siguiente página →</button>')

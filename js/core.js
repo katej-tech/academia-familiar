@@ -56,6 +56,10 @@ function keepBold(s){return String(s)
  .replace(/<\s*(?:b|strong)[^>]*>/gi,"<b>")
  .replace(/<\s*\/\s*(?:b|strong)\s*>/gi,"</b>")
  .replace(/<(?!\/?b>)[^>]*>/g,"");}
+/* texto seguro que SOLO permite negrita <b> (escapa todo lo demás, incl. > ) */
+function boldHTML(s){return keepBold(s)
+ .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+ .replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>");}
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function seedFromStr(str){let h=1779033703;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return h>>>0;}
 function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
@@ -66,7 +70,10 @@ function rnd(n){return Math.floor(Math.random()*n);}
 
 /* ============ SONIDO + CONFETI ============ */
 let AC=null;
-function beep(freqs,dur){try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();let t=AC.currentTime;
+function muted(){return !!(S&&S.muted);}
+function toggleMute(el){S.muted=!S.muted;save();try{if(S.muted&&"speechSynthesis"in window)window.speechSynthesis.cancel();}catch(e){}
+ if(el)el.textContent=S.muted?"🔇":"🔊";return S.muted;}
+function beep(freqs,dur){if(muted())return;try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();let t=AC.currentTime;
  freqs.forEach(f=>{const o=AC.createOscillator(),g=AC.createGain();o.type="triangle";o.frequency.value=f;o.connect(g);g.connect(AC.destination);
  g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.start(t);o.stop(t+dur);t+=dur*0.6;});}catch(e){}}
 function sOK(){beep([523,659,784],.18);}
@@ -84,24 +91,32 @@ function toast(msg,ok,ms){const t=document.createElement("div");t.className="toa
 let VOICES=[];
 function loadVoices(){try{VOICES=window.speechSynthesis.getVoices();}catch(e){}}
 if("speechSynthesis"in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
+/* prefiere voces de alta calidad (Google/Microsoft/neural) que suenan más naturales */
+const NATURAL=/(google|natural|neural|microsoft|premium|enhanced|wavenet|paulina|sabina|helena)/i;
+function pickEnVoice(){
+ return VOICES.find(x=>/^en/i.test(x.lang)&&NATURAL.test(x.name)&&/US/i.test(x.lang))
+  ||VOICES.find(x=>/^en/i.test(x.lang)&&NATURAL.test(x.name))
+  ||VOICES.find(x=>/en[-_]US/i.test(x.lang))||VOICES.find(x=>/^en/i.test(x.lang));}
 function speakEN(text,onEnd){
+ if(muted()){if(onEnd)onEnd();return;}
  if(!("speechSynthesis"in window)){toast("🔇 Tu navegador no tiene voz. Prueba en Chrome.",false,2000);if(onEnd)onEnd();return;}
  window.speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.82;u.pitch=1;
- const v=VOICES.find(x=>/en[-_]US/i.test(x.lang))||VOICES.find(x=>/^en/i.test(x.lang));if(v)u.voice=v;
+ const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.9;u.pitch=1.02;
+ const v=pickEnVoice();if(v)u.voice=v;
  if(onEnd)u.onend=onEnd;
  window.speechSynthesis.speak(u);}
 function pickLatinVoice(){
  const latin=/es[-_](US|MX|419|CO|AR|CL|PE|VE|EC|GT|LA)/i;
- const byName=/(latino|america|mexic|estados unidos|paulina)/i;
- return VOICES.find(x=>latin.test(x.lang))
-  ||VOICES.find(x=>/^es/i.test(x.lang)&&byName.test(x.name))
+ return VOICES.find(x=>/^es/i.test(x.lang)&&NATURAL.test(x.name)&&!/es[-_]ES/i.test(x.lang))
+  ||VOICES.find(x=>latin.test(x.lang)&&NATURAL.test(x.name))
+  ||VOICES.find(x=>latin.test(x.lang))
+  ||VOICES.find(x=>/^es/i.test(x.lang)&&NATURAL.test(x.name))
   ||VOICES.find(x=>/^es/i.test(x.lang)&&!/es[-_]ES/i.test(x.lang))
   ||VOICES.find(x=>/^es/i.test(x.lang));}
-function speakES(text){if(!("speechSynthesis"in window))return;window.speechSynthesis.cancel();
+function speakES(text){if(muted())return;if(!("speechSynthesis"in window))return;window.speechSynthesis.cancel();
  const u=new SpeechSynthesisUtterance(text);
  const v=pickLatinVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang="es-419";
- u.rate=.9;window.speechSynthesis.speak(u);}
+ u.rate=.95;u.pitch=1.02;window.speechSynthesis.speak(u);}
 function hasVoice(){return "speechSynthesis"in window;}
 
 /* ============ MOTOR DE CONTENIDO INFINITO (IA + banco fijo + adaptativo) ============ */
@@ -250,6 +265,24 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
 function level(xp){return Math.floor(Math.sqrt(xp/20))+1;}
 function setTheme(t){document.body.className=t;}
 function render(h){app.innerHTML=h;window.scrollTo(0,0);}
+/* detiene cualquier juego con temporizador/animación en curso (evita que sigan corriendo al salir) */
+function stopGames(){
+ try{if(typeof HG!=="undefined")clearInterval(HG.timer);}catch(e){}
+ try{if(typeof QZ!=="undefined")clearInterval(QZ.tick);}catch(e){}
+ try{if(typeof SN!=="undefined"){clearInterval(SN.timer);SN.started=false;}}catch(e){}
+ try{if(typeof BL!=="undefined"){clearTimeout(BL.timer);BL.done=true;}}catch(e){}
+ try{if(typeof DJ!=="undefined")DJ.run=false;}catch(e){}
+ try{if(typeof SI!=="undefined")SI.lock=true;}catch(e){}
+ try{if(typeof OB!=="undefined")OB.done=true;}catch(e){}
+ try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}}
+/* sale de un juego con confirmación (la flecha de atrás de los juegos) */
+function exitGame(target){
+ if(!confirm("¿Salir del juego? Se perderá el avance de este juego."))return;
+ stopGames();
+ if(typeof target==="function")return target();
+ if(target==="games"&&typeof screenGamesPick==="function")return screenGamesPick();
+ if(typeof screenKidMap==="function")return screenKidMap();}
 function topbar(backFn){const p=prof();
  return '<div class="topbar">'+(backFn?'<button class="back" onclick="'+backFn+'">←</button>':'')
- +'<span class="pill">🔥 '+p.streak+'</span><span class="pill">🪙 '+p.coins+'</span><span class="pill">⭐ Nv '+level(p.xp)+'</span></div>';}
+ +'<span class="pill">🔥 '+p.streak+'</span><span class="pill">🪙 '+p.coins+'</span><span class="pill">⭐ Nv '+level(p.xp)+'</span>'
+ +'<span class="pill" style="cursor:pointer" title="Sonido" onclick="toggleMute(this)">'+(muted()?"🔇":"🔊")+'</span></div>';}

@@ -23,7 +23,7 @@ function nextHG(){
 function renderHG(){
  const slots=HG.word.split("").map(c=>'<div class="slot'+(HG.guessed.includes(c)?' filled':'')+'">'+(HG.guessed.includes(c)?c:"")+'</div>').join("");
  const keys="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("").map(c=>'<button class="key'+(HG.guessed.includes(c)||HG.guessed.includes("✗"+c)?' used':'')+'" onclick="guessHG(\''+c+'\')">'+c+'</button>').join("");
- render(topbar("screenGamesPick()")
+ render(topbar("exitGame('games')")
  +'<div class="progressdots">'+dots(HG.total,HG.round)+'</div>'
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">🔤 Adivina la palabra</h2>'
  +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
@@ -93,7 +93,7 @@ function renderWS(){
   return '<button id="ws'+i+'" onclick="tapWS('+i+')" style="aspect-ratio:1;border-radius:8px;border:3px solid var(--kid-ink);font-family:Fredoka;font-weight:700;font-size:clamp(.9rem,3.8vw,1.2rem);background:'+(foundCell?"var(--kid-green);color:#fff":sel?"var(--kid-yellow)":"#fff")+'">'+ch+'</button>';}).join("");
  const list=WS.theme.words.map(w=>{const done=WS.found.some(f=>f.w===w);
   return '<span style="font-family:Fredoka;font-weight:700;padding:4px 10px;border-radius:12px;border:3px solid var(--kid-ink);background:'+(done?"var(--kid-green);color:#fff":"#fff")+';'+(done?"text-decoration:line-through;":"")+'">'+w+'</span>';}).join(" ");
- render(topbar("screenGamesPick()")
+ render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🔍 Sopa de letras: '+WS.theme.nm+' '+WS.theme.e+'</h2>'
  +'<p class="center" style="font-size:.92rem;margin-bottom:8px">Toca las letras de la palabra, una por una o de la primera a la última</p>'
  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">'+list+'</div>'
@@ -154,7 +154,7 @@ function renderMP(){
  const cells=MP.tpl.map((c,i)=>{
   const painted=MP.painted[i];
   return '<button onclick="tapMP('+i+')" style="aspect-ratio:1;border-radius:6px;border:2px solid #B9C2D4;font-family:Fredoka;font-weight:700;font-size:clamp(.75rem,3.2vw,1rem);background:'+(painted?MP_COLORS[MP.tpl[i]]:"#fff")+';color:'+(painted?"transparent":"var(--kid-ink)")+'">'+MP.nums[i]+'</button>';}).join("");
- render(topbar("screenGamesPick()")
+ render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.1rem,5vw,1.35rem);text-align:center;margin-bottom:2px">🎨 Pinta con números</h2>'
  +'<p class="center" style="font-size:.92rem;margin-bottom:6px">Resuelve y pinta las casillas con ese resultado</p>'
  +'<div class="card center" style="padding:12px"><span style="font-family:Fredoka;font-weight:700;font-size:clamp(1.5rem,7vw,2rem)">'+MP.q+' = ?</span>'
@@ -197,7 +197,7 @@ function renderIM(){
   '<button onclick="tapIM('+i+')" style="width:100%;text-align:left;display:flex;align-items:center;gap:14px;background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:20px;box-shadow:0 6px 0 rgba(30,42,74,.8);padding:12px 14px;margin-bottom:12px">'
   +'<span style="width:54px;height:54px;flex:none;border-radius:50% 50% 42% 42%;border:4px solid var(--kid-ink);background:'+c.color+';position:relative"><span style="position:absolute;top:10px;left:8px;width:30px;height:16px;border-radius:8px;background:#BFE8FF;border:3px solid var(--kid-ink)"></span></span>'
   +'<span style="font-family:Fredoka;font-weight:600;font-size:clamp(1rem,4.4vw,1.2rem)">'+esc(c.txt)+'</span></button>').join("");
- render(topbar("screenGamesPick()")
+ render(topbar("exitGame('games')")
  +'<div class="progressdots">'+dots(IM.total,IM.round)+'</div>'
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🚀 ¿Quién es el impostor?</h2>'
  +'<p class="center" style="font-size:.95rem;margin-bottom:10px">Tres dicen la verdad… ¡uno MIENTE! Tócalo</p>'
@@ -252,7 +252,7 @@ function renderCW(){
   const done=CW.solved.has(k);
   return '<button onclick="CW.active='+k+';renderCW()" style="font-family:Fredoka;font-weight:700;font-size:1.1rem;padding:6px 12px;border-radius:14px;border:3px solid var(--kid-ink);background:'+(done?"var(--kid-green)":k===CW.active?"var(--kid-yellow)":"#fff")+';'+(done?"opacity:.7;":"")+'">'+w.clue+' '+(w.d==="A"?"➡️":"⬇️")+(done?" ✓":"")+'</button>';}).join("");
  const keys="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("").map(c=>'<button class="key" onclick="tapCWKey(\''+c+'\')">'+c+'</button>').join("");
- render(topbar("screenGamesPick()")
+ render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">📝 Crucigrama</h2>'
  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Toca una pista y escribe la palabra del dibujo</p>'
  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">'+clues+'</div>'
@@ -305,7 +305,7 @@ function renderMN(){
  if(MN.sel!==null&&MN.q){
   qHTML='<div class="card center"><b style="font-family:Fredoka;font-size:clamp(1.3rem,6vw,1.7rem)">'+MN.q.q+'</b>'
   +'<div class="choices2" style="margin-top:10px">'+MN.q.ops.map((o,k)=>'<button class="kbtn yellow" onclick="ansMN('+k+')">'+o+'</button>').join("")+'</div></div>';}
- render(topbar("screenGamesPick()")
+ render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">⛏️ La mina de bloques</h2>'
  +'<p class="center" style="font-size:.95rem;margin-bottom:8px">Encuentra <b>3 💎</b> — responde bien para picar</p>'
  +'<div style="display:flex;justify-content:center;gap:14px;margin-bottom:10px;font-family:Fredoka;font-weight:700">'

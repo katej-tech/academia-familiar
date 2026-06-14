@@ -4,7 +4,7 @@ let _gateRouted=false;
 /* ---- Banner de anuncios SOLO en la pantalla de login (zona de padres) ----
    Pega aquí el ID del bloque de anuncios de AdSense cuando lo tengas
    (AdSense → Anuncios → Por bloque de anuncios → crea uno display → copia el número data-ad-slot). */
-const AD_SLOT="";
+const AD_SLOT="5141554144";
 function adBanner(){
  if(!AD_SLOT)return "";
  return '<div style="margin-top:18px;text-align:center;opacity:.95">'
@@ -48,6 +48,7 @@ function screenGate(mode){setTheme("parent");current.profile=null;
    +'<button class="pbtn ghost" id="roleP" style="flex:1;margin:0" onclick="gateSetRole(\'parent\')">👨‍👩‍👧 Padre / Madre</button>'
    +'<button class="pbtn ghost" id="roleH" style="flex:1;margin:0" onclick="gateSetRole(\'child\')">🧒 Estudiante</button></div>'
    +'<input type="text" id="gName" placeholder="Tu nombre">'
+   +'<input type="number" id="gAge" inputmode="numeric" placeholder="Edad (para el estudiante)" min="3" max="18">'
    +'<input type="email" id="gMail" placeholder="Correo" autocomplete="username">'
    +'<input type="password" id="gPass" placeholder="Contraseña (mínimo 6)" autocomplete="new-password">'
    +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="gateSignup()">Crear cuenta y entrar</button>'
@@ -63,7 +64,15 @@ function screenGate(mode){setTheme("parent");current.profile=null;
    +'<p id="gfb" style="margin-top:6px"></p></div>'+adBanner());}
  // bienvenida
  return gateRender(hero
-  +'<div class="card" style="margin-top:22px"><p style="line-height:1.7">Una plataforma educativa <b>gratuita</b> para que tus hijos aprendan jugando: matemáticas, inglés con voz de A1 a B2, lectura, lógica y decenas de juegos. Con seguimiento del progreso para ti.</p></div>'
+  +'<div class="card" style="margin-top:22px"><p style="line-height:1.7">Una plataforma educativa <b>gratuita</b> donde tus hijos aprenden jugando, todos los días.</p>'
+  +'<ul style="margin:12px 0 0 18px;line-height:1.8">'
+  +'<li>🔢 <b>Matemáticas</b> con dificultad que se ajusta sola a cada niño</li>'
+  +'<li>🇬🇧 <b>Inglés con voz</b>, de A1 a B2, con exámenes por niveles</li>'
+  +'<li>📚 <b>Lenguaje y lectura</b>: ortografía, comprensión y cuentos ilustrados</li>'
+  +'<li>🧠 <b>Memoria, lógica e identificación de patrones</b> con juegos</li>'
+  +'<li>👨‍👩‍👧 <b>Panel para padres</b>: estadísticas, tiempo de uso y <b>señales de falencias</b> por área para saber dónde reforzar</li>'
+  +'<li>☁️ Progreso <b>seguro en la nube</b>, sincronizado entre tablet, celular y PC</li>'
+  +'</ul></div>'
   +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="screenGate(\'signup\')">✨ Crear cuenta gratis</button>'
   +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'+adBanner());}
 let _gateRole="parent";
@@ -89,7 +98,13 @@ function gateSignup(){
     return;}
    fb.innerHTML='<b style="color:#DC2626">'+esc(afErr(err))+'</b>';return;}
   S.role=_gateRole;S.ownerName=name;S.hasAccount=true;
-  if(_gateRole==="parent"&&S.profiles.nino)S.profiles.nino.name=S.profiles.nino.name||"Explorador";
+  if(_gateRole==="child"){
+   var ageEl=document.getElementById("gAge");var age=ageEl?parseInt(ageEl.value,10):0;age=age||7;
+   var type=age>=11?"teen":"kid";var id="me";
+   S.profiles={};S.childProfile=id;
+   if(type==="teen")S.profiles[id]={name:name,alias:"",age:age,type:"teen",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}};
+   else S.profiles[id]={name:name,alias:"",age:age,type:"kid",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}};
+  }
   save();_gateRouted=true;screenStart();});}
 function gateReset(){
  var m=document.getElementById("gMail");var email=m?(m.value||"").trim():"";var fb=document.getElementById("gfb");
