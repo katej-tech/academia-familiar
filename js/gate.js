@@ -1,6 +1,17 @@
 "use strict";
 /* ============ PORTÓN DE ACCESO (login/registro obligatorio) ============ */
 let _gateRouted=false;
+/* ---- Banner de anuncios SOLO en la pantalla de login (zona de padres) ----
+   Pega aquí el ID del bloque de anuncios de AdSense cuando lo tengas
+   (AdSense → Anuncios → Por bloque de anuncios → crea uno display → copia el número data-ad-slot). */
+const AD_SLOT="";
+function adBanner(){
+ if(!AD_SLOT)return "";
+ return '<div style="margin-top:18px;text-align:center;opacity:.95">'
+  +'<p style="font-size:.68rem;color:#8a94a6;margin-bottom:2px;letter-spacing:.05em">PUBLICIDAD</p>'
+  +'<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6447064774269630" data-ad-slot="'+AD_SLOT+'" data-ad-format="auto" data-full-width-responsive="true"></ins></div>';}
+function adInit(){if(!AD_SLOT)return;try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}}
+function gateRender(html){render(html);if(typeof adInit==="function")setTimeout(adInit,80);}
 function renderSplash(){setTheme("parent");
  render('<div style="margin-top:24vh;text-align:center"><div style="font-size:3.4rem">🏠</div>'
  +'<h1 class="title" style="font-size:1.8rem;margin-top:8px">Academia Familiar</h1>'
@@ -31,7 +42,7 @@ function screenGate(mode){setTheme("parent");current.profile=null;
    +'<p class="mut" style="margin-top:8px;line-height:1.6">Para crear tu cuenta o iniciar sesión por primera vez necesitas conexión. Después podrás usar la app sin internet.</p>'
    +'<button class="pbtn" onclick="boot()">Reintentar</button></div>');}
  if(mode==="signup"){
-  return render(hero+'<div class="card" style="margin-top:22px"><h3>Crear cuenta</h3>'
+  return gateRender(hero+'<div class="card" style="margin-top:22px"><h3>Crear cuenta</h3>'
    +'<p class="mut" style="margin:8px 0 4px">¿Quién eres?</p>'
    +'<div style="display:flex;gap:10px;margin-bottom:8px">'
    +'<button class="pbtn ghost" id="roleP" style="flex:1;margin:0" onclick="gateSetRole(\'parent\')">👨‍👩‍👧 Padre / Madre</button>'
@@ -41,19 +52,19 @@ function screenGate(mode){setTheme("parent");current.profile=null;
    +'<input type="password" id="gPass" placeholder="Contraseña (mínimo 6)" autocomplete="new-password">'
    +'<button class="pbtn" onclick="gateSignup()">Crear cuenta y entrar</button>'
    +'<button class="pbtn ghost" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'
-   +'<p id="gfb" style="margin-top:6px"></p></div>');}
+   +'<p id="gfb" style="margin-top:6px"></p></div>'+adBanner());}
  if(mode==="login"){
-  return render(hero+'<div class="card" style="margin-top:22px"><h3>Entrar</h3>'
+  return gateRender(hero+'<div class="card" style="margin-top:22px"><h3>Entrar</h3>'
    +'<input type="email" id="gMail" placeholder="Correo" autocomplete="username">'
    +'<input type="password" id="gPass" placeholder="Contraseña" autocomplete="current-password">'
    +'<button class="pbtn" onclick="gateLogin()">Entrar</button>'
    +'<button class="pbtn ghost" onclick="screenGate(\'signup\')">Crear cuenta nueva</button>'
-   +'<p id="gfb" style="margin-top:6px"></p></div>');}
+   +'<p id="gfb" style="margin-top:6px"></p></div>'+adBanner());}
  // bienvenida
- return render(hero
+ return gateRender(hero
   +'<div class="card" style="margin-top:22px"><p style="line-height:1.7">Una plataforma educativa <b>gratuita</b> para que tus hijos aprendan jugando: matemáticas, inglés con voz de A1 a B2, lectura, lógica y decenas de juegos. Con seguimiento del progreso para ti.</p></div>'
   +'<button class="pbtn" onclick="screenGate(\'signup\')">✨ Crear cuenta gratis</button>'
-  +'<button class="pbtn ghost" onclick="screenGate(\'login\')">Ya tengo cuenta</button>');}
+  +'<button class="pbtn ghost" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'+adBanner());}
 let _gateRole="parent";
 function gateSetRole(r){_gateRole=r;
  const a=document.getElementById("roleP"),b=document.getElementById("roleH");
