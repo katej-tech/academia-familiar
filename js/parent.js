@@ -147,10 +147,12 @@ function loadMembersInto(){
     +'<button class="pbtn ghost" style="width:auto;padding:6px 10px;margin:0" onclick="removeMember(\''+m.uid+'\',\''+esc(m.name||"")+'\')">🗑️</button></div>';
   }).join("");});}
 function removeMember(uid,name){
- if(!confirm('¿Quitar a "'+name+'" de tu familia? Se borrará su progreso aquí.\n\nNOTA: su cuenta de acceso (correo) se elimina aparte en la consola de Firebase si quieres volver a usar ese mismo correo.'))return;
+ if(!confirm('¿Eliminar a "'+name+'" por completo? Se borra su progreso y su cuenta de acceso. No se puede deshacer.'))return;
  if(typeof afRemoveMember!=="function")return;
- afRemoveMember(uid,function(err){
-  if(err){alert("No se pudo quitar: "+(err.message||err.code));return;}
+ const box=document.getElementById("membersBox");if(box)box.innerHTML='<p class="mut">⏳ Eliminando…</p>';
+ afRemoveMember(uid,function(res){
+  if(res&&res.authDeleted)toast&&toast("✓ "+esc(name)+" eliminado por completo. Ese correo queda libre.",true,2200);
+  else toast&&toast("Datos de "+esc(name)+" borrados. (Si cambió su contraseña, su cuenta de acceso queda; bórrala en la consola para reusar el correo.)",false,3500);
   if(typeof loadMembersInto==="function")loadMembersInto();});}
 function screenParentDash(){setTheme("parent");
  const reports=Object.keys(S.profiles).map(profileReport).join("");

@@ -35,7 +35,8 @@ function afPush(){var u=afUser();if(!u)return;
    var pid=S.childProfile||u.uid;var prof=S.profiles&&S.profiles[pid];
    if(prof){prof.updatedAt=Date.now();afDB.collection("families").doc(afMember.familyId).collection("profiles").doc(u.uid).set(JSON.parse(JSON.stringify(prof))).catch(function(){});}
    return;}
-  afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S))).catch(function(){});
+  // merge: no borra memberIndex/memberAuth (datos de los hijos invitados) que no están en S
+  afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S)),{merge:true}).catch(function(){});
  }catch(e){}}
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
@@ -80,13 +81,13 @@ function afInviteChild(email,name,age,password,cb){
   var prof=afNewMemberProfile(name,age,type);
   var fid=parent.uid;
   var meta={};meta[cuid]={name:name,email:email,age:(parseInt(age,10)||null),type:type,since:Date.now()};
+  var authMap={};authMap[cuid]={email:email,pass:pass}; // privado del padre: permite borrar la cuenta luego
   return Promise.all([
    afDB.collection("families").doc(fid).collection("profiles").doc(cuid).set(prof),
-   afDB.collection("families").doc(fid).set({memberIndex:meta},{merge:true}),
+   afDB.collection("families").doc(fid).set({memberIndex:meta,memberAuth:authMap},{merge:true}),
    afDB.collection("memberships").doc(cuid).set({familyId:fid,name:name,email:email})
   ]).then(function(){
    sAuth.signOut().catch(function(){});
-   afAuth.sendPasswordResetEmail(email).catch(function(){}); // correo opcional de respaldo
    cb(null,cuid,pass);
   });
  }).catch(function(e){try{sAuth.signOut();}catch(_){}cb(e);});}
@@ -99,15 +100,28 @@ function afLoadMembers(cb){
 /* reenviar el correo para crear contraseña */
 function afResendChild(email,cb){afReset(email,cb);}
 /* el padre quita a un hijo: borra sus datos de la familia (la cuenta de acceso se borra aparte en la consola) */
+/* borra la cuenta de acceso del hijo entrando como él (con la contraseña guardada del padre) */
+function afDeleteChildAuth(email,pass,cb){
+ if(!email||!pass){cb(false);return;}
+ var sAuth=afSecondaryApp().auth();
+ sAuth.signInWithEmailAndPassword(email,pass).then(function(cred){
+  return cred.user.delete().then(function(){cb(true);});
+ }).catch(function(){try{sAuth.signOut();}catch(_){}cb(false);});}
 function afRemoveMember(childUid,cb){
- var u=afUser();if(!u||!afReady){if(cb)cb({message:"Sin sesión"});return;}
- var fid=u.uid;var meta={};meta[childUid]=firebase.firestore.FieldValue.delete();
- // borrado resistente: cada parte por su cuenta (no falla todo si una regla bloquea)
- Promise.all([
-  afDB.collection("families").doc(fid).collection("profiles").doc(childUid).delete().catch(function(){}),
-  afDB.collection("memberships").doc(childUid).delete().catch(function(){}),
-  afDB.collection("families").doc(fid).set({memberIndex:meta},{merge:true}).catch(function(){})
- ]).then(function(){if(cb)cb(null);});}
+ var u=afUser();if(!u||!afReady){if(cb)cb({removed:false});return;}
+ var fid=u.uid;
+ afDB.collection("families").doc(fid).get().then(function(snap){
+  var creds=(snap.exists&&snap.data().memberAuth&&snap.data().memberAuth[childUid])||null;
+  function cleanup(authDeleted){
+   var del=firebase.firestore.FieldValue.delete();var mi={},ma={};mi[childUid]=del;ma[childUid]=del;
+   Promise.all([
+    afDB.collection("families").doc(fid).collection("profiles").doc(childUid).delete().catch(function(){}),
+    afDB.collection("memberships").doc(childUid).delete().catch(function(){}),
+    afDB.collection("families").doc(fid).set({memberIndex:mi,memberAuth:ma},{merge:true}).catch(function(){})
+   ]).then(function(){if(cb)cb({removed:true,authDeleted:authDeleted});});}
+  if(creds&&creds.email&&creds.pass)afDeleteChildAuth(creds.email,creds.pass,function(ok){cleanup(ok);});
+  else cleanup(false);
+ }).catch(function(){if(cb)cb({removed:false});});}
 /* ¿esta sesión es de un hijo invitado? devuelve su vínculo de familia o null */
 function afCheckMember(u,cb){
  if(!afReady){cb(null);return;}
