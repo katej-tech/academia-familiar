@@ -1,6 +1,6 @@
 "use strict";
 /* ============ ARRANQUE ============ */
-screenStart();
+if(typeof boot==="function")boot();else screenStart();
 
 /* ============ PWA: service worker ============ */
 if("serviceWorker" in navigator){

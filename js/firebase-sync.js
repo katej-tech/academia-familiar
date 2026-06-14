@@ -17,10 +17,9 @@ var afReady=false,afAuth=null,afDB=null,afPushT=null;
   firebase.initializeApp(AF_CFG);
   afAuth=firebase.auth();afDB=firebase.firestore();afReady=true;
   afAuth.onAuthStateChanged(function(u){
-   if(u){afPull(function(){
-    if(typeof current!=="undefined"&&current.profile===null&&document.getElementById("acctbox"))screenParentDash();
-   });}
-   if(document.getElementById("acctbox"))screenParentDash();
+   if(!u){if(typeof afRoute==="function")afRoute(null);return;} // sin sesión → portón
+   if(document.getElementById("acctbox")){afPull(function(){screenParentDash();});return;} // en el panel: refresca
+   if(typeof afRoute==="function")afRoute(u); // arranque/login → entra a la app
   });
  }catch(e){afReady=false;}
 })();
