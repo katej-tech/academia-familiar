@@ -72,7 +72,8 @@ function screenCole(){setTheme("kid");const p=prof();
 function screenEnglishHub(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="en");
  render(topbar("screenKidMap()")+subHeader("🇬🇧 Inglés")
-  +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑 — tu curso por niveles</span></span></button>'
+  +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑</span></span></button>'
+  +'<button class="kbtn green" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenLevelsEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">📈</span><span style="flex:1"><span>Inglés por niveles A1→B2</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Aprueba exámenes y sube de nivel</span></span></button>'
   +ws.map(w=>worldBtn(w,p)).join(""));}
 function screenLeer(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="leer");

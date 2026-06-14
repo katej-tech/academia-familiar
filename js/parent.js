@@ -17,7 +17,10 @@ function profileReport(key){
   ||'<tr><td colspan="5" class="mut">Sin actividad todavía</td></tr>';
  const days=last7(),vals=days.map(d=>p.days[d]?p.days[d].ex:0),max=Math.max(1,...vals);
  const bars=days.map((d,i)=>'<div class="bar" style="height:'+(vals[i]/max*100)+'%"><span>'+d.slice(8)+'</span></div>').join("");
- const extra=key==="nino"?' · 🌍 '+(p.worldWins?Object.values(p.worldWins).reduce((a,b)=>a+b,0):0)+' rondas · 🎒 '+((p.critters||[]).length)+' criaturas':'';
+ const lvl=p.autoLevel||2;const lvlTxt=["","Muy fácil","Fácil","Medio","Avanzado","Reto"][lvl];
+ const extra=(key==="nino"?' · 🌍 '+(p.worldWins?Object.values(p.worldWins).reduce((a,b)=>a+b,0):0)+' rondas · 🎒 '+((p.critters||[]).length)+' criaturas':'')
+  +' · 🎚️ Dificultad: '+lvlTxt+' ('+lvl+'/5)'
+  +(p.cefr?' · 🇬🇧 Inglés nivel '+CEFR[p.cefr.lvl||0].id:'');
  const signals=key==="nino"?signalsBlock(p):"";
  return '<div class="card"><h3>'+p.emoji+' '+esc(p.name)+' <span class="mut" style="font-weight:600">· 🔥 '+p.streak+' días · 🪙 '+p.coins+' · Nv '+level(p.xp)+extra+'</span></h3>'
  +'<table><tr><th>Tema</th><th>Intentos</th><th>Aciertos</th><th>%</th><th>Tiempo</th></tr>'+rows+'</table>'

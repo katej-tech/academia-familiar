@@ -72,15 +72,15 @@ function hasVoice(){return "speechSynthesis"in window;}
 /* Cada "tema" sabe pedirle a Gemini preguntas nuevas, y tiene un respaldo fijo. */
 const KID_TOPICS={
  sumas2:{name:"Sumas",emoji:"➕",prompt:"sumas de 2 cifras (resultado menor a 100) para un niño de 6-7 años en primero",
-   fallback:()=>{const a=2+rnd(40),b=2+rnd(40);return mcq(a+" + "+b+" = ?",a+b);}},
+   fallback:()=>{const M=diffMax([10,20,30,45,60]);const a=2+rnd(M),b=2+rnd(M);return mcq(a+" + "+b+" = ?",a+b);}},
  restas2:{name:"Restas",emoji:"➖",prompt:"restas simples sin prestar para un niño de 6-7 años, resultado positivo",
-   fallback:()=>{const a=5+rnd(40),b=1+rnd(a-1);return mcq(a+" − "+b+" = ?",a-b);}},
+   fallback:()=>{const M=diffMax([10,20,30,45,60]);const a=5+rnd(M),b=1+rnd(a-1);return mcq(a+" − "+b+" = ?",a-b);}},
  restapres:{name:"Restas prestando",emoji:"🔄",prompt:"restas de 2 cifras que requieren prestar/llevar, para niño de 7 años, resultado positivo",
    fallback:()=>{let a,b;do{a=20+rnd(70);b=5+rnd(a-5);}while((a%10)>=(b%10));return mcq(a+" − "+b+" = ?",a-b);}},
  sumas3:{name:"Sumas de 3 cifras",emoji:"🧮",prompt:"sumas de 3 cifras (100-999) para niño de 7 años",
    fallback:()=>{const a=100+rnd(400),b=100+rnd(400);return mcq(a+" + "+b+" = ?",a+b);}},
  multi:{name:"Inicio multiplicación",emoji:"✖️",prompt:"multiplicaciones muy fáciles (tablas del 2, 3 y 5, factores hasta 5) explicadas como grupos, para niño de 7 años",
-   fallback:()=>{const t=pick([2,3,5]),n=1+rnd(5);return mcq(t+" × "+n+" = ?",t*n,t+" grupos de "+n);}},
+   fallback:()=>{const tablas=diffMax([[2],[2,5],[2,3,5],[2,3,4,5],[2,3,4,5,6,10]]);const t=pick(tablas),n=1+rnd(diffMax([3,4,5,5,9]));return mcq(t+" × "+n+" = ?",t*n,t+" grupos de "+n);}},
  ordinales:{name:"Ordinales",emoji:"🥇",prompt:"preguntas de números ordinales (primero a décimo) con ejemplos de carreras o filas, para niño de 6-7 años",
    fallback:()=>pick([mcq("Si llegas después del 1°, ¿en qué lugar vas?","2°",null,["2°","3°","1°"]),mcq("El que gana la carrera llega…","1°",null,["1°","3°","5°"]),mcq("Después del 3° viene el…","4°",null,["4°","2°","5°"])])},
  izqder:{name:"Ubicación",emoji:"↔️",prompt:"preguntas sobre izquierda/derecha, arriba/abajo y sobre/debajo de objetos, con animalitos y emojis, para niño de 6 años",
@@ -162,7 +162,7 @@ async function buildChallenges(topicKey,n){
  const topic=KID_TOPICS[topicKey];
  if(S.geminiKey){
   try{
-   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple sobre: '+topic.prompt+'. Cada una con 3 opciones y una sola correcta. Lenguaje español sencillo y frases cortas. Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
+   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple sobre: '+topic.prompt+'. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 3 opciones y una sola correcta. Lenguaje español sencillo y frases cortas. Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
    if(obj.items&&obj.items.length){return obj.items.map(it=>{
     // sanitizar (la IA a veces mete etiquetas HTML) y mezclar opciones
     const q=stripHTML(it.q);
@@ -185,10 +185,19 @@ function touchDay(){const p=prof(),t=todayStr();
   p.streak=(p.lastDay===ys)?p.streak+1:1;p.lastDay=t;}
  if(!p.days[t])p.days[t]={ex:0,ok:0,sec:0,missions:[],games:0};
  return p.days[t];}
+/* dificultad automática (1 fácil … 5 reto) según el desempeño reciente */
+function adlvl(){const p=prof();return p&&p.autoLevel?p.autoLevel:2;}
+function diffMax(arr){return arr[Math.min(arr.length-1,adlvl()-1)];}
 function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
  if(!p.stats[subject])p.stats[subject]={attempts:0,correct:0,sec:0};
  p.stats[subject].attempts++;d.ex++;p.stats[subject].sec+=(secs||0);d.sec+=(secs||0);
  if(correct){p.stats[subject].correct++;d.ok++;p.coins+=2;p.xp+=5;}else p.xp+=1;
+ // ajuste automático de dificultad según las últimas ~24 respuestas
+ if(!p.recent)p.recent=[];
+ p.recent.push(correct?1:0);if(p.recent.length>24)p.recent.shift();
+ if(p.recent.length>=8){const rate=p.recent.reduce((a,b)=>a+b,0)/p.recent.length;
+  p.autoLevel=rate>=0.85?5:rate>=0.7?4:rate>=0.55?3:rate>=0.4?2:1;}
+ else if(!p.autoLevel)p.autoLevel=2;
  // señales de apoyo (solo niño): tiempos altos y errores por área
  if(current.profile==="nino"){
   if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
