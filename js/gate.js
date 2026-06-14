@@ -52,14 +52,10 @@ function screenGate(mode){setTheme("parent");current.profile=null;
    +'<p class="mut" style="margin-top:8px;line-height:1.6">Para crear tu cuenta o iniciar sesión por primera vez necesitas conexión. Después podrás usar la app sin internet.</p>'
    +'<button class="pbtn" onclick="boot()">Reintentar</button></div>');}
  if(mode==="signup"){
-  return gateRender(hero+'<div class="card" style="margin-top:22px"><h3>Crear cuenta</h3>'
-   +'<p class="mut" style="margin:8px 0 4px">¿Quién eres?</p>'
-   +'<div style="display:flex;gap:10px;margin-bottom:8px">'
-   +'<button class="pbtn ghost" id="roleP" style="flex:1;margin:0" onclick="gateSetRole(\'parent\')">👨‍👩‍👧 Padre / Madre</button>'
-   +'<button class="pbtn ghost" id="roleH" style="flex:1;margin:0" onclick="gateSetRole(\'child\')">🧒 Estudiante</button></div>'
+  return gateRender(hero+'<div class="card" style="margin-top:22px"><h3>Crear cuenta de padre/madre</h3>'
+   +'<p class="mut" style="margin:8px 0 10px;line-height:1.5">Crea tu cuenta. Después, desde el panel de padres, agregas a tus hijos con su propio acceso.</p>'
    +'<input type="text" id="gName" placeholder="Tu nombre">'
-   +'<input type="number" id="gAge" inputmode="numeric" placeholder="Edad (para el estudiante)" min="3" max="18">'
-   +'<input type="email" id="gMail" placeholder="Correo" autocomplete="username">'
+   +'<input type="email" id="gMail" placeholder="Tu correo" autocomplete="username">'
    +'<input type="password" id="gPass" placeholder="Contraseña (mínimo 6)" autocomplete="new-password">'
    +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="gateSignup()">Crear cuenta y entrar</button>'
    +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'
@@ -109,14 +105,7 @@ function gateSignup(){
     var fb2=document.getElementById("gfb");if(fb2)fb2.innerHTML='<b style="color:#D97706">Ese correo ya tiene una cuenta. Escribe tu contraseña para entrar (o recupérala si la olvidaste).</b>';
     return;}
    fb.innerHTML='<b style="color:#DC2626">'+esc(afErr(err))+'</b>';return;}
-  S.role=_gateRole;S.ownerName=name;S.hasAccount=true;
-  if(_gateRole==="child"){
-   var ageEl=document.getElementById("gAge");var age=ageEl?parseInt(ageEl.value,10):0;age=age||7;
-   var type=age>=11?"teen":"kid";var id="me";
-   S.profiles={};S.childProfile=id;
-   if(type==="teen")S.profiles[id]={name:name,alias:"",age:age,type:"teen",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}};
-   else S.profiles[id]={name:name,alias:"",age:age,type:"kid",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}};
-  }
+  S.role="parent";S.ownerName=name;S.childProfile=null;S.hasAccount=true;
   save();_gateRouted=true;screenStart();});}
 function gateReset(){
  var m=document.getElementById("gMail");var email=m?(m.value||"").trim():"";var fb=document.getElementById("gfb");

@@ -11,12 +11,14 @@ function streakReminderHTML(){
 function screenStart(){setTheme("parent");current.profile=null;
  if(typeof stopGames==="function")stopGames();
  if(typeof startUsageTracking==="function")startUsageTracking();
- // si la cuenta es de un ESTUDIANTE: entra directo a su perfil (no ve a sus hermanos)
- if(S.role==="child"){
-  const ids=Object.keys(S.profiles);
-  const pid=(S.childProfile&&S.profiles[S.childProfile])?S.childProfile:ids[0];
+ // SOLO un hijo invitado de verdad (cuenta propia amarrada a una familia) entra directo a su perfil.
+ // El padre/dueño SIEMPRE ve la selección y el panel de padres.
+ if(typeof afMember!=="undefined"&&afMember&&afMember.familyId){
+  const pid=(S.childProfile&&S.profiles[S.childProfile])?S.childProfile:Object.keys(S.profiles)[0];
   if(pid){current.profile=pid;touchDay();save();return (profType()==="teen")?screenTeenHome():screenKidMap();}
  }
+ // padre/dueño: limpiar marca de "estudiante" si quedó de una versión anterior
+ if(S.role==="child"){S.role="parent";S.childProfile=null;save();}
  const cards=childProfiles().map(p=>{
   const sub=p.type==="teen"?"Studio de retos":"Mundo de Aventuras";
   const agetxt=p.age?(" · "+p.age+" años"):"";
