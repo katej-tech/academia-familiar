@@ -1,9 +1,10 @@
 /* Service worker: la app funciona sin internet y se actualiza sola al abrir con conexión. */
-const VERSION = "af-v9.7.0";
+const VERSION = "af-v9.8.0";
 const CORE = [
   ".",
   "index.html",
   "css/styles.css",
+  "icons/icon.svg",
   "js/core.js",
   "js/content.js",
   "js/content-extra.js",

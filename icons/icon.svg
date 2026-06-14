@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5BC0F8"/>
+      <stop offset="1" stop-color="#3EC97C"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- casa -->
+  <g stroke="#1E2A4A" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 132 L150 224 L362 224 Z" fill="#FF6B6B"/>
+    <rect x="170" y="224" width="172" height="150" rx="14" fill="#FFFEF8"/>
+    <rect x="226" y="290" width="60" height="84" rx="10" fill="#3B82F6"/>
+    <rect x="190" y="246" width="40" height="40" rx="8" fill="#FFC93C"/>
+    <rect x="282" y="246" width="40" height="40" rx="8" fill="#FFC93C"/>
+  </g>
+  <!-- birrete (gorro de graduación) -->
+  <g stroke="#1E2A4A" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 96 L196 124 L256 152 L316 124 Z" fill="#1E2A4A"/>
+    <path d="M308 128 L308 168" fill="none"/>
+    <circle cx="308" cy="176" r="12" fill="#FFC93C" stroke="none"/>
+  </g>
+  <!-- estrellitas -->
+  <path d="M104 300 l8 18 20 2 -15 14 4 20 -17 -10 -17 10 4 -20 -15 -14 20 -2 z" fill="#FFC93C" stroke="#1E2A4A" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M404 312 l6 14 16 2 -12 11 3 16 -13 -8 -13 8 3 -16 -12 -11 16 -2 z" fill="#FFFEF8" stroke="#1E2A4A" stroke-width="6" stroke-linejoin="round"/>
+</svg>
