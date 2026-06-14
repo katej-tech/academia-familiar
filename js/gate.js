@@ -50,21 +50,22 @@ function screenGate(mode){setTheme("parent");current.profile=null;
    +'<input type="text" id="gName" placeholder="Tu nombre">'
    +'<input type="email" id="gMail" placeholder="Correo" autocomplete="username">'
    +'<input type="password" id="gPass" placeholder="Contraseña (mínimo 6)" autocomplete="new-password">'
-   +'<button class="pbtn" onclick="gateSignup()">Crear cuenta y entrar</button>'
-   +'<button class="pbtn ghost" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'
+   +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="gateSignup()">Crear cuenta y entrar</button>'
+   +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'
    +'<p id="gfb" style="margin-top:6px"></p></div>'+adBanner());}
  if(mode==="login"){
   return gateRender(hero+'<div class="card" style="margin-top:22px"><h3>Entrar</h3>'
    +'<input type="email" id="gMail" placeholder="Correo" autocomplete="username">'
    +'<input type="password" id="gPass" placeholder="Contraseña" autocomplete="current-password">'
-   +'<button class="pbtn" onclick="gateLogin()">Entrar</button>'
-   +'<button class="pbtn ghost" onclick="screenGate(\'signup\')">Crear cuenta nueva</button>'
+   +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="gateLogin()">Entrar</button>'
+   +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'signup\')">Crear cuenta nueva</button>'
+   +'<p style="text-align:center;margin-top:12px"><a href="#" onclick="gateReset();return false" style="color:var(--par-acc);font-weight:700;text-decoration:none">¿Olvidaste tu contraseña?</a></p>'
    +'<p id="gfb" style="margin-top:6px"></p></div>'+adBanner());}
  // bienvenida
  return gateRender(hero
   +'<div class="card" style="margin-top:22px"><p style="line-height:1.7">Una plataforma educativa <b>gratuita</b> para que tus hijos aprendan jugando: matemáticas, inglés con voz de A1 a B2, lectura, lógica y decenas de juegos. Con seguimiento del progreso para ti.</p></div>'
-  +'<button class="pbtn" onclick="screenGate(\'signup\')">✨ Crear cuenta gratis</button>'
-  +'<button class="pbtn ghost" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'+adBanner());}
+  +'<button class="pbtn" style="display:block;width:100%;margin:12px 0 0" onclick="screenGate(\'signup\')">✨ Crear cuenta gratis</button>'
+  +'<button class="pbtn ghost" style="display:block;width:100%;margin:10px 0 0" onclick="screenGate(\'login\')">Ya tengo cuenta</button>'+adBanner());}
 let _gateRole="parent";
 function gateSetRole(r){_gateRole=r;
  const a=document.getElementById("roleP"),b=document.getElementById("roleH");
@@ -79,10 +80,25 @@ function gateSignup(){
  if(!email||!pass){fb.innerHTML='Escribe tu correo y una contraseña (mínimo 6)';return;}
  fb.innerHTML='⏳ Creando tu cuenta…';
  afSignup(email,pass,function(err){
-  if(err){fb.innerHTML='<b style="color:#DC2626">'+esc(afErr(err))+'</b>';return;}
+  if(err){
+   if((err.code||"").indexOf("email-already-in-use")>=0){
+    // la cuenta ya existe → llevar a iniciar sesión con el correo puesto
+    screenGate("login");
+    var mm=document.getElementById("gMail");if(mm)mm.value=email;
+    var fb2=document.getElementById("gfb");if(fb2)fb2.innerHTML='<b style="color:#D97706">Ese correo ya tiene una cuenta. Escribe tu contraseña para entrar (o recupérala si la olvidaste).</b>';
+    return;}
+   fb.innerHTML='<b style="color:#DC2626">'+esc(afErr(err))+'</b>';return;}
   S.role=_gateRole;S.ownerName=name;S.hasAccount=true;
   if(_gateRole==="parent"&&S.profiles.nino)S.profiles.nino.name=S.profiles.nino.name||"Explorador";
   save();_gateRouted=true;screenStart();});}
+function gateReset(){
+ var m=document.getElementById("gMail");var email=m?(m.value||"").trim():"";var fb=document.getElementById("gfb");
+ if(!email){if(fb)fb.innerHTML='<b style="color:#D97706">Escribe tu correo arriba y vuelve a tocar "¿Olvidaste tu contraseña?"</b>';return;}
+ if(typeof afReset!=="function"){if(fb)fb.innerHTML='No disponible sin conexión';return;}
+ if(fb)fb.innerHTML='⏳ Enviando correo de recuperación…';
+ afReset(email,function(err){
+  if(err){if(fb)fb.innerHTML='<b style="color:#DC2626">'+esc(afErr(err))+'</b>';}
+  else{if(fb)fb.innerHTML='<b style="color:var(--par-acc)">✓ Te enviamos un correo para recuperar tu contraseña. Revisa tu bandeja de entrada (y la carpeta de spam).</b>';}});}
 function gateLogin(){
  const email=(document.getElementById("gMail").value||"").trim();
  const pass=document.getElementById("gPass").value;

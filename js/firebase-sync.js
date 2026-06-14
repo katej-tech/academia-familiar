@@ -47,6 +47,8 @@ function afSignup(email,pass,cb){afAuth.createUserWithEmailAndPassword(email,pas
 function afLogin(email,pass,cb){afAuth.signInWithEmailAndPassword(email,pass)
  .then(function(){cb(null);}).catch(cb);}
 function afLogout(){if(afReady)afAuth.signOut();}
+function afReset(email,cb){if(!afReady){cb({message:"Sin conexión a internet"});return;}
+ afAuth.sendPasswordResetEmail(email).then(function(){cb(null);}).catch(cb);}
 function afErr(e){var c=(e&&e.code)||"";
  if(/wrong-password|invalid-cred|invalid-login/.test(c))return "Correo o contraseña incorrectos";
  if(/user-not-found/.test(c))return "No existe esa cuenta — usa \"Crear cuenta\"";
