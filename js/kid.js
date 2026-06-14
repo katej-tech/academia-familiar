@@ -41,14 +41,15 @@ function worldBtn(w,p){
  return '<button class="kbtn '+w.color+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="openWorld(\''+w.id+'\')">'
   +'<span style="font-size:clamp(2.2rem,10vw,2.8rem)">'+w.ic+'</span>'
   +'<span style="flex:1"><span style="font-size:clamp(1.1rem,5vw,1.35rem)">'+w.nm+'</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">'+w.desc+(done?' · ✅ '+done:'')+'</span></span></button>';}
+/* tile grande de menú (lleva a un submenú) */
+function hubTile(onclick,ic,title,sub,color){
+ return '<button class="kbtn '+color+'" style="text-align:left;display:flex;align-items:center;gap:14px;margin:0" onclick="'+onclick+'">'
+  +'<span style="font-size:clamp(2.4rem,12vw,3rem)">'+ic+'</span>'
+  +'<span style="flex:1"><span style="font-size:clamp(1.15rem,5.2vw,1.4rem)">'+title+'</span><br><span style="font-size:.76rem;opacity:.85;font-weight:500">'+sub+'</span></span>'
+  +'<span style="font-size:1.4rem;opacity:.6">›</span></button>';}
+/* ===== HUB principal: pocas opciones, sin scroll largo ===== */
 function screenKidMap(){setTheme("kid");
  const p=prof();const pet=(typeof legendaryPet==="function"&&legendaryPet())||petStage(p.xp);
- const sections=KID_CATS.map(([cat,title])=>{
-  const ws=KID_WORLDS.filter(w=>w.cat===cat);
-  if(!ws.length)return"";
-  return '<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700;color:var(--kid-ink)">'+title+'</p>'
-   +ws.map(w=>worldBtn(w,p)).join("");
- }).join("");
  render(topbar("screenStart()")
  +'<div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">'
  +'<div onclick="screenAvatar()">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'</div>'
@@ -56,14 +57,34 @@ function screenKidMap(){setTheme("kid");
  +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
  +'<div style="font-size:clamp(2.2rem,11vw,3rem)" onclick="screenCritters()">'+pet.e+'</div></div>'
  +missionsHTML()
- +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑 — ¡tu curso A1!</span></span></button>'
- +sections
- +'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">⭐ Tus cosas</p>'
- +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
- +'<button class="kbtn yellow" style="margin:0" onclick="screenShop()">🛍️ Tienda</button>'
- +'<button class="kbtn white" style="margin:0" onclick="screenAvatar()">😎 Mi personaje</button>'
- +'<button class="kbtn blue" style="margin:0" onclick="screenVideosKid()">🎬 Videos</button>'
- +'<button class="kbtn white" style="margin:0" onclick="screenCritters()">🎒 Colección</button></div>');}
+ +'<div style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:6px">'
+ +hubTile("screenCole()","📚","Aprender","Mate, lenguaje, ciencias y la hora","green")
+ +hubTile("screenEnglishHub()","🇬🇧","Inglés","Academia A1, voz y cuentos","red")
+ +hubTile("screenLeer()","📖","Cuentos y escribir","Lee, escucha y ordena frases","yellow")
+ +hubTile("screenGamesPick()","🎮","Jugar","Arcade, impostor, culebra y más","blue")
+ +hubTile("screenMyStuff()","🛍️","Mi mundo","Tienda, personaje y premios","purple")
+ +'</div>');}
+function subHeader(title){return '<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin:2px 0 12px">'+title+'</h2>';}
+function screenCole(){setTheme("kid");const p=prof();
+ const ws=KID_WORLDS.filter(w=>w.cat==="cole"||w.cat==="pensar");
+ render(topbar("screenKidMap()")+subHeader("📚 Aprender")
+  +ws.map(w=>worldBtn(w,p)).join(""));}
+function screenEnglishHub(){setTheme("kid");const p=prof();
+ const ws=KID_WORLDS.filter(w=>w.cat==="en");
+ render(topbar("screenKidMap()")+subHeader("🇬🇧 Inglés")
+  +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑 — tu curso por niveles</span></span></button>'
+  +ws.map(w=>worldBtn(w,p)).join(""));}
+function screenLeer(){setTheme("kid");const p=prof();
+ const ws=KID_WORLDS.filter(w=>w.cat==="leer");
+ render(topbar("screenKidMap()")+subHeader("📖 Cuentos y escribir")
+  +ws.map(w=>worldBtn(w,p)).join(""));}
+function screenMyStuff(){setTheme("kid");
+ render(topbar("screenKidMap()")+subHeader("🛍️ Mi mundo")
+  +'<div class="card center" style="padding:14px">'+(typeof avatarScene==="function"?avatarScene(120):avatarHTML(110))+'</div>'
+  +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
+  +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
+  +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
+  +'<button class="kbtn blue" onclick="screenVideosKid()">🎬 Videos</button>');}
 function lockedMsg(){}
 function openWorld(id){
  const w=KID_WORLDS.find(x=>x.id===id);curNode=id;
@@ -507,7 +528,17 @@ const CRITTERS=[
  {id:"pingu",name:"Pingu",forms:["🐧","🦭","🐋"]},{id:"ghost",name:"Boo",forms:["👻","🎃","🧙"]},
  {id:"pup",name:"Rocco",forms:["🐶","🐕","🦮"]},{id:"pip",name:"Pip",forms:["🐭","🐿️","🦔"]},
  {id:"shelly",name:"Caracola",forms:["🐚","🐌","🐢"]},{id:"bambu",name:"Bambú",forms:["🐼","🐨","🦥"]},
- {id:"cometa",name:"Cometa",forms:["🌙","🪐","☄️"]},{id:"melody",name:"Melodía",forms:["🎵","🎶","🎸"]}];
+ {id:"cometa",name:"Cometa",forms:["🌙","🪐","☄️"]},{id:"melody",name:"Melodía",forms:["🎵","🎶","🎸"]},
+ // ----- nuevas (con rareza: r0 común, r1 rara, r2 legendaria) -----
+ {id:"chispa",name:"Chispa",forms:["🐹","🐰","🦘"],r:0},{id:"nube",name:"Nubecita",forms:["☁️","🌧️","🌈"],r:0},
+ {id:"sol",name:"Solín",forms:["🌱","🌻","🌞"],r:0},{id:"mar",name:"Marino",forms:["🐚","🐠","🐙"],r:0},
+ {id:"hielo",name:"Hielo",forms:["❄️","⛄","🧊"],r:1},{id:"trueno",name:"Trueno",forms:["🐴","🦓","🦄"],r:1},
+ {id:"selva",name:"Selva",forms:["🐍","🐊","🐉"],r:1},{id:"abeja2",name:"Polen",forms:["🌼","🐝","🍯"],r:0},
+ {id:"luz",name:"Lumen",forms:["🕯️","💡","🌟"],r:1},{id:"ola",name:"Ola",forms:["💧","🌊","🐳"],r:1},
+ {id:"fenixb",name:"Fénix",forms:["🥚","🐤","🔥🦅"],r:2},{id:"krak",name:"Kraken",forms:["🦑","🐙","🌊🐙"],r:2},
+ {id:"galax",name:"Galaxo",forms:["⭐","🌌","🌠"],r:2},{id:"titan",name:"Titán",forms:["🦴","🦣","🦏"],r:2},
+ {id:"hada",name:"Hada",forms:["🧚","✨","🦋✨"],r:2},{id:"golem",name:"Golem",forms:["🧱","🗿","🏔️"],r:1},
+ {id:"draco2",name:"Dracón",forms:["🥚","🐲","🐉🔥"],r:2},{id:"lobo2",name:"Lunar",forms:["🐺","🌕🐺","🌑🐺"],r:1}];
 function critters(){const p=prof();if(!p.critters)p.critters=[];return p.critters;}
 function critterCount(id){return critters().filter(x=>x===id).length;}
 function uniqueCritters(){return new Set(critters()).size;}
@@ -521,8 +552,11 @@ function maybeCritter(){
  const owned=critters();
  const news=CRITTERS.filter(c=>!owned.includes(c.id));
  let c;
- if(news.length&&(Math.random()<0.6||!owned.length))c=pick(news);
- else{
+ if(news.length&&(Math.random()<0.6||!owned.length)){
+  // selección ponderada por rareza: comunes salen más, legendarias muy poco
+  const weighted=[];news.forEach(x=>{const w=(x.r===2?1:x.r===1?3:7);for(let i=0;i<w;i++)weighted.push(x);});
+  c=pick(weighted);
+ }else{
   const upgradable=CRITTERS.filter(x=>{const n=critterCount(x.id);return n>=1&&n<5;});
   if(upgradable.length)c=pick(upgradable);
   else if(news.length)c=pick(news);

@@ -28,10 +28,15 @@ const SHOP_ITEMS=[
  {id:"g_p1",t:"face",e:"👓",n:"Gafas clásicas",pr:25,db:"prescription01"},
  {id:"g_p2",t:"face",e:"🧐",n:"Gafas modernas",pr:25,db:"prescription02"},
  {id:"g_kurt",t:"face",e:"🎸",n:"Gafas de rockstar",pr:45,db:"kurt"},
+ {id:"g_pirata",t:"face",e:"🏴‍☠️",n:"Parche pirata",pr:40,db:"eyepatch"},
  // compañeros de mano (se muestran junto al personaje)
  {id:"a_guitarra",t:"hand",e:"🎸",n:"Guitarra",pr:45},{id:"a_balon",t:"hand",e:"⚽",n:"Balón",pr:25},
  {id:"a_patineta",t:"hand",e:"🛹",n:"Patineta",pr:40},{id:"a_varita",t:"hand",e:"🪄",n:"Varita mágica",pr:50},
  {id:"a_mochila",t:"hand",e:"🎒",n:"Mochila",pr:20},{id:"a_robot",t:"hand",e:"🤖",n:"Mini robot",pr:60},
+ {id:"a_cometa",t:"hand",e:"🪁",n:"Cometa",pr:30},{id:"a_patines",t:"hand",e:"🛼",n:"Patines",pr:40},
+ {id:"a_control",t:"hand",e:"🎮",n:"Control de juegos",pr:55},{id:"a_dino",t:"hand",e:"🦖",n:"Dino bebé",pr:70},
+ {id:"a_loro",t:"hand",e:"🦜",n:"Loro parlanchín",pr:65},{id:"a_basket",t:"hand",e:"🏀",n:"Balón de básquet",pr:30},
+ {id:"a_trompeta",t:"hand",e:"🎺",n:"Trompeta",pr:50},{id:"a_espada",t:"hand",e:"⚔️",n:"Espada de héroe",pr:75},
  // fondos degradados (DiceBear backgroundColor)
  {id:"b_castillo",t:"bg",e:"🏰",n:"Castillo",pr:60,db:["b6e3f4","c0aede"]},
  {id:"b_volcan",t:"bg",e:"🌋",n:"Volcán",pr:70,db:["ffdfbf","ff8a80"]},
@@ -39,10 +44,18 @@ const SHOP_ITEMS=[
  {id:"b_cohete",t:"bg",e:"🚀",n:"Espacio",pr:90,db:["25557c","c0aede"]},
  {id:"b_arcoiris",t:"bg",e:"🌈",n:"Arcoíris",pr:50,db:["ffafb9","b1e2ff"]},
  {id:"b_campamento",t:"bg",e:"⛺",n:"Campamento",pr:50,db:["d1d4f9","a7ffc4"]},
- // mascotas legendarias
+ {id:"b_bosque",t:"bg",e:"🌲",n:"Bosque",pr:60,db:["a7ffc4","2e7d32"]},
+ {id:"b_noche",t:"bg",e:"🌃",n:"Ciudad de noche",pr:80,db:["25557c","1a237e"]},
+ {id:"b_desierto",t:"bg",e:"🏜️",n:"Desierto",pr:55,db:["ffdeb5","ff8a80"]},
+ {id:"b_oceano",t:"bg",e:"🌊",n:"Fondo del mar",pr:70,db:["65c9ff","25557c"]},
+ {id:"b_fuegos",t:"bg",e:"🎆",n:"Fuegos artificiales",pr:100,db:["c0aede","ff488e"]},
+ // mascotas legendarias (las más caras toman tiempo)
  {id:"p_uni",t:"pet",e:"🦄",n:"Unicornio Real",pr:200},{id:"p_dragon",t:"pet",e:"🐲",n:"Dragón Celeste",pr:300},
  {id:"p_fenix",t:"pet",e:"🦅",n:"Fénix Dorado",pr:350},{id:"p_lobo",t:"pet",e:"🐺",n:"Lobo Lunar",pr:250},
- {id:"p_leon",t:"pet",e:"🦁",n:"León Estelar",pr:500}];
+ {id:"p_leon",t:"pet",e:"🦁",n:"León Estelar",pr:500},
+ {id:"p_kraken",t:"pet",e:"🐙",n:"Kraken del Abismo",pr:650},{id:"p_mamut",t:"pet",e:"🦣",n:"Mamut Helado",pr:700},
+ {id:"p_ballena",t:"pet",e:"🐳",n:"Ballena Cósmica",pr:850},{id:"p_pavo",t:"pet",e:"🦚",n:"Pavo Real Místico",pr:600},
+ {id:"p_tigre",t:"pet",e:"🐯",n:"Tigre de Fuego",pr:900},{id:"p_grifo",t:"pet",e:"🦅",n:"Grifo Dorado",pr:1000}];
 const SHOP_CATS=[["hat","🎩 Gorros (¡con color!)"],["face","🕶️ Gafas"],["hand","🎸 Compañeros"],["bg","🌈 Fondos"],["pet","✨ Mascotas legendarias"]];
 /* compras de la versión anterior → su equivalente nuevo */
 const SHOP_OLD_MAP={h_gorra:"h_win2",h_corona:"h_hat",h_mago:"h_hat",h_grad:"h_hat",h_casco:"h_win1",h_fiesta:"h_win4",a_gafas:"g_sun"};

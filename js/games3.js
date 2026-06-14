@@ -135,45 +135,57 @@ function ansClock(k){
 /* ---- LA CULEBRITA (Snake) ---- */
 let SN={};
 function gameSnake(){setTheme("kid");
- const N=11;
- SN={N,snake:[{x:5,y:5}],dir:{x:1,y:0},nd:{x:1,y:0},food:null,score:0,started:false,timer:null};
+ const N=10;
+ SN={N,snake:[{x:3,y:5},{x:2,y:5},{x:1,y:5}],dir:{x:1,y:0},nd:{x:1,y:0},food:null,score:0,started:false,timer:null};
  snPlaceFood();
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🐍 La Culebrita</h2>'
- +'<p class="center" style="font-size:.9rem;margin-bottom:6px">Come las 🍎 y crece. ¡No choques con las paredes ni contigo!</p>'
- +'<div id="snscore" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.1rem;margin-bottom:6px">🍎 0</div>'
- +'<div id="snboard" style="max-width:360px;margin:0 auto"></div>'
- +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:12px auto 0">'
- +'<span></span><button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(0,-1)">⬆️</button><span></span>'
- +'<button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(-1,0)">⬅️</button>'
- +'<button class="kbtn green" style="margin:0;min-height:54px" onclick="snStart()">▶️</button>'
- +'<button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(1,0)">➡️</button>'
- +'<span></span><button class="kbtn blue" style="margin:0;min-height:54px" onclick="snDir(0,1)">⬇️</button><span></span>'
- +'</div>');
+ +'<p class="center" style="font-size:.92rem;margin-bottom:6px">Guía la culebra 🟢 con las flechas para comer 🍎. ¡No choques!</p>'
+ +'<div id="snscore" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.15rem;margin-bottom:6px">🍎 0</div>'
+ +'<div id="snboard" style="max-width:340px;margin:0 auto"></div>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:230px;margin:12px auto 0">'
+ +'<span></span><button class="kbtn blue" style="margin:0;min-height:58px;font-size:1.6rem" onclick="snDir(0,-1)">⬆️</button><span></span>'
+ +'<button class="kbtn blue" style="margin:0;min-height:58px;font-size:1.6rem" onclick="snDir(-1,0)">⬅️</button>'
+ +'<button class="kbtn blue" style="margin:0;min-height:58px;font-size:1.6rem" onclick="snDir(1,0)">➡️</button>'
+ +'<span></span><button class="kbtn blue" style="margin:0;min-height:58px;font-size:1.6rem" onclick="snDir(0,1)">⬇️</button><span></span>'
+ +'</div>'
+ +'<p class="center mut" style="margin-top:8px;font-size:.85rem">Toca una flecha para empezar 👆</p>');
  drawSnake();}
 function snPlaceFood(){const N=SN.N;let f;do{f={x:rnd(N),y:rnd(N)};}while(SN.snake.some(s=>s.x===f.x&&s.y===f.y));SN.food=f;}
 function drawSnake(){
  const b=document.getElementById("snboard");if(!b)return;const N=SN.N;let cells="";
  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
-  const head=SN.snake[0].x===x&&SN.snake[0].y===y;
-  const body=!head&&SN.snake.some(s=>s.x===x&&s.y===y);
-  const food=SN.food.x===x&&SN.food.y===y;
-  cells+='<div style="aspect-ratio:1;border-radius:5px;background:'+(head?"#1E2A4A":body?"#3EC97C":"#EAF2FF")+';display:flex;align-items:center;justify-content:center;font-size:.9rem">'+(food?"🍎":head?"👀":"")+'</div>';
+  const isHead=SN.snake[0].x===x&&SN.snake[0].y===y;
+  const isBody=!isHead&&SN.snake.some(s=>s.x===x&&s.y===y);
+  const isFood=SN.food.x===x&&SN.food.y===y;
+  let bg="#EAF2FF",txt="";
+  if(isHead){bg="#2E9E5B";txt="👀";}
+  else if(isBody){bg="#3EC97C";}
+  else if(isFood){txt="🍎";}
+  cells+='<div style="aspect-ratio:1;border-radius:6px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:'+(isBody||isHead?"inset 0 0 0 2px rgba(30,42,74,.25)":"none")+'">'+txt+'</div>';
  }
  b.innerHTML='<div style="display:grid;grid-template-columns:repeat('+N+',1fr);gap:3px;background:#CDE3FF;padding:6px;border-radius:14px;border:4px solid var(--kid-ink)">'+cells+'</div>';
  const sc=document.getElementById("snscore");if(sc)sc.textContent="🍎 "+SN.score;}
-function snDir(x,y){if(SN.dir.x===-x&&SN.dir.y===-y)return;SN.nd={x,y};if(!SN.started)snStart();}
-function snStart(){if(SN.started)return;SN.started=true;SN.timer=setInterval(snStep,200);}
+function snDir(x,y){
+ if(SN.snake.length>1&&SN.dir.x===-x&&SN.dir.y===-y)return; // no reversa
+ SN.nd={x,y};
+ if(!SN.started)snStart();}
+function snStart(){if(SN.started)return;SN.started=true;SN.timer=setInterval(snStep,260);}
 function snStep(){
  if(!document.getElementById("snboard")){clearInterval(SN.timer);return;}
  SN.dir=SN.nd;
  const head={x:SN.snake[0].x+SN.dir.x,y:SN.snake[0].y+SN.dir.y};
- if(head.x<0||head.y<0||head.x>=SN.N||head.y>=SN.N||SN.snake.some(s=>s.x===head.x&&s.y===head.y)){
+ const tail=SN.snake[SN.snake.length-1];
+ const willEat=head.x===SN.food.x&&head.y===SN.food.y;
+ // chocar pared o cuerpo (la cola se mueve si no come)
+ const hitSelf=SN.snake.some((s,i)=>s.x===head.x&&s.y===head.y&&!(i===SN.snake.length-1&&!willEat));
+ if(head.x<0||head.y<0||head.x>=SN.N||head.y>=SN.N||hitSelf){
   clearInterval(SN.timer);SN.started=false;sNO();recordAnswer("Lógica",SN.score>=3,10);
+  toast("💥 ¡Choque! Comiste "+SN.score+" 🍎",false,1600);
   const st=SN.score>=8?3:SN.score>=4?2:1;
-  return setTimeout(()=>nodeWin(st,"Lógica"),700);}
+  return setTimeout(()=>nodeWin(st,"Lógica"),900);}
  SN.snake.unshift(head);
- if(head.x===SN.food.x&&head.y===SN.food.y){SN.score++;beep([700],.08);snPlaceFood();}
+ if(willEat){SN.score++;beep([700,900],.1);snPlaceFood();}
  else SN.snake.pop();
  drawSnake();}
 

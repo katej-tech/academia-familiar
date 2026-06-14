@@ -8,42 +8,55 @@ let HG={};
 function gameHangman(modo){setTheme("kid");
  HG={modo,round:0,ok:0,total:4};nextHG();}
 function nextHG(){
+ clearInterval(HG.timer);
  if(HG.round>=HG.total)return nodeWin(starsFor(HG.ok,HG.total),"Ahorcado");
  if(HG.modo==="en"){const pool=Object.values(EN_VOCAB).flat().filter(w=>/^[a-z]{3,7}$/.test(w[0]));
-  const w=pick(pool);HG.word=w[0].toUpperCase();HG.hint=w[2]+" ("+w[1]+")";HG.en=w[0];}
- else{const w=pick(HG_ES);HG.word=w[0].toUpperCase();HG.hint=w[1];HG.en=null;}
- HG.guessed=[];HG.lives=6;renderHG();}
+  const w=pick(pool);HG.word=w[0].toUpperCase();HG.hint=w[2];HG.sub=w[1];HG.en=w[0];}
+ else{const w=pick(HG_ES);HG.word=w[0].toUpperCase();HG.hint=w[1];HG.sub="";HG.en=null;}
+ HG.guessed=[];HG.lives=6;HG.time=100;HG.done=false;renderHG();
+ // temporizador: la barra baja despacio; al llegar a 0 se acaba la palabra
+ HG.timer=setInterval(()=>{
+  HG.time-=1.1;const bar=document.getElementById("hgbar");
+  if(bar)bar.style.width=Math.max(0,HG.time)+"%";
+  if(HG.time<=0){clearInterval(HG.timer);hgFail();}
+ },240);}
 function renderHG(){
  const slots=HG.word.split("").map(c=>'<div class="slot'+(HG.guessed.includes(c)?' filled':'')+'">'+(HG.guessed.includes(c)?c:"")+'</div>').join("");
  const keys="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("").map(c=>'<button class="key'+(HG.guessed.includes(c)||HG.guessed.includes("✗"+c)?' used':'')+'" onclick="guessHG(\''+c+'\')">'+c+'</button>').join("");
  render(topbar("screenGamesPick()")
  +'<div class="progressdots">'+dots(HG.total,HG.round)+'</div>'
- +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">¡Salva al muñeco de nieve!</h2>'
- +'<p class="center" style="font-size:.95rem;margin-bottom:8px">Adivina la palabra antes de que se derrita</p>'
- +'<div style="display:flex;justify-content:center;gap:10px;margin-bottom:8px">'
- +'<span class="pill">'+HG_MELT[6-HG.lives]+' '+"❤️".repeat(HG.lives)+'</span></div>'
- +'<div class="card center" style="padding:10px 14px;margin-bottom:12px"><span style="font-family:Fredoka;font-weight:700;font-size:.9rem;opacity:.7">LA PISTA ES:</span><br><span style="font-size:clamp(2.4rem,11vw,3.2rem)">'+HG.hint+'</span></div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">🔤 Adivina la palabra</h2>'
+ +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+ +'<span style="font-size:1.4rem">'+"❤️".repeat(HG.lives)+"🤍".repeat(6-HG.lives)+'</span>'
+ +'<div style="flex:1;height:14px;background:#D7DEEA;border:3px solid var(--kid-ink);border-radius:10px;overflow:hidden"><div id="hgbar" style="height:100%;width:'+HG.time+'%;background:var(--kid-green);transition:width .2s"></div></div>'
+ +'<span style="font-size:1.2rem">⏳</span></div>'
+ +'<div class="card center" style="padding:14px;margin-bottom:12px"><span style="font-family:Fredoka;font-weight:700;font-size:.85rem;opacity:.7">PISTA</span><br><span style="font-size:clamp(3rem,16vw,4.5rem);line-height:1">'+HG.hint+'</span>'+(HG.sub?'<br><span style="font-size:1rem;opacity:.7">('+esc(HG.sub)+')</span>':'')+'</div>'
  +'<div class="letterslots">'+slots+'</div>'
  +'<div class="keys">'+keys+'</div>'
  +'<div style="height:10px"></div>'
- +'<button class="kbtn white" style="min-height:50px;font-size:1rem" onclick="hintHG()">💡 Pista: muéstrame una letra (cuesta 1 ❤️)</button>');}
+ +'<button class="kbtn white" style="min-height:50px;font-size:1rem" onclick="hintHG()">💡 Muéstrame una letra (cuesta 1 ❤️)</button>');}
 function hintHG(){
- if(HG.lives<=1)return toast("¡Es tu última vida! 🥶 Piensa bien",false,1300);
+ if(HG.done)return;
+ if(HG.lives<=1)return toast("¡Es tu última vida! Piensa bien 💭",false,1300);
  const missing=[...new Set(HG.word.split(""))].filter(c=>!HG.guessed.includes(c));
  if(!missing.length)return;
- HG.lives--; // la pista cuesta una vida, pero la letra revelada no resta otra
- guessHG(pick(missing));}
+ HG.lives--;guessHG(pick(missing));}
+function hgFail(){
+ if(HG.done)return;HG.done=true;clearInterval(HG.timer);
+ HG.round++;sNO();recordAnswer(HG.modo==="en"?"Inglés":"Letras",false,20);
+ toast("⏳ Se acabó el tiempo — era "+HG.word,false,1900);setTimeout(nextHG,2000);}
 function guessHG(c){
- if(HG.guessed.includes(c)||HG.guessed.includes("✗"+c))return;
+ if(HG.done||HG.guessed.includes(c)||HG.guessed.includes("✗"+c))return;
  if(HG.word.includes(c)){HG.guessed.push(c);beep([700],.08);
   if(HG.word.split("").every(x=>HG.guessed.includes(x))){
+   HG.done=true;clearInterval(HG.timer);
    HG.ok++;HG.round++;sOK();confetti(14);recordAnswer(HG.modo==="en"?"Inglés":"Letras",true,20);
    if(HG.en)speakEN(HG.en);
    toast("✓ ¡"+HG.word+"! 🎉",true,1400);setTimeout(nextHG,1500);return;}
   renderHG();}
  else{HG.guessed.push("✗"+c);HG.lives--;sNO();
-  if(HG.lives<=0){HG.round++;recordAnswer(HG.modo==="en"?"Inglés":"Letras",false,20);
-   renderHG();toast("Se derritió 💧 — era "+HG.word,false,1900);setTimeout(nextHG,2000);return;}
+  if(HG.lives<=0){HG.done=true;clearInterval(HG.timer);HG.round++;recordAnswer(HG.modo==="en"?"Inglés":"Letras",false,20);
+   renderHG();toast("Sin corazones 💔 — era "+HG.word,false,1900);setTimeout(nextHG,2000);return;}
   renderHG();}}
 
 /* ---- SOPA DE LETRAS ---- */
