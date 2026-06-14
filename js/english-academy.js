@@ -155,7 +155,7 @@ function finishEAK(){
  else{p.coins+=5;p.xp+=10;crownMsg='<div style="font-size:clamp(3rem,15vw,4rem)">'+(pct>=0.7?"🌟":"💪")+'</div><h2>'+(pct>=0.7?"¡Muy bien!":"¡Buen intento!")+'</h2><p style="margin-bottom:8px">'+(pct>=0.7?"Esta unidad ya tiene sus coronas al máximo":"Necesitas 70% para la corona — ¡tú puedes!")+'</p>';if(pct>=0.7)sWIN();}
  save();
  // la academia también da criaturas al aprobar
- const got=(pct>=0.7&&current.profile==="nino"&&typeof maybeCritter==="function")?maybeCritter():null;
+ const got=(pct>=0.7&&profType()==="kid"&&typeof maybeCritter==="function")?maybeCritter():null;
  const gotHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center"><div style="font-size:clamp(3rem,15vw,4.5rem)">'+got.e+'</div><b style="font-size:1.15rem">'+(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️")+'</b></div>':'';
  if(got)setTimeout(()=>confetti(24),400);
  render(topbar("screenAcademyKid()")

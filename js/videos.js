@@ -50,7 +50,10 @@ async function parentSuggestVideos(){
  const box=document.getElementById("vidsug");
  box.innerHTML='<div class="card center"><span class="spin">⏳</span> La IA está pensando en buenos videos…</div>';
  // detectar áreas débiles desde las estadísticas del niño
- const p=S.profiles.nino,st=p.stats||{};
+ // junta las falencias de TODOS los hijos tipo niño
+ const st={};
+ childProfiles().filter(p=>p.type==="kid").forEach(p=>{const s=p.stats||{};
+  for(const k in s){if(!st[k])st[k]={attempts:0,correct:0};st[k].attempts+=s[k].attempts;st[k].correct+=s[k].correct;}});
  const debiles=Object.keys(st).filter(s=>st[s].attempts>=3&&st[s].correct/st[s].attempts<0.7);
  const foco=debiles.length?debiles.join(", "):"sílabas trabadas, ortografía, sumas llevando, restas prestando, secuencias, el reloj y los números";
  try{

@@ -3,10 +3,46 @@ const APP_VERSION="5.0.0";
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
-  nino:{name:"Explorador",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}},
-  nina:{name:"Estrella",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}}
- },aiBank:{nina:[]}};
+  nino:{name:"Explorador",emoji:"🦖",type:"kid",age:7,alias:"",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}},
+  nina:{name:"Estrella",emoji:"🎧",type:"teen",age:14,alias:"",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}}
+ },aiBank:{}};
 let S=load();
+/* ---- perfiles dinámicos (varios hijos) ---- */
+function normalizeProfiles(){
+ if(!S.profiles)S.profiles={};
+ for(const id in S.profiles){const p=S.profiles[id];
+  if(!p.type)p.type=(id==="nina")?"teen":"kid";
+  if(!p.days)p.days={};if(!p.stats)p.stats={};
+  if(p.coins==null)p.coins=0;if(p.xp==null)p.xp=0;if(p.streak==null)p.streak=0;
+  if(p.type==="kid"){if(!p.critters)p.critters=[];if(!p.worldWins)p.worldWins={};if(!p.mastery)p.mastery={};
+   if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
+   if(!p.emoji)p.emoji="🦖";}
+  else{if(!p.best)p.best={};if(!p.emoji)p.emoji="🎧";}
+ }
+ if(!S.aiBank)S.aiBank={};
+}
+normalizeProfiles();
+function profType(){const p=prof();return (p&&p.type)||"kid";}
+function profAiBank(){if(!S.aiBank)S.aiBank={};if(!current.profile)return [];if(!S.aiBank[current.profile])S.aiBank[current.profile]=[];return S.aiBank[current.profile];}
+function childProfiles(){return Object.keys(S.profiles).map(id=>Object.assign({id:id},S.profiles[id]));}
+function newProfile(name,age,type){
+ const id="p_"+Date.now().toString(36)+Math.floor(Math.random()*1000);
+ age=parseInt(age,10)||(type==="teen"?13:7);
+ if(type==="teen")S.profiles[id]={name:name||"Estrella",alias:"",age:age,type:"teen",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}};
+ else S.profiles[id]={name:name||"Explorador",alias:"",age:age,type:"kid",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}};
+ save();return id;}
+function deleteProfile(id){if(S.profiles[id]&&Object.keys(S.profiles).length>1){delete S.profiles[id];if(S.aiBank)delete S.aiBank[id];save();}}
+/* ---- tiempo de uso por niño (segundos activos por día) ---- */
+let _useTimer=null;
+function startUsageTracking(){
+ if(_useTimer)return;
+ _useTimer=setInterval(function(){
+  try{
+   if(current.profile&&S.profiles[current.profile]&&(typeof document==="undefined"||!document.hidden)){
+    const d=touchDay();d.active=(d.active||0)+10;save();
+   }
+  }catch(e){}
+ },10000);}
 function load(){try{const r=localStorage.getItem("academiaFam2");if(r){const s=JSON.parse(r);const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,s);return base;}}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_STATE));}
 function deepMerge(t,s){for(const k in s){if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])){if(!t[k])t[k]={};deepMerge(t[k],s[k]);}else t[k]=s[k];}}
 function save(){S.updatedAt=Date.now();localStorage.setItem("academiaFam2",JSON.stringify(S));if(typeof window!=="undefined"&&window.afOnSave)window.afOnSave();}
@@ -199,7 +235,7 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
   p.autoLevel=rate>=0.85?5:rate>=0.7?4:rate>=0.55?3:rate>=0.4?2:1;}
  else if(!p.autoLevel)p.autoLevel=2;
  // señales de apoyo (solo niño): tiempos altos y errores por área
- if(current.profile==="nino"){
+ if(profType()==="kid"){
   if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
   const readSubj=["Comprensión","Letras","Ordenar","Sustantivos","Sílabas trabadas","Ortografía","La narración"].includes(subject);
   const mathSubj=["Mate","Problemas","Números","Sumas","Restas","Restas prestando","Sumas de 3 cifras","Inicio multiplicación","Mayor y menor","Globos","Leer números","Decenas"].includes(subject);

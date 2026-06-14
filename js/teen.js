@@ -102,7 +102,7 @@ function flashAns(knew){
  FC.i++;renderFlash();}
 
 /* ============ LECTURAS TAP-TRANSLATE ============ */
-function allReadings(){return B_LECTURAS.concat(S.aiBank.nina.filter(x=>x.type==="reading"));}
+function allReadings(){return B_LECTURAS.concat(profAiBank().filter(x=>x.type==="reading"));}
 function screenReadList(){setTheme("teen");
  render(topbar("screenTeenHome()")
  +'<h2 style="margin-bottom:4px">📖 Lecturas en inglés</h2>'
@@ -127,7 +127,7 @@ function readingQuiz(i){
  const r=allReadings()[i];touchDay().readDone=true;save();
  QZ={subject:"Inglés-Lectura",qs:r.qs,i:0,ok:0,combo:0,maxCombo:0,score:0};renderQ();}
 function startComprension(){setTheme("teen");
- const item=pick(B_COMPRENSION.concat(S.aiBank.nina.filter(x=>x.type==="comp")),dailyRng("comp"));
+ const item=pick(B_COMPRENSION.concat(profAiBank().filter(x=>x.type==="comp")),dailyRng("comp"));
  QZ={subject:"Comprensión",qs:item.qs.map(q=>({t:item.t,q:q.q,ops:q.ops,a:q.a})),i:0,ok:0,combo:0,maxCombo:0,score:0};renderQ();}
 
 /* ============ OÍDO MUSICAL ============ */
@@ -194,7 +194,7 @@ async function aiGen(kind){
   if(obj.t)obj.t=stripHTML(obj.t);
   if(obj.qs)obj.qs=obj.qs.map(q=>({q:stripHTML(q.q),ops:(q.ops||[]).map(o=>stripHTML(o)),a:q.a||0}));
   if(obj.words){const w={};Object.keys(obj.words).forEach(k=>{w[stripHTML(k).toLowerCase()]=stripHTML(obj.words[k]);});obj.words=w;}
-  if(obj.type==="reading"||obj.type==="comp"){S.aiBank.nina.push(obj);save();
+  if(obj.type==="reading"||obj.type==="comp"){profAiBank().push(obj);save();
    toast("✨ ¡Nuevo contenido agregado!",true,1300);
    setTimeout(obj.type==="reading"?screenReadList:startComprension,1200);}
   else if(obj.type==="quiz"){QZ={subject:obj.subject,qs:obj.qs,i:0,ok:0,combo:0,maxCombo:0,score:0};renderQ();}

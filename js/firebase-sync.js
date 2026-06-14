@@ -38,7 +38,7 @@ function afPull(done){var u=afUser();if(!u){if(done)done();return;}
   if(snap.exists){var cloud=snap.data();var lt=S.updatedAt||0,ct=cloud.updatedAt||0;
    if(ct>=lt){var localKey=S.geminiKey||"";var base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,cloud);
     base.geminiKey=localKey; // conservar la clave local (la nube nunca la guarda)
-    S=base;localStorage.setItem("academiaFam2",JSON.stringify(S));}
+    S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();localStorage.setItem("academiaFam2",JSON.stringify(S));}
    else afPush();
   }else afPush();
   if(done)done();

@@ -18,11 +18,17 @@ function profileReport(key){
  const days=last7(),vals=days.map(d=>p.days[d]?p.days[d].ex:0),max=Math.max(1,...vals);
  const bars=days.map((d,i)=>'<div class="bar" style="height:'+(vals[i]/max*100)+'%"><span>'+d.slice(8)+'</span></div>').join("");
  const lvl=p.autoLevel||2;const lvlTxt=["","Muy fácil","Fácil","Medio","Avanzado","Reto"][lvl];
- const extra=(key==="nino"?' · 🌍 '+(p.worldWins?Object.values(p.worldWins).reduce((a,b)=>a+b,0):0)+' rondas · 🎒 '+((p.critters||[]).length)+' criaturas':'')
+ const isKid=(p.type||"kid")==="kid";
+ // tiempo de uso total (de days[].active) y de los últimos 7 días
+ let totalSec=0,weekSec=0;const d7=last7();
+ Object.keys(p.days||{}).forEach(dd=>{const a=(p.days[dd].active||0);totalSec+=a;if(d7.includes(dd))weekSec+=a;});
+ const fmt=s=>s>=3600?(Math.round(s/360)/10)+" h":Math.round(s/60)+" min";
+ const extra=(isKid?' · 🌍 '+(p.worldWins?Object.values(p.worldWins).reduce((a,b)=>a+b,0):0)+' rondas · 🎒 '+((p.critters||[]).length)+' criaturas':'')
   +' · 🎚️ Dificultad: '+lvlTxt+' ('+lvl+'/5)'
-  +(p.cefr?' · 🇬🇧 Inglés nivel '+CEFR[p.cefr.lvl||0].id:'');
- const signals=key==="nino"?signalsBlock(p):"";
- return '<div class="card"><h3>'+p.emoji+' '+esc(p.name)+' <span class="mut" style="font-weight:600">· 🔥 '+p.streak+' días · 🪙 '+p.coins+' · Nv '+level(p.xp)+extra+'</span></h3>'
+  +(p.cefr?' · 🇬🇧 Inglés nivel '+CEFR[p.cefr.lvl||0].id:'')
+  +' · ⏱️ '+fmt(weekSec)+' esta semana';
+ const signals=isKid?signalsBlock(p):"";
+ return '<div class="card"><h3>'+(p.emoji||"🙂")+' '+esc(p.name)+(p.age?' <span class="mut" style="font-weight:600">('+p.age+" años)</span>":'')+' <span class="mut" style="font-weight:600">· 🔥 '+p.streak+' días · 🪙 '+p.coins+' · Nv '+level(p.xp)+extra+'</span></h3>'
  +'<table><tr><th>Tema</th><th>Intentos</th><th>Aciertos</th><th>%</th><th>Tiempo</th></tr>'+rows+'</table>'
  +'<p class="mut" style="margin-top:16px"><b>Ejercicios por día — últimos 7 días</b></p>'
  +'<div class="barchart">'+bars+'</div><div style="height:24px"></div>'+signals+'</div>';}
@@ -45,10 +51,64 @@ function signalsBlock(p){
  +'<div style="background:#FEF9F3;border:1px solid #F0E0CC;border-radius:12px;padding:14px;margin-top:10px">'
  +'<p class="mut" style="margin-bottom:10px;font-size:.85rem"><b>Importante:</b> esto NO es un diagnóstico. Es solo un resumen de cómo le va por área para que tú decidas dónde reforzar o si consultar a un docente o especialista. Las dificultades de aprendizaje solo las diagnostica un profesional.</p>'
  +'<ul style="margin-left:18px;line-height:1.7;font-size:.92rem">'+items.join("")+'</ul></div></details>';}
+function childrenCard(){
+ const rows=childProfiles().map(p=>{
+  const tipo=p.type==="teen"?"Adolescente":"Niño";
+  return '<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--par-line);border-radius:12px;padding:10px;margin:8px 0">'
+   +'<span style="font-size:1.6rem">'+(p.emoji||"🙂")+'</span>'
+   +'<span style="flex:1"><b>'+esc(p.name)+'</b>'+(p.alias?' <span class="mut">('+esc(p.alias)+')</span>':'')+'<br><span class="mut" style="font-size:.85rem">'+tipo+(p.age?' · '+p.age+' años':'')+'</span></span>'
+   +'<button class="pbtn ghost" style="width:auto;padding:6px 10px;margin:0" onclick="editChild(\''+p.id+'\')">✏️</button>'
+   +(Object.keys(S.profiles).length>1?'<button class="pbtn ghost" style="width:auto;padding:6px 10px;margin:0" onclick="askDeleteChild(\''+p.id+'\')">🗑️</button>':'')
+   +'</div>';
+ }).join("");
+ return '<div class="card"><h3>👨‍👩‍👧‍👦 Mis hijos</h3>'
+  +'<p class="mut" style="margin:8px 0">Agrega los hijos que quieras. Cada uno tiene su propio perfil y progreso.</p>'
+  +rows
+  +'<div id="childform"></div>'
+  +'<button class="pbtn" onclick="showAddChild()">➕ Agregar hijo</button></div>';}
+function showAddChild(){
+ document.getElementById("childform").innerHTML=
+  '<div style="border:1px solid var(--par-line);border-radius:12px;padding:12px;margin:8px 0">'
+  +'<input type="text" id="chName" placeholder="Nombre">'
+  +'<input type="text" id="chAlias" placeholder="Apodo (opcional)">'
+  +'<input type="number" id="chAge" inputmode="numeric" placeholder="Edad" min="3" max="18">'
+  +'<p class="mut" style="margin:6px 0 4px">Tipo de contenido</p>'
+  +'<select id="chType"><option value="auto">Según la edad (recomendado)</option><option value="kid">Niño (juegos)</option><option value="teen">Adolescente (studio)</option></select>'
+  +'<button class="pbtn" onclick="addChild()">Crear hijo</button>'
+  +'<button class="pbtn ghost" onclick="document.getElementById(\'childform\').innerHTML=\'\'">Cancelar</button></div>';}
+function addChild(){
+ const name=document.getElementById("chName").value.trim();
+ const alias=document.getElementById("chAlias").value.trim();
+ const age=parseInt(document.getElementById("chAge").value,10)||0;
+ let type=document.getElementById("chType").value;
+ if(!name){alert("Escribe un nombre");return;}
+ if(type==="auto")type=age>=11?"teen":"kid";
+ const id=newProfile(name,age,type);
+ S.profiles[id].alias=alias;save();screenParentDash();}
+function editChild(id){
+ const p=S.profiles[id];if(!p)return;
+ document.getElementById("childform").innerHTML=
+  '<div style="border:1px solid var(--par-line);border-radius:12px;padding:12px;margin:8px 0">'
+  +'<p class="mut" style="margin-bottom:6px">Editar a '+esc(p.name)+'</p>'
+  +'<input type="text" id="edName" value="'+esc(p.name)+'" placeholder="Nombre">'
+  +'<input type="text" id="edAlias" value="'+esc(p.alias||"")+'" placeholder="Apodo">'
+  +'<input type="number" id="edAge" value="'+(p.age||"")+'" placeholder="Edad">'
+  +'<button class="pbtn" onclick="saveChild(\''+id+'\')">Guardar</button>'
+  +'<button class="pbtn ghost" onclick="document.getElementById(\'childform\').innerHTML=\'\'">Cancelar</button></div>';}
+function saveChild(id){const p=S.profiles[id];if(!p)return;
+ p.name=document.getElementById("edName").value.trim()||p.name;
+ p.alias=document.getElementById("edAlias").value.trim();
+ const a=parseInt(document.getElementById("edAge").value,10);if(a)p.age=a;
+ save();screenParentDash();}
+function askDeleteChild(id){const p=S.profiles[id];if(!p)return;
+ if(confirm('¿Eliminar a "'+p.name+'" y todo su progreso? No se puede deshacer.')){deleteProfile(id);screenParentDash();}}
 function screenParentDash(){setTheme("parent");
+ const reports=Object.keys(S.profiles).map(profileReport).join("");
+ const aiTotal=S.aiBank?Object.keys(S.aiBank).reduce((a,k)=>a+(S.aiBank[k]?S.aiBank[k].length:0),0):0;
  render('<div class="topbar"><button class="back" onclick="screenStart()">←</button><b style="font-size:1.1rem">Panel de padres</b></div>'
  +(typeof afAccountCard==="function"?afAccountCard():"")
- +profileReport("nino")+profileReport("nina")
+ +childrenCard()
+ +reports
  +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
  +'<div class="card"><h3>⚙️ Configuración</h3>'
  +'<p class="mut" style="margin:12px 0 4px">Clave de API de Gemini (vive solo en este dispositivo)</p>'
@@ -56,17 +116,14 @@ function screenParentDash(){setTheme("parent");
  +'<button class="pbtn ghost" style="width:auto;padding:0 14px;margin:0" onclick="toggleKeyVisible()" title="Mostrar/ocultar">👁</button></div>'
  +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button><div id="keyfb" style="margin:4px 0"></div>'
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
- +'<p class="mut" style="margin:6px 0 4px">Nombres</p>'
- +'<input type="text" id="nName" value="'+esc(S.profiles.nino.name)+'" placeholder="Nombre del niño">'
- +'<input type="text" id="aName" value="'+esc(S.profiles.nina.name)+'" placeholder="Nombre de la niña">'
  +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
  +'<p class="tip">💡 Clave gratuita: <b>aistudio.google.com</b> → Get API key. Nunca la escribas dentro del archivo ni la subas a GitHub.</p></div>'
- +'<div class="card"><h3>🗂️ Datos</h3><p class="mut" style="margin:8px 0">El progreso se guarda en cada dispositivo. Respáldalo o muévelo:</p>'
+ +'<div class="card"><h3>🗂️ Datos</h3><p class="mut" style="margin:8px 0">El progreso se guarda en cada dispositivo (y en la nube si inicias sesión). Respáldalo o muévelo:</p>'
  +'<button class="pbtn ghost" onclick="exportData()">⬇️ Exportar respaldo</button>'
  +'<button class="pbtn ghost" onclick="document.getElementById(\'impfile\').click()">⬆️ Importar</button>'
  +'<input type="file" id="impfile" class="hidden" accept=".json" onchange="importData(event)">'
  +'<button class="pbtn danger" onclick="if(confirm(\'¿Borrar TODO el progreso?\')){localStorage.removeItem(\'academiaFam2\');location.reload();}">🗑️ Reiniciar todo</button>'
- +'<p class="mut" style="margin-top:10px">Contenido creado por IA: '+S.aiBank.nina.length+' elementos</p></div>'
+ +'<p class="mut" style="margin-top:10px">Contenido creado por IA: '+aiTotal+' elementos</p></div>'
  +'<div class="card"><h3>📱 Instalar como app</h3>'
  +'<p class="mut" style="margin:8px 0;line-height:1.6">En el celular o tablet (Chrome de Android): abre la página, toca el menú <b>⋮</b> y elige <b>"Agregar a pantalla de inicio"</b> o <b>"Instalar app"</b>. Queda con su icono, a pantalla completa y funciona sin internet (la IA sí necesita conexión).</p>'
  +'<p class="mut">Versión '+APP_VERSION+'</p></div>');}
@@ -111,8 +168,6 @@ async function testGeminiKey(){
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;
- S.profiles.nino.name=document.getElementById("nName").value.trim()||"Explorador";
- S.profiles.nina.name=document.getElementById("aName").value.trim()||"Estrella";
  save();document.getElementById("fb").innerHTML=' <b style="color:var(--par-acc)">✓ Guardado</b>';}
 function exportData(){
  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
@@ -120,5 +175,5 @@ function exportData(){
 function importData(ev){
  const f=ev.target.files[0];if(!f)return;
  const r=new FileReader();
- r.onload=()=>{try{const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,JSON.parse(r.result));S=base;save();screenParentDash();}catch(e){alert("Archivo no válido");}};
+ r.onload=()=>{try{const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,JSON.parse(r.result));S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();save();screenParentDash();}catch(e){alert("Archivo no válido");}};
  r.readAsText(f);}

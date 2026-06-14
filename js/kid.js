@@ -4,20 +4,27 @@ function streakReminderHTML(){
  const y=new Date();y.setDate(y.getDate()-1);
  const ys=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
  const msgs=[];
- ["nino","nina"].forEach(k=>{const p=S.profiles[k];
+ Object.keys(S.profiles).forEach(k=>{const p=S.profiles[k];
   if(p.streak>0&&p.lastDay===ys)msgs.push("🔥 <b>"+esc(p.name)+"</b>: ¡juega hoy para no perder tu racha de "+p.streak+(p.streak===1?" día":" días")+"!");});
  if(!msgs.length)return "";
  return '<div class="card" style="border:3px solid #F59E0B;background:#FFF7E0;font-size:1rem;line-height:1.6">'+msgs.join("<br>")+'</div>';}
 function screenStart(){setTheme("parent");current.profile=null;
- render('<div style="margin-top:7vh">'
+ if(typeof startUsageTracking==="function")startUsageTracking();
+ const cards=childProfiles().map(p=>{
+  const sub=p.type==="teen"?"Studio de retos":"Mundo de Aventuras";
+  const agetxt=p.age?(" · "+p.age+" años"):"";
+  return '<div class="card profilecard" onclick="enterProfile(\''+p.id+'\')"><span class="av">'+(p.emoji||"🙂")+'</span><b style="font-size:1.35rem">'+esc(p.name)+'</b><br><span class="mut">'+sub+agetxt+'</span></div>';
+ }).join("");
+ render('<div style="margin-top:6vh">'
  +'<h1 class="title center" style="font-size:2rem">🏠 Academia Familiar</h1>'
- +'<p class="center mut" style="margin-bottom:26px;font-size:1.05rem">¿Quién va a jugar hoy?</p>'
+ +'<p class="center mut" style="margin-bottom:22px;font-size:1.05rem">¿Quién va a jugar hoy?</p>'
  +streakReminderHTML()
- +'<div class="card profilecard" onclick="enterKid()"><span class="av">'+S.profiles.nino.emoji+'</span><b style="font-size:1.35rem">'+esc(S.profiles.nino.name)+'</b><br><span class="mut">Mundo de Aventuras · 1°</span></div>'
- +'<div class="card profilecard" onclick="enterTeen()"><span class="av">'+S.profiles.nina.emoji+'</span><b style="font-size:1.35rem">'+esc(S.profiles.nina.name)+'</b><br><span class="mut">Studio de retos · 9°</span></div>'
+ +cards
  +'<p class="center" style="margin-top:20px"><button class="pbtn ghost" onclick="screenParentLogin()">👨‍👩‍👧 Panel de padres</button></p></div>');}
-function enterKid(){current.profile="nino";touchDay();save();screenKidMap();}
-function enterTeen(){current.profile="nina";touchDay();save();screenTeenHome();}
+function enterProfile(id){if(!S.profiles[id])return;current.profile=id;touchDay();save();
+ if(profType()==="teen")screenTeenHome();else screenKidMap();}
+function enterKid(){enterProfile("nino");}
+function enterTeen(){enterProfile("nina");}
 
 /* ============ MAPA DE AVENTURA (NIÑO) ============ */
 /* MUNDOS temáticos: cada uno agrupa temas y se juega con el motor infinito */
@@ -188,14 +195,14 @@ function starsFor(ok,total){const p=ok/total;return p>=0.9?3:p>=0.6?2:1;}
 
 /* ============ MISIONES ============ */
 const MISSIONS={
- nino:[{id:"m1",label:"Explora 2 mundos hoy",emoji:"🌍",check:d=>d.games>=2,reward:10},
+ kid:[{id:"m1",label:"Explora 2 mundos hoy",emoji:"🌍",check:d=>d.games>=2,reward:10},
        {id:"m2",label:"Practica inglés con voz",emoji:"🔊",check:d=>d.enDone,reward:15},
        {id:"m3",label:"Logra 10 aciertos hoy",emoji:"✅",check:d=>d.ok>=10,reward:15}],
- nina:[{id:"m1",label:"Completa 10 ejercicios",emoji:"🎯",check:d=>d.ex>=10,reward:10},
+ teen:[{id:"m1",label:"Completa 10 ejercicios",emoji:"🎯",check:d=>d.ex>=10,reward:10},
        {id:"m2",label:"Termina una lectura en inglés",emoji:"📖",check:d=>d.readDone,reward:15},
        {id:"m3",label:"Consigue un combo x3",emoji:"⚡",check:d=>d.combo3,reward:15}]};
 function missionsHTML(){
- const d=touchDay();const list=MISSIONS[current.profile];
+ const d=touchDay();const list=MISSIONS[profType()]||MISSIONS.kid;
  let h='<div class="card"><b style="font-size:1.1rem">📅 Misiones de hoy</b>';
  list.forEach(mi=>{
   if(mi.check(d)&&!d.missions.includes(mi.id)){d.missions.push(mi.id);prof().coins+=mi.reward;prof().xp+=mi.reward*2;save();}

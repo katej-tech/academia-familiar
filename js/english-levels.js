@@ -32,7 +32,7 @@ const CEFR_BANK={
   {q:"\"Run out of\" significa…",ops:["Quedarse sin","Correr afuera","Apurarse"],a:0},{q:"She asked me where I ___.",ops:["lived","live","living"],a:0},
   {q:"It ___ have been him; he was away.",ops:["can't","must","should"],a:0},{q:"The bridge is ___ repaired now.",ops:["being","been","be"],a:0}]};
 function cefrState(){const p=prof();if(!p.cefr)p.cefr={lvl:0,passed:[false,false,false,false],best:{}};return p.cefr;}
-function isTeen(){return current.profile==="nina";}
+function isTeen(){return profType()==="teen";}
 function elBtn(){return isTeen()?"tbtn":"kbtn";}
 function elTheme(){setTheme(isTeen()?"teen":"kid");}
 function screenLevelsEN(){elTheme();const c=cefrState();const cls=elBtn();
