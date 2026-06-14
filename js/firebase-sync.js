@@ -29,13 +29,16 @@ function afUser(){return afReady&&afAuth.currentUser?afAuth.currentUser:null;}
 /* guardado en la nube con rebote (lo llama save() vía window.afOnSave) */
 function afOnSave(){if(!afUser())return;clearTimeout(afPushT);afPushT=setTimeout(afPush,1500);}
 window.afOnSave=afOnSave;
+/* la clave de Gemini NUNCA se sube a la nube: vive solo en este dispositivo */
+function afCloudSafe(){var c=JSON.parse(JSON.stringify(S));delete c.geminiKey;return c;}
 function afPush(){var u=afUser();if(!u)return;
- try{afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S))).catch(function(){});}catch(e){}}
+ try{afDB.collection("families").doc(u.uid).set(afCloudSafe()).catch(function(){});}catch(e){}}
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
   if(snap.exists){var cloud=snap.data();var lt=S.updatedAt||0,ct=cloud.updatedAt||0;
-   if(ct>=lt){var base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,cloud);S=base;
-    localStorage.setItem("academiaFam2",JSON.stringify(S));}
+   if(ct>=lt){var localKey=S.geminiKey||"";var base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,cloud);
+    base.geminiKey=localKey; // conservar la clave local (la nube nunca la guarda)
+    S=base;localStorage.setItem("academiaFam2",JSON.stringify(S));}
    else afPush();
   }else afPush();
   if(done)done();
