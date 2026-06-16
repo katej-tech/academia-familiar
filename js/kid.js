@@ -140,6 +140,7 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn purple" onclick="gameCrossword()">📝 Crucigrama</button>'
  +'<button class="kbtn yellow" onclick="screenMemoryPick()">🃏 Juegos de memoria</button>'
  +sub("🔢 Números y lógica")
+ +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
  +'<button class="kbtn green" onclick="gameMathPaint()">🎨 Pinta con números</button>'
  +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'

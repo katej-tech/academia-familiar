@@ -277,3 +277,50 @@ function ttEnd(w){
  if(w==="❌"){sWIN();confetti(24);recordAnswer("Lógica",true,15);if(msg)msg.textContent="🎉 ¡Ganaste!";setTimeout(()=>nodeWin(3,"Lógica"),1400);}
  else if(w==="⭕"){sNO();recordAnswer("Lógica",false,15);if(msg)msg.textContent="🤖 Ganó la máquina… ¡otra!";setTimeout(()=>nodeWin(1,"Lógica"),1400);}
  else{tone(440,.2);recordAnswer("Lógica",true,15);if(msg)msg.textContent="🤝 ¡Empate! Bien jugado";setTimeout(()=>nodeWin(2,"Lógica"),1400);}}
+
+/* ---- CRUCIGRAMA MATEMÁTICO (números que cuadran en filas y columnas) ---- */
+/* plantilla 5x5: índice 0-8 = celda con número; '+' y '=' fijos; '.' vacío */
+const MXT=[[0,'+',1,'=',2],['+','.','+','.','+'],[3,'+',4,'=',5],['=','.','=','.','='],[6,'+',7,'=',8]];
+let MX={};
+function gameMathCross(){setTheme("kid");
+ const lvl=(typeof adlvl==="function")?adlvl():2;
+ const M=[3,5,8,10,12][Math.min(4,Math.max(0,lvl-1))];
+ const A=1+rnd(M),B=1+rnd(M),D=1+rnd(M),E=1+rnd(M);
+ const g=[A,B,A+B, D,E,D+E, A+D,B+E,(A+B)+(D+E)];
+ const blanks=shuffled([0,1,2,3,4,5,6,7,8]).slice(0,4+rnd(2));
+ const vals=blanks.map(b=>g[b]);
+ const maxv=Math.max.apply(null,g);
+ const tray=shuffled(vals.concat([1+rnd(maxv),1+rnd(maxv)])).map(v=>({val:v,used:false}));
+ MX={g,blanks,filled:{},filledBy:{},tray,sel:null};
+ renderMX();}
+function renderMX(){
+ const cells=[];
+ for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+  const t=MXT[r][c];
+  if(t==='.'){cells.push('<div></div>');continue;}
+  if(t==='+'||t==='='){cells.push('<div style="display:flex;align-items:center;justify-content:center;font-family:Fredoka;font-weight:700;font-size:clamp(1.1rem,5vw,1.6rem);color:#1E2A4A">'+t+'</div>');continue;}
+  const idx=t,isBlank=MX.blanks.includes(idx);
+  if(!isBlank){cells.push('<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;border:3px solid var(--kid-ink);background:#EAF2FF;font-family:Fredoka;font-weight:700;font-size:clamp(1.1rem,5.5vw,1.6rem)">'+MX.g[idx]+'</div>');}
+  else{const v=MX.filled[idx];cells.push('<button onclick="tapMXCell('+idx+')" style="aspect-ratio:1;border-radius:10px;border:3px dashed var(--kid-ink);background:'+(v!=null?"var(--kid-yellow)":"#fff")+';font-family:Fredoka;font-weight:700;font-size:clamp(1.1rem,5.5vw,1.6rem)">'+(v!=null?v:'')+'</button>');}
+ }
+ const trayHTML=MX.tray.map((t,i)=>'<button onclick="tapMXTile('+i+')" '+(t.used?'disabled':'')+' style="min-width:48px;height:48px;border-radius:12px;border:4px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);font-family:Fredoka;font-weight:700;font-size:1.3rem;color:var(--kid-ink);background:'+(t.used?"#D7DEEA":MX.sel===i?"var(--kid-green)":"var(--kid-yellow)")+';'+(t.used?"opacity:.4;":"")+'">'+t.val+'</button>').join("");
+ render(topbar("exitGame('games')")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🔢 Crucigrama matemático</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:10px">Completa para que las sumas cuadren ➡️ y ⬇️</p>'
+  +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:340px;margin:0 auto">'+cells.join("")+'</div>'
+  +'<p class="center mut" style="margin:12px 0 6px;font-size:.85rem">Toca un número de abajo y luego una casilla vacía</p>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">'+trayHTML+'</div>');}
+function tapMXTile(i){if(MX.tray[i].used)return;MX.sel=(MX.sel===i?null:i);beep([520],.05);renderMX();}
+function tapMXCell(idx){
+ if(MX.filled[idx]!=null){const ti=MX.filledBy[idx];if(ti!=null)MX.tray[ti].used=false;delete MX.filled[idx];delete MX.filledBy[idx];beep([400],.06);return renderMX();}
+ if(MX.sel==null){toast("Primero toca un número de abajo 👇",false,1100);return;}
+ MX.filled[idx]=MX.tray[MX.sel].val;MX.filledBy[idx]=MX.sel;MX.tray[MX.sel].used=true;MX.sel=null;beep([640],.07);
+ renderMX();
+ if(MX.blanks.every(b=>MX.filled[b]!=null))setTimeout(checkMX,250);}
+function checkMX(){
+ const v=i=>MX.blanks.includes(i)?MX.filled[i]:MX.g[i];
+ const eqs=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]];
+ const ok=eqs.every(e=>v(e[0])+v(e[1])===v(e[2]));
+ recordAnswer("Mate",ok,25);
+ if(ok){sWIN();confetti(32);setTimeout(()=>nodeWin(3,"Mate"),700);}
+ else{sNO();toast("Algunas cuentas no cuadran — ¡revisa y cambia!",false,1800);}}
