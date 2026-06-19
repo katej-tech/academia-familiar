@@ -324,3 +324,46 @@ function checkMX(){
  recordAnswer("Mate",ok,25);
  if(ok){sWIN();confetti(32);setTimeout(()=>nodeWin(3,"Mate"),700);}
  else{sNO();toast("Algunas cuentas no cuadran — ¡revisa y cambia!",false,1800);}}
+
+/* ============ DETECTIVE (deducción con pistas, estilo "impostor") ============ */
+const DET_COLORS=[["#FF6B6B","roja"],["#3B82F6","azul"],["#3EC97C","verde"],["#FFC93C","amarilla"]];
+let DET={};
+function gameDetective(){setTheme("kid");DET={round:0,total:5,ok:0};detNext();}
+function detNext(){
+ if(DET.round>=DET.total)return nodeWin(starsFor(DET.ok,DET.total),"Detective");
+ const combos=[];
+ for(let h=0;h<2;h++)for(let g=0;g<2;g++)for(let c=0;c<4;c++)combos.push({hat:!!h,glasses:!!g,color:c});
+ const susp=shuffled(combos).slice(0,4);
+ const culprit=rnd(4),cu=susp[culprit];
+ const clues=[
+  cu.hat?"Usa sombrero 🎩":"NO usa sombrero",
+  cu.glasses?"Usa gafas 👓":"NO usa gafas",
+  "Su camiseta es "+DET_COLORS[cu.color][1]];
+ DET.susp=susp;DET.culprit=culprit;DET.clues=clues;DET.answered=false;
+ renderDet();}
+function detCard(s,i){
+ const c=DET_COLORS[s.color][0];
+ return '<button onclick="tapDet('+i+')" style="border:4px solid var(--kid-ink);border-radius:18px;background:#fff;box-shadow:0 6px 0 rgba(30,42,74,.6);padding:8px 6px 12px;display:flex;flex-direction:column;align-items:center;gap:2px">'
+  +'<div style="font-size:.72rem;font-family:Fredoka;font-weight:700;opacity:.6">Nº '+(i+1)+'</div>'
+  +'<div style="height:1.3em;font-size:clamp(1.8rem,9vw,2.4rem);line-height:1">'+(s.hat?'🎩':'')+'</div>'
+  +'<div style="font-size:clamp(2.4rem,12vw,3.2rem);line-height:1;margin-top:-6px">🙂</div>'
+  +'<div style="height:1.4em;font-size:1.3rem">'+(s.glasses?'👓':'')+'</div>'
+  +'<div style="width:70%;height:16px;border-radius:8px;border:2px solid var(--kid-ink);background:'+c+'"></div>'
+  +'</button>';}
+function renderDet(){
+ render(topbar("exitGame('games')")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🕵️ Detective</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Caso '+(DET.round+1)+' de '+DET.total+' · ¿Quién es el culpable?</p>'
+  +'<div class="card" style="padding:12px 14px;margin-bottom:10px">'
+   +'<div style="font-family:Fredoka;font-weight:700;margin-bottom:6px">🔍 Pistas del culpable:</div>'
+   +'<ul style="margin:0;padding-left:18px;font-size:1.05rem;line-height:1.7">'+DET.clues.map(c=>'<li>'+c+'</li>').join("")+'</ul>'
+  +'</div>'
+  +'<button class="speaker small" onclick="speakES(\'Pistas. '+DET.clues.join(". ").replace(/[🎩👓]/g,"")+'\')">🔊 Leer las pistas</button>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:360px;margin:12px auto 0">'+DET.susp.map((s,i)=>detCard(s,i)).join("")+'</div>');}
+function tapDet(i){
+ if(DET.answered)return;
+ const ok=i===DET.culprit;DET.answered=true;
+ recordAnswer("Detective",ok,20);
+ if(ok){sOK();confetti(16);toast("¡Caso resuelto! 🕵️🎉",true,1300);DET.ok++;}
+ else{sNO();toast("Era el Nº "+(DET.culprit+1)+" — vuelve a leer las pistas",false,2300);}
+ DET.round++;setTimeout(detNext,ok?1400:2400);}

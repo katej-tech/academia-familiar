@@ -164,6 +164,14 @@ const KID_TOPICS={
    fallback:()=>genNarracion()},
  numpalabra:{name:"Leer números",emoji:"🔢",prompt:"leer números del 10 al 99 escritos en palabras (por ejemplo 54 = cincuenta y cuatro) para niño de 7 años",
    fallback:()=>genNumPalabra()},
+ palabra_num:{name:"Letras a números",emoji:"✍️",prompt:"convertir un número escrito en palabras a su cifra (por ejemplo cincuenta y cuatro = 54), del 10 al 99, para niño de segundo de primaria",
+   fallback:()=>genPalabraNum()},
+ problemas2:{name:"Problemas",emoji:"🧩",prompt:"problemas matemáticos cortos con contexto de la vida diaria (sumar, restar o multiplicar grupos) con números hasta 99, indicando la técnica (cuándo sumar, restar o multiplicar), para niño de segundo de primaria",
+   fallback:()=>genProblema2()},
+ cuerpo_partes:{name:"Partes del cuerpo",emoji:"🧍",prompt:"identificar partes del cuerpo y dónde quedan (espalda, codo, rodilla, hombro, tobillo, muñeca, nuca, talón, mejillas, frente, pantorrilla) para niño de segundo de primaria",
+   fallback:()=>genCuerpoParte()},
+ sistemas:{name:"Sistemas del cuerpo",emoji:"🫀",prompt:"sistemas del cuerpo humano y para qué sirven (respiratorio-pulmones, digestivo-estómago, circulatorio-corazón, óseo-huesos, nervioso-cerebro) para niño de segundo de primaria",
+   fallback:()=>genSistema()},
  decenas:{name:"Decenas",emoji:"🔟",prompt:"sumas de decenas exactas (10+20, 40+30) para niño de 7 años",
    fallback:()=>genDecenas()},
  tiempo:{name:"El tiempo",emoji:"🕐",prompt:"medición del tiempo (el reloj, 24 horas en un día, 12 meses, 7 días, y los tiempos pasado, presente y futuro) para niño de 7 años",
@@ -251,15 +259,18 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
  else if(!p.autoLevel)p.autoLevel=2;
  // señales de apoyo (solo niño): tiempos altos y errores por área
  if(profType()==="kid"){
-  if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
+  if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0},nat:{n:0,err:0}};
+  if(!p.signals.nat)p.signals.nat={n:0,err:0};
   const readSubj=["Comprensión","Letras","Ordenar","Sustantivos","Sílabas trabadas","Ortografía","La narración"].includes(subject);
-  const mathSubj=["Mate","Problemas","Números","Sumas","Restas","Restas prestando","Sumas de 3 cifras","Inicio multiplicación","Mayor y menor","Globos","Leer números","Decenas"].includes(subject);
+  const mathSubj=["Mate","Problemas","Números","Sumas","Restas","Restas prestando","Sumas de 3 cifras","Inicio multiplicación","Mayor y menor","Globos","Leer números","Letras a números","Decenas"].includes(subject);
   const enSubj=["Inglés","Pronunciación"].includes(subject);
-  const seqSubj=["Secuencias","Lógica","Acertijos","Ordinales","Ubicación","Robot","Memoria","El tiempo"].includes(subject);
+  const seqSubj=["Secuencias","Lógica","Acertijos","Ordinales","Ubicación","Robot","Memoria","El tiempo","Detective"].includes(subject);
+  const natSubj=["Ciclo del agua","El cuerpo","La naturaleza","Partes del cuerpo","Sistemas del cuerpo"].includes(subject);
   if(readSubj){p.signals.read.n++;if(secs>=25)p.signals.read.slow++;if(!correct)p.signals.read.err++;}
   if(mathSubj){p.signals.math.n++;if(!correct)p.signals.math.err++;}
   if(enSubj){p.signals.en.n++;if(!correct)p.signals.en.err++;d.enDone=true;}
   if(seqSubj){p.signals.seq.n++;if(!correct)p.signals.seq.err++;}
+  if(natSubj){p.signals.nat.n++;if(!correct)p.signals.nat.err++;}
  }
  save();}
 function level(xp){return Math.floor(Math.sqrt(xp/20))+1;}

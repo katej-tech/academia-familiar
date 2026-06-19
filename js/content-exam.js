@@ -113,3 +113,54 @@ function genSecuenciaNum(){
  const ops=shuffled([...set]).map(String);
  return{q:"¿Qué número sigue?  "+seq.join(", ")+", ___",ops,a:ops.indexOf(String(ans))};
 }
+
+/* ============ SEGUNDO GRADO: CUERPO HUMANO ============ */
+const CUERPO_PARTES=[
+ {q:"¿Dónde queda el CODO?",pic:"💪",ops:["En el brazo, donde se dobla","En la pierna","En la cabeza"],a:0},
+ {q:"¿Dónde queda la ESPALDA?",pic:"🧍",ops:["En la parte de atrás del cuerpo","En la cara","En los pies"],a:0},
+ {q:"¿Qué parte usamos para doblar la pierna?",pic:"🦵",ops:["La rodilla","El codo","La muñeca"],a:0},
+ {q:"¿Dónde está el TOBILLO?",pic:"🦶",ops:["Entre el pie y la pierna","En la mano","En el cuello"],a:0},
+ {q:"¿Qué une la mano con el brazo?",pic:"✋",ops:["La muñeca","El hombro","La rodilla"],a:0},
+ {q:"¿Dónde está el HOMBRO?",pic:"🧍",ops:["Donde el brazo se une al cuerpo","En el pie","En la frente"],a:0},
+ {q:"La parte de arriba de la cara, sobre los ojos, es la…",pic:"🧑",ops:["Frente","Barbilla","Nuca"],a:0},
+ {q:"La parte de atrás del cuello se llama…",pic:"🧍",ops:["Nuca","Mejilla","Talón"],a:0},
+ {q:"El TALÓN está en…",pic:"🦶",ops:["La parte de atrás del pie","La mano","La cabeza"],a:0},
+ {q:"Las MEJILLAS están en…",pic:"😊",ops:["La cara","Las piernas","La espalda"],a:0},
+ {q:"¿Con qué parte agarramos las cosas?",pic:"✋",ops:["Los dedos","Los codos","Las rodillas"],a:0},
+ {q:"¿Qué parte nos sostiene de pie?",pic:"🦵",ops:["Las piernas","Las orejas","La nariz"],a:0},
+ {q:"La PANTORRILLA está en…",pic:"🦵",ops:["La parte de atrás de la pierna","El brazo","La cara"],a:0},
+ {q:"¿Cómo se llama el hueso de la columna en la espalda?",pic:"🦴",ops:["Columna vertebral","Codo","Rodilla"],a:0}];
+function genCuerpoParte(){const x=pick(CUERPO_PARTES);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
+const SISTEMAS_QS=[
+ {q:"¿Qué órgano usamos para RESPIRAR?",pic:"🫁",ops:["Los pulmones","El estómago","Los huesos"],a:0},
+ {q:"El sistema RESPIRATORIO sirve para…",pic:"🌬️",ops:["Respirar (tomar aire)","Comer","Caminar"],a:0},
+ {q:"¿A dónde llega la comida cuando comemos?",pic:"🍎",ops:["Al estómago","A los pulmones","Al cerebro"],a:0},
+ {q:"El sistema DIGESTIVO sirve para…",pic:"🍽️",ops:["Digerir la comida","Respirar","Pensar"],a:0},
+ {q:"¿Qué órgano bombea la sangre?",pic:"🫀",ops:["El corazón","El estómago","Los huesos"],a:0},
+ {q:"El sistema que lleva la sangre por el cuerpo es el…",pic:"❤️",ops:["Circulatorio","Digestivo","Respiratorio"],a:0},
+ {q:"¿Qué le da forma y sostén al cuerpo?",pic:"🦴",ops:["Los huesos (sistema óseo)","La piel","El pelo"],a:0},
+ {q:"¿Qué órgano usamos para PENSAR?",pic:"🧠",ops:["El cerebro","El corazón","El pie"],a:0},
+ {q:"El cerebro es parte del sistema…",pic:"🧠",ops:["Nervioso","Digestivo","Óseo"],a:0},
+ {q:"¿Por dónde entra el aire al respirar?",pic:"👃",ops:["La nariz y la boca","Las orejas","Los ojos"],a:0},
+ {q:"¿Qué hacen los músculos?",pic:"💪",ops:["Nos ayudan a movernos","Nos hacen pensar","Digieren la comida"],a:0},
+ {q:"¿Cuántos pulmones tenemos?",pic:"🫁",ops:["Dos","Uno","Cinco"],a:0},
+ {q:"La sangre viaja por unos tubitos llamados…",pic:"🩸",ops:["Venas","Huesos","Dientes"],a:0},
+ {q:"Los dientes son parte del sistema…",pic:"🦷",ops:["Digestivo (mastican la comida)","Respiratorio","Nervioso"],a:0}];
+function genSistema(){const x=pick(SISTEMAS_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
+
+/* letras → cifras (al revés de leer números) */
+function genPalabraNum(){
+ const n=10+rnd(80);const correct=String(n);
+ const set=new Set([n]);
+ while(set.size<3){let m=Math.max(10,n+(1+rnd(8))*(Math.random()<.5?-1:1));if(m>99)m=99;set.add(m);}
+ const ops=shuffled([...set]).map(String);
+ return{q:'¿Qué número es "'+numEs(n)+'"?',ops,a:ops.indexOf(correct)};}
+
+/* problemas matemáticos con contexto (segundo grado) — con técnica/pista */
+function opsFor(ans){const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}const ops=shuffled([...set]).map(String);return{ops,a:ops.indexOf(String(ans))};}
+function genProblema2(){
+ const tipo=rnd(4);
+ if(tipo===0){const a=10+rnd(40),b=5+rnd(30);const o=opsFor(a+b);return{q:"Ana tiene "+a+" stickers y le regalan "+b+". ¿Cuántos tiene ahora?",ops:o.ops,a:o.a,pic:"⭐",tip:"Le DAN más → se SUMA: "+a+" + "+b};}
+ if(tipo===1){const a=20+rnd(50),b=5+rnd(15);const o=opsFor(a-b);return{q:"Hay "+a+" galletas y se comen "+b+". ¿Cuántas quedan?",ops:o.ops,a:o.a,pic:"🍪",tip:"Se QUITAN → se RESTA: "+a+" − "+b};}
+ if(tipo===2){const g=2+rnd(4),c=2+rnd(5);const o=opsFor(g*c);return{q:"Hay "+g+" cajas con "+c+" pelotas cada una. ¿Cuántas pelotas en total?",ops:o.ops,a:o.a,pic:"⚽",tip:"Grupos iguales → se MULTIPLICA: "+g+" × "+c};}
+ const total=20+rnd(30),parte=5+rnd(10);const o=opsFor(total-parte);return{q:"Pedro tenía "+total+" dulces y repartió "+parte+". ¿Cuántos le quedan?",ops:o.ops,a:o.a,pic:"🍬",tip:"Repartió (se van) → se RESTA: "+total+" − "+parte};}

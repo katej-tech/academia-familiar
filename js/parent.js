@@ -47,6 +47,7 @@ function signalsBlock(p){
  checkArea(s.math,"Matemáticas","Refuerza contando objetos reales antes de los números abstractos.");
  checkArea(s.en,"Inglés","Repetir el audio en voz alta cada día acelera mucho el progreso.");
  checkArea(s.seq,"Lógica y patrones","Los patrones desarrollan el razonamiento; juéguenlos juntos.");
+ checkArea(s.nat,"Ciencias y cuerpo","Relacionen lo aprendido con el cuerpo real: señala dónde queda cada parte.");
  return '<details style="margin-top:6px"><summary style="cursor:pointer;font-weight:800;color:var(--par-acc)">🔎 Señales de apoyo (orientativas)</summary>'
  +'<div style="background:#FEF9F3;border:1px solid #F0E0CC;border-radius:12px;padding:14px;margin-top:10px">'
  +'<p class="mut" style="margin-bottom:10px;font-size:.85rem"><b>Importante:</b> esto NO es un diagnóstico. Es solo un resumen de cómo le va por área para que tú decidas dónde reforzar o si consultar a un docente o especialista. Las dificultades de aprendizaje solo las diagnostica un profesional.</p>'
