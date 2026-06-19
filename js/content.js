@@ -118,7 +118,50 @@ const CUENTOS=[
    {q:"¿Por qué estaba triste Lumi al principio?",ops:["Porque casi no brillaba 😢","Porque tenía sueño","Porque era muy grande"],a:0},
    {q:"¿A quién ayudó Lumi con su luz?",ops:["A un barquito perdido en el mar 🚢","A un avión","A un tren"],a:0},
    {q:"¿Qué pasó cuando Lumi ayudó a los demás?",ops:["Brilló cada vez más ✨","Se apagó","Se puso triste"],a:0},
-   {q:"¿Qué nos enseña Lumi?",ops:["Todos somos especiales y podemos ayudar a nuestra manera","Que ser pequeño es malo","Que no hay que brillar"],a:0}]}];
+   {q:"¿Qué nos enseña Lumi?",ops:["Todos somos especiales y podemos ayudar a nuestra manera","Que ser pequeño es malo","Que no hay que brillar"],a:0}]},
+ /* ===== LECTURAS LARGAS DE COMPRENSIÓN (segundo grado) ===== */
+ {title:"Martina y la semilla de la curiosidad",long:true,
+  pages:[
+   {scene:"👧📚🏫",text:"Martina era una niña de segundo grado a la que le encantaba <b>preguntar</b>. Preguntaba por qué el cielo era azul, por qué los perros mueven la cola y por qué la luna a veces no se veía. Algunos niños se reían, pero a ella no le importaba."},
+   {scene:"👩‍🏫🌱",text:"Un día, su maestra le dio a cada niño una <b>semilla</b> en un vasito. —Cuídenla con paciencia —dijo—. Quien la observe todos los días, descubrirá algo importante. Martina prometió ser la más cuidadosa de todos."},
+   {scene:"🪴💧📓",text:"Cada mañana Martina <b>regaba</b> su semilla y anotaba en un cuaderno lo que veía. \"Día 3: nada todavía. Día 6: ¡un puntito verde!\". Tener paciencia era difícil, pero ella no se rindió ni un solo día."},
+   {scene:"🌿😟",text:"Una semana, la plantita se puso <b>débil</b> y empezó a doblarse. Martina se preocupó mucho. Pensó y pensó. Recordó que las plantas necesitan sol, así que movió el vasito junto a la ventana donde entraba la luz."},
+   {scene:"🌻☀️😊",text:"Pocos días después, la planta se enderezó y creció <b>fuerte</b> y verde. Martina sonrió: su curiosidad y su paciencia la habían ayudado a resolver el problema ella sola. Se sintió como una pequeña científica."},
+   {scene:"🏫🌻❤️",text:"Al final del mes, la planta de Martina era la más alta de la clase. La maestra dijo: —El que observa y pregunta, siempre aprende más. Martina entendió que <b>preguntar</b> no era algo de qué reírse: era su mejor herramienta."}],
+  qs:[
+   {q:"¿Qué le gustaba hacer a Martina más que nada?",ops:["Hacer preguntas sobre todo ❓","Dormir en clase","Jugar fútbol"],a:0},
+   {q:"¿Qué hizo Martina TODOS los días con su semilla?",ops:["La regaba y anotaba lo que veía 📓","La dejaba sola","La cambiaba de vaso"],a:0},
+   {q:"Cuando la planta se puso débil, ¿qué hizo Martina para salvarla?",ops:["La puso junto a la ventana para que recibiera sol ☀️","Le echó más y más agua","La escondió en un cajón"],a:0},
+   {q:"En el cuento, la palabra \"débil\" quiere decir…",ops:["Sin fuerza, floja 🌿","Muy grande","De color rojo"],a:0},
+   {q:"¿Cuál es la idea principal del cuento?",ops:["Observar y preguntar con paciencia nos ayuda a aprender","Que las plantas no necesitan sol","Que preguntar es de niños tontos"],a:0}]},
+ {title:"El día que Tomi perdió el miedo",long:true,
+  pages:[
+   {scene:"🧒🌊😨",text:"Tomi tenía siete años y le encantaba la playa… pero le tenía <b>miedo</b> al mar. Las olas le parecían gigantes que rugían. Mientras sus primos jugaban en el agua, él se quedaba sentado en la arena, mirando de lejos."},
+   {scene:"🦀👀",text:"Una tarde, un <b>cangrejo</b> chiquito pasó caminando de lado junto a sus pies. Tomi lo siguió con cuidado. El cangrejo se metió al agua sin miedo, como si las olas fueran sus amigas. Tomi se quedó pensando."},
+   {scene:"👵🧒💬",text:"Su abuela se sentó a su lado. —Las olas no son monstruos —le dijo—. Si las conoces poquito a poco, dejan de dar miedo. ¿Quieres que mojemos solo los pies primero? Tomi dudó, pero dijo que sí muy bajito."},
+   {scene:"👣💦",text:"Primero mojaron los <b>pies</b>. El agua estaba fresca y le hizo cosquillas. Después las rodillas. Cada vez que una ola venía, la abuela le tomaba la mano. Tomi se reía: ¡no era tan terrible como pensaba!"},
+   {scene:"🌊🏊😄",text:"Sin darse cuenta, Tomi ya estaba <b>saltando</b> las olas con sus primos. —¡Mírame, abuela! —gritaba feliz. Había descubierto que el miedo se hace pequeño cuando uno lo enfrenta despacio y con ayuda."},
+   {scene:"🌅🧒❤️",text:"Esa noche, Tomi le contó a todos que ya no le tenía miedo al mar. La abuela le guiñó un ojo. Tomi aprendió algo que no olvidaría: ser <b>valiente</b> no es no tener miedo, sino animarse aunque dé un poquito."}],
+  qs:[
+   {q:"¿A qué le tenía miedo Tomi al principio?",ops:["A las olas del mar 🌊","A los perros","A la oscuridad"],a:0},
+   {q:"¿Qué animalito hizo que Tomi se pusiera a pensar?",ops:["Un cangrejo chiquito 🦀","Un pez grande","Una gaviota"],a:0},
+   {q:"¿Qué hicieron PRIMERO Tomi y su abuela en el agua?",ops:["Mojarse solo los pies 👣","Nadar hasta lo hondo","Saltar las olas grandes"],a:0},
+   {q:"Según el cuento, ¿qué significa ser valiente?",ops:["Animarse aunque dé un poquito de miedo","No tener miedo nunca","No meterse al mar"],a:0},
+   {q:"¿Por qué Tomi dejó de tener miedo?",ops:["Porque enfrentó el mar despacio y con ayuda","Porque el mar desapareció","Porque se fue a su casa"],a:0}]},
+ {title:"La ardilla que guardaba para el invierno",long:true,
+  pages:[
+   {scene:"🐿️🌳🍂",text:"En un bosque vivía una ardilla llamada <b>Nuez</b>. Era otoño y las hojas caían de los árboles. Nuez sabía que pronto llegaría el <b>invierno</b> frío, cuando ya no habría comida en el bosque."},
+   {scene:"🐿️🌰🌰",text:"Mientras los demás animales jugaban, Nuez trabajaba. Cada día <b>recolectaba</b> bellotas y nueces y las guardaba dentro del tronco de un viejo roble. —¿Por qué trabajas tanto? —le preguntó un conejo. Nuez solo sonrió."},
+   {scene:"🦗🎶😴",text:"Un grillo cantor se burlaba: —¡Disfruta ahora, tontita! El invierno está lejos. El grillo cantaba y dormía al sol todo el día, sin guardar nada. Nuez seguía llenando su despensa, una nuez tras otra."},
+   {scene:"❄️🌬️🥶",text:"Entonces llegó el invierno. Todo se cubrió de <b>nieve</b> blanca y el frío era terrible. Ya no quedaban frutos en los árboles. Los animales que no habían guardado comida tenían mucha hambre."},
+   {scene:"🐿️🌰🍽️",text:"Nuez, en cambio, tenía su tronco lleno de comida. Pero no fue <b>egoísta</b>: compartió sus nueces con el grillo hambriento y con el conejo. —Gracias, Nuez —dijeron temblando—. Prometemos guardar el próximo otoño."},
+   {scene:"🌸🐿️❤️",text:"Cuando volvió la primavera, todos habían aprendido la lección. Nuez les enseñó a guardar un poquito cada día. Así, el bosque entero estuvo preparado. <b>Prepararse</b> a tiempo, descubrieron, evita pasar hambre después."}],
+  qs:[
+   {q:"¿Por qué Nuez guardaba comida en otoño?",ops:["Porque sabía que en invierno no habría comida ❄️","Porque le gustaba esconderse","Porque no tenía hambre"],a:0},
+   {q:"¿Qué hacía el grillo mientras Nuez trabajaba?",ops:["Cantaba y dormía sin guardar nada 🎶","Ayudaba a Nuez","Recolectaba nueces"],a:0},
+   {q:"¿Qué hizo Nuez cuando los otros animales tenían hambre?",ops:["Compartió su comida con ellos 🍽️","Se escondió","Se comió todo sola"],a:0},
+   {q:"La palabra \"egoísta\" significa alguien que…",ops:["No quiere compartir","Comparte todo","Trabaja mucho"],a:0},
+   {q:"¿Qué nos enseña este cuento?",ops:["Prepararse a tiempo y compartir es lo mejor","Que no hay que guardar comida","Que el invierno no llega"],a:0}]}];
 
 const ROBOT_LEVELS=[
  {w:3,h:3,start:[0,2],goal:[2,2],walls:[],hint:"2 pasos a la derecha"},
