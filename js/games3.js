@@ -683,72 +683,101 @@ function ansFlag(vi){
  FL.round++;setTimeout(nextFlag,ok?1100:1900);
 }
 
-/* ============ CARRERA DE NÚMEROS (puertas matemáticas, estilo "hazte más grande") ============ */
+/* ============ CARRERA DE NÚMEROS (Canvas: personaje y puertas DIBUJADOS) ============ */
 let GR={};
 function gameGateRun(){setTheme("kid");
- try{cancelAnimationFrame(GR.raf);clearInterval(GR.loop);}catch(e){}
- GR={num:2,lane:0,over:false,gates:[],done:0,total:8,correct:0,speed:5,nextAt:18,spawnAcc:0,last:0,speedAcc:0,started:false};
+ try{cancelAnimationFrame(GR.raf);}catch(e){}
  render(topbar("exitGame('games')")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🔢 Carrera de números</h2>'
-  +'<p class="center" style="font-size:.88rem;margin-bottom:6px">¡Pasa por la puerta que te haga MÁS GRANDE!</p>'
-  +'<div style="text-align:center;font-family:Fredoka;font-weight:800;font-size:1.5rem;margin-bottom:6px">Tu número: <span id="grnum" style="color:var(--kid-green)">2</span></div>'
-  +'<div id="grroad" style="position:relative;height:50vh;max-height:380px;overflow:hidden;border:3px solid var(--kid-ink);border-radius:18px;background:#5a6b7a">'
-   +'<div class="roadline" style="left:50%"></div>'
-   +'<div id="grchar" style="position:absolute;bottom:8px;font-size:clamp(2rem,11vw,3rem);transform:translateX(-50%);z-index:3;transition:left .1s ease,font-size .15s ease;will-change:transform">🏃</div>'
-  +'</div>'
-  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'
-   +'<button class="kbtn blue" onclick="grMove(0)" style="font-size:1.2rem">⬅️ Izquierda</button>'
-   +'<button class="kbtn green" onclick="grMove(1)" style="font-size:1.2rem">Derecha ➡️</button>'
+  +'<p class="center" style="font-size:.88rem;margin-bottom:8px">¡Pasa por la puerta que te haga MÁS GRANDE!</p>'
+  +'<div style="position:relative;width:100%;max-width:420px;margin:0 auto"><canvas id="grcanvas" style="width:100%;display:block;border:4px solid var(--kid-ink);border-radius:18px;box-shadow:0 8px 18px rgba(30,42,74,.25)"></canvas></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px auto 0;max-width:420px">'
+   +'<button class="kbtn blue" onclick="grMove(0)" style="font-size:1.3rem">⬅️</button>'
+   +'<button class="kbtn green" onclick="grMove(1)" style="font-size:1.3rem">➡️</button>'
   +'</div>');
- GR.road=document.getElementById("grroad");GR.char=document.getElementById("grchar");
- grCharPos();
+ var cv=document.getElementById("grcanvas");
+ var cssW=cv.clientWidth||340;var cssH=Math.max(300,Math.min(420,Math.round(window.innerHeight*0.5)));
+ var dpr=Math.min(2,window.devicePixelRatio||1);
+ cv.style.height=cssH+"px";cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
+ var ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
+ GR={ctx:ctx,W:cssW,H:cssH,num:2,lane:0,charX:0,charY:cssH-58,gates:[],done:0,total:8,correct:0,
+     speed:130,over:false,spawnAcc:0,spawnEvery:1.15,speedAcc:0,roadOff:0,last:0,popT:0,grow:0};
+ GR.charX=grLaneCx(0);grSpawn();
  GR.raf=requestAnimationFrame(grLoop);
 }
-function grMove(l){if(GR.over)return;GR.lane=l;grCharPos();beep([520],.05);}
-function grCharPos(){if(GR.char)GR.char.style.left=laneX(GR.lane,2)+"%";}
+function grLaneCx(l){return (l+0.5)/2*GR.W;}
+function grMove(l){if(GR.over)return;GR.lane=l;beep([520],.05);}
 function grMakeOp(){var r=Math.random();
- if(r<0.5){var n=2+rnd(8);return{label:"+ "+n,apply:function(x){return x+n;}};}
- if(r<0.82){var n2=2+rnd(2);return{label:"× "+n2,apply:function(x){return x*n2;}};}
- var n3=1+rnd(5);return{label:"− "+n3,apply:function(x){return Math.max(0,x-n3);}};}
+ if(r<0.5){var n=2+rnd(8);return{label:"+"+n,apply:function(x){return x+n;}};}
+ if(r<0.82){var n2=2+rnd(2);return{label:"×"+n2,apply:function(x){return x*n2;}};}
+ var n3=1+rnd(5);return{label:"−"+n3,apply:function(x){return Math.max(0,x-n3);}};}
 function grSpawn(){
- var road=GR.road;var a=grMakeOp(),b=grMakeOp(),g=0;
+ var a=grMakeOp(),b=grMakeOp(),g=0;
  while(a.apply(GR.num)===b.apply(GR.num)&&g++<12)b=grMakeOp();
- var pair={ops:[a,b],y:-60,applied:false,els:[]};
- [0,1].forEach(function(l){var e=document.createElement("div");
-  e.textContent=pair.ops[l].label;
-  e.style.cssText="position:absolute;top:0;left:"+laneX(l,2)+"%;width:40%;height:54px;display:flex;align-items:center;justify-content:center;font-family:Fredoka;font-weight:800;font-size:1.5rem;color:#fff;border:3px solid var(--kid-ink);border-radius:12px;will-change:transform;transform:translateX(-50%) translateY(-60px)";
-  road.appendChild(e);pair.els[l]=e;});
- GR.gates.push(pair);
+ GR.gates.push({ops:[a,b],y:-30,applied:false,state:[0,0]});
 }
 function grLoop(ts){
- if(GR.over)return;
  if(!GR.last)GR.last=ts;
- var dt=Math.min(3,(ts-GR.last)/16.67); GR.last=ts;
- grStep(dt);
- if(!GR.over)GR.raf=requestAnimationFrame(grLoop);
+ var dt=Math.min(0.05,(ts-GR.last)/1000);GR.last=ts;
+ if(!GR.over){grUpdate(dt);grDraw();GR.raf=requestAnimationFrame(grLoop);}
+ else{grDraw();}
 }
-function grStep(dt){
- dt=dt||1;
- if(GR.over)return;var road=GR.road;if(!road)return;
- var H=road.clientHeight,charTop=H-66;
- GR.gates.forEach(function(p){p.y+=GR.speed*dt;p.els.forEach(function(e){e.style.transform="translateX(-50%) translateY("+p.y.toFixed(1)+"px)";});});
- for(var i=0;i<GR.gates.length;i++){var p=GR.gates[i];if(!p.applied&&p.y>=charTop-20){p.applied=true;grApply(p);}}
- GR.gates=GR.gates.filter(function(p){if(p.y>H+60){p.els.forEach(function(e){e.remove();});return false;}return true;});
+function grUpdate(dt){
+ GR.roadOff=(GR.roadOff+GR.speed*dt)%56;
+ var tx=grLaneCx(GR.lane);GR.charX+=(tx-GR.charX)*Math.min(1,dt*14);
+ if(GR.popT>0)GR.popT=Math.max(0,GR.popT-dt);
+ for(var i=0;i<GR.gates.length;i++){var p=GR.gates[i];p.y+=GR.speed*dt;
+  if(!p.applied&&p.y>=GR.charY-18){p.applied=true;grApply(p);}}
+ GR.gates=GR.gates.filter(function(p){return p.y<GR.H+50;});
  if(GR.done>=GR.total)return grEnd();
- GR.spawnAcc+=dt;if(GR.spawnAcc>=GR.nextAt && (GR.done+GR.gates.length)<GR.total){GR.spawnAcc=0;grSpawn();}
- GR.speedAcc+=dt;if(GR.speedAcc>=180){GR.speedAcc=0;GR.speed=Math.min(9,GR.speed+0.6);}
+ GR.spawnAcc+=dt;if(GR.spawnAcc>=GR.spawnEvery&&(GR.done+GR.gates.length)<GR.total){GR.spawnAcc=0;grSpawn();}
+ GR.speedAcc+=dt;if(GR.speedAcc>=3){GR.speedAcc=0;GR.speed=Math.min(240,GR.speed+14);GR.spawnEvery=Math.max(0.85,GR.spawnEvery-0.03);}
 }
 function grApply(p){
  var chosen=p.ops[GR.lane].apply(GR.num);
  var other=p.ops[GR.lane===0?1:0].apply(GR.num);
  var ok=chosen>=other;
  GR.num=chosen;GR.done++;if(ok)GR.correct++;
+ p.state[GR.lane]=ok?1:2;p.state[GR.lane===0?1:0]=3;
+ GR.popT=0.25;
  recordAnswer("Mate",ok,8);
- var el=document.getElementById("grnum");if(el)el.textContent=GR.num;
- var ge=p.els[GR.lane];if(ge)ge.style.background=ok?"rgba(62,201,124,.95)":"rgba(255,107,107,.95)";
- var oe=p.els[GR.lane===0?1:0];if(oe)oe.style.opacity=".35";
  if(ok){sOK();confetti(6);}else{sNO();}
- var ch=GR.char;if(ch){ch.style.fontSize="clamp(2.4rem,13vw,3.6rem)";setTimeout(function(){if(ch)ch.style.fontSize="clamp(2rem,11vw,3rem)";},220);}
+}
+function grDraw(){
+ var c=GR.ctx,W=GR.W,H=GR.H;
+ c.fillStyle="#6B7886";c.fillRect(0,0,W,H);
+ c.fillStyle="#3EA96B";c.fillRect(0,0,W*0.05,H);c.fillRect(W*0.95,0,W*0.05,H);
+ c.strokeStyle="rgba(255,255,255,.85)";c.lineWidth=5;c.setLineDash([26,30]);c.lineDashOffset=-GR.roadOff;
+ c.beginPath();c.moveTo(W/2,-10);c.lineTo(W/2,H+10);c.stroke();c.setLineDash([]);
+ // puertas
+ for(var i=0;i<GR.gates.length;i++){var p=GR.gates[i];
+  grDrawGate(c,grLaneCx(0),p.y,W*0.44,p.ops[0].label,p.state[0]);
+  grDrawGate(c,grLaneCx(1),p.y,W*0.44,p.ops[1].label,p.state[1]);}
+ // personaje
+ grDrawChar(c,GR.charX,GR.charY,GR.num,GR.popT>0?1+GR.popT:1);
+ // HUD número
+ c.fillStyle="rgba(30,42,74,.85)";rrect(c,8,8,W*0.5,32,10);c.fill();
+ c.fillStyle="#fff";c.font="800 17px Fredoka, sans-serif";c.textBaseline="middle";c.textAlign="left";
+ c.fillText("Tu número: "+GR.num,16,25);
+}
+function grDrawGate(c,x,y,w,label,state){
+ var col=state===1?"#3EC97C":state===2?"#FF6B6B":"#3B82F6";
+ c.save();if(state===3)c.globalAlpha=0.35;
+ c.fillStyle=col;rrect(c,x-w/2,y-25,w,50,12);c.fill();c.lineWidth=3;c.strokeStyle="#1E2A4A";c.stroke();
+ c.fillStyle="#fff";c.font="800 "+(GR.W*0.085)+"px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";
+ c.fillText(label,x,y+1);
+ c.restore();
+}
+function grDrawChar(c,x,y,num,pop){
+ var s=GR.W*0.11*(1+Math.min(0.45,(num-2)*0.012))*pop;
+ c.save();c.translate(x,y);
+ c.fillStyle="rgba(0,0,0,.2)";c.beginPath();c.ellipse(0,s*0.85,s*0.75,s*0.28,0,0,Math.PI*2);c.fill();
+ c.fillStyle="#FFC93C";rrect(c,-s*0.7,-s*0.8,s*1.4,s*1.5,s*0.45);c.fill();c.lineWidth=3;c.strokeStyle="#1E2A4A";c.stroke();
+ c.fillStyle="#fff";c.beginPath();c.arc(-s*0.26,-s*0.35,s*0.18,0,Math.PI*2);c.arc(s*0.26,-s*0.35,s*0.18,0,Math.PI*2);c.fill();
+ c.fillStyle="#1E2A4A";c.beginPath();c.arc(-s*0.24,-s*0.32,s*0.09,0,Math.PI*2);c.arc(s*0.28,-s*0.32,s*0.09,0,Math.PI*2);c.fill();
+ c.fillStyle="#1E2A4A";c.font="800 "+(s*0.62)+"px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";
+ c.fillText(num,0,s*0.38);
+ c.restore();
 }
 function grEnd(){
  GR.over=true;try{cancelAnimationFrame(GR.raf);}catch(e){}
