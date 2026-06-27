@@ -172,6 +172,12 @@ const KID_TOPICS={
    fallback:()=>genCuerpoParte()},
  sistemas:{name:"Sistemas del cuerpo",emoji:"🫀",prompt:"sistemas del cuerpo humano y para qué sirven (respiratorio-pulmones, digestivo-estómago, circulatorio-corazón, óseo-huesos, nervioso-cerebro) para niño de segundo de primaria",
    fallback:()=>genSistema()},
+ geografia:{name:"Geografía",emoji:"🌎",prompt:"trivia de geografía para niño de segundo de primaria en Colombia (continentes, océanos, el mapa, la brújula, planeta Tierra, capital de Colombia, países vecinos, montañas, desierto y río) muy sencillo",
+   fallback:()=>genGeo()},
+ sociales:{name:"Sociales",emoji:"🏙️",prompt:"trivia de ciencias sociales para niño de segundo de primaria en Colombia (normas de convivencia, la familia, profesiones y oficios, símbolos del país, ciudad y campo, cuidar el ambiente, respeto) muy sencillo",
+   fallback:()=>genSociales()},
+ cultura:{name:"Cultura general",emoji:"💡",prompt:"trivia de cultura general para niño de 7-8 años (animales, naturaleza, datos curiosos sencillos, conteo básico) con una sola respuesta correcta",
+   fallback:()=>genCultura()},
  decenas:{name:"Decenas",emoji:"🔟",prompt:"sumas de decenas exactas (10+20, 40+30) para niño de 7 años",
    fallback:()=>genDecenas()},
  tiempo:{name:"El tiempo",emoji:"🕐",prompt:"medición del tiempo (el reloj, 24 horas en un día, 12 meses, 7 días, y los tiempos pasado, presente y futuro) para niño de 7 años",
@@ -261,16 +267,19 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
  if(profType()==="kid"){
   if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0},nat:{n:0,err:0}};
   if(!p.signals.nat)p.signals.nat={n:0,err:0};
+  if(!p.signals.soc)p.signals.soc={n:0,err:0};
   const readSubj=["Comprensión","Letras","Ordenar","Sustantivos","Sílabas trabadas","Ortografía","La narración"].includes(subject);
   const mathSubj=["Mate","Problemas","Números","Sumas","Restas","Restas prestando","Sumas de 3 cifras","Inicio multiplicación","Mayor y menor","Globos","Leer números","Letras a números","Decenas"].includes(subject);
   const enSubj=["Inglés","Pronunciación"].includes(subject);
   const seqSubj=["Secuencias","Lógica","Acertijos","Ordinales","Ubicación","Robot","Memoria","El tiempo","Detective"].includes(subject);
   const natSubj=["Ciclo del agua","El cuerpo","La naturaleza","Partes del cuerpo","Sistemas del cuerpo"].includes(subject);
+  const socSubj=["Geografía","Sociales","Cultura general"].includes(subject);
   if(readSubj){p.signals.read.n++;if(secs>=25)p.signals.read.slow++;if(!correct)p.signals.read.err++;}
   if(mathSubj){p.signals.math.n++;if(!correct)p.signals.math.err++;}
   if(enSubj){p.signals.en.n++;if(!correct)p.signals.en.err++;d.enDone=true;}
   if(seqSubj){p.signals.seq.n++;if(!correct)p.signals.seq.err++;}
   if(natSubj){p.signals.nat.n++;if(!correct)p.signals.nat.err++;}
+  if(socSubj){p.signals.soc.n++;if(!correct)p.signals.soc.err++;}
  }
  save();}
 function level(xp){return Math.floor(Math.sqrt(xp/20))+1;}
