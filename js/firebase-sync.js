@@ -36,13 +36,15 @@ function afPush(){var u=afUser();if(!u)return;
    if(prof){prof.updatedAt=Date.now();afDB.collection("families").doc(afMember.familyId).collection("profiles").doc(u.uid).set(JSON.parse(JSON.stringify(prof))).catch(function(){});}
    return;}
   // merge: no borra memberIndex/memberAuth (datos de los hijos invitados) que no están en S
-  afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S)),{merge:true}).catch(function(){});
+  var data=JSON.parse(JSON.stringify(S));
+  delete data.geminiKey; // la clave de Gemini es PRIVADA y LOCAL: nunca se sube a la nube
+  afDB.collection("families").doc(u.uid).set(data,{merge:true}).catch(function(){});
  }catch(e){}}
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
   if(snap.exists){var cloud=snap.data();var lt=S.updatedAt||0,ct=cloud.updatedAt||0;
    if(ct>=lt){var localKey=S.geminiKey||"";var base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,cloud);
-    if(!base.geminiKey&&localKey)base.geminiKey=localKey; // si la nube no tiene clave, conserva la del dispositivo
+    base.geminiKey=localKey||base.geminiKey||""; // la clave de Gemini SIEMPRE gana la del dispositivo (no se pierde al sincronizar)
     S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();localStorage.setItem("academiaFam2",JSON.stringify(S));}
    else afPush();
   }else afPush();
