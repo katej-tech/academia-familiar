@@ -71,7 +71,7 @@ function rnd(n){return Math.floor(Math.random()*n);}
 /* ============ SONIDO + CONFETI ============ */
 let AC=null;
 function muted(){return !!(S&&S.muted);}
-function toggleMute(el){S.muted=!S.muted;save();try{if(S.muted&&"speechSynthesis"in window)window.speechSynthesis.cancel();}catch(e){}
+function toggleMute(el){S.muted=!S.muted;save();try{if(S.muted){if("speechSynthesis"in window)window.speechSynthesis.cancel();if(typeof stopGemAudio==="function")stopGemAudio();}}catch(e){}
  if(el)el.textContent=S.muted?"🔇":"🔊";return S.muted;}
 function beep(freqs,dur){if(muted())return;try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();let t=AC.currentTime;
  freqs.forEach(f=>{const o=AC.createOscillator(),g=AC.createGain();o.type="triangle";o.frequency.value=f;o.connect(g);g.connect(AC.destination);
@@ -102,10 +102,55 @@ function pickEnVoice(){
   ||en.find(x=>/en[-_]US/i.test(x.lang))
   ||en.find(x=>/en[-_]GB/i.test(x.lang))
   ||en[0]||null;}
+/* ===== VOZ PREMIUM CON GEMINI (TTS por IA) — automática si hay clave =====
+   Si el padre puso la clave de Gemini, la voz (sobre todo inglés) suena natural.
+   Si no hay clave, usa la voz del dispositivo. Con caché para no gastar cuota. */
+const GEM_TTS_MODEL="gemini-2.5-flash-preview-tts";
+let AF_AUDIO=null,GEM_TTS_SRC=null;
+const GEM_TTS_CACHE={}; // texto -> AudioBuffer (evita volver a llamar a la API)
+function getAudioCtx(){if(!AF_AUDIO){try{AF_AUDIO=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AF_AUDIO=null;}}return AF_AUDIO;}
+function stopGemAudio(){if(GEM_TTS_SRC){try{GEM_TTS_SRC.onended=null;GEM_TTS_SRC.stop();}catch(e){}GEM_TTS_SRC=null;}}
+function b64ToBytes(b64){const bin=atob(b64);const len=bin.length;const out=new Uint8Array(len);for(let i=0;i<len;i++)out[i]=bin.charCodeAt(i);return out;}
+function pcm16ToBuffer(bytes,ctx,rate){
+ const n=Math.floor(bytes.byteLength/2);const buf=ctx.createBuffer(1,n,rate);const ch=buf.getChannelData(0);
+ const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ for(let i=0;i<n;i++)ch[i]=dv.getInt16(i*2,true)/32768;
+ return buf;}
+function geminiTTS(text,onEnd){
+ // devuelve Promise<bool>: true si reprodujo con Gemini, false si hay que usar la voz del dispositivo
+ return (async()=>{
+  if(!S.geminiKey)return false;
+  const ctx=getAudioCtx();if(!ctx)return false;
+  if(ctx.state==="suspended"){try{await ctx.resume();}catch(e){}}
+  try{
+   let buf=GEM_TTS_CACHE[text];
+   if(!buf){
+    const body={contents:[{parts:[{text:text}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:"Kore"}}}}};
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+GEM_TTS_MODEL+":generateContent?key="+encodeURIComponent(S.geminiKey),
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(!r.ok)return false;
+    const j=await r.json();
+    const part=j&&j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0];
+    const data=part&&part.inlineData&&part.inlineData.data;if(!data)return false;
+    const mime=(part.inlineData.mimeType)||"";const rate=parseInt((mime.match(/rate=(\d+)/)||[])[1],10)||24000;
+    buf=pcm16ToBuffer(b64ToBytes(data),ctx,rate);
+    GEM_TTS_CACHE[text]=buf;
+   }
+   try{window.speechSynthesis.cancel();}catch(e){}
+   stopGemAudio();
+   const src=ctx.createBufferSource();src.buffer=buf;src.connect(ctx.destination);
+   GEM_TTS_SRC=src;if(onEnd)src.onended=onEnd;src.start();
+   return true;
+  }catch(e){return false;}
+ })();
+}
 function speakEN(text,onEnd){
  if(muted()){if(onEnd)onEnd();return;}
+ if(S.geminiKey){geminiTTS(text,onEnd).then(ok=>{if(!ok)speakENDevice(text,onEnd);});return;}
+ speakENDevice(text,onEnd);}
+function speakENDevice(text,onEnd){
  if(!("speechSynthesis"in window)){toast("🔇 Tu navegador no tiene voz. Prueba en Chrome.",false,2000);if(onEnd)onEnd();return;}
- window.speechSynthesis.cancel();
+ stopGemAudio();window.speechSynthesis.cancel();
  const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.82;u.pitch=1.0;
  const v=pickEnVoice();
  if(v){u.voice=v;u.lang=v.lang;} // usa el idioma real de la voz inglesa
@@ -119,10 +164,18 @@ function pickLatinVoice(){
   ||VOICES.find(x=>/^es/i.test(x.lang)&&NATURAL.test(x.name))
   ||VOICES.find(x=>/^es/i.test(x.lang)&&!/es[-_]ES/i.test(x.lang))
   ||VOICES.find(x=>/^es/i.test(x.lang));}
-function speakES(text){if(muted())return;if(!("speechSynthesis"in window))return;window.speechSynthesis.cancel();
+function speakES(text,onEnd){
+ if(muted()){if(onEnd)onEnd();return;}
+ // con clave de Gemini, voz premium para textos cortos (preguntas, instrucciones, frases).
+ // los cuentos largos usan la voz del dispositivo para no gastar cuota.
+ if(S.geminiKey&&String(text).length<=240){geminiTTS(text,onEnd).then(ok=>{if(!ok)speakESDevice(text,onEnd);});return;}
+ speakESDevice(text,onEnd);}
+function speakESDevice(text,onEnd){
+ if(!("speechSynthesis"in window)){if(onEnd)onEnd();return;}
+ stopGemAudio();window.speechSynthesis.cancel();
  const u=new SpeechSynthesisUtterance(text);
  const v=pickLatinVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang="es-419";
- u.rate=.95;u.pitch=1.02;window.speechSynthesis.speak(u);}
+ u.rate=.95;u.pitch=1.02;if(onEnd)u.onend=onEnd;window.speechSynthesis.speak(u);}
 function hasVoice(){return "speechSynthesis"in window;}
 
 /* ============ MOTOR DE CONTENIDO INFINITO (IA + banco fijo + adaptativo) ============ */

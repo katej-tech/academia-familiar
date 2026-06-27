@@ -167,36 +167,31 @@ function genProblema2(){
 
 /* ============ SEGUNDO GRADO: SOCIALES, GEOGRAFÍA Y CULTURA GENERAL (trivias) ============ */
 const GEO_QS=[
- {q:"¿En qué continente vivimos los colombianos?",pic:"🌎",ops:["América","África","Europa"],a:0},
- {q:"¿Cuál es la capital de Colombia?",pic:"🇨🇴",ops:["Bogotá","Medellín","Lima"],a:0},
- {q:"¿Cuántos continentes hay?",pic:"🗺️",ops:["Cinco o seis","Dos","Diez"],a:0},
- {q:"El agua salada más grande se llama…",pic:"🌊",ops:["Océano","Río","Lago"],a:0},
- {q:"¿Qué dibujo nos muestra dónde quedan los lugares?",pic:"🗺️",ops:["El mapa","El reloj","El libro"],a:0},
- {q:"El planeta donde vivimos se llama…",pic:"🌍",ops:["Tierra","Marte","Luna"],a:0},
- {q:"¿De qué color es la franja de arriba de la bandera de Colombia?",pic:"🇨🇴",ops:["Amarillo","Rojo","Verde"],a:0},
- {q:"Un lugar con mucha arena y poca agua es un…",pic:"🏜️",ops:["Desierto","Océano","Bosque"],a:0},
- {q:"¿Por dónde sale el sol?",pic:"🌅",ops:["Por el este (oriente)","Por el suelo","En la noche"],a:0},
- {q:"Un mapa con todos los países es el…",pic:"🌐",ops:["Mapamundi","Calendario","Menú"],a:0},
- {q:"El país vecino de Colombia que empieza por E es…",pic:"🌎",ops:["Ecuador","España","Egipto"],a:0},
- {q:"Mucha agua dulce que corre por la tierra es un…",pic:"🏞️",ops:["Río","Mar","Desierto"],a:0},
- {q:"¿Qué usamos para saber dónde está el norte?",pic:"🧭",ops:["La brújula","El reloj","La regla"],a:0},
- {q:"Las montañas más altas y frías de Colombia tienen…",pic:"🏔️",ops:["Nieve","Arena","Olas"],a:0}];
+ {q:"¿Cómo se llama el planeta donde vivimos?",pic:"🌍",ops:["La Tierra","La Luna","El Sol"],a:0},
+ {q:"¿En qué país vives?",pic:"🇨🇴",ops:["Colombia","La casa","El colegio"],a:0},
+ {q:"¿Qué nos muestra dónde están los lugares?",pic:"🗺️",ops:["El mapa","El reloj","El plato"],a:0},
+ {q:"El agua grandota y salada es el…",pic:"🌊",ops:["Mar","Vaso","Charco"],a:0},
+ {q:"¿Dónde hay mucha arena para jugar?",pic:"🏖️",ops:["La playa","La cocina","El salón"],a:0},
+ {q:"Lo más alto que vemos a lo lejos son las…",pic:"⛰️",ops:["Montañas","Sillas","Mesas"],a:0},
+ {q:"¿Qué sale en el día y nos da luz?",pic:"☀️",ops:["El sol","La luna","Las estrellas"],a:0},
+ {q:"¿Qué vemos en el cielo de noche?",pic:"🌙",ops:["La luna y las estrellas","El sol","El arcoíris"],a:0},
+ {q:"El lugar con muchas casas y edificios es la…",pic:"🏙️",ops:["Ciudad","Cueva","Nube"],a:0},
+ {q:"El agua que corre por la tierra es el…",pic:"🏞️",ops:["Río","Mar","Desierto"],a:0},
+ {q:"¿De qué color es el pasto y los árboles?",pic:"🌳",ops:["Verde","Morado","Negro"],a:0}];
 function genGeo(){const x=pick(GEO_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
 const SOC_QS=[
- {q:"En el salón, para hablar primero debemos…",pic:"🙋",ops:["Levantar la mano","Gritar","Empujar"],a:0},
- {q:"¿Quiénes forman una familia?",pic:"👨‍👩‍👧",ops:["Personas que se cuidan y se quieren","Solo los vecinos","Solo los compañeros"],a:0},
- {q:"Botar la basura en su lugar es…",pic:"🗑️",ops:["Cuidar el ambiente","Algo malo","Perder el tiempo"],a:0},
- {q:"El que apaga incendios y ayuda es el…",pic:"👨‍🚒",ops:["Bombero","Panadero","Piloto"],a:0},
- {q:"¿Quién nos enseña en el colegio?",pic:"👩‍🏫",ops:["El profesor o profesora","El médico","El chef"],a:0},
- {q:"Respetar a los demás significa…",pic:"🤝",ops:["Tratarlos bien","Burlarse","Quitarles cosas"],a:0},
- {q:"Las reglas o normas sirven para…",pic:"📜",ops:["Vivir mejor entre todos","Aburrirnos","Pelear"],a:0},
- {q:"El lugar con muchos edificios y carros es…",pic:"🏙️",ops:["La ciudad","El campo","El mar"],a:0},
- {q:"El lugar con cultivos y animales de granja es…",pic:"🌾",ops:["El campo","La ciudad","La playa"],a:0},
- {q:"El doctor que cura a las personas es el…",pic:"👩‍⚕️",ops:["Médico","Bombero","Cartero"],a:0},
- {q:"Ayudar en casa con las tareas es ser…",pic:"🧹",ops:["Responsable","Flojo","Egoísta"],a:0},
- {q:"Un símbolo de nuestro país es…",pic:"🇨🇴",ops:["La bandera","La televisión","El celular"],a:0},
- {q:"Cuando alguien nos ayuda decimos…",pic:"🙏",ops:["Gracias","Quítate","Nada"],a:0},
- {q:"Antes de cruzar la calle debemos…",pic:"🚦",ops:["Mirar a ambos lados","Correr sin mirar","Cerrar los ojos"],a:0}];
+ {q:"En clase, para hablar levantamos la…",pic:"🙋",ops:["Mano","Silla","Mesa"],a:0},
+ {q:"¿Quiénes te cuidan y te quieren en casa?",pic:"👨‍👩‍👧",ops:["Mi familia","Los carros","Los juguetes"],a:0},
+ {q:"La basura se bota en la…",pic:"🗑️",ops:["Caneca","Cama","Ventana"],a:0},
+ {q:"El que apaga el fuego y nos ayuda es el…",pic:"👨‍🚒",ops:["Bombero","Payaso","Cocinero"],a:0},
+ {q:"¿Quién te enseña en el colegio?",pic:"👩‍🏫",ops:["La profesora","El perro","El vecino"],a:0},
+ {q:"A los amigos los tratamos…",pic:"🤝",ops:["Con cariño","A los golpes","Con gritos"],a:0},
+ {q:"Cuando alguien te ayuda dices…",pic:"🙏",ops:["Gracias","Quítate","Nada"],a:0},
+ {q:"¿Quién cura a las personas enfermas?",pic:"👩‍⚕️",ops:["El doctor","El bombero","El cartero"],a:0},
+ {q:"¿Dónde vas a aprender cada día?",pic:"🏫",ops:["Al colegio","Al circo","Al mar"],a:0},
+ {q:"Antes de cruzar la calle hay que…",pic:"🚦",ops:["Mirar a los dos lados","Correr sin mirar","Cerrar los ojos"],a:0},
+ {q:"En el carro nos ponemos el…",pic:"🚗",ops:["Cinturón","Sombrero","Zapato"],a:0},
+ {q:"¿Quién trae las cartas a la casa?",pic:"📬",ops:["El cartero","El doctor","El profesor"],a:0}];
 function genSociales(){const x=pick(SOC_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
 const CULT_QS=[
  {q:"¿Cuántas patas tiene una araña?",pic:"🕷️",ops:["Ocho","Seis","Cuatro"],a:0},
