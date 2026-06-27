@@ -92,11 +92,13 @@ function screenEnglishHub(){setTheme("kid");const p=prof();
  render(topbar("screenKidMap()")+subHeader("🇬🇧 Inglés")
   +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑</span></span></button>'
   +'<button class="kbtn green" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenLevelsEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">📈</span><span style="flex:1"><span>Inglés por niveles A1→B2</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Aprueba exámenes y sube de nivel</span></span></button>'
+  +'<button class="kbtn yellow" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenTutorEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎧</span><span style="flex:1"><span>Tutor de inglés (habla)</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">El profe dice y tú repites 🎤</span></span></button>'
   +ws.map(w=>worldBtn(w,p)).join(""));}
 function screenLeer(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="leer");
  render(topbar("screenKidMap()")+subHeader("📖 Cuentos y escribir")
-  +ws.map(w=>worldBtn(w,p)).join(""));}
+  +ws.map(w=>worldBtn(w,p)).join("")
+  +'<button class="kbtn red" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="gameReadAloud()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎤</span><span style="flex:1"><span style="font-size:clamp(1.1rem,5vw,1.35rem)">Leer en voz alta</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Lee y te corrijo la pronunciación</span></span></button>');}
 function screenMyStuff(){setTheme("kid");
  render(topbar("screenKidMap()")+subHeader("🛍️ Mi mundo")
   +'<div class="card center" style="padding:14px">'+(typeof avatarScene==="function"?avatarScene(120):avatarHTML(110))+'</div>'

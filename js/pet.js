@@ -145,6 +145,19 @@ let TG={};
 function tamaPlay(){
  const t=tamaState();if(!t||t.sleeping)return;
  if(t.energy<15)return toast(t.name+" está muy cansado para jugar 🥱 Déjalo dormir",false,2200);
+ setTheme("kid");
+ render(topbar("screenTama()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:8px">🎾 Juega con '+esc(t.name)+'</h2>'
+  +'<div class="card center" style="padding:18px 16px">'
+   +'<div style="font-size:3rem">🍎🍪🦴</div>'
+   +'<p style="font-size:1.1rem;line-height:1.5;margin:10px 0">Van a <b>caer golosinas</b> desde arriba.<br><b>Tócalas con el dedo</b> para dárselas a '+esc(t.name)+'.<br>¡Atrapa todas las que puedas en <b>18 segundos</b>! 🕒</p>'
+   +'<p class="mut" style="font-size:.9rem">Mientras más atrapes, más feliz se pone 💛</p>'
+  +'</div>'
+  +'<button class="kbtn green" onclick="tamaPlayGo()">▶️ ¡Empezar a jugar!</button>'
+  +'<button class="kbtn white" onclick="screenTama()">← Volver</button>');
+}
+function tamaPlayGo(){
+ const t=tamaState();if(!t)return;
  setTheme("kid");TG={score:0,left:18};
  render(topbar("screenTama()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🎾 Juega con '+esc(t.name)+'</h2>'

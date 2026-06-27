@@ -82,6 +82,13 @@ const SHOP_ITEMS=[
  {id:"f_mago",t:"famoso",e:"🧙",n:"Mago/a",pr:500},{id:"f_detective",t:"famoso",e:"🕵️",n:"Detective",pr:400},
  {id:"f_ninja",t:"famoso",e:"🥷",n:"Ninja",pr:550},{id:"f_superheroe",t:"famoso",e:"🦸",n:"Superhéroe",pr:600},
  {id:"f_superheroina",t:"famoso",e:"🦸‍♀️",n:"Superheroína",pr:600},{id:"f_faraon",t:"famoso",e:"⚱️",n:"Faraón/a",pr:500},
+ // estrellas y personajes de pelis/series (originales, sin marcas)
+ {id:"f_popstar",t:"famoso",e:"🎤",n:"Estrella del Pop",pr:550},{id:"f_rockstar",t:"famoso",e:"🎸",n:"Estrella del Rock",pr:550},
+ {id:"f_dancer",t:"famoso",e:"🕺",n:"Rey del Baile",pr:600},{id:"f_diva",t:"famoso",e:"💃",n:"Diva del Cine",pr:600},
+ {id:"f_dj",t:"famoso",e:"🎧",n:"DJ Famoso",pr:500},{id:"f_estrellacine",t:"famoso",e:"🌟",n:"Estrella de Cine",pr:650},
+ {id:"f_ogro",t:"famoso",e:"👹",n:"Ogro Simpático",pr:500},{id:"f_carro",t:"famoso",e:"🏎️",n:"Carro Veloz",pr:500},
+ {id:"f_perrito",t:"famoso",e:"🐶",n:"Perrito Rescatista",pr:450},{id:"f_payaso",t:"famoso",e:"🤡",n:"Payaso de Circo",pr:400},
+ {id:"f_robot2",t:"famoso",e:"🤖",n:"Robot de Película",pr:500},{id:"f_alien",t:"famoso",e:"👽",n:"Extraterrestre Amistoso",pr:500},
  // ACCESORIOS para tu MASCOTA (se le ponen encima)
  {id:"pa_gorro",t:"petacc",e:"🎩",n:"Sombrero",pr:35},{id:"pa_corona",t:"petacc",e:"👑",n:"Corona",pr:90},
  {id:"pa_lazo",t:"petacc",e:"🎀",n:"Lazo",pr:25},{id:"pa_gafas",t:"petacc",e:"🕶️",n:"Gafas",pr:45},
