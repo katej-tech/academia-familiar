@@ -53,11 +53,13 @@ function genCompare(){
   const ops=shuffled(nums.map(String));
   return{q:"¿Cuál número es MENOR?",ops,a:ops.indexOf(String(min))};
  }
- // grupos de emojis: ¿dónde hay más?
+ // grupos de emojis: ¿dónde hay más? (dos cajas bien separadas y con color)
  const em=pick(["🍎","⭐","🎈","🐟","🍪"]);
  let a=1+rnd(6),b=1+rnd(6);if(a===b)b=(a%6)+1;
- const ops=a>b?["El grupo 1","El grupo 2","Son iguales"]:["El grupo 2","El grupo 1","Son iguales"];
- return{q:"¿Qué grupo tiene MÁS "+em+"?",pic:"1️⃣ "+em.repeat(a)+"<br>2️⃣ "+em.repeat(b),ops,a:0};
+ const ops=a>b?["El grupo 1️⃣","El grupo 2️⃣","Son iguales"]:["El grupo 2️⃣","El grupo 1️⃣","Son iguales"];
+ const caja=(label,em,n,bg)=>'<div style="border:3px solid #1E2A4A;border-radius:14px;padding:8px 10px;margin:6px auto;max-width:280px;background:'+bg+'"><b style="font-family:Fredoka">'+label+'</b><div style="font-size:1.6rem;line-height:1.3">'+em.repeat(n)+'</div></div>';
+ const pic=caja("Grupo 1️⃣",em,a,"#FFF3C4")+caja("Grupo 2️⃣",em,b,"#D6ECFF");
+ return{q:"¿Qué grupo tiene MÁS "+em+"?",pic,ops,a:0};
 }
 
 /* ---- ADIVINANZAS (acertijos clásicos) ---- */

@@ -94,15 +94,21 @@ if("speechSynthesis"in window){loadVoices();window.speechSynthesis.onvoiceschang
 /* prefiere voces de alta calidad (Google/Microsoft/neural) que suenan más naturales */
 const NATURAL=/(google|natural|neural|microsoft|premium|enhanced|wavenet|paulina|sabina|helena)/i;
 function pickEnVoice(){
- return VOICES.find(x=>/^en/i.test(x.lang)&&NATURAL.test(x.name)&&/US/i.test(x.lang))
-  ||VOICES.find(x=>/^en/i.test(x.lang)&&NATURAL.test(x.name))
-  ||VOICES.find(x=>/en[-_]US/i.test(x.lang))||VOICES.find(x=>/^en/i.test(x.lang));}
+ // SOLO voces realmente en inglés (nunca una voz española leyendo inglés → "nose" mal pronunciado)
+ const en=VOICES.filter(x=>/^en/i.test(x.lang));
+ return en.find(x=>NATURAL.test(x.name)&&/US/i.test(x.lang))
+  ||en.find(x=>NATURAL.test(x.name)&&/GB/i.test(x.lang))
+  ||en.find(x=>NATURAL.test(x.name))
+  ||en.find(x=>/en[-_]US/i.test(x.lang))
+  ||en.find(x=>/en[-_]GB/i.test(x.lang))
+  ||en[0]||null;}
 function speakEN(text,onEnd){
  if(muted()){if(onEnd)onEnd();return;}
  if(!("speechSynthesis"in window)){toast("🔇 Tu navegador no tiene voz. Prueba en Chrome.",false,2000);if(onEnd)onEnd();return;}
  window.speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.9;u.pitch=1.02;
- const v=pickEnVoice();if(v)u.voice=v;
+ const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.82;u.pitch=1.0;
+ const v=pickEnVoice();
+ if(v){u.voice=v;u.lang=v.lang;} // usa el idioma real de la voz inglesa
  if(onEnd)u.onend=onEnd;
  window.speechSynthesis.speak(u);}
 function pickLatinVoice(){

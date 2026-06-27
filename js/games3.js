@@ -412,3 +412,79 @@ function raceCrash(){
  if(RC.car)RC.car.textContent="💥";
  setTimeout(()=>{const stars=RC.dist>=600?3:RC.dist>=300?2:1;recordAnswer("Ubicación",RC.dist>=300,10);nodeWin(stars,"Ubicación");},850);
 }
+
+/* ============ COLOCA EL SIGNO  > < =  (con operaciones, estilo libro) ============ */
+let CMP={};
+function gameSymbols(){setTheme("kid");CMP={round:0,total:8,ok:0};nextSymbol();}
+function symSide(maxv){
+ const r=Math.random();
+ if(r<0.4){const n=1+rnd(maxv);return{label:String(n),val:n};}
+ if(r<0.72){const a=1+rnd(9),b=1+rnd(9);return{label:a+" + "+b,val:a+b};}
+ const a=4+rnd(Math.min(maxv,14)),b=1+rnd(a-1);return{label:a+" − "+b,val:a-b};
+}
+function nextSymbol(){
+ if(CMP.round>=CMP.total)return nodeWin(starsFor(CMP.ok,CMP.total),"Mayor y menor");
+ const M=(typeof diffMax==="function")?diffMax([10,12,18,25,40]):15;
+ let L=symSide(M),R=symSide(M);
+ if(Math.random()<0.2)R={label:String(L.val),val:L.val}; // a veces iguales (para el =)
+ const sym=L.val>R.val?">":L.val<R.val?"<":"=";
+ CMP.cur={L,R,sym};CMP.answered=false;
+ renderSymbol();
+}
+function renderSymbol(){
+ const c=CMP.cur;
+ const box=v=>'<div style="flex:1;max-width:130px;border:3px solid var(--kid-ink);border-radius:16px;background:#EAF2FF;box-shadow:0 5px 0 rgba(30,42,74,.5);font-family:Fredoka;font-weight:700;font-size:clamp(1.4rem,7vw,2rem);padding:18px 6px;text-align:center">'+v+'</div>';
+ render(topbar("exitGame('games')")
+  +'<div class="progressdots">'+dots(CMP.total,CMP.round)+'</div>'
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🐊 Coloca el signo</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:12px">El cocodrilo 🐊 abre la boca hacia el lado MÁS GRANDE</p>'
+  +'<div style="display:flex;align-items:center;justify-content:center;gap:8px">'
+   +box(c.L.label)
+   +'<div id="cmpsign" style="font-size:clamp(2rem,11vw,3rem);min-width:50px;text-align:center;font-family:Fredoka;font-weight:700">❓</div>'
+   +box(c.R.label)
+  +'</div>'
+  +'<button class="speaker small" style="margin-top:12px" onclick="speakES(\'¿'+c.L.label.replace("−","menos").replace("+","más")+' es mayor, menor o igual que '+c.R.label.replace("−","menos").replace("+","más")+'?\')">🔊 Leer</button>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px">'
+   +'<button class="kbtn green" style="font-size:1.9rem" onclick="ansSymbol(\'>\')">&gt;</button>'
+   +'<button class="kbtn yellow" style="font-size:1.9rem" onclick="ansSymbol(\'=\')">=</button>'
+   +'<button class="kbtn blue" style="font-size:1.9rem" onclick="ansSymbol(\'<\')">&lt;</button>'
+  +'</div>'
+  +'<p class="center mut" style="margin-top:10px;font-size:.82rem">&gt; mayor que · = igual · &lt; menor que</p>');
+}
+function ansSymbol(sym){
+ if(CMP.answered)return;CMP.answered=true;
+ const c=CMP.cur,ok=sym===c.sym;
+ const el=document.getElementById("cmpsign");if(el)el.textContent=c.sym;
+ recordAnswer("Mayor y menor",ok,12);
+ if(ok){sOK();confetti(8);toast("¡Correcto! "+c.L.label+" "+c.sym+" "+c.R.label,true,1500);CMP.ok++;}
+ else{sNO();toast("Era: "+c.L.label+" "+c.sym+" "+c.R.label,false,2400);}
+ CMP.round++;setTimeout(nextSymbol,ok?1400:2400);
+}
+
+/* ============ DICTADO DE FRASES (practica la escritura) ============ */
+const DICTADO=["El gato duerme en la cama.","Mi mamá hace una rica sopa.","El sol brilla en el cielo.","Yo tengo un perro pequeño.","La niña juega con la pelota.","Hoy vamos al parque.","Me gusta leer cuentos.","El pez nada en el agua.","Mi amigo corre muy rápido.","La flor es de color rojo.","Vamos a la escuela en bus.","El bebé toma leche caliente.","El árbol tiene muchas hojas.","La luna sale en la noche.","Mi papá lava el carro."];
+let DIC={};
+function gameDictation(){setTheme("kid");DIC={qs:shuffled(DICTADO).slice(0,5),i:0,ok:0};nextDic();}
+function nextDic(){
+ if(DIC.i>=DIC.qs.length)return nodeWin(starsFor(DIC.ok,DIC.qs.length),"Ordenar");
+ const ph=DIC.qs[DIC.i];DIC.cur=ph;
+ const safe=esc(ph).replace(/'/g,"\'");
+ render(topbar("screenWritingPick()")
+  +'<div class="progressdots">'+dots(DIC.qs.length,DIC.i)+'</div>'
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">✍️ Dictado</h2>'
+  +'<p class="center" style="font-size:.95rem;margin-bottom:12px">Escucha la frase y escríbela igualita</p>'
+  +'<button class="speaker" onclick="speakES(\''+safe+'\')"><span class="ic">🔊</span> Escuchar la frase</button>'
+  +'<input id="dicin" type="text" autocomplete="off" autocapitalize="sentences" style="width:100%;box-sizing:border-box;font-size:1.2rem;padding:14px;border:3px solid var(--kid-ink);border-radius:14px;margin:12px 0;font-family:Nunito;font-weight:700" placeholder="Escribe aquí…">'
+  +'<button class="kbtn green" onclick="checkDic()">Revisar ✅</button>'
+  +'<button class="kbtn white" onclick="speakES(\''+safe+'\')">🔊 Repetir</button>');
+ setTimeout(()=>{const i=document.getElementById("dicin");if(i)i.focus();speakES(ph);},400);
+}
+function normTxt(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[.,;:!¡¿?]/g,"").replace(/\s+/g," ").trim();}
+function checkDic(){
+ const inp=document.getElementById("dicin");if(!inp)return;
+ const ok=normTxt(inp.value)===normTxt(DIC.cur);
+ recordAnswer("Ordenar",ok,30);
+ if(ok){sOK();confetti(12);toast("¡Perfecto! Escribiste muy bien 🌟",true,1600);DIC.ok++;}
+ else{sNO();toast("Casi… era: "+DIC.cur,false,2800);}
+ DIC.i++;setTimeout(nextDic,ok?1500:2900);
+}

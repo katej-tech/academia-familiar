@@ -116,20 +116,20 @@ function genSecuenciaNum(){
 
 /* ============ SEGUNDO GRADO: CUERPO HUMANO ============ */
 const CUERPO_PARTES=[
- {q:"¿Dónde queda el CODO?",pic:"💪",ops:["En el brazo, donde se dobla","En la pierna","En la cabeza"],a:0},
- {q:"¿Dónde queda la ESPALDA?",pic:"🧍",ops:["En la parte de atrás del cuerpo","En la cara","En los pies"],a:0},
- {q:"¿Qué parte usamos para doblar la pierna?",pic:"🦵",ops:["La rodilla","El codo","La muñeca"],a:0},
- {q:"¿Dónde está el TOBILLO?",pic:"🦶",ops:["Entre el pie y la pierna","En la mano","En el cuello"],a:0},
- {q:"¿Qué une la mano con el brazo?",pic:"✋",ops:["La muñeca","El hombro","La rodilla"],a:0},
- {q:"¿Dónde está el HOMBRO?",pic:"🧍",ops:["Donde el brazo se une al cuerpo","En el pie","En la frente"],a:0},
- {q:"La parte de arriba de la cara, sobre los ojos, es la…",pic:"🧑",ops:["Frente","Barbilla","Nuca"],a:0},
- {q:"La parte de atrás del cuello se llama…",pic:"🧍",ops:["Nuca","Mejilla","Talón"],a:0},
- {q:"El TALÓN está en…",pic:"🦶",ops:["La parte de atrás del pie","La mano","La cabeza"],a:0},
- {q:"Las MEJILLAS están en…",pic:"😊",ops:["La cara","Las piernas","La espalda"],a:0},
- {q:"¿Con qué parte agarramos las cosas?",pic:"✋",ops:["Los dedos","Los codos","Las rodillas"],a:0},
- {q:"¿Qué parte nos sostiene de pie?",pic:"🦵",ops:["Las piernas","Las orejas","La nariz"],a:0},
- {q:"La PANTORRILLA está en…",pic:"🦵",ops:["La parte de atrás de la pierna","El brazo","La cara"],a:0},
- {q:"¿Cómo se llama el hueso de la columna en la espalda?",pic:"🦴",ops:["Columna vertebral","Codo","Rodilla"],a:0}];
+ {q:"¿Con qué parte VEMOS?",pic:"👀",ops:["Los ojos","La nariz","El codo"],a:0},
+ {q:"¿Con qué parte OLEMOS?",pic:"👃",ops:["La nariz","Los ojos","Las manos"],a:0},
+ {q:"¿Con qué parte ESCUCHAMOS?",pic:"👂",ops:["Las orejas","La boca","Los pies"],a:0},
+ {q:"¿Con qué parte CAMINAMOS?",pic:"🦶",ops:["Los pies","Las manos","Las orejas"],a:0},
+ {q:"¿Con qué parte AGARRAMOS las cosas?",pic:"✋",ops:["Las manos","Los pies","La espalda"],a:0},
+ {q:"¿Con qué MASTICAMOS la comida?",pic:"😁",ops:["Los dientes","Los ojos","Las rodillas"],a:0},
+ {q:"¿Dónde tienes el CODO?",pic:"💪",ops:["En el brazo","En el pie","En la cabeza"],a:0},
+ {q:"¿Dónde tienes la RODILLA?",pic:"🦵",ops:["En la pierna","En la mano","En la cara"],a:0},
+ {q:"La ESPALDA está…",pic:"🧍",ops:["Detrás del cuerpo","En la cara","En los pies"],a:0},
+ {q:"El CUELLO une la cabeza con…",pic:"🧍",ops:["El cuerpo","El pie","La mano"],a:0},
+ {q:"¿Dónde tienes los DEDOS?",pic:"✋",ops:["En las manos y los pies","En la cabeza","En la espalda"],a:0},
+ {q:"¿Cuántos ojos tenemos?",pic:"👀",ops:["Dos","Uno","Cinco"],a:0},
+ {q:"El pelo está en la…",pic:"🧑",ops:["Cabeza","Pierna","Mano"],a:0},
+ {q:"¿Con qué parte HABLAMOS?",pic:"👄",ops:["La boca","La nariz","La oreja"],a:0}];
 function genCuerpoParte(){const x=pick(CUERPO_PARTES);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
 const SISTEMAS_QS=[
  {q:"¿Qué órgano usamos para RESPIRAR?",pic:"🫁",ops:["Los pulmones","El estómago","Los huesos"],a:0},

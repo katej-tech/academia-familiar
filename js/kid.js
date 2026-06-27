@@ -130,8 +130,9 @@ function screenWritingPick(){setTheme("kid");
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✍️ Escribir bien</h2>'
  +'<p class="center" style="margin-bottom:14px">Frases, letras y palabras</p>'
  +'<button class="kbtn yellow" onclick="gameOrder()">🧩 Ordena la frase</button>'
+ +'<button class="kbtn green" onclick="gameDictation()">✍️ Dictado de frases</button>'
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
- +'<button class="kbtn green" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
+ +'<button class="kbtn white" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
 const DAILY_GOAL=10; /* aciertos del día para desbloquear los juegos */
 function dailyGoalDone(){return touchDay().ok>=DAILY_GOAL;}
 function screenGamesLocked(){setTheme("kid");
@@ -156,25 +157,18 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
  +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'
  +'<button class="kbtn purple" onclick="gameCrossword()">📝 Crucigrama</button>'
- +'<button class="kbtn yellow" onclick="screenMemoryPick()">🃏 Juegos de memoria</button>'
+ +'<button class="kbtn green" onclick="gameDictation()">✍️ Dictado de frases</button>'
  +sub("🔢 Números y lógica")
+ +'<button class="kbtn green" onclick="gameSymbols()">🐊 Coloca el signo (&gt; &lt; =)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
- +'<button class="kbtn green" onclick="gameMathPaint()">🎨 Pinta con números</button>'
- +'<button class="kbtn white" onclick="gameMine()">⛏️ La mina de bloques</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
- +'<button class="kbtn blue" onclick="gameDetective()">🕵️ Detective: descubre al culpable</button>'
  +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice</button>'
- +'<button class="kbtn yellow" onclick="gameTicTac()">⭕ Tres en Línea ❌</button>'
- +'<button class="kbtn blue" onclick="gameRobot(0)">🤖 Robot programador</button>'
  +sub("🇬🇧 Inglés")
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
  +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
- +'<button class="kbtn blue" onclick="gameObby(\'en\')">🏃 Carrera en inglés</button>'
  +sub("🕹️ Arcade (pura diversión)")
  +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
- +'<button class="kbtn green" onclick="gameObby(\'mate\')">🏃 Carrera de obstáculos</button>'
  +'<button class="kbtn blue" onclick="gameRace()">🏎️ Carrera izquierda y derecha</button>'
- +'<button class="kbtn yellow" onclick="gameSnake()">🐍 La Culebrita</button>'
  +'<button class="kbtn purple" onclick="gameDoodle()">🦘 Saltarín</button>');}
 function screenMemoryPick(){setTheme("kid");
  render(topbar("screenGamesPick()")
