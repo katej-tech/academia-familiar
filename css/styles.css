@@ -215,3 +215,23 @@ body.teen .progressdots i.on{background:var(--teen-cyan)}
 /* ===== aviso de audio ===== */
 .audiotip{font-size:.92rem;background:rgba(59,130,246,.12);border:2px solid var(--kid-blue);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-family:'Fredoka';font-weight:500;line-height:1.4}
 
+
+/* ===== Mascota viva + efectos ===== */
+.petidle{animation:petbob 1.7s ease-in-out infinite}
+@keyframes petbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.pethappy{animation:pethappy .5s ease-in-out 3}
+@keyframes pethappy{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-16px) rotate(-7deg)}75%{transform:translateY(-16px) rotate(7deg)}}
+.peteat{animation:peteat .35s ease-in-out 2}
+@keyframes peteat{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+.petsleep{animation:petsleep 3.2s ease-in-out infinite}
+@keyframes petsleep{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.04) rotate(2deg)}}
+.bubble{position:absolute;animation:bubrise linear forwards;pointer-events:none;z-index:4}
+@keyframes bubrise{0%{transform:translateY(0) scale(.6);opacity:.95}100%{transform:translateY(-180px) scale(1.1);opacity:0}}
+.foodfly{position:absolute;animation:foodfly .65s ease-in forwards;pointer-events:none;z-index:6}
+@keyframes foodfly{0%{transform:translateY(-70px) scale(.5);opacity:0}30%{opacity:1}100%{transform:translateY(30px) scale(1.15);opacity:0}}
+.zzz{position:absolute;animation:zzzfloat 2.2s ease-out infinite;pointer-events:none;font-size:1.4rem}
+@keyframes zzzfloat{0%{transform:translate(0,0) scale(.6);opacity:0}25%{opacity:.9}100%{transform:translate(22px,-54px) scale(1.2);opacity:0}}
+/* carrera de carriles */
+.racecar{transition:left .12s ease}
+.roadline{position:absolute;width:6px;background:repeating-linear-gradient(#fff 0 22px,transparent 22px 44px);left:50%;transform:translateX(-50%);top:0;bottom:0;animation:roadmove .5s linear infinite}
+@keyframes roadmove{to{background-position:0 44px}}

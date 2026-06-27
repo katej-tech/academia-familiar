@@ -214,3 +214,21 @@ const CULT_QS=[
  {q:"El pájaro que no vuela pero nada y vive en el frío es el…",pic:"🐧",ops:["Pingüino","Águila","Loro"],a:0},
  {q:"¿De qué color se ponen las hojas en otoño?",pic:"🍂",ops:["Café y naranja","Azules","Moradas"],a:0}];
 function genCultura(){const x=pick(CULT_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
+
+/* ============ SEGUNDO GRADO: INFORMÁTICA BÁSICA ============ */
+const INFO_QS=[
+ {q:"¿Para qué sirve el mouse o ratón?",pic:"🖱️",ops:["Para mover el puntero y hacer clic","Para escuchar música","Para escribir cartas"],a:0},
+ {q:"¿Con qué escribimos en el computador?",pic:"⌨️",ops:["El teclado","La pantalla","El mouse"],a:0},
+ {q:"La parte donde vemos las cosas es la…",pic:"🖥️",ops:["Pantalla","Tecla","Bocina"],a:0},
+ {q:"Para apagar bien el computador hay que…",pic:"🔌",ops:["Usar el botón de apagar","Desconectarlo de golpe","Darle golpes"],a:0},
+ {q:"Un computador pequeño que llevamos a todos lados es el…",pic:"💻",ops:["Portátil","Televisor","Refrigerador"],a:0},
+ {q:"Para escuchar el sonido usamos…",pic:"🔊",ops:["Los parlantes o audífonos","El teclado","El mouse"],a:0},
+ {q:"Internet sirve para…",pic:"🌐",ops:["Buscar información y comunicarnos","Cocinar","Dormir"],a:0},
+ {q:"Si alguien que no conoces te escribe en internet, debes…",pic:"🛡️",ops:["No dar tus datos y avisar a un adulto","Darle tu dirección","Mandarle fotos"],a:0},
+ {q:"Cuando terminas un trabajo en el computador hay que…",pic:"💾",ops:["Guardarlo","Borrarlo","Romperlo"],a:0},
+ {q:"Un programa para dibujar o jugar es una…",pic:"📱",ops:["Aplicación (app)","Silla","Ventana"],a:0},
+ {q:"La tecla larga que hace los espacios es la…",pic:"⌨️",ops:["Barra espaciadora","Tecla mágica","Pantalla"],a:0},
+ {q:"Si pasas mucho tiempo frente a la pantalla debes…",pic:"👀",ops:["Descansar la vista cada rato","Acercarte mucho","Apagar la luz"],a:0},
+ {q:"Las carpetas en el computador sirven para…",pic:"📁",ops:["Ordenar y guardar archivos","Comer","Dibujar"],a:0},
+ {q:"Para hacer clic se usa el botón…",pic:"🖱️",ops:["Del mouse","Del televisor","De la nevera"],a:0}];
+function genInfo(){const x=pick(INFO_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}

@@ -367,3 +367,48 @@ function tapDet(i){
  if(ok){sOK();confetti(16);toast("¡Caso resuelto! 🕵️🎉",true,1300);DET.ok++;}
  else{sNO();toast("Era el Nº "+(DET.culprit+1)+" — vuelve a leer las pistas",false,2300);}
  DET.round++;setTimeout(detNext,ok?1400:2400);}
+
+/* ============ CARRERA IZQUIERDA / DERECHA (esquiva por carriles) ============ */
+let RC={};
+function gameRace(){setTheme("kid");
+ RC={lane:1,nlanes:3,dist:0,speed:6,over:false,tick:0,obs:[]};
+ render(topbar("exitGame('games')")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🏎️ Carrera izquierda y derecha</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:4px">Esquiva los obstáculos moviéndote con los botones</p>'
+  +'<div style="text-align:center;font-family:Fredoka;font-weight:700;margin-bottom:6px" id="rcsc">0 m</div>'
+  +'<div id="rcroad" style="position:relative;height:54vh;max-height:420px;overflow:hidden;border:3px solid var(--kid-ink);border-radius:18px;background:#5a6b7a">'
+   +'<div class="roadline" style="left:33.3%"></div><div class="roadline" style="left:66.6%"></div>'
+   +'<div id="rccar" class="racecar" style="position:absolute;bottom:8px;font-size:clamp(2.2rem,12vw,3.2rem);transform:translateX(-50%);z-index:3">🏎️</div>'
+  +'</div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'
+   +'<button class="kbtn blue" onclick="raceMove(-1)" style="font-size:1.25rem">⬅️ Izquierda</button>'
+   +'<button class="kbtn green" onclick="raceMove(1)" style="font-size:1.25rem">Derecha ➡️</button>'
+  +'</div>');
+ RC.road=document.getElementById("rcroad");RC.car=document.getElementById("rccar");
+ raceCarPos();
+ RC.loop=setInterval(raceStep,60);
+}
+function laneX(lane,n){return ((lane+0.5)/n*100);}
+function raceCarPos(){if(RC.car)RC.car.style.left=laneX(RC.lane,RC.nlanes)+"%";}
+function raceMove(dir){if(RC.over)return;const old=RC.lane;RC.lane=Math.max(0,Math.min(RC.nlanes-1,RC.lane+dir));if(RC.lane!==old){raceCarPos();beep([520],.05);}}
+function raceStep(){
+ if(RC.over)return;const road=RC.road;if(!road)return;
+ RC.tick++;RC.dist++;
+ if(RC.tick%5===0){const sc=document.getElementById("rcsc");if(sc)sc.textContent=RC.dist+" m";}
+ const H=road.clientHeight,carTop=H-66;
+ RC.obs.forEach(o=>{o.y+=RC.speed;o.el.style.top=o.y+"px";});
+ for(const o of RC.obs){if(!o.hit&&o.lane===RC.lane&&o.y>=carTop-28&&o.y<=carTop+30){o.hit=true;return raceCrash();}}
+ RC.obs=RC.obs.filter(o=>{if(o.y>H+40){o.el.remove();return false;}return true;});
+ if(RC.tick%14===0){
+  const lane=rnd(RC.nlanes);const e=document.createElement("div");
+  e.textContent=pick(["🛢️","🚧","🪵","🧱","🦔","🚗"]);
+  e.style.cssText="position:absolute;top:-40px;font-size:clamp(2rem,11vw,3rem);transform:translateX(-50%);z-index:2;left:"+laneX(lane,RC.nlanes)+"%";
+  road.appendChild(e);RC.obs.push({el:e,lane,y:-40,hit:false});
+ }
+ if(RC.tick%120===0)RC.speed+=0.7;
+}
+function raceCrash(){
+ RC.over=true;clearInterval(RC.loop);sNO();
+ if(RC.car)RC.car.textContent="💥";
+ setTimeout(()=>{const stars=RC.dist>=600?3:RC.dist>=300?2:1;recordAnswer("Ubicación",RC.dist>=300,10);nodeWin(stars,"Ubicación");},850);
+}

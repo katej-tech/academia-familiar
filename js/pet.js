@@ -46,10 +46,10 @@ function screenTama(){setTheme("kid");if(typeof stopGames==="function")stopGames
  render(topbar("screenKidMap()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🐾 '+esc(t.name)+'</h2>'
   +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Nivel de cariño '+lv+' 💞 · '+(p.coins)+' 🪙</p>'
-  +'<div class="card" style="text-align:center;padding:18px 14px;background:linear-gradient(180deg,#EAF6FF,#D6ECFF)">'
+  +'<div id="tamastage" class="card" style="position:relative;text-align:center;padding:18px 14px;overflow:hidden;background:linear-gradient(180deg,#EAF6FF,#D6ECFF)">'
    +'<div style="font-size:.95rem;font-family:Fredoka;font-weight:700;min-height:1.4em;margin-bottom:6px">'+m.f+' '+esc(m.msg)+'</div>'
-   +'<div id="tamapet" style="font-size:clamp(5rem,30vw,8rem);line-height:1;transition:transform .18s;'+(sleeping?'filter:grayscale(.3);opacity:.8':'')+'">'+t.sp+'</div>'
-   +(sleeping?'<div style="font-size:1.6rem">💤</div>':'')
+   +'<div id="tamapet" class="'+(sleeping?'petsleep':'petidle')+'" style="font-size:clamp(5rem,30vw,8rem);line-height:1;'+(sleeping?'filter:grayscale(.3);opacity:.85':'')+'">'+t.sp+'</div>'
+   +(sleeping?'<div class="zzz" style="position:absolute;top:20%;left:58%">💤</div>':'')
   +'</div>'
   +'<div class="card" style="padding:12px 14px">'
    +bar("🍖","Comida",t.hunger,"#FF8A5B")
@@ -64,6 +64,15 @@ function screenTama(){setTheme("kid");if(typeof stopGames==="function")stopGames
    +'<button class="kbtn white" onclick="tamaSleep()">'+(sleeping?'☀️ Despertar':'😴 Dormir')+'</button>'
   +'</div>'
   +'<p class="center mut" style="margin-top:12px;font-size:.8rem">Sus necesidades bajan con el tiempo. ¡Vuelve cada día a cuidarlo! 💞</p>');
+ if(TAMA_ATE){tamaEatAnim(TAMA_ATE);TAMA_ATE=null;}
+}
+let TAMA_ATE=null;
+function tamaEatAnim(food){
+ const stage=document.getElementById("tamastage"),pet=document.getElementById("tamapet");
+ if(stage){const f=document.createElement("div");f.className="foodfly";f.textContent=food;
+  f.style.cssText="position:absolute;left:50%;top:40%;transform:translateX(-50%);font-size:2.4rem";stage.appendChild(f);
+  setTimeout(()=>{if(f.parentNode)f.remove();},700);}
+ if(pet){pet.classList.remove("petidle");pet.classList.add("peteat");setTimeout(()=>{if(pet){pet.classList.remove("peteat");pet.classList.add("petidle");}},800);}
 }
 
 /* ---- adopción ---- */
@@ -101,27 +110,61 @@ function tamaFeed(i){
  const p=prof(),t=p.tama,f=TAMA_FOODS[i];if(!t)return;
  if(p.coins<f[2])return toast("Te faltan monedas — ¡haz actividades para ganar! 🪙",false,2200);
  p.coins-=f[2];tamaApply(t,f[3]);t.careXp=(t.careXp||0)+2;t.lastTs=Date.now();
- tamaSave();sOK();confetti(6);
- const pet=document.getElementById("tamapet");
+ tamaSave();sOK();
+ TAMA_ATE=f[0]; // dispara la animación de comer al volver a la pantalla
  toast(t.name+" comió "+f[1]+" 😋 +"+f[3].hunger+" comida",true,1300);
- setTimeout(screenTama,300);
-}
-function tamaPlay(){
- const t=tamaState();if(!t||t.sleeping)return;
- if(t.energy<15)return toast(t.name+" está muy cansado para jugar 🥱 Déjalo dormir",false,2200);
- tamaApply(t,{happy:18,energy:-10,hunger:-4});t.careXp=(t.careXp||0)+2;t.lastTs=Date.now();tamaSave();
- sOK();beep([520,660,780],.1);
- const pet=document.getElementById("tamapet");
- if(pet){pet.style.transform="translateY(-18px) scale(1.08)";setTimeout(()=>{if(pet)pet.style.transform="";},200);}
- confetti(8);
- setTimeout(()=>{toast("¡"+t.name+" se divirtió! 💛",true,1100);screenTama();},420);
+ setTimeout(screenTama,250);
 }
 function tamaBath(){
  const t=tamaState();if(!t||t.sleeping)return;
- tamaApply(t,{clean:45,happy:6});t.careXp=(t.careXp||0)+2;t.lastTs=Date.now();tamaSave();
- sOK();beep([700,900],.12);confetti(8);
- toast(t.name+" quedó limpiecito 🫧✨",true,1300);
- setTimeout(screenTama,300);
+ const stage=document.getElementById("tamastage"),pet=document.getElementById("tamapet");
+ if(pet){pet.classList.remove("petidle");pet.classList.add("pethappy");}
+ if(stage){const soaps=["🫧","🧼","💧","✨","🫧"];
+  for(let i=0;i<14;i++){const b=document.createElement("div");b.className="bubble";b.textContent=pick(soaps);
+   b.style.left=(8+rnd(80))+"%";b.style.bottom="12px";b.style.fontSize=(1.1+Math.random()).toFixed(2)+"rem";
+   b.style.animationDuration=(1+Math.random()).toFixed(2)+"s";b.style.animationDelay=(Math.random()*0.7).toFixed(2)+"s";
+   stage.appendChild(b);}}
+ beep([700,900,1100],.12);
+ setTimeout(()=>{tamaApply(t,{clean:45,happy:8});t.careXp=(t.careXp||0)+2;t.lastTs=Date.now();tamaSave();sOK();
+  toast(t.name+" quedó limpiecito 🫧✨",true,1300);screenTama();},1500);
+}
+/* ---- mini-juego: atrapa golosinas para la mascota ---- */
+let TG={};
+function tamaPlay(){
+ const t=tamaState();if(!t||t.sleeping)return;
+ if(t.energy<15)return toast(t.name+" está muy cansado para jugar 🥱 Déjalo dormir",false,2200);
+ setTheme("kid");TG={score:0,left:18};
+ render(topbar("screenTama()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🎾 Juega con '+esc(t.name)+'</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:6px">¡Toca las golosinas que caen para dárselas!</p>'
+  +'<div style="display:flex;justify-content:space-between;font-family:Fredoka;font-weight:700;padding:0 6px;margin-bottom:6px"><span id="tgsc">0 🍬</span><span id="tgtime">18s</span></div>'
+  +'<div id="tgstage" style="position:relative;height:58vh;max-height:440px;overflow:hidden;border:3px solid var(--kid-ink);border-radius:18px;background:linear-gradient(180deg,#EAF6FF,#CDEBFF)">'
+   +'<div id="tgpet" class="petidle" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:clamp(2.8rem,15vw,4rem)">'+t.sp+'</div>'
+  +'</div>');
+ TG.spawn=setInterval(tgSpawn,720);
+ TG.timer=setInterval(tgTick,1000);
+}
+function tgTick(){TG.left--;const el=document.getElementById("tgtime");if(el)el.textContent=Math.max(0,TG.left)+"s";if(TG.left<=0)tgEnd();}
+function tgSpawn(){
+ const st=document.getElementById("tgstage");if(!st)return tgEnd();
+ const treats=["🍎","🍪","🦴","🧀","🍓","🥕","🍬"];
+ const d=document.createElement("div");d.textContent=pick(treats);
+ d.style.cssText="position:absolute;top:-46px;font-size:2.1rem;cursor:pointer;left:"+(4+rnd(84))+"%;transition:top 2.7s linear";
+ d.onclick=()=>{if(d._got)return;d._got=true;TG.score++;beep([600+TG.score*12],.05);
+  const sc=document.getElementById("tgsc");if(sc)sc.textContent=TG.score+" 🍬";
+  const pet=document.getElementById("tgpet");if(pet){pet.classList.remove("petidle");pet.classList.add("pethappy");setTimeout(()=>{if(pet){pet.classList.remove("pethappy");pet.classList.add("petidle");}},500);}
+  d.textContent="💖";setTimeout(()=>{if(d.parentNode)d.remove();},200);};
+ st.appendChild(d);
+ requestAnimationFrame(()=>{d.style.top="100%";});
+ setTimeout(()=>{if(d&&d.parentNode)d.remove();},2800);
+}
+function tgEnd(){
+ clearInterval(TG.spawn);clearInterval(TG.timer);
+ const t=tamaState();if(!t)return screenTama();
+ tamaApply(t,{happy:Math.min(42,12+TG.score*2),energy:-12,hunger:-5});t.careXp=(t.careXp||0)+3;t.lastTs=Date.now();tamaSave();
+ sWIN();confetti(22);
+ toast("¡"+t.name+" jugó contigo! Atrapaste "+TG.score+" golosinas 🍬",true,2400);
+ setTimeout(screenTama,600);
 }
 function tamaSleep(){
  const t=tamaState();if(!t)return;
