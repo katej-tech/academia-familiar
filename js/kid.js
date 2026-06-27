@@ -82,7 +82,8 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +hubTile("screenLeer()","📖","Cuentos y escribir","Lee, escucha y ordena frases","yellow")
  +hubTile("screenGamesPick()","🎮","Jugar","Arcade, impostor, culebra y más","blue")
  +hubTile("screenMyStuff()","🛍️","Mi mundo","Tienda, personaje y premios","purple")
- +'</div>');}
+ +'</div>'
+ +'<p class="center" style="margin-top:14px"><button class="kbtn white" style="width:auto;display:inline-block;min-height:46px;padding:10px 18px;font-size:.95rem;margin:0" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button></p>');}
 function subHeader(title){return '<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin:2px 0 12px">'+title+'</h2>';}
 function screenCole(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="cole"||w.cat==="pensar");
@@ -107,7 +108,8 @@ function screenMyStuff(){setTheme("kid");
   +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
-  +'<button class="kbtn blue" onclick="screenVideosKid()">🎬 Videos</button>');}
+  +'<button class="kbtn blue" onclick="screenVideosKid()">🎬 Videos</button>'
+  +'<button class="kbtn white" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button>');}
 function lockedMsg(){}
 function openWorld(id){
  const w=KID_WORLDS.find(x=>x.id===id);curNode=id;
