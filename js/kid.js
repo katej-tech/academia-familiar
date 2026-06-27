@@ -167,6 +167,7 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn green" onclick="gameDictation()">✍️ Dictado de frases</button>'
  +sub("🔢 Números y lógica")
  +'<button class="kbtn green" onclick="gameSymbols()">🐊 Coloca el signo (&gt; &lt; =)</button>'
+ +'<button class="kbtn blue" onclick="gameGateRun()">🔢 Carrera de números (hazte más grande)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
  +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice</button>'

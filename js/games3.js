@@ -620,3 +620,71 @@ function ansFlag(vi){
  else{sNO();toast("Era: "+FL.cur.ops[FL.cur.a],false,1900);}
  FL.round++;setTimeout(nextFlag,ok?1100:1900);
 }
+
+/* ============ CARRERA DE NÚMEROS (puertas matemáticas, estilo "hazte más grande") ============ */
+let GR={};
+function gameGateRun(){setTheme("kid");
+ try{if(typeof GR!=="undefined"&&GR.loop)clearInterval(GR.loop);}catch(e){}
+ GR={num:2,lane:0,over:false,tick:0,gates:[],done:0,total:8,correct:0,speed:5,nextAt:18};
+ render(topbar("exitGame('games')")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🔢 Carrera de números</h2>'
+  +'<p class="center" style="font-size:.88rem;margin-bottom:6px">¡Pasa por la puerta que te haga MÁS GRANDE!</p>'
+  +'<div style="text-align:center;font-family:Fredoka;font-weight:800;font-size:1.5rem;margin-bottom:6px">Tu número: <span id="grnum" style="color:var(--kid-green)">2</span></div>'
+  +'<div id="grroad" style="position:relative;height:50vh;max-height:380px;overflow:hidden;border:3px solid var(--kid-ink);border-radius:18px;background:#5a6b7a">'
+   +'<div class="roadline" style="left:50%"></div>'
+   +'<div id="grchar" style="position:absolute;bottom:8px;font-size:clamp(2rem,11vw,3rem);transform:translateX(-50%);z-index:3;transition:left .12s ease">🏃</div>'
+  +'</div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'
+   +'<button class="kbtn blue" onclick="grMove(0)" style="font-size:1.2rem">⬅️ Izquierda</button>'
+   +'<button class="kbtn green" onclick="grMove(1)" style="font-size:1.2rem">Derecha ➡️</button>'
+  +'</div>');
+ GR.road=document.getElementById("grroad");GR.char=document.getElementById("grchar");
+ grCharPos();
+ GR.loop=setInterval(grStep,60);
+}
+function grMove(l){if(GR.over)return;GR.lane=l;grCharPos();beep([520],.05);}
+function grCharPos(){if(GR.char)GR.char.style.left=laneX(GR.lane,2)+"%";}
+function grMakeOp(){var r=Math.random();
+ if(r<0.5){var n=2+rnd(8);return{label:"+ "+n,apply:function(x){return x+n;}};}
+ if(r<0.82){var n2=2+rnd(2);return{label:"× "+n2,apply:function(x){return x*n2;}};}
+ var n3=1+rnd(5);return{label:"− "+n3,apply:function(x){return Math.max(0,x-n3);}};}
+function grSpawn(){
+ var road=GR.road;var a=grMakeOp(),b=grMakeOp(),g=0;
+ while(a.apply(GR.num)===b.apply(GR.num)&&g++<12)b=grMakeOp();
+ var pair={ops:[a,b],y:-60,applied:false,els:[]};
+ [0,1].forEach(function(l){var e=document.createElement("div");
+  e.textContent=pair.ops[l].label;
+  e.style.cssText="position:absolute;top:-60px;width:40%;height:54px;display:flex;align-items:center;justify-content:center;font-family:Fredoka;font-weight:800;font-size:1.5rem;color:#fff;border:3px solid var(--kid-ink);border-radius:12px;background:rgba(59,130,246,.88);transform:translateX(-50%);left:"+laneX(l,2)+"%";
+  road.appendChild(e);pair.els[l]=e;});
+ GR.gates.push(pair);
+}
+function grStep(){
+ if(GR.over)return;var road=GR.road;if(!road)return;
+ GR.tick++;
+ var H=road.clientHeight,charTop=H-66;
+ GR.gates.forEach(function(p){p.y+=GR.speed;p.els.forEach(function(e){e.style.top=p.y+"px";});});
+ for(var i=0;i<GR.gates.length;i++){var p=GR.gates[i];if(!p.applied&&p.y>=charTop-20){p.applied=true;grApply(p);}}
+ GR.gates=GR.gates.filter(function(p){if(p.y>H+60){p.els.forEach(function(e){e.remove();});return false;}return true;});
+ if(GR.done>=GR.total)return grEnd();
+ if(GR.tick%GR.nextAt===0 && (GR.done+GR.gates.length)<GR.total)grSpawn();
+ if(GR.tick%180===0)GR.speed=Math.min(9,GR.speed+0.6);
+}
+function grApply(p){
+ var chosen=p.ops[GR.lane].apply(GR.num);
+ var other=p.ops[GR.lane===0?1:0].apply(GR.num);
+ var ok=chosen>=other;
+ GR.num=chosen;GR.done++;if(ok)GR.correct++;
+ recordAnswer("Mate",ok,8);
+ var el=document.getElementById("grnum");if(el)el.textContent=GR.num;
+ var ge=p.els[GR.lane];if(ge)ge.style.background=ok?"rgba(62,201,124,.95)":"rgba(255,107,107,.95)";
+ var oe=p.els[GR.lane===0?1:0];if(oe)oe.style.opacity=".35";
+ if(ok){sOK();confetti(6);}else{sNO();}
+ var ch=GR.char;if(ch){ch.style.fontSize="clamp(2.4rem,13vw,3.6rem)";setTimeout(function(){if(ch)ch.style.fontSize="clamp(2rem,11vw,3rem)";},220);}
+}
+function grEnd(){
+ GR.over=true;clearInterval(GR.loop);
+ var stars=GR.correct>=GR.total-1?3:GR.correct>=GR.total*0.6?2:1;
+ sWIN();confetti(28);
+ toast("¡Tu número final: "+GR.num+"! Elegiste bien "+GR.correct+"/"+GR.total+" 🔢",true,2800);
+ setTimeout(function(){nodeWin(stars,"Mate");},800);
+}

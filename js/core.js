@@ -368,6 +368,7 @@ function stopGames(){
  try{if(typeof HG!=="undefined")clearInterval(HG.timer);}catch(e){}
  try{if(typeof TG!=="undefined"){clearInterval(TG.spawn);clearInterval(TG.timer);}}catch(e){}
  try{if(typeof RC!=="undefined"){clearInterval(RC.loop);RC.over=true;}}catch(e){}
+ try{if(typeof GR!=="undefined"){clearInterval(GR.loop);GR.over=true;}}catch(e){}
  try{if(typeof QZ!=="undefined")clearInterval(QZ.tick);}catch(e){}
  try{if(typeof SN!=="undefined"){clearInterval(SN.timer);SN.started=false;}}catch(e){}
  try{if(typeof BL!=="undefined"){clearTimeout(BL.timer);BL.done=true;}}catch(e){}
