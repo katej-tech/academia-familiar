@@ -225,7 +225,10 @@ async function testGeminiKey(){
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;
- save();document.getElementById("fb").innerHTML=' <b style="color:var(--par-acc)">✓ Guardado</b>';}
+ save();
+ // comparte la clave con los hijos invitados para que ellos también tengan contenido con IA
+ if(typeof afShareKeyWithChildren==="function")afShareKeyWithChildren(S.geminiKey);
+ document.getElementById("fb").innerHTML=' <b style="color:var(--par-acc)">✓ Guardado'+(S.geminiKey?' · clave compartida con tus hijos 👨‍👩‍👧':'')+'</b>';}
 function exportData(){
  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="academia-respaldo-"+todayStr()+".json";a.click();}

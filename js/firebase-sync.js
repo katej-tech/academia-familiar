@@ -35,11 +35,20 @@ function afPush(){var u=afUser();if(!u)return;
    var pid=S.childProfile||u.uid;var prof=S.profiles&&S.profiles[pid];
    if(prof){prof.updatedAt=Date.now();afDB.collection("families").doc(afMember.familyId).collection("profiles").doc(u.uid).set(JSON.parse(JSON.stringify(prof))).catch(function(){});}
    return;}
-  // merge: no borra memberIndex/memberAuth (datos de los hijos invitados) que no están en S
-  var data=JSON.parse(JSON.stringify(S));
-  delete data.geminiKey; // la clave de Gemini es PRIVADA y LOCAL: nunca se sube a la nube
-  afDB.collection("families").doc(u.uid).set(data,{merge:true}).catch(function(){});
+  // merge: no borra memberIndex/memberAuth (datos de los hijos invitados) que no están en S.
+  // La clave de Gemini SÍ se guarda en el doc PRIVADO de la familia (solo la familia lo lee por las reglas),
+  // para que el padre la tenga en sus dispositivos. A los hijos invitados se les comparte aparte (afShareKeyWithChildren).
+  afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S)),{merge:true}).catch(function(){});
  }catch(e){}}
+/* comparte la clave de Gemini del padre con TODOS los hijos invitados (la escribe en el perfil de cada uno) */
+function afShareKeyWithChildren(key){
+ var u=afUser();if(!u||!afReady||afMember)return; // solo el dueño de la familia
+ afDB.collection("families").doc(u.uid).collection("profiles").get().then(function(qs){
+  qs.forEach(function(d){
+   afDB.collection("families").doc(u.uid).collection("profiles").doc(d.id).set({geminiKey:key||""},{merge:true}).catch(function(){});
+  });
+ }).catch(function(){});}
+window.afShareKeyWithChildren=afShareKeyWithChildren;
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
   if(snap.exists){var cloud=snap.data();var lt=S.updatedAt||0,ct=cloud.updatedAt||0;
@@ -81,6 +90,7 @@ function afInviteChild(email,name,age,password,cb){
   var cuid=cred.user.uid;
   var type=(parseInt(age,10)||7)>=11?"teen":"kid";
   var prof=afNewMemberProfile(name,age,type);
+  prof.geminiKey=S.geminiKey||""; // el hijo nuevo hereda la clave de Gemini del padre (contenido con IA)
   var fid=parent.uid;
   var meta={};meta[cuid]={name:name,email:email,age:(parseInt(age,10)||null),type:type,since:Date.now()};
   var authMap={};authMap[cuid]={email:email,pass:pass}; // privado del padre: permite borrar la cuenta luego
@@ -134,6 +144,7 @@ function afLoadChild(uid,fid){
   var prof=snap.exists?snap.data():afNewMemberProfile("Estudiante",7,"kid");
   var base=JSON.parse(JSON.stringify(DEFAULT_STATE));
   base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
+  base.geminiKey=prof.geminiKey||""; // hereda la clave de Gemini que el padre compartió → contenido con IA para el hijo
   S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();
   localStorage.setItem("academiaFam2",JSON.stringify(S));
   current.profile=uid;if(typeof touchDay==="function")touchDay();

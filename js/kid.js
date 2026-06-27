@@ -191,7 +191,8 @@ async function aiStoryKid(){
  setTheme("kid");
  render(topbar("screenStoryPick()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Creando un cuento nuevo…</h2></div>');
  try{
-  const temas=["la amistad","el valor de la honestidad","cuidar la naturaleza","el trabajo en equipo","superar el miedo","la importancia de compartir","la perseverancia","ser amable con los demás","la curiosidad por aprender","cuidar a los animales"];
+  const temas=["la amistad","el valor de la honestidad","cuidar la naturaleza","el trabajo en equipo","superar el miedo","la importancia de compartir","la perseverancia","ser amable con los demás","la curiosidad por aprender","cuidar a los animales",
+   "un misterio que el protagonista resuelve buscando pistas","un descubrimiento sorprendente (un lugar o un tesoro escondido)","una aventura de exploración y valentía","resolver un enigma usando la lógica","una búsqueda para encontrar algo perdido"];
   const tema=temas[Math.floor(Math.random()*temas.length)];
   if(!S.aiStoriesSeen)S.aiStoriesSeen=[];
   const evitar=S.aiStoriesSeen.slice(-12);
@@ -594,7 +595,28 @@ const CRITTERS=[
  {id:"escar",name:"Escar",forms:["🐛","🪲","🌟🪲"],r:0},{id:"vulcan",name:"Vulcán",forms:["🪨","🌋","🔥🌋"],r:2},
  {id:"nimbo",name:"Nimbo",forms:["☁️","⛈️","🌪️"],r:1},{id:"marina",name:"Marina",forms:["🐚","🧜","🧜‍♀️"],r:2},
  {id:"zumzum",name:"Zumzum",forms:["🌸","🐦","🦚"],r:1},{id:"pincho",name:"Pincho",forms:["🌵","🏜️","🌸🌵"],r:0},
- {id:"espectro",name:"Espectro",forms:["👻","🕯️","🔮"],r:1},{id:"grifo2",name:"Grifo",forms:["🥚","🦅","🦁🦅"],r:2}];
+ {id:"espectro",name:"Espectro",forms:["👻","🕯️","🔮"],r:1},{id:"grifo2",name:"Grifo",forms:["🥚","🦅","🦁🦅"],r:2},
+ // ----- tanda 4 (hasta 100) -----
+ {id:"delfin",name:"Splash",forms:["🐟","🐬","🌊🐬"],r:0},{id:"loro2",name:"Kiko",forms:["🥚","🐤","🦜"],r:0},
+ {id:"mariposa",name:"Aleta",forms:["🐛","🐝","🦋"],r:0},{id:"camaleon",name:"Cromo",forms:["🥚","🦎","🌈🦎"],r:1},
+ {id:"ardilla2",name:"Nuez",forms:["🌰","🐿️","🌳🐿️"],r:0},{id:"erizo",name:"Pinchitos",forms:["🌰","🦔","🌟🦔"],r:0},
+ {id:"morsa",name:"Bigotes",forms:["🐟","🦭","🐋"],r:1},{id:"caballito",name:"Marito",forms:["🌊","🐠","🐡"],r:0},
+ {id:"lince",name:"Sombra",forms:["🐱","🐈","🐆"],r:1},{id:"alce",name:"Ramón",forms:["🦌","🌲🦌","❄️🦌"],r:1},
+ {id:"tucan2",name:"Pico",forms:["🥚","🐦","🦤"],r:0},{id:"murcielago",name:"Nocturno",forms:["🐭","🦇","🌙🦇"],r:1},
+ {id:"pulpo2",name:"Tinta",forms:["🐚","🐙","🌊🐙"],r:1},{id:"foca",name:"Copo",forms:["🐟","🦭","❄️🦭"],r:0},
+ {id:"jirafa",name:"Altura",forms:["🌿","🦒","🌳🦒"],r:0},{id:"rino",name:"Tanque",forms:["🦏","⛰️🦏","🌋🦏"],r:1},
+ {id:"cocodrilo",name:"Mandíbula",forms:["🥚","🐊","🐉🐊"],r:1},{id:"flamenco",name:"Rosa",forms:["🥚","🦩","🌅🦩"],r:0},
+ {id:"mapache2",name:"Bandido",forms:["🌙","🦝","🌟🦝"],r:0},{id:"koala2",name:"Eucalipto",forms:["🌿","🐨","🌳🐨"],r:0},
+ {id:"orca",name:"Capitán",forms:["🐟","🐋","🌊🐋"],r:2},{id:"aguila2",name:"Cielo",forms:["🥚","🦅","⚡🦅"],r:1},
+ {id:"toro",name:"Embiste",forms:["🐄","🐂","🔥🐂"],r:1},{id:"oveja",name:"Nubosa",forms:["☁️","🐑","🌈🐑"],r:0},
+ {id:"caballo2",name:"Galope",forms:["🐴","🏇","🦄"],r:1},{id:"gallo",name:"Alba",forms:["🥚","🐔","🌅🐓"],r:0},
+ {id:"pato",name:"Chapoteo",forms:["🥚","🐤","🦆"],r:0},{id:"cangrejo2",name:"Tenaza",forms:["🦐","🦀","🌊🦀"],r:0},
+ {id:"escorpion",name:"Aguijón",forms:["🦂","🌵🦂","🔥🦂"],r:1},{id:"libelula",name:"Brisa",forms:["🐛","🦗","🌈🦗"],r:0},
+ {id:"panda2",name:"Bambino",forms:["🎋","🐼","🌸🐼"],r:1},{id:"zorro2",name:"Llama",forms:["🦊","🔥🦊","🌟🦊"],r:1},
+ {id:"lobo3",name:"Aullido",forms:["🐺","🌕🐺","⚡🐺"],r:1},{id:"tigre2",name:"Rayo",forms:["🐱","🐯","🔥🐯"],r:2},
+ {id:"leon2",name:"Melena",forms:["🐱","🦁","👑🦁"],r:2},{id:"dragon3",name:"Inferno",forms:["🥚","🐲","🌋🐉"],r:2},
+ {id:"unicornio2",name:"Brillo",forms:["🐴","🦄","🌈🦄"],r:2},{id:"fenix2",name:"Renacer",forms:["🔥","🐤","🔥🦅"],r:2},
+ {id:"pegaso",name:"Viento",forms:["🐴","🕊️🐴","☁️🐴"],r:2},{id:"hidra",name:"Hidra",forms:["🐍","🐲","🌊🐉"],r:2}];
 function critters(){const p=prof();if(!p.critters)p.critters=[];return p.critters;}
 function critterCount(id){return critters().filter(x=>x===id).length;}
 function uniqueCritters(){return new Set(critters()).size;}
