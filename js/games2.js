@@ -182,7 +182,7 @@ function mpFinish(){
  sWIN();confetti(36);
  const got=(stars>=2&&typeof maybeCritter==="function")?maybeCritter():null;
  if(got)setTimeout(()=>confetti(24),400);
- const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:12px;text-align:center"><div style="font-size:clamp(3rem,15vw,4rem)">'+got.e+'</div><b>'+(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" evolucionó! 🌟":"¡"+got.name+" subió de nivel!")+'</b></div>':'';
+ const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:12px;text-align:center;cursor:pointer" onclick="screenCritters()"><div style="font-size:clamp(3rem,15vw,4rem)">'+got.e+'</div><b>'+(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" evolucionó! 🌟":"¡"+got.name+" subió de nivel!")+'</b><p style="margin-top:6px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca para ver tu colección 🎒</p></div>':'';
  const cells=MP.tpl.map((c)=>'<div style="aspect-ratio:1;border-radius:9px;background:'+(c===0?"transparent":MP_COLORS[c])+'"></div>').join("");
  render(topbar("exitGame('games')")
  +'<div class="card endcard"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+MP.art.pic+'</div>'

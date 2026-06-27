@@ -40,6 +40,17 @@ function afRoute(u){
  S.hasAccount=true;save();
  if(typeof afPull==="function")afPull(function(){if(current.profile===null&&!document.getElementById("acctbox"))screenStart();});
  else if(current.profile===null)screenStart();}
+/* cerrar sesión / cambiar de cuenta */
+function doLogout(){
+ if(!confirm("¿Cerrar sesión? Tendrás que volver a entrar con tu correo y contraseña."))return;
+ try{if(typeof afLogout==="function")afLogout();}catch(e){}
+ current.profile=null;
+ if(typeof afMember!=="undefined")afMember=null;
+ const cloud=(typeof afCloudAvailable==="function"&&afCloudAvailable());
+ // con nube, el cambio de sesión de Firebase ya lleva al portón; igual forzamos por si acaso
+ S.hasAccount=false;save();
+ setTimeout(function(){screenGate();},cloud?200:0);
+}
 function gateInitialMode(){try{var g=new URLSearchParams(location.search).get("go");if(g==="login"||g==="signup")return g;}catch(e){}return undefined;}
 function screenGate(mode){setTheme("parent");current.profile=null;
  if(mode===undefined)mode=gateInitialMode();

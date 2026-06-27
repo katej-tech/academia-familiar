@@ -288,21 +288,34 @@ function weakestTopics(keys,count){
  return scored.slice(0,count).map(s=>s.k);}
 
 /* generar una tanda de retos de un tema (IA si hay clave, si no fallback) */
+/* memoria de lo ya preguntado por la IA, para NO repetir (por tema) */
+function aiSeenList(topicKey){if(!S.aiSeen)S.aiSeen={};if(!S.aiSeen[topicKey])S.aiSeen[topicKey]=[];return S.aiSeen[topicKey];}
+function aiRemember(topicKey,texts){const l=aiSeenList(topicKey);texts.forEach(t=>{const k=String(t).toLowerCase().trim();if(k&&!l.includes(k))l.push(k);});while(l.length>40)l.shift();save();}
 async function buildChallenges(topicKey,n){
  const topic=KID_TOPICS[topicKey];
  if(S.geminiKey){
   try{
-   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple sobre: '+topic.prompt+'. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 3 opciones y una sola correcta. Lenguaje español sencillo y frases cortas. Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
-   if(obj.items&&obj.items.length){return obj.items.map(it=>{
-    // sanitizar (la IA a veces mete etiquetas HTML) y mezclar opciones
-    const q=stripHTML(it.q);
-    const opsClean=(it.ops||[]).map(o=>stripHTML(o));
-    const correct=opsClean[it.a];const ops=shuffled(opsClean);
-    return{q,ops,a:ops.indexOf(correct),word:topic.en?firstEnWord(q):null};});}
+   const seen=aiSeenList(topicKey);
+   const avoid=seen.slice(-18);
+   const variedad=["la vida diaria","animales","comida","juguetes","deportes","la familia","la naturaleza","la escuela"][Math.floor(Math.random()*8)];
+   const noRepetir=avoid.length?(' MUY IMPORTANTE: NO repitas ni parafrasees estas preguntas que ya se usaron: '+avoid.map(q=>'"'+q+'"').join("; ")+'. Inventa preguntas DISTINTAS y frescas.'):'';
+   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple NUEVAS y variadas sobre: '+topic.prompt+'. Usa contextos variados (por ejemplo: '+variedad+') para que cada vez sean diferentes. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 3 opciones y una sola correcta. Lenguaje español sencillo y frases cortas.'+noRepetir+' Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
+   if(obj.items&&obj.items.length){
+    let items=obj.items.map(it=>{
+     const q=stripHTML(it.q);
+     const opsClean=(it.ops||[]).map(o=>stripHTML(o));
+     const correct=opsClean[it.a];const ops=shuffled(opsClean);
+     return{q,ops,a:ops.indexOf(correct),word:topic.en?firstEnWord(q):null};});
+    // descarta las que ya salieron antes
+    const fresh=items.filter(it=>!seen.includes(String(it.q).toLowerCase().trim()));
+    const finalItems=fresh.length?fresh:items;
+    aiRemember(topicKey,finalItems.map(it=>it.q));
+    return finalItems;}
   }catch(e){/* cae al fallback */}
  }
- // fallback fijo
- const out=[];for(let i=0;i<n;i++){const f=topic.fallback();
+ // fallback fijo (sin clave): evita repetir el inmediato anterior
+ const out=[];let last=null;
+ for(let i=0;i<n;i++){let f,guard=0;do{f=topic.fallback();guard++;}while(last&&f.q===last&&guard<6);last=f.q;
   if(f.a===-1&&f.fixAns!==undefined)f.a=f.ops.indexOf(f.fixAns);
   out.push(f);}
  return out;}

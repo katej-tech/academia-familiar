@@ -29,7 +29,8 @@ function screenStart(){setTheme("parent");current.profile=null;
  +'<p class="center mut" style="margin-bottom:22px;font-size:1.05rem">¿Quién va a jugar hoy?</p>'
  +streakReminderHTML()
  +cards
- +'<p class="center" style="margin-top:20px"><button class="pbtn ghost" onclick="screenParentLogin()">👨‍👩‍👧 Panel de padres</button></p></div>');}
+ +'<p class="center" style="margin-top:20px"><button class="pbtn ghost" onclick="screenParentLogin()">👨‍👩‍👧 Panel de padres</button></p>'
+ +'<p class="center" style="margin-top:6px"><button class="pbtn ghost" style="font-size:.92rem" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button></p></div>');}
 function enterProfile(id){if(!S.profiles[id])return;current.profile=id;touchDay();save();
  if(profType()==="teen")screenTeenHome();else screenKidMap();}
 function enterKid(){enterProfile("nino");}
@@ -190,11 +191,16 @@ async function aiStoryKid(){
  try{
   const temas=["la amistad","el valor de la honestidad","cuidar la naturaleza","el trabajo en equipo","superar el miedo","la importancia de compartir","la perseverancia","ser amable con los demás","la curiosidad por aprender","cuidar a los animales"];
   const tema=temas[Math.floor(Math.random()*temas.length)];
-  const obj=await geminiJSON('Crea un cuento infantil ORIGINAL en español para un niño de 7 años (primero de primaria), sobre el tema: '+tema+'. Con valores positivos, personajes con nombre, un problema que se resuelve y una enseñanza clara. Debe ser LARGO y entretenido: 7 escenas, y cada escena con 4 o 5 frases sencillas y descriptivas (que de verdad se pueda leer despacio antes de dormir). Responde SOLO JSON: {"title":"título lindo","pages":[{"scene":"2-3 emojis que ilustren la escena","text":"4-5 frases, marca 2-3 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / causa-efecto / qué sintió / qué aprende)","ops":["correcta","mala","mala"],"a":0}]} con 7 pages y 4 qs.');
+  if(!S.aiStoriesSeen)S.aiStoriesSeen=[];
+  const evitar=S.aiStoriesSeen.slice(-12);
+  const noRep=evitar.length?(' NO repitas estos cuentos ya creados (cambia personajes, lugar y trama): '+evitar.map(t=>'"'+t+'"').join("; ")+'.'):'';
+  const animales=["un zorro","una ardilla","un conejo","una tortuga","un búho","un gatito","un dragón pequeño","una abeja","un pingüino","un elefantito"][Math.floor(Math.random()*10)];
+  const obj=await geminiJSON('Crea un cuento infantil ORIGINAL y ÚNICO en español para un niño de 7 años, sobre el tema: '+tema+'. Que el protagonista sea '+animales+' (con nombre propio).'+noRep+' Con valores positivos, un problema que se resuelve y una enseñanza clara. Debe ser LARGO y entretenido: 7 escenas, cada escena con 4 o 5 frases sencillas y descriptivas. Responde SOLO JSON: {"title":"título lindo","pages":[{"scene":"2-3 emojis que ilustren la escena","text":"4-5 frases, marca 2-3 palabras clave con <b>palabra</b>"}],"qs":[{"q":"pregunta de comprensión (por qué / causa-efecto / qué sintió / qué aprende)","ops":["correcta","mala","mala"],"a":0}]} con 7 pages y 4 qs.');
   // sanitizar lo que devuelve la IA (solo se permite <b> en el texto)
   obj.title=stripHTML(obj.title||"Cuento");
   obj.pages=(obj.pages||[]).map(p=>({scene:stripHTML(p.scene||"✨"),text:keepBold(p.text||"")}));
   obj.qs=(obj.qs||[]).map(q=>({q:stripHTML(q.q),ops:(q.ops||[]).map(o=>stripHTML(o)),a:q.a||0}));
+  S.aiStoriesSeen.push(obj.title);while(S.aiStoriesSeen.length>20)S.aiStoriesSeen.shift();save();
   CUENTOS.push(obj);gameStory(CUENTOS.length-1);
  }catch(e){toast("No se pudo crear, intenta de nuevo",false,2000);screenStoryPick();}}
 function nodeWin(stars,subject){
@@ -205,7 +211,7 @@ function nodeWin(stars,subject){
  const got=stars>=2?maybeCritter():null;
  const gotMsg=got?(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️"):"";
  const gotSub=got?(got.isNew?"Una nueva criatura para tu colección 🎒":got.evolved?"Mira su nueva forma en tu colección 🎒":"Recaptúrala para que evolucione"):"";
- const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+got.e+'</div><b style="font-size:1.2rem">'+gotMsg+'</b><p>'+gotSub+'</p></div>':'';
+ const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center;cursor:pointer" onclick="screenCritters()"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+got.e+'</div><b style="font-size:1.2rem">'+gotMsg+'</b><p>'+gotSub+'</p><p style="margin-top:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca para ver tu colección 🎒</p></div>':'';
  if(got)setTimeout(()=>confetti(30),400);
  render(topbar("screenKidMap()")
  +'<div class="card endcard"><div class="big">'+(stars===3?"🏆":stars===2?"🌟":"⭐")+'</div>'
@@ -576,7 +582,17 @@ const CRITTERS=[
  {id:"fenixb",name:"Fénix",forms:["🥚","🐤","🔥🦅"],r:2},{id:"krak",name:"Kraken",forms:["🦑","🐙","🌊🐙"],r:2},
  {id:"galax",name:"Galaxo",forms:["⭐","🌌","🌠"],r:2},{id:"titan",name:"Titán",forms:["🦴","🦣","🦏"],r:2},
  {id:"hada",name:"Hada",forms:["🧚","✨","🦋✨"],r:2},{id:"golem",name:"Golem",forms:["🧱","🗿","🏔️"],r:1},
- {id:"draco2",name:"Dracón",forms:["🥚","🐲","🐉🔥"],r:2},{id:"lobo2",name:"Lunar",forms:["🐺","🌕🐺","🌑🐺"],r:1}];
+ {id:"draco2",name:"Dracón",forms:["🥚","🐲","🐉🔥"],r:2},{id:"lobo2",name:"Lunar",forms:["🐺","🌕🐺","🌑🐺"],r:1},
+ // ----- tanda 3 (más para coleccionar) -----
+ {id:"selene",name:"Selene",forms:["🌑","🌓","🌕"],r:0},{id:"trebol",name:"Trébol",forms:["🌱","🍀","🌳"],r:0},
+ {id:"chili",name:"Chili",forms:["🌶️","🔥","🌋"],r:1},{id:"perla",name:"Perla",forms:["🦪","🐚","💎"],r:1},
+ {id:"voltio",name:"Voltio",forms:["🔋","⚡","🌩️"],r:1},{id:"coral",name:"Coral",forms:["🪸","🐠","🐡"],r:0},
+ {id:"tuki",name:"Tuki",forms:["🥚","🐤","🦜"],r:0},{id:"maple",name:"Maple",forms:["🍁","🦝","🌰"],r:0},
+ {id:"yeti",name:"Yeti",forms:["❄️","⛄","🏔️"],r:2},{id:"aura",name:"Aura",forms:["🌊","🪼","✨🪼"],r:1},
+ {id:"escar",name:"Escar",forms:["🐛","🪲","🌟🪲"],r:0},{id:"vulcan",name:"Vulcán",forms:["🪨","🌋","🔥🌋"],r:2},
+ {id:"nimbo",name:"Nimbo",forms:["☁️","⛈️","🌪️"],r:1},{id:"marina",name:"Marina",forms:["🐚","🧜","🧜‍♀️"],r:2},
+ {id:"zumzum",name:"Zumzum",forms:["🌸","🐦","🦚"],r:1},{id:"pincho",name:"Pincho",forms:["🌵","🏜️","🌸🌵"],r:0},
+ {id:"espectro",name:"Espectro",forms:["👻","🕯️","🔮"],r:1},{id:"grifo2",name:"Grifo",forms:["🥚","🦅","🦁🦅"],r:2}];
 function critters(){const p=prof();if(!p.critters)p.critters=[];return p.critters;}
 function critterCount(id){return critters().filter(x=>x===id).length;}
 function uniqueCritters(){return new Set(critters()).size;}
@@ -693,7 +709,7 @@ let OS={};
 function gameOrder(){setTheme("kid");OS={qs:shuffled(SENTENCES_ES).slice(0,4),i:0,ok:0};nextOS();}
 function nextOS(){
  if(OS.i>=OS.qs.length)return nodeWin(starsFor(OS.ok,OS.qs.length),"Ordenar");
- const correct=OS.qs[OS.i];OS.correct=correct;OS.built=[];
+ const correct=OS.qs[OS.i];OS.correct=correct;OS.built=[];OS.used=[]; // reinicia las palabras usadas (bug: la 2ª frase quedaba desactivada)
  OS.pool=shuffled(correct.map((w,idx)=>({w,idx})));
  renderOS();}
 function renderOS(){

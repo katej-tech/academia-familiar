@@ -156,7 +156,7 @@ function finishEAK(){
  save();
  // la academia también da criaturas al aprobar
  const got=(pct>=0.7&&profType()==="kid"&&typeof maybeCritter==="function")?maybeCritter():null;
- const gotHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center"><div style="font-size:clamp(3rem,15vw,4.5rem)">'+got.e+'</div><b style="font-size:1.15rem">'+(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️")+'</b></div>':'';
+ const gotHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center;cursor:pointer" onclick="screenCritters()"><div style="font-size:clamp(3rem,15vw,4.5rem)">'+got.e+'</div><b style="font-size:1.15rem">'+(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️")+'</b><p style="margin-top:6px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca para ver tu colección 🎒</p></div>':'';
  if(got)setTimeout(()=>confetti(24),400);
  render(topbar("screenAcademyKid()")
  +'<div class="card endcard">'+crownMsg
