@@ -200,25 +200,30 @@ function gameDoodle(){setTheme("kid");
  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🦘 Saltarín</h2>'
  +'<p class="center" style="font-size:.9rem;margin-bottom:6px">Mantén los botones para moverte. ¡Salta y sube lo más alto!</p>'
  +'<div id="djscore" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.1rem;margin-bottom:6px">⬆️ 0</div>'
- +'<div id="djwrap" style="position:relative;width:300px;height:440px;max-width:100%;margin:0 auto;background:linear-gradient(180deg,#BFE8FF,#E8F7FF);border:4px solid var(--kid-ink);border-radius:16px;overflow:hidden;touch-action:none"></div>'
+ +'<div id="djwrap" style="position:relative;width:300px;max-width:100%;margin:0 auto;touch-action:none"><canvas id="djcanvas" style="width:100%;display:block;border:4px solid var(--kid-ink);border-radius:16px;box-shadow:0 8px 18px rgba(30,42,74,.25)"></canvas></div>'
  +'<div style="display:flex;gap:12px;max-width:320px;margin:12px auto 0">'
  +'<button class="kbtn blue" style="flex:1;margin:0;min-height:62px" onpointerdown="djMove(-1)" onpointerup="djMove(0)" onpointerleave="djMove(0)">⬅️</button>'
  +'<button class="kbtn blue" style="flex:1;margin:0;min-height:62px" onpointerdown="djMove(1)" onpointerup="djMove(0)" onpointerleave="djMove(0)">➡️</button>'
  +'</div>');
+ const cv=document.getElementById("djcanvas");
+ const cssW=Math.min(340,cv.clientWidth||300),cssH=Math.round(cssW*H/W);
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ cv.style.height=cssH+"px";cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
+ DJ.ctx=cv.getContext("2d");DJ.ctx.scale(dpr*cssW/W,dpr*cssH/H);
  const wrap=document.getElementById("djwrap");
  if(wrap){
   wrap.addEventListener("pointerdown",e=>{const r=wrap.getBoundingClientRect();djMove((e.clientX-r.left)<r.width/2?-1:1);});
   wrap.addEventListener("pointerup",()=>djMove(0));
   wrap.addEventListener("pointerleave",()=>djMove(0));
  }
- djRender();
+ djDraw();
  requestAnimationFrame(djLoop);}
 function djMove(d){DJ.move=d;}
 function djLoop(t){
- if(!document.getElementById("djwrap")||!DJ.run)return;
+ if(!document.getElementById("djcanvas")||!DJ.run)return;
  if(DJ.last==null)DJ.last=t;
  let dt=(t-DJ.last)/16.7;if(dt>3)dt=3;if(dt<0)dt=1;DJ.last=t;
- djStep(dt);djRender();
+ djStep(dt);djDraw();
  if(DJ.run)requestAnimationFrame(djLoop);}
 function djStep(dt){
  const W=DJ.W,H=DJ.H;
@@ -232,12 +237,26 @@ function djStep(dt){
  while(DJ.plats.length<10){const top=Math.min.apply(null,DJ.plats.map(p=>p.y));DJ.plats.push({x:rnd(W-70),y:top-46,w:70});}
  if(DJ.y>H+30){DJ.run=false;sNO();recordAnswer("Lógica",DJ.score>=200,10);
   const st=DJ.score>=600?3:DJ.score>=250?2:1;setTimeout(()=>nodeWin(st,"Lógica"),200);}}
-function djRender(){
- const wrap=document.getElementById("djwrap");if(!wrap)return;
- let html='<div style="position:absolute;left:'+DJ.x.toFixed(0)+'px;top:'+DJ.y.toFixed(0)+'px;font-size:30px;transform:translate(-50%,-50%);z-index:2">🐸</div>';
- html+=DJ.plats.map(p=>'<div style="position:absolute;left:'+p.x.toFixed(0)+'px;top:'+p.y.toFixed(0)+'px;width:'+p.w+'px;height:12px;background:#3EC97C;border:3px solid #1E2A4A;border-radius:8px"></div>').join("");
- wrap.innerHTML=html;
+function djDraw(){
+ const c=DJ.ctx;if(!c)return;const W=DJ.W,H=DJ.H;
+ // cielo
+ c.fillStyle="#DDF2FF";c.fillRect(0,0,W,H);
+ c.fillStyle="rgba(255,255,255,.7)";c.beginPath();c.ellipse(W*0.25,H*0.2,26,15,0,0,Math.PI*2);c.ellipse(W*0.75,H*0.45,30,17,0,0,Math.PI*2);c.fill();
+ // plataformas
+ for(const p of DJ.plats){c.fillStyle="#3EC97C";rrect(c,p.x,p.y,p.w,13,6);c.fill();c.lineWidth=3;c.strokeStyle="#1E2A4A";c.stroke();
+  c.fillStyle="rgba(255,255,255,.4)";rrect(c,p.x+4,p.y+2,p.w-8,4,2);c.fill();}
+ // rana
+ djDrawFrog(c,DJ.x,DJ.y);
  const sc=document.getElementById("djscore");if(sc)sc.textContent="⬆️ "+DJ.score;}
+function djDrawFrog(c,x,y){
+ const s=17;c.save();c.translate(x,y);
+ c.fillStyle="rgba(0,0,0,.15)";c.beginPath();c.ellipse(0,s*0.9,s*0.8,s*0.25,0,0,Math.PI*2);c.fill();
+ c.fillStyle="#5BCE6B";c.beginPath();c.ellipse(0,0,s,s*0.82,0,0,Math.PI*2);c.fill();c.lineWidth=2.5;c.strokeStyle="#1E2A4A";c.stroke();
+ c.fillStyle="#5BCE6B";c.beginPath();c.arc(-s*0.5,-s*0.7,s*0.42,0,Math.PI*2);c.arc(s*0.5,-s*0.7,s*0.42,0,Math.PI*2);c.fill();c.stroke();
+ c.fillStyle="#fff";c.beginPath();c.arc(-s*0.5,-s*0.72,s*0.24,0,Math.PI*2);c.arc(s*0.5,-s*0.72,s*0.24,0,Math.PI*2);c.fill();
+ c.fillStyle="#1E2A4A";c.beginPath();c.arc(-s*0.5,-s*0.72,s*0.11,0,Math.PI*2);c.arc(s*0.5,-s*0.72,s*0.11,0,Math.PI*2);c.fill();
+ c.strokeStyle="#1E2A4A";c.lineWidth=2;c.beginPath();c.arc(0,s*0.05,s*0.45,0.12*Math.PI,0.88*Math.PI);c.stroke();
+ c.restore();}
 
 /* ---- TRES EN LÍNEA (Tic-Tac-Toe) contra la máquina ---- */
 let TT={};
