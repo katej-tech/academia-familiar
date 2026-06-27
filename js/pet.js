@@ -48,7 +48,10 @@ function screenTama(){setTheme("kid");if(typeof stopGames==="function")stopGames
   +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Nivel de cariño '+lv+' 💞 · '+(p.coins)+' 🪙</p>'
   +'<div id="tamastage" class="card" style="position:relative;text-align:center;padding:18px 14px;overflow:hidden;background:linear-gradient(180deg,#EAF6FF,#D6ECFF)">'
    +'<div style="font-size:.95rem;font-family:Fredoka;font-weight:700;min-height:1.4em;margin-bottom:6px">'+m.f+' '+esc(m.msg)+'</div>'
-   +'<div id="tamapet" class="'+(sleeping?'petsleep':'petidle')+'" style="font-size:clamp(5rem,30vw,8rem);line-height:1;'+(sleeping?'filter:grayscale(.3);opacity:.85':'')+'">'+t.sp+'</div>'
+   +'<div style="position:relative;display:inline-block">'
+    +'<div id="tamapet" class="'+(sleeping?'petsleep':'petidle')+'" style="font-size:clamp(5rem,30vw,8rem);line-height:1;'+(sleeping?'filter:grayscale(.3);opacity:.85':'')+'">'+t.sp+'</div>'
+    +(t.acc?'<div style="position:absolute;top:-8%;left:50%;transform:translateX(-50%);font-size:clamp(1.8rem,11vw,3rem);pointer-events:none">'+t.acc+'</div>':'')
+   +'</div>'
    +(sleeping?'<div class="zzz" style="position:absolute;top:20%;left:58%">💤</div>':'')
   +'</div>'
   +'<div class="card" style="padding:12px 14px">'
@@ -63,8 +66,17 @@ function screenTama(){setTheme("kid");if(typeof stopGames==="function")stopGames
    +'<button class="kbtn blue" '+(sleeping?'disabled style="opacity:.5"':'')+' onclick="tamaBath()">🛁 Bañar</button>'
    +'<button class="kbtn white" onclick="tamaSleep()">'+(sleeping?'☀️ Despertar':'😴 Dormir')+'</button>'
   +'</div>'
+  +petAccBar()
   +'<p class="center mut" style="margin-top:12px;font-size:.8rem">Sus necesidades bajan con el tiempo. ¡Vuelve cada día a cuidarlo! 💞</p>');
  if(TAMA_ATE){tamaEatAnim(TAMA_ATE);TAMA_ATE=null;}
+}
+function petAccBar(){
+ const p=prof();const accs=(p.owned||[]).map(shopItem).filter(x=>x&&x.t==="petacc");
+ if(!accs.length)return '<p class="center mut" style="margin-top:12px;font-size:.82rem">🛍️ Compra accesorios para tu mascota en la tienda</p>';
+ return '<div class="card" style="margin-top:12px;padding:10px 12px"><b style="font-size:.95rem">🎀 Accesorios</b>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">'
+  +accs.map(it=>'<button class="kbtn '+(p.tama.accId===it.id?'green':'white')+'" style="display:inline-block;width:auto;margin:0;padding:8px 12px;font-size:1rem" onclick="petEquipFromPet(\''+it.id+'\')">'+it.e+' '+it.n+(p.tama.accId===it.id?' ✓':'')+'</button>').join("")
+  +'</div></div>';
 }
 let TAMA_ATE=null;
 function tamaEatAnim(food){

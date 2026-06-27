@@ -70,8 +70,24 @@ const SHOP_ITEMS=[
  {id:"p_panda",t:"pet",e:"🐼",n:"Panda Guardián",pr:400},{id:"p_zorro",t:"pet",e:"🦊",n:"Zorro Místico",pr:300},
  {id:"p_buho",t:"pet",e:"🦉",n:"Búho Sabio",pr:350},{id:"p_serpiente",t:"pet",e:"🐍",n:"Serpiente Esmeralda",pr:450},
  {id:"p_pinguino",t:"pet",e:"🐧",n:"Pingüino Polar",pr:300},{id:"p_rana",t:"pet",e:"🐸",n:"Rana Saltarina",pr:250},
- {id:"p_estrella",t:"pet",e:"🌟",n:"Estrella Viviente",pr:1200},{id:"p_robot",t:"pet",e:"🤖",n:"Robot Compañero",pr:550}];
-const SHOP_CATS=[["hat","🎩 Gorros (¡con color!)"],["face","🕶️ Gafas"],["hand","🎸 Compañeros"],["bg","🌈 Fondos"],["pet","✨ Mascotas legendarias"]];
+ {id:"p_estrella",t:"pet",e:"🌟",n:"Estrella Viviente",pr:1200},{id:"p_robot",t:"pet",e:"🤖",n:"Robot Compañero",pr:550},
+ // PERSONAJES famosos e históricos (tu personaje se convierte en uno) — cuestan MUCHO esfuerzo
+ {id:"f_astronauta",t:"famoso",e:"🧑‍🚀",n:"Astronauta",pr:400},
+ {id:"f_cientifica",t:"famoso",e:"👩‍🔬",n:"Científica",pr:400},
+ {id:"f_artista",t:"famoso",e:"🧑‍🎨",n:"Artista",pr:350},
+ {id:"f_explorador",t:"famoso",e:"🧭",n:"Explorador/a",pr:400},
+ {id:"f_rey",t:"famoso",e:"🤴",n:"Rey",pr:450},{id:"f_reina",t:"famoso",e:"👸",n:"Reina",pr:450},
+ {id:"f_caballero",t:"famoso",e:"🤺",n:"Caballero",pr:450},{id:"f_vaquero",t:"famoso",e:"🤠",n:"Vaquero/a",pr:350},
+ {id:"f_doctora",t:"famoso",e:"🧑‍⚕️",n:"Doctor/a",pr:350},{id:"f_piloto",t:"famoso",e:"🧑‍✈️",n:"Piloto",pr:400},
+ {id:"f_mago",t:"famoso",e:"🧙",n:"Mago/a",pr:500},{id:"f_detective",t:"famoso",e:"🕵️",n:"Detective",pr:400},
+ {id:"f_ninja",t:"famoso",e:"🥷",n:"Ninja",pr:550},{id:"f_superheroe",t:"famoso",e:"🦸",n:"Superhéroe",pr:600},
+ {id:"f_superheroina",t:"famoso",e:"🦸‍♀️",n:"Superheroína",pr:600},{id:"f_faraon",t:"famoso",e:"⚱️",n:"Faraón/a",pr:500},
+ // ACCESORIOS para tu MASCOTA (se le ponen encima)
+ {id:"pa_gorro",t:"petacc",e:"🎩",n:"Sombrero",pr:35},{id:"pa_corona",t:"petacc",e:"👑",n:"Corona",pr:90},
+ {id:"pa_lazo",t:"petacc",e:"🎀",n:"Lazo",pr:25},{id:"pa_gafas",t:"petacc",e:"🕶️",n:"Gafas",pr:45},
+ {id:"pa_bufanda",t:"petacc",e:"🧣",n:"Bufanda",pr:30},{id:"pa_flor",t:"petacc",e:"🌸",n:"Flor",pr:20},
+ {id:"pa_gorrito",t:"petacc",e:"🎉",n:"Gorro de fiesta",pr:35},{id:"pa_aureola",t:"petacc",e:"😇",n:"Aureola",pr:70}];
+const SHOP_CATS=[["famoso","🦸 Personajes famosos e históricos"],["petacc","🐾 Para tu mascota"],["hat","🎩 Gorros (¡con color!)"],["face","🕶️ Gafas"],["hand","🎸 Compañeros"],["bg","🌈 Fondos"],["pet","✨ Mascotas legendarias"]];
 /* compras de la versión anterior → su equivalente nuevo */
 const SHOP_OLD_MAP={h_gorra:"h_win2",h_corona:"h_hat",h_mago:"h_hat",h_grad:"h_hat",h_casco:"h_win1",h_fiesta:"h_win4",a_gafas:"g_sun"};
 function shopItem(id){return SHOP_ITEMS.find(x=>x.id===id);}
@@ -92,6 +108,7 @@ function avState(){const p=prof();
  if(a.bgId===undefined)a.bgId=null;
  if(!a.kind)a.kind="person";
  if(!a.animal)a.animal="🦊";
+ if(!a.famoso)a.famoso="🦸";
  if(!a.robotSeed)a.robotSeed="robi";
  if(!p.owned)p.owned=[];
  // migrar compras viejas al catálogo nuevo
@@ -118,7 +135,7 @@ function avatarKey(){const a=avState();
  return DB_API+"?"+ps.join("&");}
 /* descarga el SVG una vez y lo guarda en el perfil (offline después) */
 function avatarEnsure(cb){const p=prof();
- if(avState().kind==="animal")return; // los animalitos son emoji, no necesitan descarga
+ const k=avState().kind;if(k==="animal"||k==="famoso")return; // emoji, no necesitan descarga
  const key=avatarKey();
  if(p.avatarSvg&&p.avatarKey===key)return;
  fetch(key).then(r=>r.text()).then(t=>{
@@ -135,8 +152,9 @@ function avatarScene(px){const a=avState();
 function avatarHTML(px){const p=prof();const a=avState();
  const hand=a.handId&&shopItem(a.handId);
  let face;
- if(a.kind==="animal"){
-  face='<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.62)+'px;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#EAF2FF">'+(a.animal||"🦊")+'</span>';
+ if(a.kind==="animal"||a.kind==="famoso"){
+  const em=a.kind==="famoso"?(a.famoso||"🦸"):(a.animal||"🦊");
+  face='<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.62)+'px;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#EAF2FF">'+em+'</span>';
  }else{
   const ready=p.avatarSvg&&p.avatarKey===avatarKey();
   const inner=ready
@@ -187,13 +205,18 @@ function screenAvatar(){setTheme("kid");
    +'<div class="card"><b>🕶️ Gafas</b>'+eqBtns("face","glassId")+'</div>';
  }else if(a.kind==="animal"){
   personaCards='<div class="card"><b>🐾 Elige tu animalito</b>'+animalGrid+'</div>';
+ }else if(a.kind==="famoso"){
+  const fams=p.owned.map(shopItem).filter(x=>x&&x.t==="famoso");
+  personaCards='<div class="card"><b>🦸 Tus personajes famosos</b>'+(fams.length
+   ?'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px">'+fams.map(it=>'<button onclick="avSetFamoso(\''+it.e+'\')" title="'+it.n+'" style="aspect-ratio:1;border-radius:14px;border:3px solid var(--kid-ink);background:'+(a.famoso===it.e?"var(--kid-green)":"#fff")+';box-shadow:0 3px 0 rgba(30,42,74,.6);font-size:clamp(1.3rem,6vw,1.8rem)">'+it.e+'</button>').join("")+'</div>'
+   :'<p class="mut" style="margin-top:6px">Aún no tienes personajes famosos. ¡Cómpralos en la tienda! 🛍️ Cuestan bastante esfuerzo (400-600 🪙).</p>')+'</div>';
  }else{
   personaCards='<div class="card center"><b>🤖 Tu robot</b><p class="mut" style="margin:6px 0 10px">Cada toque crea un robot nuevo</p><button class="kbtn blue" onclick="avShuffleRobot()">🎲 Cambiar robot</button></div>';
  }
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">😎 Mi personaje</h2>'
  +'<div class="card center" style="padding:14px">'+avatarScene(180)+'</div>'
- +'<div class="card"><b>¿Qué quieres ser?</b><div style="margin-top:8px">'+kindBtn("person","🧑 Persona")+kindBtn("animal","🦊 Animalito")+kindBtn("robot","🤖 Robot")+'</div>'
+ +'<div class="card"><b>¿Qué quieres ser?</b><div style="margin-top:8px">'+kindBtn("person","🧑 Persona")+kindBtn("animal","🦊 Animalito")+kindBtn("robot","🤖 Robot")+kindBtn("famoso","🦸 Famoso")+'</div>'
  +(a.kind==="person"?'<p class="mut" style="font-size:.85rem;margin-top:6px">Para niña: elige un peinado largo (Bob, Moño o Largo) 👧</p>':'')+'</div>'
  +personaCards
  +'<div class="card"><b>🎸 Compañero</b>'+eqBtns("hand","handId")+'</div>'
@@ -213,8 +236,12 @@ function screenShop(){setTheme("kid");
    const owned=p.owned.includes(it.id)||(p.legendaries||[]).includes(it.id);
    const active=p.activePet===it.id;
    let btn;
+   const a=avState();const famActive=it.t==="famoso"&&a.kind==="famoso"&&a.famoso===it.e;
+   const accActive=it.t==="petacc"&&p.tama&&p.tama.accId===it.id;
    if(!owned)btn='<button class="kbtn yellow" style="margin:8px 0 0;min-height:48px;font-size:1rem" onclick="shopBuy(\''+it.id+'\')">Comprar · '+it.pr+' 🪙</button>';
    else if(it.t==="pet")btn='<button class="kbtn '+(active?'green':'white')+'" style="margin:8px 0 0;min-height:48px;font-size:1rem" onclick="shopPet(\''+it.id+'\')">'+(active?'✓ Te acompaña':'Llevar conmigo')+'</button>';
+   else if(it.t==="famoso")btn='<button class="kbtn '+(famActive?'green':'white')+'" style="margin:8px 0 0;min-height:48px;font-size:1rem" onclick="avEquipFromShop(\''+it.id+'\')">'+(famActive?'✓ Eres tú':'Ser este 🦸')+'</button>';
+   else if(it.t==="petacc")btn='<button class="kbtn '+(accActive?'green':'white')+'" style="margin:8px 0 0;min-height:48px;font-size:1rem" onclick="avEquipFromShop(\''+it.id+'\')">'+(accActive?'✓ Puesto':'Ponérselo 🐾')+'</button>';
    else btn='<button class="kbtn white" style="margin:8px 0 0;min-height:48px;font-size:1rem" onclick="avEquipFromShop(\''+it.id+'\')">Equipar 😎</button>';
    return '<div style="text-align:center;padding:12px;border-radius:18px;border:4px solid var(--kid-ink);background:'+(owned?"#EFFFF3":"#FFF")+';box-shadow:0 5px 0 rgba(30,42,74,.7)">'
     +'<div style="font-size:clamp(2.4rem,11vw,3.2rem)">'+it.e+'</div>'
@@ -227,6 +254,7 @@ function screenShop(){setTheme("kid");
  +cats);}
 function shopBuy(id){const it=shopItem(id),p=prof();
  if(!it)return;
+ if(!p.owned)p.owned=[];
  if(p.coins<it.pr){sNO();toast("Te faltan "+(it.pr-p.coins)+" 🪙 — ¡sigue jugando!",false,1800);return;}
  p.coins-=it.pr;
  if(it.t==="pet"){if(!p.legendaries)p.legendaries=[];p.legendaries.push(id);p.activePet=id;}
@@ -235,5 +263,15 @@ function shopBuy(id){const it=shopItem(id),p=prof();
  setTimeout(screenShop,600);}
 function shopPet(id){const p=prof();p.activePet=p.activePet===id?null:id;save();beep([600],.08);screenShop();}
 function avEquipFromShop(id){const it=shopItem(id),a=avState();
+ if(it.t==="famoso"){a.kind="famoso";a.famoso=it.e;save();sOK();toast("¡Ahora eres "+it.n+"! 🎉",true,1300);screenShop();return;}
+ if(it.t==="petacc"){petToggle(id);screenShop();return;}
  const key=it.t==="hat"?"hatId":it.t==="face"?"glassId":it.t==="hand"?"handId":"bgId";
  a[key]=id;save();sOK();toast("¡Equipado! 😎",true,1000);avatarEnsure(screenShop);screenShop();}
+function avSetFamoso(e){const a=avState();a.kind="famoso";a.famoso=e;save();sOK();screenAvatar();}
+/* accesorios de la MASCOTA: se le ponen encima (toggle) */
+function petToggle(id){const p=prof(),it=shopItem(id);
+ if(!p.tama){toast("Primero adopta una mascota 🥚 (en Mi mascota)",false,2200);return false;}
+ if(p.tama.accId===id){p.tama.accId=null;p.tama.acc=null;}
+ else{p.tama.accId=id;p.tama.acc=it?it.e:null;}
+ save();sOK();return true;}
+function petEquipFromPet(id){if(petToggle(id))screenTama();}
