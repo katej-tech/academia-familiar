@@ -12,19 +12,23 @@ input{font-family:inherit;font-size:1rem}
 .hidden{display:none!important}
 .center{text-align:center}
 
-/* ================= TEMA NIÑO: mundo de juego ================= */
+/* ================= TEMA NIÑO: mundo de juego (look moderno) ================= */
 body.kid{font-family:'Fredoka',sans-serif;color:var(--kid-ink);
-  background:linear-gradient(180deg,#5BC0F8 0%,#8ED9F5 45%,#BDF0D8 100%);background-attachment:fixed}
-body.kid .card{background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:26px;box-shadow:0 8px 0 rgba(30,42,74,.85);padding:20px;margin-bottom:18px}
-.kbtn{display:block;width:100%;min-height:68px;padding:16px 20px;border-radius:22px;border:4px solid var(--kid-ink);
-  box-shadow:0 8px 0 var(--kid-ink);font-family:'Fredoka';font-weight:700;font-size:1.35rem;color:var(--kid-ink);
-  background:var(--kid-yellow);transition:transform .07s,box-shadow .07s;margin-bottom:16px;text-align:center;line-height:1.2}
-.kbtn:active{transform:translateY(6px);box-shadow:0 2px 0 var(--kid-ink)}
-.kbtn.blue{background:var(--kid-blue);color:#fff}
-.kbtn.green{background:var(--kid-green);color:#fff}
-.kbtn.red{background:var(--kid-red);color:#fff}
-.kbtn.purple{background:var(--kid-purple);color:#fff}
-.kbtn.white{background:#fff}
+  background:linear-gradient(170deg,#A7D8FF 0%,#C9E7FF 35%,#E8F4FF 70%,#F3FBF6 100%);background-attachment:fixed}
+body.kid .card{background:rgba(255,255,255,.92);border:2px solid rgba(30,42,74,.10);border-radius:24px;
+  box-shadow:0 10px 26px rgba(30,42,74,.13),0 2px 0 rgba(30,42,74,.05);padding:20px;margin-bottom:16px;backdrop-filter:blur(4px)}
+.kbtn{display:block;width:100%;min-height:64px;padding:15px 20px;border-radius:20px;border:none;
+  box-shadow:0 6px 0 rgba(30,42,74,.18),0 10px 18px rgba(30,42,74,.16);
+  font-family:'Fredoka';font-weight:700;font-size:1.3rem;color:var(--kid-ink);
+  background-color:var(--kid-yellow);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,0) 48%,rgba(0,0,0,.07));
+  transition:transform .08s,box-shadow .08s,filter .08s;margin-bottom:14px;text-align:center;line-height:1.2}
+.kbtn:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(30,42,74,.18),0 3px 8px rgba(30,42,74,.18);filter:brightness(.97)}
+.kbtn.blue{background-color:var(--kid-blue);color:#fff}
+.kbtn.green{background-color:var(--kid-green);color:#fff}
+.kbtn.red{background-color:var(--kid-red);color:#fff}
+.kbtn.purple{background-color:var(--kid-purple);color:#fff}
+.kbtn.white{background-color:#fff;box-shadow:0 6px 0 rgba(30,42,74,.10),0 10px 18px rgba(30,42,74,.12)}
 
 /* Mapa de aventura */
 .map{position:relative;padding:10px 0 30px}
@@ -133,11 +137,11 @@ input[type=text],input[type=password],input[type=number],input[type=email]{width
 /* ================= COMUNES ================= */
 .topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:999px;font-weight:800;font-size:1rem}
-body.kid .pill{background:#fff;border:4px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.8);font-family:'Fredoka'}
+body.kid .pill{background:rgba(255,255,255,.95);border:2px solid rgba(30,42,74,.10);box-shadow:0 4px 12px rgba(30,42,74,.14);font-family:'Fredoka'}
 body.teen .pill{background:var(--teen-card);border:1px solid #3A3360}
 body.parent .pill{background:#fff;border:1px solid var(--par-line)}
 .back{font-size:1.6rem;background:none;font-weight:800;padding:6px 12px;border-radius:12px}
-body.kid .back{background:#fff;border:4px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.8)}
+body.kid .back{background:rgba(255,255,255,.95);border:2px solid rgba(30,42,74,.10);box-shadow:0 4px 12px rgba(30,42,74,.14)}
 body.teen .back{background:var(--teen-card);border:1px solid #3A3360}
 h1.title{font-size:1.7rem;line-height:1.2;margin-bottom:6px}
 .bigq{font-size:1.5rem;font-weight:800;margin:8px 0 18px;line-height:1.3}

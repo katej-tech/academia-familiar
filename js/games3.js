@@ -591,3 +591,32 @@ function orgTap(id){
  else{const wb=document.getElementById("org_"+id);if(wb)wb.style.background="#FF6B6B";sNO();toast(t.nm+" está en verde. Es del sistema "+t.sys,false,2700);}
  BD.round++;setTimeout(nextBody,ok?1900:2800);
 }
+
+/* ============ SOCIALES: menú + ADIVINA LA BANDERA ============ */
+function screenSocial(){setTheme("kid");
+ render(topbar("screenCole()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🌎 Sociales y trivias</h2>'
+  +'<p class="center" style="margin-bottom:14px">Elige una actividad</p>'
+  +'<button class="kbtn blue" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="gameFlags()"><span style="font-size:2rem">🏴</span> <span style="flex:1">Adivina la bandera</span></button>'
+  +'<button class="kbtn green" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="playTopics(\'Sociales\',[\'geografia\',\'sociales\',\'cultura\',\'informatica\'],{perTopic:4,topicsPerSession:2,total:8})"><span style="font-size:2rem">🧠</span> <span style="flex:1">Trivias: geografía, sociales y cultura</span></button>');
+}
+let FL={};
+function gameFlags(){setTheme("kid");FL={round:0,total:8,ok:0};nextFlag();}
+function nextFlag(){
+ if(FL.round>=FL.total)return nodeWin(starsFor(FL.ok,FL.total),"Banderas");
+ const q=genBandera();FL.cur=q;
+ const order=shuffled(q.ops.map((o,i)=>({o,i})));FL.order=order;
+ render(topbar("exitGame(screenSocial)")
+  +'<div class="progressdots">'+dots(FL.total,FL.round)+'</div>'
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🏴 Adivina la bandera</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">¿De qué país es?</p>'
+  +'<div class="card center" style="padding:22px 14px"><div style="font-size:clamp(5rem,30vw,9rem);line-height:1">'+q.pic+'</div></div>'
+  +'<div class="choices2">'+order.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.1rem,5vw,1.4rem)" onclick="ansFlag('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>');
+}
+function ansFlag(vi){
+ const ok=FL.order[vi].i===FL.cur.a;
+ recordAnswer("Banderas",ok,12);
+ if(ok){sOK();confetti(10);toast("¡Correcto! 🎉",true,1200);FL.ok++;}
+ else{sNO();toast("Era: "+FL.cur.ops[FL.cur.a],false,1900);}
+ FL.round++;setTimeout(nextFlag,ok?1100:1900);
+}

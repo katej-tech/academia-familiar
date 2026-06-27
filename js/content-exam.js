@@ -168,7 +168,7 @@ function genProblema2(){
 /* ============ SEGUNDO GRADO: SOCIALES, GEOGRAFÍA Y CULTURA GENERAL (trivias) ============ */
 const GEO_QS=[
  {q:"¿Cómo se llama el planeta donde vivimos?",pic:"🌍",ops:["La Tierra","La Luna","El Sol"],a:0},
- {q:"¿En qué país vives?",pic:"🇨🇴",ops:["Colombia","La casa","El colegio"],a:0},
+ {q:"¿En qué país vives?",pic:"🌎",ops:["Colombia","La casa","El colegio"],a:0},
  {q:"¿Qué nos muestra dónde están los lugares?",pic:"🗺️",ops:["El mapa","El reloj","El plato"],a:0},
  {q:"El agua grandota y salada es el…",pic:"🌊",ops:["Mar","Vaso","Charco"],a:0},
  {q:"¿Dónde hay mucha arena para jugar?",pic:"🏖️",ops:["La playa","La cocina","El salón"],a:0},
@@ -229,15 +229,18 @@ const INFO_QS=[
 function genInfo(){const x=pick(INFO_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
 
 /* ============ SOCIALES: BANDERAS Y CAPITALES ============ */
+/* Banderas como IMAGEN (en Windows los emoji de bandera salen como letras "CA").
+   Usa flagcdn.com (gratis). Necesita internet para mostrar la imagen. */
 const BANDERAS=[
- ["🇨🇴","Colombia"],["🇲🇽","México"],["🇦🇷","Argentina"],["🇧🇷","Brasil"],["🇺🇸","Estados Unidos"],
- ["🇪🇸","España"],["🇵🇪","Perú"],["🇨🇱","Chile"],["🇻🇪","Venezuela"],["🇪🇨","Ecuador"],
- ["🇫🇷","Francia"],["🇮🇹","Italia"],["🇯🇵","Japón"],["🇨🇦","Canadá"],["🇺🇾","Uruguay"]];
+ ["co","Colombia"],["mx","México"],["ar","Argentina"],["br","Brasil"],["us","Estados Unidos"],
+ ["es","España"],["pe","Perú"],["cl","Chile"],["ve","Venezuela"],["ec","Ecuador"],
+ ["fr","Francia"],["it","Italia"],["jp","Japón"],["ca","Canadá"],["uy","Uruguay"]];
+function flagImg(code,px){return '<img src="https://flagcdn.com/'+code+'.svg" alt="bandera" loading="lazy" style="width:'+(px||150)+'px;max-width:78%;height:auto;border-radius:10px;border:2px solid rgba(30,42,74,.15);box-shadow:0 5px 14px rgba(30,42,74,.22)">';}
 function genBandera(){
  const it=pick(BANDERAS);
  const others=shuffled(BANDERAS.filter(b=>b[1]!==it[1])).slice(0,2);
  const ops=shuffled([it[1],others[0][1],others[1][1]]);
- return{q:"¿De qué país es esta bandera?",pic:it[0],ops,a:ops.indexOf(it[1])};
+ return{q:"¿De qué país es esta bandera?",pic:flagImg(it[0],170),ops,a:ops.indexOf(it[1])};
 }
 const CAPITALES=[
  ["Colombia","Bogotá"],["México","Ciudad de México"],["Argentina","Buenos Aires"],["Perú","Lima"],

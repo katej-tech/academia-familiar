@@ -42,7 +42,7 @@ const KID_WORLDS=[
  {id:"lenguaje",ic:"📚",nm:"Lenguaje",color:"red",cat:"cole",topics:["sustantivos","silabas","ortografia","narracion"],desc:"Sustantivos, sílabas, ortografía y cuentos"},
  {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",cat:"cole",topics:["ciclo_agua","cuerpo_es","cuerpo_partes","sistemas","natura"],desc:"Ciclo del agua, el cuerpo, sus sistemas y naturaleza"},
  {id:"cuerpo",ic:"🫀",nm:"El cuerpo humano",color:"red",cat:"cole",special:"body",topics:["cuerpo_partes","sistemas","cuerpo_es"],desc:"Señala las partes y aprende los sistemas"},
- {id:"sociales",ic:"🌎",nm:"Sociales y trivias",color:"blue",cat:"cole",topics:["geografia","banderas","capitales","sociales","cultura","informatica"],desc:"Geografía, banderas, capitales, sociales, cultura e informática"},
+ {id:"sociales",ic:"🌎",nm:"Sociales y trivias",color:"blue",cat:"cole",special:"social",topics:["geografia","sociales","cultura","informatica"],desc:"Banderas, geografía, sociales y cultura"},
  {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",cat:"cole",topics:["tiempo","diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
  {id:"reloj",ic:"🕐",nm:"Aprende la hora",color:"yellow",cat:"cole",special:"clock",desc:"Lee el reloj: en punto y y media"},
  {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",cat:"en",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
@@ -116,6 +116,7 @@ function openWorld(id){
  if(w.special==="games")return screenGamesPick();
  if(w.special==="clock")return gameClock();
  if(w.special==="body")return gameBody();
+ if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos
  playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
 function bumpWorld(id){const p=prof();if(!p.worldWins)p.worldWins={};p.worldWins[id]=(p.worldWins[id]||0)+1;save();}
