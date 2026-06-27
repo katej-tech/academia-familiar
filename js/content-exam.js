@@ -232,3 +232,25 @@ const INFO_QS=[
  {q:"Las carpetas en el computador sirven para…",pic:"📁",ops:["Ordenar y guardar archivos","Comer","Dibujar"],a:0},
  {q:"Para hacer clic se usa el botón…",pic:"🖱️",ops:["Del mouse","Del televisor","De la nevera"],a:0}];
 function genInfo(){const x=pick(INFO_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
+
+/* ============ SOCIALES: BANDERAS Y CAPITALES ============ */
+const BANDERAS=[
+ ["🇨🇴","Colombia"],["🇲🇽","México"],["🇦🇷","Argentina"],["🇧🇷","Brasil"],["🇺🇸","Estados Unidos"],
+ ["🇪🇸","España"],["🇵🇪","Perú"],["🇨🇱","Chile"],["🇻🇪","Venezuela"],["🇪🇨","Ecuador"],
+ ["🇫🇷","Francia"],["🇮🇹","Italia"],["🇯🇵","Japón"],["🇨🇦","Canadá"],["🇺🇾","Uruguay"]];
+function genBandera(){
+ const it=pick(BANDERAS);
+ const others=shuffled(BANDERAS.filter(b=>b[1]!==it[1])).slice(0,2);
+ const ops=shuffled([it[1],others[0][1],others[1][1]]);
+ return{q:"¿De qué país es esta bandera?",pic:it[0],ops,a:ops.indexOf(it[1])};
+}
+const CAPITALES=[
+ ["Colombia","Bogotá"],["México","Ciudad de México"],["Argentina","Buenos Aires"],["Perú","Lima"],
+ ["Chile","Santiago"],["España","Madrid"],["Brasil","Brasilia"],["Ecuador","Quito"],
+ ["Venezuela","Caracas"],["Uruguay","Montevideo"]];
+function genCapital(){
+ const it=pick(CAPITALES);
+ const others=shuffled(CAPITALES.filter(c=>c[1]!==it[1])).slice(0,2);
+ const ops=shuffled([it[1],others[0][1],others[1][1]]);
+ return{q:"¿Cuál es la capital de "+it[0]+"?",pic:"🏛️",ops,a:ops.indexOf(it[1])};
+}

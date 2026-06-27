@@ -186,6 +186,10 @@ const KID_TOPICS={
    fallback:()=>genCultura()},
  informatica:{name:"Informática",emoji:"💻",prompt:"informática básica para niño de segundo de primaria (mouse, teclado, pantalla, portátil, parlantes, internet, guardar archivos, apps, y seguridad básica en internet) muy sencillo",
    fallback:()=>genInfo()},
+ banderas:{name:"Banderas",emoji:"🏳️",prompt:"reconocer banderas de países conocidos (Colombia, México, Argentina, Brasil, España, Estados Unidos, Perú, Chile) para niño de segundo de primaria",
+   fallback:()=>genBandera()},
+ capitales:{name:"Capitales",emoji:"🏛️",prompt:"capitales de países de América Latina y España (Colombia-Bogotá, Perú-Lima, México-Ciudad de México) para niño de segundo de primaria",
+   fallback:()=>genCapital()},
  decenas:{name:"Decenas",emoji:"🔟",prompt:"sumas de decenas exactas (10+20, 40+30) para niño de 7 años",
    fallback:()=>genDecenas()},
  tiempo:{name:"El tiempo",emoji:"🕐",prompt:"medición del tiempo (el reloj, 24 horas en un día, 12 meses, 7 días, y los tiempos pasado, presente y futuro) para niño de 7 años",
@@ -281,7 +285,7 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
   const enSubj=["Inglés","Pronunciación"].includes(subject);
   const seqSubj=["Secuencias","Lógica","Acertijos","Ordinales","Ubicación","Robot","Memoria","El tiempo","Detective"].includes(subject);
   const natSubj=["Ciclo del agua","El cuerpo","La naturaleza","Partes del cuerpo","Sistemas del cuerpo"].includes(subject);
-  const socSubj=["Geografía","Sociales","Cultura general","Informática"].includes(subject);
+  const socSubj=["Geografía","Sociales","Cultura general","Informática","Banderas","Capitales"].includes(subject);
   if(readSubj){p.signals.read.n++;if(secs>=25)p.signals.read.slow++;if(!correct)p.signals.read.err++;}
   if(mathSubj){p.signals.math.n++;if(!correct)p.signals.math.err++;}
   if(enSubj){p.signals.en.n++;if(!correct)p.signals.en.err++;d.enDone=true;}

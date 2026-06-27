@@ -371,14 +371,15 @@ function tapDet(i){
 /* ============ CARRERA IZQUIERDA / DERECHA (esquiva por carriles) ============ */
 let RC={};
 function gameRace(){setTheme("kid");
- RC={lane:1,nlanes:3,dist:0,speed:6,over:false,tick:0,obs:[]};
+ try{if(typeof RC!=="undefined"&&RC.loop)clearInterval(RC.loop);}catch(e){}
+ RC={lane:1,nlanes:3,dist:0,speed:5,over:false,tick:0,obs:[],gap:1,waveEvery:26};
  render(topbar("exitGame('games')")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🏎️ Carrera izquierda y derecha</h2>'
   +'<p class="center" style="font-size:.9rem;margin-bottom:4px">Esquiva los obstáculos moviéndote con los botones</p>'
   +'<div style="text-align:center;font-family:Fredoka;font-weight:700;margin-bottom:6px" id="rcsc">0 m</div>'
   +'<div id="rcroad" style="position:relative;height:54vh;max-height:420px;overflow:hidden;border:3px solid var(--kid-ink);border-radius:18px;background:#5a6b7a">'
    +'<div class="roadline" style="left:33.3%"></div><div class="roadline" style="left:66.6%"></div>'
-   +'<div id="rccar" class="racecar" style="position:absolute;bottom:8px;font-size:clamp(2.2rem,12vw,3.2rem);transform:translateX(-50%);z-index:3">🏎️</div>'
+   +'<div id="rccar" style="position:absolute;bottom:10px;font-size:clamp(2.2rem,12vw,3.2rem);transform:translateX(-50%) rotate(90deg);z-index:3;transition:left .12s ease">🏎️</div>'
   +'</div>'
   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'
    +'<button class="kbtn blue" onclick="raceMove(-1)" style="font-size:1.25rem">⬅️ Izquierda</button>'
@@ -391,21 +392,30 @@ function gameRace(){setTheme("kid");
 function laneX(lane,n){return ((lane+0.5)/n*100);}
 function raceCarPos(){if(RC.car)RC.car.style.left=laneX(RC.lane,RC.nlanes)+"%";}
 function raceMove(dir){if(RC.over)return;const old=RC.lane;RC.lane=Math.max(0,Math.min(RC.nlanes-1,RC.lane+dir));if(RC.lane!==old){raceCarPos();beep([520],.05);}}
+function raceSpawnWave(){
+ const road=RC.road;
+ // Regla de justicia: una ola bloquea 1 carril, o los DOS carriles de los bordes (deja el centro).
+ // Nunca bloquea un par de carriles pegados → siempre hay un carril seguro a 1 movimiento, sin cruzar.
+ let blocked;
+ if(RC.dist>450&&Math.random()<0.35){blocked=[0,2];} // pasillo central (el del medio siempre se alcanza en 1 paso)
+ else{blocked=[rnd(3)];}
+ blocked.forEach(lane=>{
+  const e=document.createElement("div");e.textContent=pick(["🛢️","🚧","🪵","🧱","🪨","🦔"]);
+  e.style.cssText="position:absolute;top:-44px;font-size:clamp(2rem,11vw,3rem);transform:translateX(-50%);z-index:2;left:"+laneX(lane,RC.nlanes)+"%";
+  road.appendChild(e);RC.obs.push({el:e,lane,y:-44,hit:false});
+ });
+}
 function raceStep(){
  if(RC.over)return;const road=RC.road;if(!road)return;
  RC.tick++;RC.dist++;
  if(RC.tick%5===0){const sc=document.getElementById("rcsc");if(sc)sc.textContent=RC.dist+" m";}
- const H=road.clientHeight,carTop=H-66;
+ const H=road.clientHeight,carTop=H-70;
  RC.obs.forEach(o=>{o.y+=RC.speed;o.el.style.top=o.y+"px";});
- for(const o of RC.obs){if(!o.hit&&o.lane===RC.lane&&o.y>=carTop-28&&o.y<=carTop+30){o.hit=true;return raceCrash();}}
+ for(const o of RC.obs){if(!o.hit&&o.lane===RC.lane&&o.y>=carTop-26&&o.y<=carTop+34){o.hit=true;return raceCrash();}}
  RC.obs=RC.obs.filter(o=>{if(o.y>H+40){o.el.remove();return false;}return true;});
- if(RC.tick%14===0){
-  const lane=rnd(RC.nlanes);const e=document.createElement("div");
-  e.textContent=pick(["🛢️","🚧","🪵","🧱","🦔","🚗"]);
-  e.style.cssText="position:absolute;top:-40px;font-size:clamp(2rem,11vw,3rem);transform:translateX(-50%);z-index:2;left:"+laneX(lane,RC.nlanes)+"%";
-  road.appendChild(e);RC.obs.push({el:e,lane,y:-40,hit:false});
- }
- if(RC.tick%120===0)RC.speed+=0.7;
+ if(RC.tick%RC.waveEvery===0)raceSpawnWave();
+ // sube dificultad poco a poco: más rápido y olas más seguidas (con tope para que siga siendo pasable)
+ if(RC.tick%200===0){RC.speed=Math.min(11,RC.speed+0.7);RC.waveEvery=Math.max(20,RC.waveEvery-1);}
 }
 function raceCrash(){
  RC.over=true;clearInterval(RC.loop);sNO();
@@ -487,4 +497,97 @@ function checkDic(){
  if(ok){sOK();confetti(12);toast("¡Perfecto! Escribiste muy bien 🌟",true,1600);DIC.ok++;}
  else{sNO();toast("Casi… era: "+DIC.cur,false,2800);}
  DIC.i++;setTimeout(nextDic,ok?1500:2900);
+}
+
+/* ============ EL CUERPO INTERACTIVO (señala partes en una figura + órganos) ============ */
+const BODY_PARTS=[
+ {id:"cabeza",nm:"la cabeza",x:100,y:45,r:25},
+ {id:"cuello",nm:"el cuello",x:100,y:80,r:11},
+ {id:"hombro",nm:"el hombro",x:73,y:100,r:13},
+ {id:"pecho",nm:"el pecho",x:100,y:124,r:16},
+ {id:"codo",nm:"el codo",x:58,y:150,r:13},
+ {id:"mano",nm:"la mano",x:50,y:197,r:14},
+ {id:"barriga",nm:"la barriga",x:100,y:172,r:15},
+ {id:"rodilla",nm:"la rodilla",x:86,y:285,r:13},
+ {id:"pie",nm:"el pie",x:84,y:356,r:14}];
+const BODY_ORGANS=[
+ {id:"cerebro",nm:"el cerebro",e:"🧠",x:100,y:44,sys:"nervioso (pensar)"},
+ {id:"corazon",nm:"el corazón",e:"❤️",x:87,y:120,sys:"circulatorio (bombea la sangre)"},
+ {id:"pulmones",nm:"los pulmones",e:"🫁",x:113,y:120,sys:"respiratorio (respirar)"},
+ {id:"estomago",nm:"el estómago",e:"🍔",x:100,y:168,sys:"digestivo (digerir la comida)"},
+ {id:"huesos",nm:"los huesos",e:"🦴",x:100,y:300,sys:"óseo (sostén del cuerpo)"}];
+function bodySVG(hot){
+ return '<svg viewBox="0 0 200 380" style="width:100%;max-width:290px;display:block;margin:0 auto">'
+  +'<line x1="89" y1="200" x2="84" y2="356" stroke="#4a6fb0" stroke-width="22" stroke-linecap="round"/>'
+  +'<line x1="111" y1="200" x2="116" y2="356" stroke="#4a6fb0" stroke-width="22" stroke-linecap="round"/>'
+  +'<polyline points="76,104 58,150 50,197" fill="none" stroke="#edb98a" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>'
+  +'<polyline points="124,104 142,150 150,197" fill="none" stroke="#edb98a" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>'
+  +'<rect x="72" y="90" width="56" height="115" rx="22" fill="#5199e4"/>'
+  +'<rect x="92" y="66" width="16" height="20" fill="#edb98a"/>'
+  +'<circle cx="100" cy="45" r="27" fill="#edb98a"/>'
+  +'<circle cx="91" cy="42" r="3" fill="#222"/><circle cx="109" cy="42" r="3" fill="#222"/><path d="M91 54 Q100 60 109 54" stroke="#222" stroke-width="2" fill="none"/>'
+  +(hot||[]).map(p=>'<circle id="bhot_'+p.id+'" cx="'+p.x+'" cy="'+p.y+'" r="'+p.r+'" fill="rgba(255,255,255,0.02)" stroke="rgba(30,42,74,0.30)" stroke-width="2" stroke-dasharray="3 3" style="cursor:pointer" onclick="bodyTap(\''+p.id+'\')"/>').join("")
+  +'</svg>';
+}
+let BD={};
+function gameBody(){setTheme("kid");
+ render(topbar("screenKidMap()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🧍 El cuerpo</h2>'
+  +'<p class="center" style="margin-bottom:14px">¿Qué quieres practicar?</p>'
+  +'<button class="kbtn red" onclick="bodyStart(\'partes\')">🧍 Señala las partes del cuerpo</button>'
+  +'<button class="kbtn green" onclick="bodyStart(\'sistemas\')">🫀 Órganos y sistemas</button>'
+  +'<button class="kbtn yellow" onclick="playTopics(\'El cuerpo\',[\'cuerpo_partes\',\'sistemas\',\'cuerpo_es\'],{perTopic:4,topicsPerSession:2,total:8})">❓ Preguntas del cuerpo</button>');
+}
+function bodyStart(mode){
+ BD={mode,round:0,ok:0};
+ BD.total=mode==="partes"?7:5;
+ const pool=mode==="partes"?BODY_PARTS.map(p=>p.id):BODY_ORGANS.map(o=>o.id);
+ BD.queue=shuffled(pool).slice(0,BD.total);
+ nextBody();
+}
+function nextBody(){
+ if(BD.round>=BD.total)return nodeWin(starsFor(BD.ok,BD.total),BD.mode==="partes"?"Partes del cuerpo":"Sistemas del cuerpo");
+ BD.target=BD.queue[BD.round];BD.answered=false;
+ BD.mode==="partes"?renderBodyParts():renderBodyOrg();
+}
+function renderBodyParts(){
+ const t=BODY_PARTS.find(p=>p.id===BD.target);
+ render(topbar("exitGame(gameBody)")
+  +'<div class="progressdots">'+dots(BD.total,BD.round)+'</div>'
+  +'<h2 style="font-size:clamp(1.1rem,5vw,1.4rem);text-align:center;margin-bottom:4px">🧍 Toca: <span style="color:#3B82F6">'+t.nm.toUpperCase()+'</span></h2>'
+  +'<button class="speaker small" onclick="speakES(\'Toca '+t.nm+'\')">🔊 Escuchar</button>'
+  +'<div class="card" style="padding:10px">'+bodySVG(BODY_PARTS)+'</div>');
+ speakES("Toca "+t.nm);
+}
+function bodyTap(id){
+ if(BD.answered)return;BD.answered=true;
+ const ok=id===BD.target,t=BODY_PARTS.find(p=>p.id===BD.target);
+ recordAnswer("Partes del cuerpo",ok,12);
+ const tc=document.getElementById("bhot_"+BD.target);if(tc){tc.setAttribute("fill","rgba(62,201,124,0.55)");tc.setAttribute("stroke","#1E7a44");}
+ if(ok){sOK();confetti(8);toast("¡Sí! Esa es "+t.nm+" ✅",true,1300);BD.ok++;}
+ else{const wc=document.getElementById("bhot_"+id);if(wc){wc.setAttribute("fill","rgba(255,107,107,0.55)");wc.setAttribute("stroke","#a11");}
+  const w=BODY_PARTS.find(p=>p.id===id);sNO();toast("Esa es "+(w?w.nm:"otra parte")+". "+t.nm+" está en verde 💚",false,2500);}
+ BD.round++;setTimeout(nextBody,ok?1300:2600);
+}
+function renderBodyOrg(){
+ const t=BODY_ORGANS.find(o=>o.id===BD.target);
+ render(topbar("exitGame(gameBody)")
+  +'<div class="progressdots">'+dots(BD.total,BD.round)+'</div>'
+  +'<h2 style="font-size:clamp(1.1rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🫀 Toca: <span style="color:#DC2626">'+t.nm.toUpperCase()+'</span></h2>'
+  +'<p class="center" style="font-size:.82rem;margin-bottom:6px">Sistema '+t.sys+'</p>'
+  +'<button class="speaker small" onclick="speakES(\'¿Dónde está '+t.nm+'?\')">🔊 Escuchar</button>'
+  +'<div class="card" style="padding:10px"><div style="position:relative;max-width:290px;margin:0 auto">'
+   +bodySVG([])
+   +BODY_ORGANS.map(o=>'<button id="org_'+o.id+'" onclick="orgTap(\''+o.id+'\')" style="position:absolute;left:'+(o.x/200*100)+'%;top:'+(o.y/380*100)+'%;transform:translate(-50%,-50%);font-size:1.7rem;background:#fff;border:3px solid var(--kid-ink);border-radius:50%;width:46px;height:46px;cursor:pointer;padding:0">'+o.e+'</button>').join("")
+  +'</div></div>');
+ speakES("¿Dónde está "+t.nm+"?");
+}
+function orgTap(id){
+ if(BD.answered)return;BD.answered=true;
+ const ok=id===BD.target,t=BODY_ORGANS.find(o=>o.id===BD.target);
+ recordAnswer("Sistemas del cuerpo",ok,12);
+ const tb=document.getElementById("org_"+BD.target);if(tb){tb.style.background="#3EC97C";tb.style.borderColor="#1E7a44";}
+ if(ok){sOK();confetti(8);toast("¡Sí! "+t.nm+" → sistema "+t.sys+" ✅",true,2000);BD.ok++;}
+ else{const wb=document.getElementById("org_"+id);if(wb)wb.style.background="#FF6B6B";sNO();toast(t.nm+" está en verde. Es del sistema "+t.sys,false,2700);}
+ BD.round++;setTimeout(nextBody,ok?1900:2800);
 }
