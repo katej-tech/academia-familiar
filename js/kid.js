@@ -72,7 +72,7 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +'<div onclick="screenAvatar()">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'</div>'
  +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.2rem,5.5vw,1.5rem)">¡Hola, '+esc(p.name)+'!</h1>'
  +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
- +'<div style="font-size:clamp(2.2rem,11vw,3rem)" onclick="screenCritters()">'+pet.e+'</div></div>'
+ +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="screenTama()">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
  +missionsHTML()
  +'<div style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:6px">'
  +hubTile("screenCole()","📚","Aprender","Mate, lenguaje, ciencias y la hora","green")
@@ -99,6 +99,7 @@ function screenLeer(){setTheme("kid");const p=prof();
 function screenMyStuff(){setTheme("kid");
  render(topbar("screenKidMap()")+subHeader("🛍️ Mi mundo")
   +'<div class="card center" style="padding:14px">'+(typeof avatarScene==="function"?avatarScene(120):avatarHTML(110))+'</div>'
+  +'<button class="kbtn red" onclick="screenTama()">🐾 Mi mascota (cuídala)</button>'
   +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
@@ -130,11 +131,26 @@ function screenWritingPick(){setTheme("kid");
  +'<button class="kbtn yellow" onclick="gameOrder()">🧩 Ordena la frase</button>'
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
  +'<button class="kbtn green" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
+const DAILY_GOAL=10; /* aciertos del día para desbloquear los juegos */
+function dailyGoalDone(){return touchDay().ok>=DAILY_GOAL;}
+function screenGamesLocked(){setTheme("kid");
+ const d=touchDay();const have=Math.min(d.ok,DAILY_GOAL);const pctv=Math.round(have/DAILY_GOAL*100);
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎮🔒 Juegos bloqueados</h2>'
+ +'<div class="card center" style="padding:22px 16px">'
+ +'<div style="font-size:3.4rem;margin-bottom:6px">🔒</div>'
+ +'<p style="font-size:1.1rem;line-height:1.5">Primero haz tus <b>actividades de hoy</b>.<br>¡Cuando logres <b>'+DAILY_GOAL+' aciertos</b>, se abren todos los juegos!</p>'
+ +'<div style="height:18px;border-radius:12px;background:#E6ECF5;border:3px solid var(--kid-ink);overflow:hidden;margin:14px 0 6px"><div style="height:100%;width:'+pctv+'%;background:var(--kid-green);transition:width .4s"></div></div>'
+ +'<p style="font-family:Fredoka;font-weight:700">'+have+' / '+DAILY_GOAL+' aciertos ✅</p>'
+ +'<button class="kbtn green" style="margin-top:12px" onclick="screenCole()">📚 Ir a aprender</button>'
+ +'<button class="kbtn blue" onclick="screenEnglishHub()">🇬🇧 Practicar inglés</button>'
+ +'</div>');}
 function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stopGames();
+ if(!dailyGoalDone())return screenGamesLocked();
  const sub=t=>'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+t+'</p>';
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎮 Juegos</h2>'
- +'<p class="center" style="margin-bottom:6px">Diviértete aprendiendo</p>'
+ +'<div class="card center" style="padding:8px;margin-bottom:6px;background:linear-gradient(180deg,#E8FBF0,#D6F5E3)">✅ ¡Desbloqueaste los juegos de hoy! 🎉</div>'
  +sub("🧠 Letras y palabras")
  +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
  +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'
