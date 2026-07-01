@@ -200,3 +200,62 @@ function colorSet(c){CO.color=c;var btns=document.querySelectorAll('[aria-label=
 function colorTap(e){var t=e.target;if(t&&t.classList&&t.classList.contains("cr")){t.setAttribute("fill",CO.color);if(typeof beep==="function")beep([620],.04);}}
 function colorClear(){document.querySelectorAll("svg .cr").forEach(function(el){el.setAttribute("fill","#fff");});}
 function colorNext(){CO.picIdx=(CO.picIdx+1)%COLOR_PICS.length;renderColoring();}
+
+/* ============ UNE LOS PUNTOS (toca 1,2,3… y se arma la figura) ============ */
+let DP={figIdx:0};
+const DOT_FIGS=[
+ {name:"⭐ Estrella",fill:"#FFC93C",pts:[[100,22],[146,163],[26,76],[174,76],[54,163]]},
+ {name:"🏠 Casa",fill:"#FF9F1C",pts:[[42,182],[42,92],[100,42],[158,92],[158,182]]},
+ {name:"🐟 Pez",fill:"#3B82F6",pts:[[40,100],[105,62],[150,80],[186,54],[186,146],[150,120],[105,138]]},
+ {name:"🚀 Cohete",fill:"#FF6B6B",pts:[[100,24],[128,74],[128,150],[152,182],[128,155],[72,155],[48,182],[72,150],[72,74]]},
+ {name:"🚂 Tren",fill:"#3EC97C",pts:[[34,150],[34,98],[60,98],[60,68],[106,68],[106,98],[172,98],[172,150]],wheels:[[64,150,16],[142,150,16]]},
+ {name:"🚗 Carro",fill:"#A78BFA",pts:[[28,150],[28,120],[54,120],[78,88],[122,88],[146,120],[172,120],[172,150]],wheels:[[60,150,17],[142,150,17]]}
+];
+function gameDots(){setTheme("kid");if(!DP)DP={};if(DP.figIdx==null)DP.figIdx=0;startDots();}
+function startDots(){
+ var fig=DOT_FIGS[DP.figIdx%DOT_FIGS.length];
+ render(topbar("screenMyStuff()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🔢 Une los puntos</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">'+fig.name+' — toca los puntos en orden: 1, 2, 3…</p>'
+  +'<div class="card" style="padding:10px"><canvas id="dpcanvas" onclick="dotsTap(event)" style="width:100%;max-width:360px;display:block;margin:0 auto;background:#FCFBF6;border-radius:12px;touch-action:manipulation"></canvas></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto">'
+   +'<button class="kbtn yellow" onclick="startDots()" style="min-height:52px">🔄 Reiniciar</button>'
+   +'<button class="kbtn green" onclick="dotsNext()" style="min-height:52px">Otra figura →</button>'
+  +'</div>');
+ var cv=document.getElementById("dpcanvas");
+ var cssW=Math.min(360,cv.clientWidth||320);var dpr=Math.min(2,window.devicePixelRatio||1);
+ cv.style.height=cssW+"px";cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssW*dpr);
+ var ctx=cv.getContext("2d");ctx.scale(dpr*cssW/200,dpr*cssW/200);ctx.lineCap="round";ctx.lineJoin="round";
+ DP.ctx=ctx;DP.cv=cv;DP.S=cssW;DP.fig=fig;DP.next=1;DP.done=false;
+ dotsDraw();
+}
+function dotsDraw(){
+ var c=DP.ctx,fig=DP.fig;if(!c)return;
+ c.clearRect(0,0,200,200);
+ // líneas ya trazadas
+ c.strokeStyle="#3B82F6";c.lineWidth=4;
+ for(var i=1;i<DP.next&&i<fig.pts.length;i++){c.beginPath();c.moveTo(fig.pts[i-1][0],fig.pts[i-1][1]);c.lineTo(fig.pts[i][0],fig.pts[i][1]);c.stroke();}
+ if(DP.done){ // cerrar y rellenar
+  c.beginPath();c.moveTo(fig.pts[0][0],fig.pts[0][1]);for(var k=1;k<fig.pts.length;k++)c.lineTo(fig.pts[k][0],fig.pts[k][1]);c.closePath();
+  c.fillStyle=fig.fill;c.globalAlpha=.85;c.fill();c.globalAlpha=1;c.stroke();
+  if(fig.wheels)fig.wheels.forEach(function(w){c.beginPath();c.arc(w[0],w[1],w[2],0,Math.PI*2);c.fillStyle="#1E2A4A";c.fill();c.fillStyle="#8A94A6";c.beginPath();c.arc(w[0],w[1],w[2]*0.5,0,Math.PI*2);c.fill();});
+ }
+ // puntos
+ for(var j=0;j<fig.pts.length;j++){var p=fig.pts[j];var n=j+1;var isNext=(n===DP.next);var doneP=(n<DP.next);
+  c.beginPath();c.arc(p[0],p[1],isNext?11:9,0,Math.PI*2);
+  c.fillStyle=doneP?"#3EC97C":(isNext?"#FF6B6B":"#fff");c.fill();c.lineWidth=2.5;c.strokeStyle="#1E2A4A";c.stroke();
+  c.fillStyle=doneP?"#fff":"#1E2A4A";c.font="700 11px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(n,p[0],p[1]+0.5);
+ }
+}
+function dotsTap(e){
+ if(DP.done)return;var cv=DP.cv;if(!cv)return;
+ var r=cv.getBoundingClientRect();var x=(e.clientX-r.left)/r.width*200,y=(e.clientY-r.top)/r.height*200;
+ var fig=DP.fig,exp=DP.next-1;var p=fig.pts[exp];
+ if(!p)return;
+ if(Math.hypot(x-p[0],y-p[1])<22){ // acertó el punto esperado
+  DP.next++;if(typeof beep==="function")beep([500+DP.next*60],.05);
+  if(DP.next>fig.pts.length){DP.done=true;dotsDraw();sWIN();confetti(22);if(typeof recordAnswer==="function")recordAnswer("Secuencias",true,15);toast("¡Lo lograste! "+fig.name,true,1800);}
+  else dotsDraw();
+ }
+}
+function dotsNext(){DP.figIdx=(DP.figIdx+1)%DOT_FIGS.length;startDots();}

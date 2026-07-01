@@ -106,6 +106,7 @@ function screenMyStuff(){setTheme("kid");
   +'<div class="card center" style="padding:14px">'+(typeof avatarScene==="function"?avatarScene(120):avatarHTML(110))+'</div>'
   +'<button class="kbtn red" onclick="screenTama()">🐾 Mi mascota (cuídala)</button>'
   +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
+  +'<button class="kbtn blue" onclick="gameDots()">🔢 Une los puntos</button>'
   +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
