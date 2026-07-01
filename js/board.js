@@ -416,7 +416,7 @@ async function aiCreate(){
  try{
   var url=await geminiImage("Black and white line art coloring page for young children of: "+what+". Show the FULL BODY / complete figure (not just the face or head), whole character visible and centered. Thick clean black outlines only, NO color, NO shading, NO gray, pure white background, simple cute cartoon style, no text or letters.");
   aiShow(url,what);
- }catch(e){toast("No se pudo crear, intenta otra vez",false,2200);gameAiDraw();}
+ }catch(e){if(typeof renderAiError==="function")renderAiError(e,"gameAiDraw()");else{toast("No se pudo crear, intenta otra vez",false,2200);gameAiDraw();}}
 }
 function aiShow(url,what){
  setTheme("kid");AI={color:"#FF6B6B",erase:false};

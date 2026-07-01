@@ -67,18 +67,19 @@ async function parentSuggestVideos(){
 /* ============ ILUSTRACIONES CON IA (Gemini genera imágenes) ============ */
 async function geminiImage(promptText){
  const models=["gemini-2.5-flash-image","gemini-2.5-flash-image-preview","gemini-2.0-flash-preview-image-generation"];
+ let lastDetail="",lastStatus=0;
  for(const m of models){
   try{
    const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
     {method:"POST",headers:{"Content-Type":"application/json"},
      body:JSON.stringify({contents:[{parts:[{text:promptText}]}],generationConfig:{responseModalities:["TEXT","IMAGE"]}})});
-   if(!res.ok)continue;
+   if(!res.ok){lastStatus=res.status;try{const j=await res.json();lastDetail=(j.error&&j.error.message)||"";}catch(e){}if(res.status!==404)break;continue;}
    const data=await res.json();
    const parts=(data.candidates&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
    const img=parts.find(p=>p.inlineData&&p.inlineData.data);
    if(img)return "data:"+(img.inlineData.mimeType||"image/png")+";base64,"+img.inlineData.data;
-  }catch(e){}}
- throw new Error("No se pudo generar la imagen");}
+  }catch(e){lastDetail=lastDetail||(e&&e.message)||"";}}
+ throw new Error("Error de la imagen ("+(lastStatus||"red")+")"+(lastDetail?": "+lastDetail.slice(0,130):"")+" — revisa la clave.");}
 async function illustratePage(){
  if(!S.geminiKey)return;
  const c=ST.c,p=c.pages[ST.page],myPage=ST.page;

@@ -119,8 +119,20 @@ function screenChildAiKey(){setTheme("kid");
   +'<input type="password" id="ckPass" placeholder="Contraseña del padre/madre" autocomplete="current-password">'
   +'<input type="text" id="ckKey" placeholder="Clave de Gemini (AIza...)">'
   +'<button class="kbtn green" style="margin-top:6px" onclick="ckSaveKey()">✅ Activar IA</button>'
+  +'<button class="kbtn white" style="margin-top:8px" onclick="ckTestKey()">🧪 Probar la IA</button>'
   +'<p id="ckfb" style="margin-top:8px"></p>'
   +'<p class="tip">💡 La clave se consigue gratis en <b>aistudio.google.com/apikey</b>. Se guarda solo en esta tablet y ya no se pierde.</p></div>');
+}
+async function ckTestKey(){
+ const fb=document.getElementById("ckfb");
+ const typed=document.getElementById("ckKey")?(document.getElementById("ckKey").value||"").trim():"";
+ const k=typed||S.geminiKey;
+ if(!k){if(fb)fb.innerHTML='<b style="color:#D97706">Primero escribe la clave arriba</b>';return;}
+ if(fb)fb.innerHTML='⏳ Probando la IA con Google…';
+ const prev=S.geminiKey;S.geminiKey=k;
+ try{await geminiJSON('Responde SOLO este JSON: {"ok":true}');S.geminiKey=prev;
+  if(fb)fb.innerHTML='<b style="color:#16A34A">✓ ¡La clave funciona! Ya puedes tocar "Activar IA".</b>';
+ }catch(e){S.geminiKey=prev;renderAiError(e,"screenChildAiKey()");}
 }
 function ckSaveKey(){
  const e=(document.getElementById("ckMail").value||"").trim();
@@ -241,7 +253,23 @@ async function aiStoryKid(genero){
   obj.qs=(obj.qs||[]).map(q=>({q:stripHTML(q.q),ops:(q.ops||[]).map(o=>stripHTML(o)),a:q.a||0}));
   S.aiStoriesSeen.push(obj.title);while(S.aiStoriesSeen.length>20)S.aiStoriesSeen.shift();save();
   CUENTOS.push(obj);gameStory(CUENTOS.length-1);
- }catch(e){toast("No se pudo crear, intenta de nuevo",false,2000);screenStoryPick();}}
+ }catch(e){renderAiError(e,"screenStoryPick()");}}
+/* pantalla de error de IA con el motivo real y cómo arreglarlo */
+function renderAiError(e,backFn){
+ setTheme("kid");
+ const msg=(e&&e.message)?String(e.message):"";
+ render(topbar(backFn||"screenKidMap()")
+  +'<div class="card"><div class="center" style="font-size:3rem">😕</div>'
+  +'<h2 style="text-align:center;margin:6px 0">La IA no pudo crear el contenido</h2>'
+  +(msg?'<p style="font-size:.82rem;background:rgba(220,38,38,.08);color:#B91C1C;padding:8px 10px;border-radius:10px;line-height:1.4;font-family:Nunito;font-weight:600">'+esc(msg)+'</p>':'')
+  +'<p style="margin-top:12px;font-family:Fredoka;font-weight:700">Cómo arreglarlo (para papá/mamá):</p>'
+  +'<ul style="margin:6px 0 0 18px;line-height:1.7;font-size:.95rem">'
+   +'<li>La clave suele tener <b>restricción de sitios web</b> que bloquea esta app. Solución: en <b>Google Cloud → Credenciales → tu clave → Restricciones de aplicación</b>, elige <b>"Ninguna"</b>, o agrega <code>katej-tech.github.io/*</code> a los sitios permitidos.</li>'
+   +'<li>Usa la clave de <b>aistudio.google.com/apikey</b> (esa viene sin restricciones y activa la API sola).</li>'
+   +'<li>Si dice "quota" o "límite", es el <b>tope gratis del día</b>: espera unas horas.</li>'
+  +'</ul>'
+  +'<button class="kbtn green" style="margin-top:14px" onclick="'+(backFn||"screenKidMap()")+'">Volver</button></div>');
+}
 function nodeWin(stars,subject){
  const p=prof();
  if(typeof curNode==="string")bumpWorld(curNode);
