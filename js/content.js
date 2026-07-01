@@ -161,7 +161,60 @@ const CUENTOS=[
    {q:"¿Qué hacía el grillo mientras Nuez trabajaba?",ops:["Cantaba y dormía sin guardar nada 🎶","Ayudaba a Nuez","Recolectaba nueces"],a:0},
    {q:"¿Qué hizo Nuez cuando los otros animales tenían hambre?",ops:["Compartió su comida con ellos 🍽️","Se escondió","Se comió todo sola"],a:0},
    {q:"La palabra \"egoísta\" significa alguien que…",ops:["No quiere compartir","Comparte todo","Trabaja mucho"],a:0},
-   {q:"¿Qué nos enseña este cuento?",ops:["Prepararse a tiempo y compartir es lo mejor","Que no hay que guardar comida","Que el invierno no llega"],a:0}]}];
+   {q:"¿Qué nos enseña este cuento?",ops:["Prepararse a tiempo y compartir es lo mejor","Que no hay que guardar comida","Que el invierno no llega"],a:0}]},
+ /* ===== CUENTOS CLÁSICOS PARA DORMIR (versiones propias de obras de dominio público) ===== */
+ {title:"Rin Rin Renacuajo",long:true,classic:true,
+  pages:[
+   {scene:"🐸🏠",text:"En una charca vivía un renacuajo llamado <b>Rin Rin</b>, muy coqueto y muy desobediente. Una tarde se puso su mejor sombrero y quiso salir de paseo. —No salgas solo, hijo, es peligroso —le dijo su <b>mamá</b> rana."},
+   {scene:"🐸🚶🎩",text:"Pero Rin Rin no hizo caso. —¡Ya estoy grande! —dijo, y salió saltando muy orgulloso por el camino. Se sentía elegante y valiente, sin pensar en el <b>peligro</b> que le había advertido su mamá."},
+   {scene:"🐭🐀🎉",text:"En el camino se encontró con el ratón Ratoncito y su primo, que lo invitaron a una <b>fiesta</b>. Comieron, cantaron y bailaron toda la tarde. Rin Rin estaba feliz y se le olvidó por completo volver a casa temprano."},
+   {scene:"🦆😱",text:"De pronto, ¡apareció un <b>pato</b> enorme con un hambre feroz! Todos los invitados corrieron a esconderse. El pato abrió su gran pico buscando algo sabroso para comer, y puso sus ojos en el pobre Rin Rin."},
+   {scene:"🐸💨🏃",text:"Rin Rin saltó como nunca en su vida. Perdió el sombrero, pero <b>escapó</b> por un pelito y se metió temblando bajo una hoja. El corazón le latía muy fuerte del susto. ¡Casi se lo come el pato!"},
+   {scene:"🐸💚🏠",text:"Cansado y asustado, Rin Rin volvió a casa. —Perdón, mamá, tenías razón —dijo abrazándola. Desde ese día <b>obedeció</b> y nunca más salió solo sin avisar. Aprendió que su mamá lo cuidaba porque lo quería."}],
+  qs:[
+   {q:"¿Qué le dijo la mamá a Rin Rin?",ops:["Que no saliera solo porque era peligroso 🐸","Que fuera a la fiesta","Que se pusiera el sombrero"],a:0},
+   {q:"¿Qué animal casi se come a Rin Rin?",ops:["Un pato 🦆","Un gato","Un perro"],a:0},
+   {q:"¿Por qué Rin Rin se metió en problemas?",ops:["Porque desobedeció a su mamá","Porque tenía hambre","Porque era pequeño"],a:0},
+   {q:"¿Qué aprendió Rin Rin al final?",ops:["A obedecer y avisar a su mamá","A bailar mejor","A nadar rápido"],a:0}]},
+ {title:"La pobre viejecita",long:true,classic:true,
+  pages:[
+   {scene:"👵🏠",text:"Había una vez una <b>viejecita</b> que vivía en una casa grande y bonita. Todo el día se quejaba: —¡Ay, qué pobre soy! ¡No tengo nada! —decía con cara triste, aunque tenía muchísimas cosas."},
+   {scene:"🍲🍗🍞",text:"La viejecita decía que no tenía qué comer… pero en su mesa había <b>sopa</b>, pan, carne, frutas y postres todos los días. Comía muy bien, pero seguía diciendo que no tenía nada de nada."},
+   {scene:"🛏️👗🐕",text:"Decía que no tenía dónde dormir… pero tenía una <b>cama</b> blandita con almohadas. Decía que no tenía ropa… pero tenía muchos vestidos. Hasta tenía gatos, perros y un jardín lleno de flores."},
+   {scene:"👵😮",text:"Un día, una niña la escuchó quejarse y le preguntó: —Señora, ¿por qué dice que es pobre si tiene tantas cosas <b>lindas</b>? La viejecita se quedó pensando y no supo qué responder."},
+   {scene:"👵💡❤️",text:"Entonces la viejecita miró su casa, su comida y sus animales, y entendió: —¡Es verdad! Yo tengo <b>muchísimo</b>. Nunca me di cuenta de todo lo que tengo. Qué tonta he sido quejándome tanto."},
+   {scene:"👵😊🌷",text:"Desde ese día, la viejecita dejó de quejarse y aprendió a dar las <b>gracias</b> por lo que tenía. Y así, sonriendo y agradecida, fue mucho más feliz. Porque ser rico es saber apreciar lo que uno tiene."}],
+  qs:[
+   {q:"¿De qué se quejaba siempre la viejecita?",ops:["De que era pobre y no tenía nada 👵","De que tenía mucho trabajo","De que hacía frío"],a:0},
+   {q:"¿Era verdad que no tenía nada?",ops:["No, tenía muchísimas cosas lindas","Sí, no tenía nada","Solo tenía un gato"],a:0},
+   {q:"¿Quién la hizo pensar?",ops:["Una niña que le preguntó","Su perro","El vecino"],a:0},
+   {q:"¿Qué nos enseña el cuento?",ops:["A dar gracias y apreciar lo que tenemos","A quejarnos más","A comprar cosas"],a:0}]},
+ {title:"Tom Sawyer y la cerca",long:true,classic:true,
+  pages:[
+   {scene:"👦🎣",text:"Era un sábado soleado y <b>Tom</b> quería ir a jugar y a pescar. Pero su tía le puso un castigo: —Tienes que <b>pintar</b> toda la cerca de blanco antes de salir. Tom miró la cerca larguísima y suspiró triste."},
+   {scene:"🖌️🧱😔",text:"Tom empezó a pintar sin ganas. La cerca era enorme y el día tan bonito para jugar… Entonces pasó su amigo Ben, comiendo una manzana, listo para divertirse. Tom tuvo una <b>idea</b> muy astuta."},
+   {scene:"👦😏🖌️",text:"En vez de quejarse, Tom pintó con mucho cuidado, como si fuera lo más <b>divertido</b> del mundo. —¿Trabajando? —se burló Ben. —¿Trabajando? ¡Esto es un arte! No a cualquiera lo dejan pintar una cerca —dijo Tom sonriendo."},
+   {scene:"🙋🍎🖌️",text:"A Ben le dio <b>curiosidad</b>. —Déjame probar a mí. —No sé… mi tía quiere que quede perfecta —dijo Tom, haciéndose el difícil. Ben le dio su manzana con tal de que lo dejara pintar. ¡Y Tom aceptó!"},
+   {scene:"👦👦👦🖌️",text:"Pronto llegaron más niños. Todos <b>querían</b> pintar la cerca y le daban a Tom sus tesoros: canicas, una cometa, un ratoncito de juguete. Tom, sentado a la sombra, los miraba trabajar felices por él."},
+   {scene:"🧱✨🏆",text:"Al final del día, la cerca quedó pintada tres veces, ¡y Tom no movió casi un dedo! Aprendió algo curioso: cuando algo parece <b>divertido</b>, todos lo quieren hacer. Tom fue muy <b>astuto</b>… aunque un poquito pícaro."}],
+  qs:[
+   {q:"¿Qué castigo le pusieron a Tom?",ops:["Pintar toda la cerca 🖌️","Lavar los platos","Ordenar su cuarto"],a:0},
+   {q:"¿Qué hizo Tom para no pintar solo?",ops:["Hizo creer que pintar era divertido","Se escondió","Lloró"],a:0},
+   {q:"¿Qué hicieron los otros niños?",ops:["Le pagaron a Tom por dejarlos pintar","Se fueron","Lo ayudaron gratis"],a:0},
+   {q:"¿Cómo era Tom?",ops:["Muy astuto e ingenioso","Muy trabajador","Muy tímido"],a:0}]},
+ {title:"El misterio de las galletas",long:true,classic:true,
+  pages:[
+   {scene:"🍪🫙😋",text:"La abuela dejó un frasco lleno de <b>galletas</b> en la mesa para la merienda. —No se las coman todavía —dijo, y salió al jardín. Pero cuando volvió… ¡el frasco estaba casi vacío! —¿Quién se comió las galletas?"},
+   {scene:"🕵️🔍",text:"El pequeño <b>Detective</b> Nico decidió resolver el misterio. —No te preocupes, abuela, voy a descubrir quién fue. Buscó <b>pistas</b> por toda la cocina, como un verdadero investigador, con su lupa en la mano."},
+   {scene:"🍪👣",text:"La primera pista: había <b>migas</b> de galleta en el suelo, formando un caminito. Nico las siguió con cuidado. El rastro de migas iba desde la mesa… hasta debajo del sofá de la sala."},
+   {scene:"🐾🔍",text:"La segunda pista: junto a las migas había unas pequeñas <b>huellas</b>. No eran de zapato… ¡eran huellas de patitas! Nico sonrió: —Ajá, el culpable tiene cuatro patas y es peludo."},
+   {scene:"🐶🍪😅",text:"Nico miró debajo del sofá y encontró a <b>Motas</b>, el perrito de la casa, con la cara llena de migas y moviendo la cola. —¡Te descubrí, Motas! Fuiste tú quien se comió las galletas."},
+   {scene:"🕵️👵❤️",text:"—¡Muy bien, detective! —lo felicitó la abuela—. Seguiste las <b>pistas</b> y resolviste el misterio. Guardaron las galletas más alto, lejos de Motas, y todos merendaron felices. Nico se sintió un gran detective."}],
+  qs:[
+   {q:"¿Qué desapareció del frasco?",ops:["Las galletas 🍪","El dinero","Un juguete"],a:0},
+   {q:"¿Cuál fue la primera pista que siguió Nico?",ops:["Un caminito de migas","Un ruido","Una carta"],a:0},
+   {q:"¿Quién se comió las galletas?",ops:["Motas, el perrito 🐶","La abuela","Nico"],a:0},
+   {q:"¿Cómo resolvió Nico el misterio?",ops:["Siguiendo las pistas como detective 🔍","Adivinando","Preguntando a todos"],a:0}]}];
 
 const ROBOT_LEVELS=[
  {w:3,h:3,start:[0,2],goal:[2,2],walls:[],hint:"2 pasos a la derecha"},

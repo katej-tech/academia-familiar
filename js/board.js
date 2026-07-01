@@ -317,11 +317,11 @@ const DRAW_FIGS=[
    [{t:"rect",x:72,y:162,w:18,h:30,rx:5},{t:"rect",x:110,y:162,w:18,h:30,rx:5}]
  ]},
  {name:"🐱 Gato",steps:[
-   [{t:"circle",x:100,y:106,r:55}],
-   [{t:"tri",p:[[58,72],[70,26],[96,60]]},{t:"tri",p:[[142,72],[130,26],[104,60]]}],
-   [{t:"circle",x:82,y:100,r:8},{t:"circle",x:118,y:100,r:8}],
-   [{t:"tri",p:[[92,118],[108,118],[100,128]]},{t:"arc",x:88,y:128,r:12,s:0,e:Math.PI},{t:"arc",x:112,y:128,r:12,s:0,e:Math.PI}],
-   [{t:"line",a:[46,120],b:[76,124]},{t:"line",a:[46,132],b:[76,132]},{t:"line",a:[154,120],b:[124,124]},{t:"line",a:[154,132],b:[124,132]}]
+   [{t:"circle",x:100,y:54,r:34}],
+   [{t:"tri",p:[[72,40],[80,12],[98,38]]},{t:"tri",p:[[128,40],[120,12],[102,38]]}],
+   [{t:"poly",p:[[72,78],[66,158],[134,158],[128,78]]},{t:"line",a:[132,150],b:[170,116]}],
+   [{t:"circle",x:90,y:52,r:4},{t:"circle",x:110,y:52,r:4},{t:"tri",p:[[96,60],[104,60],[100,68]]},{t:"arc",x:92,y:68,r:9,s:0,e:Math.PI},{t:"arc",x:108,y:68,r:9,s:0,e:Math.PI}],
+   [{t:"line",a:[38,56],b:[80,60]},{t:"line",a:[38,66],b:[80,65]},{t:"line",a:[162,56],b:[120,60]},{t:"line",a:[162,66],b:[120,65]},{t:"circle",x:86,y:156,r:9},{t:"circle",x:114,y:156,r:9}]
  ]}
 ];
 function dlShape(c,sh){
@@ -411,7 +411,7 @@ async function aiCreate(){
  setTheme("kid");
  render(topbar("gameAiDraw()")+'<div class="card center" style="padding:44px"><div class="spin" style="font-size:3rem">✨</div><h2 style="margin-top:10px">Dibujando "'+esc(what)+'"…</h2><p class="mut">La IA está creando tu dibujo</p></div>');
  try{
-  var url=await geminiImage("Black and white line art coloring page for young children of: "+what+". Thick clean black outlines only, NO color, NO shading, pure white background, simple cute cartoon style, centered, no text or letters.");
+  var url=await geminiImage("Black and white line art coloring page for young children of: "+what+". Show the FULL BODY / complete figure (not just the face or head), whole character visible and centered. Thick clean black outlines only, NO color, NO shading, NO gray, pure white background, simple cute cartoon style, no text or letters.");
   aiShow(url,what);
  }catch(e){toast("No se pudo crear, intenta otra vez",false,2200);gameAiDraw();}
 }
