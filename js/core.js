@@ -361,7 +361,7 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
  }
  save();}
 function level(xp){return Math.floor(Math.sqrt(xp/20))+1;}
-function setTheme(t){document.body.className=t;}
+function setTheme(t){document.body.className=t;if(typeof boardFab==="function")boardFab(t);}
 function render(h){app.innerHTML=h;window.scrollTo(0,0);}
 /* detiene cualquier juego con temporizador/animación en curso (evita que sigan corriendo al salir) */
 function stopGames(){
