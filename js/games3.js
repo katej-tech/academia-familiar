@@ -805,3 +805,57 @@ function grEnd(){
  toast("¡Tu número final: "+GR.num+"! Elegiste bien "+GR.correct+"/"+GR.total+" 🔢",true,2800);
  setTimeout(function(){nodeWin(stars,"Mate");},800);
 }
+
+/* ============ PROBLEMAS MATEMÁTICOS (dedicado, con voz y pista) ============ */
+let PB={};
+function gameWordProblems(){setTheme("kid");PB={round:0,total:6,ok:0};nextPB2();}
+function nextPB2(){
+ if(PB.round>=PB.total)return nodeWin(starsFor(PB.ok,PB.total),"Problemas");
+ const it=genProblema2();PB.cur=it;
+ const order=shuffled(it.ops.map((o,i)=>({o,i})));PB.order=order;PB.a=it.a;
+ render(topbar("exitGame('games')")
+  +'<div class="progressdots">'+dots(PB.total,PB.round)+'</div>'
+  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:6px">🧩 Problema '+(PB.round+1)+'/'+PB.total+'</h2>'
+  +(it.pic?'<div class="bigpic">'+it.pic+'</div>':'')
+  +'<div class="card" style="font-size:clamp(1.15rem,5vw,1.4rem);line-height:1.5;text-align:center;font-family:Fredoka;font-weight:600">'+esc(it.q)+'</div>'
+  +'<button class="speaker small" onclick="speakES(\''+esc(it.q).replace(/'/g,"\'")+'\')">🔊 Leer el problema</button>'
+  +'<div class="choices2">'+order.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.3rem,6vw,1.7rem)" onclick="ansPB2('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>');
+ setTimeout(()=>speakES(it.q),350);
+}
+function ansPB2(vi){
+ const ok=PB.order[vi].i===PB.a;
+ recordAnswer("Problemas",ok,20);
+ if(ok){sOK();confetti(10);toast("¡Correcto! 🎉",true,1200);PB.ok++;}
+ else{sNO();toast("Era: "+PB.cur.ops[PB.a]+(PB.cur.tip?"  💡 "+PB.cur.tip:""),false,3000);}
+ PB.round++;setTimeout(nextPB2,ok?1200:3000);
+}
+
+/* ============ SUMAS EN COLUMNA (números uno debajo del otro) ============ */
+let CA={};
+function gameColumnAdd(){setTheme("kid");CA={round:0,total:6,ok:0};nextCA();}
+function nextCA(){
+ if(CA.round>=CA.total)return nodeWin(starsFor(CA.ok,CA.total),"Sumas");
+ const M=(typeof diffMax==="function")?diffMax([12,20,35,55,80]):30;
+ const a=5+rnd(M),b=5+rnd(M),ans=a+b;
+ const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(5))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ const ops=shuffled([...set]).map(String);CA.a=ops.indexOf(String(ans));CA.ans=ans;
+ const col='<div style="display:inline-grid;grid-template-columns:auto auto;gap:2px 14px;font-family:Fredoka;font-weight:800;font-size:clamp(2.6rem,14vw,3.8rem);text-align:right;line-height:1.1;color:var(--kid-ink)">'
+  +'<div></div><div>'+a+'</div>'
+  +'<div style="color:var(--kid-green)">+</div><div>'+b+'</div>'
+  +'<div style="grid-column:1/3;height:6px;background:var(--kid-ink);border-radius:3px;margin:6px 0"></div>'
+  +'<div></div><div style="color:var(--kid-blue)">?</div>'
+  +'</div>';
+ render(topbar("exitGame('games')")
+  +'<div class="progressdots">'+dots(CA.total,CA.round)+'</div>'
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">➕ Suma en columna</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Suma las unidades y luego las decenas</p>'
+  +'<div class="card center" style="padding:22px">'+col+'</div>'
+  +'<div class="choices2">'+ops.map((o,i)=>'<button class="kbtn white" style="font-size:clamp(1.4rem,7vw,1.9rem)" onclick="ansCA('+i+')">'+o+'</button>').join("")+'</div>');
+}
+function ansCA(i){
+ const ok=i===CA.a;
+ recordAnswer("Sumas",ok,15);
+ if(ok){sOK();confetti(10);toast("¡Correcto! "+CA.ans+" 🎉",true,1300);CA.ok++;}
+ else{sNO();toast("La respuesta era "+CA.ans,false,1900);}
+ CA.round++;setTimeout(nextCA,ok?1200:2000);
+}

@@ -158,12 +158,20 @@ function genPalabraNum(){
 
 /* problemas matemáticos con contexto (segundo grado) — con técnica/pista */
 function opsFor(ans){const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}const ops=shuffled([...set]).map(String);return{ops,a:ops.indexOf(String(ans))};}
+const PROB_NAMES=["Ana","Pedro","Lucía","Mateo","Sara","Tomás","Valentina","Samuel","Isabela","Nico"];
+function pn(){return pick(PROB_NAMES);}
 function genProblema2(){
- const tipo=rnd(4);
- if(tipo===0){const a=10+rnd(40),b=5+rnd(30);const o=opsFor(a+b);return{q:"Ana tiene "+a+" stickers y le regalan "+b+". ¿Cuántos tiene ahora?",ops:o.ops,a:o.a,pic:"⭐",tip:"Le DAN más → se SUMA: "+a+" + "+b};}
+ const tipo=rnd(10),A=pn(),B=pn();
+ if(tipo===0){const a=10+rnd(40),b=5+rnd(30);const o=opsFor(a+b);return{q:A+" tiene "+a+" stickers y le regalan "+b+". ¿Cuántos tiene ahora?",ops:o.ops,a:o.a,pic:"⭐",tip:"Le DAN más → se SUMA: "+a+" + "+b};}
  if(tipo===1){const a=20+rnd(50),b=5+rnd(15);const o=opsFor(a-b);return{q:"Hay "+a+" galletas y se comen "+b+". ¿Cuántas quedan?",ops:o.ops,a:o.a,pic:"🍪",tip:"Se QUITAN → se RESTA: "+a+" − "+b};}
  if(tipo===2){const g=2+rnd(4),c=2+rnd(5);const o=opsFor(g*c);return{q:"Hay "+g+" cajas con "+c+" pelotas cada una. ¿Cuántas pelotas en total?",ops:o.ops,a:o.a,pic:"⚽",tip:"Grupos iguales → se MULTIPLICA: "+g+" × "+c};}
- const total=20+rnd(30),parte=5+rnd(10);const o=opsFor(total-parte);return{q:"Pedro tenía "+total+" dulces y repartió "+parte+". ¿Cuántos le quedan?",ops:o.ops,a:o.a,pic:"🍬",tip:"Repartió (se van) → se RESTA: "+total+" − "+parte};}
+ if(tipo===3){const total=20+rnd(30),parte=5+rnd(10);const o=opsFor(total-parte);return{q:A+" tenía "+total+" dulces y repartió "+parte+". ¿Cuántos le quedan?",ops:o.ops,a:o.a,pic:"🍬",tip:"Repartió (se van) → se RESTA: "+total+" − "+parte};}
+ if(tipo===4){const a=8+rnd(20),b=3+rnd(a-2);const o=opsFor(a-b);return{q:A+" tiene "+a+" carritos y "+B+" tiene "+b+". ¿Cuántos carritos MÁS tiene "+A+"?",ops:o.ops,a:o.a,pic:"🚗",tip:"¿Cuántos MÁS? → se RESTA: "+a+" − "+b};}
+ if(tipo===5){const a=5+rnd(20);const o=opsFor(a*2);return{q:A+" tiene "+a+" figuritas y "+B+" tiene el DOBLE. ¿Cuántas tiene "+B+"?",ops:o.ops,a:o.a,pic:"🎴",tip:"El DOBLE → se multiplica por 2: "+a+" × 2"};}
+ if(tipo===6){const gr=2+rnd(4),cu=(2+rnd(4));const total=gr*cu;const o=opsFor(cu);return{q:"Hay "+total+" manzanas para repartir en "+gr+" canastas iguales. ¿Cuántas van en cada canasta?",ops:o.ops,a:o.a,pic:"🍎",tip:"Repartir en partes iguales → se DIVIDE: "+total+" ÷ "+gr};}
+ if(tipo===7){const a=5+rnd(15),b=5+rnd(15),c=3+rnd(10);const o=opsFor(a+b+c);return{q:A+" leyó "+a+" páginas el lunes, "+b+" el martes y "+c+" el miércoles. ¿Cuántas leyó en total?",ops:o.ops,a:o.a,pic:"📖",tip:"En total (todo junto) → se SUMA: "+a+" + "+b+" + "+c};}
+ if(tipo===8){const precio=3+rnd(8),cant=2+rnd(4);const o=opsFor(precio*cant);return{q:"Un helado cuesta "+precio+" monedas. ¿Cuánto cuestan "+cant+" helados?",ops:o.ops,a:o.a,pic:"🍦",tip:cant+" veces el precio → se MULTIPLICA: "+precio+" × "+cant};}
+ const tenia=15+rnd(30),gasto=5+rnd(10);const o=opsFor(tenia-gasto);return{q:A+" tenía "+tenia+" monedas y gastó "+gasto+" en un juguete. ¿Cuántas le quedan?",ops:o.ops,a:o.a,pic:"🪙",tip:"Gastó (se van) → se RESTA: "+tenia+" − "+gasto};}
 
 /* ============ SEGUNDO GRADO: SOCIALES, GEOGRAFÍA Y CULTURA GENERAL (trivias) ============ */
 const GEO_QS=[

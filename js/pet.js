@@ -158,33 +158,45 @@ function tamaPlay(){
 }
 function tamaPlayGo(){
  const t=tamaState();if(!t)return;
- setTheme("kid");TG={score:0,left:18};
+ setTheme("kid");
  render(topbar("screenTama()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🎾 Juega con '+esc(t.name)+'</h2>'
   +'<p class="center" style="font-size:.9rem;margin-bottom:6px">¡Toca las golosinas que caen para dárselas!</p>'
   +'<div style="display:flex;justify-content:space-between;font-family:Fredoka;font-weight:700;padding:0 6px;margin-bottom:6px"><span id="tgsc">0 🍬</span><span id="tgtime">18s</span></div>'
-  +'<div id="tgstage" style="position:relative;height:58vh;max-height:440px;overflow:hidden;border:3px solid var(--kid-ink);border-radius:18px;background:linear-gradient(180deg,#EAF6FF,#CDEBFF)">'
-   +'<div id="tgpet" class="petidle" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:clamp(2.8rem,15vw,4rem)">'+t.sp+'</div>'
+  +'<div id="tgstage" style="position:relative;height:58vh;max-height:440px;overflow:hidden;border:2px solid rgba(30,42,74,.10);box-shadow:0 8px 20px rgba(30,42,74,.10);border-radius:18px;background:linear-gradient(180deg,#EAF6FF,#CDEBFF)">'
+   +'<div id="tgpet" class="petidle" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:clamp(2.8rem,15vw,4rem);z-index:2">'+t.sp+'</div>'
   +'</div>');
- TG.spawn=setInterval(tgSpawn,720);
- TG.timer=setInterval(tgTick,1000);
+ const st=document.getElementById("tgstage");
+ const H=st?st.clientHeight:400;
+ TG={score:0,left:18,treats:[],spawnAcc:0,timeAcc:0,last:0,over:false,stage:st,H:H,fallSpeed:Math.max(150,H/2.6)};
+ TG.raf=requestAnimationFrame(tgLoop);
 }
-function tgTick(){TG.left--;const el=document.getElementById("tgtime");if(el)el.textContent=Math.max(0,TG.left)+"s";if(TG.left<=0)tgEnd();}
+function tgLoop(ts){
+ if(TG.over)return;
+ const st=TG.stage;if(!st||!document.getElementById("tgstage")){TG.over=true;return;}
+ if(!TG.last)TG.last=ts;
+ var dt=Math.min(0.05,(ts-TG.last)/1000);TG.last=ts;
+ TG.timeAcc+=dt;if(TG.timeAcc>=1){TG.timeAcc-=1;TG.left--;var el=document.getElementById("tgtime");if(el)el.textContent=Math.max(0,TG.left)+"s";if(TG.left<=0)return tgEnd();}
+ TG.spawnAcc+=dt;if(TG.spawnAcc>=0.72){TG.spawnAcc=0;tgSpawn();}
+ var H=TG.H||st.clientHeight;
+ for(var i=0;i<TG.treats.length;i++){var tr=TG.treats[i];if(tr.got)continue;tr.y+=TG.fallSpeed*dt;tr.el.style.transform="translateX(-50%) translateY("+tr.y.toFixed(0)+"px)";}
+ TG.treats=TG.treats.filter(function(tr){if(tr.dead||tr.y>H+50){if(tr.el.parentNode)tr.el.remove();return false;}return true;});
+ TG.raf=requestAnimationFrame(tgLoop);
+}
 function tgSpawn(){
- const st=document.getElementById("tgstage");if(!st)return tgEnd();
- const treats=["🍎","🍪","🦴","🧀","🍓","🥕","🍬"];
- const d=document.createElement("div");d.textContent=pick(treats);
- d.style.cssText="position:absolute;top:-46px;font-size:2.1rem;cursor:pointer;left:"+(4+rnd(84))+"%;transition:top 2.7s linear";
- d.onclick=()=>{if(d._got)return;d._got=true;TG.score++;beep([600+TG.score*12],.05);
-  const sc=document.getElementById("tgsc");if(sc)sc.textContent=TG.score+" 🍬";
-  const pet=document.getElementById("tgpet");if(pet){pet.classList.remove("petidle");pet.classList.add("pethappy");setTimeout(()=>{if(pet){pet.classList.remove("pethappy");pet.classList.add("petidle");}},500);}
-  d.textContent="💖";setTimeout(()=>{if(d.parentNode)d.remove();},200);};
- st.appendChild(d);
- requestAnimationFrame(()=>{d.style.top="100%";});
- setTimeout(()=>{if(d&&d.parentNode)d.remove();},2800);
+ var st=TG.stage;if(!st)return;
+ var treats=["🍎","🍪","🦴","🧀","🍓","🥕","🍬"];
+ var d=document.createElement("div");d.textContent=pick(treats);
+ d.style.cssText="position:absolute;top:0;left:"+(8+rnd(80))+"%;font-size:2.3rem;cursor:pointer;will-change:transform;transform:translateX(-50%) translateY(-40px)";
+ var obj={el:d,y:-40,got:false,dead:false};
+ d.onclick=function(){if(obj.got)return;obj.got=true;TG.score++;beep([600+TG.score*12],.05);
+  var sc=document.getElementById("tgsc");if(sc)sc.textContent=TG.score+" 🍬";
+  var pet=document.getElementById("tgpet");if(pet){pet.classList.remove("petidle");pet.classList.add("pethappy");setTimeout(function(){if(pet){pet.classList.remove("pethappy");pet.classList.add("petidle");}},450);}
+  d.textContent="💖";setTimeout(function(){obj.dead=true;},180);};
+ st.appendChild(d);TG.treats.push(obj);
 }
 function tgEnd(){
- clearInterval(TG.spawn);clearInterval(TG.timer);
+ TG.over=true;try{cancelAnimationFrame(TG.raf);}catch(e){}
  const t=tamaState();if(!t)return screenTama();
  tamaApply(t,{happy:Math.min(42,12+TG.score*2),energy:-12,hunger:-5});t.careXp=(t.careXp||0)+3;t.lastTs=Date.now();tamaSave();
  sWIN();confetti(22);
