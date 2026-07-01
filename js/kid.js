@@ -108,6 +108,7 @@ function screenMyStuff(){setTheme("kid");
   +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
   +'<button class="kbtn blue" onclick="gameDots()">🔢 Une los puntos</button>'
   +'<button class="kbtn green" onclick="gameDrawLesson()">🎨 Cómo dibujar (paso a paso)</button>'
+  +'<button class="kbtn yellow" onclick="gameAiDraw()">✨ Dibuja con IA</button>'
   +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'

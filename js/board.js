@@ -376,3 +376,67 @@ function dlNext(){
 }
 function dlClear(){if(DL.dctx&&DL.dc)DL.dctx.clearRect(0,0,DL.W+10,DL.W+10);}
 function dlOther(){DL.figIdx=(DL.figIdx+1)%DRAW_FIGS.length;DL.step=0;startDrawLesson();}
+
+/* ============ DIBUJA CON IA (escribe/di algo y Gemini crea el dibujo para colorear) ============ */
+let AI={color:"#FF6B6B",erase:false};
+function gameAiDraw(){setTheme("kid");
+ if(!S.geminiKey){
+  return render(topbar("screenMyStuff()")
+   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✨ Dibuja con IA</h2>'
+   +'<div class="card center"><div style="font-size:3rem">🔒</div><p style="font-size:1.05rem;line-height:1.5;margin-top:8px">Este juego crea dibujos nuevos con Inteligencia Artificial.<br>Pídele a papá o mamá que active la <b>clave de Gemini</b> en el panel de padres.</p>'
+   +'<button class="kbtn green" style="margin-top:12px" onclick="screenMyStuff()">Volver</button></div>');
+ }
+ const chips=["un dinosaurio","un carro de carreras","un gato astronauta","un robot","un tren","un dragón"];
+ render(topbar("screenMyStuff()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">✨ Dibuja con IA</h2>'
+  +'<p class="center" style="margin-bottom:12px">Escribe qué quieres colorear y la IA lo dibuja</p>'
+  +'<input id="aiprompt" type="text" placeholder="Un dinosaurio con sombrero..." style="width:100%;box-sizing:border-box;font-size:1.15rem;padding:14px;border:2px solid rgba(30,42,74,.15);border-radius:14px;font-family:Nunito;font-weight:700;margin-bottom:10px">'
+  +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+chips.map(function(c){return '<button class="kbtn white" style="width:auto;display:inline-block;margin:0;padding:8px 14px;font-size:.95rem;min-height:auto" onclick="document.getElementById(\'aiprompt\').value=\''+c+'\'">'+c+'</button>';}).join("")+'</div>'
+  +'<div style="display:grid;grid-template-columns:'+(micAvailable?"2fr 1fr":"1fr")+';gap:10px">'
+   +'<button class="kbtn green" onclick="aiCreate()">✨ Crear dibujo</button>'
+   +(micAvailable()?'<button class="kbtn blue" onclick="aiMic()">🎤 Decirlo</button>':'')
+  +'</div>');
+}
+function aiMic(){
+ if(!micAvailable())return;
+ var SR=window.SpeechRecognition||window.webkitSpeechRecognition;var rec=new SR();rec.lang="es-CO";rec.interimResults=false;rec.maxAlternatives=1;
+ var inp=document.getElementById("aiprompt");if(inp)inp.value="🎤 Escuchando…";
+ rec.onresult=function(e){var t=e.results[0][0].transcript;if(inp)inp.value=t;setTimeout(aiCreate,300);};
+ rec.onerror=function(){if(inp)inp.value="";};
+ try{rec.start();}catch(_){}
+}
+async function aiCreate(){
+ var inp=document.getElementById("aiprompt");var what=inp?(inp.value||"").trim():"";
+ if(!what||what.indexOf("🎤")>=0){toast("Escribe qué quieres dibujar 🙂",false,1800);return;}
+ setTheme("kid");
+ render(topbar("gameAiDraw()")+'<div class="card center" style="padding:44px"><div class="spin" style="font-size:3rem">✨</div><h2 style="margin-top:10px">Dibujando "'+esc(what)+'"…</h2><p class="mut">La IA está creando tu dibujo</p></div>');
+ try{
+  var url=await geminiImage("Black and white line art coloring page for young children of: "+what+". Thick clean black outlines only, NO color, NO shading, pure white background, simple cute cartoon style, centered, no text or letters.");
+  aiShow(url,what);
+ }catch(e){toast("No se pudo crear, intenta otra vez",false,2200);gameAiDraw();}
+}
+function aiShow(url,what){
+ setTheme("kid");AI={color:"#FF6B6B",erase:false};
+ var pal=COLOR_PALETTE.map(function(c){return '<button type="button" onclick="aiSet(\''+c+'\')" aria-label="aicolor" style="width:34px;height:34px;border-radius:50%;border:3px solid '+(AI.color===c?"#1E2A4A":"#fff")+';background:'+c+';box-shadow:0 2px 6px rgba(30,42,74,.25);cursor:pointer"></button>';}).join("");
+ render(topbar("gameAiDraw()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🖍️ Colorea: '+esc(what)+'</h2>'
+  +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Toca un color y pinta con el dedo</p>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:8px">'+pal+'<button type="button" onclick="aiEraser()" id="aierase" style="border:none;background:#fff;border-radius:10px;padding:6px 10px;font-family:Fredoka;font-weight:700;box-shadow:0 2px 6px rgba(30,42,74,.2);cursor:pointer">🧽</button></div>'
+  +'<div class="card" style="padding:8px"><div id="aistage" style="position:relative;max-width:340px;margin:0 auto"><img id="aiimg" src="'+url+'" alt="dibujo" style="width:100%;display:block;border-radius:10px"><canvas id="aidraw" style="position:absolute;left:0;top:0;width:100%;height:100%;mix-blend-mode:multiply;touch-action:none"></canvas></div></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:340px;margin:0 auto">'
+   +'<button class="kbtn yellow" onclick="aiClearPaint()" style="min-height:50px">🧽 Limpiar</button>'
+   +'<button class="kbtn green" onclick="gameAiDraw()" style="min-height:50px">✨ Otro dibujo</button>'
+  +'</div>');
+ var img=document.getElementById("aiimg");
+ var setup=function(){var cv=document.getElementById("aidraw");if(!cv||!img)return;var w=img.clientWidth||300,h=img.clientHeight||300;var dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);var ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineCap="round";ctx.lineJoin="round";AI.ctx=ctx;AI.cv=cv;AI.w=w;AI.h=h;
+  var pos=function(e){var r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*w,y:(e.clientY-r.top)/r.height*h};};
+  cv.addEventListener("pointerdown",function(e){AI.drawing=true;var p=pos(e);ctx.globalCompositeOperation=AI.erase?"destination-out":"source-over";ctx.strokeStyle=AI.color;ctx.lineWidth=AI.erase?26:16;ctx.beginPath();ctx.moveTo(p.x,p.y);try{cv.setPointerCapture(e.pointerId);}catch(_){}} );
+  cv.addEventListener("pointermove",function(e){if(!AI.drawing)return;var p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);});
+  var stop=function(){AI.drawing=false;};cv.addEventListener("pointerup",stop);cv.addEventListener("pointercancel",stop);cv.addEventListener("pointerleave",stop);
+ };
+ if(img.complete&&img.clientWidth)setup();else img.onload=setup;
+}
+function aiSet(c){AI.color=c;AI.erase=false;var b=document.getElementById("aierase");if(b)b.style.outline="none";document.querySelectorAll('[aria-label="aicolor"]').forEach(function(el,i){el.style.borderColor=(COLOR_PALETTE[i]===c)?"#1E2A4A":"#fff";});}
+function aiEraser(){AI.erase=true;var b=document.getElementById("aierase");if(b)b.style.outline="3px solid #3EC97C";}
+function aiClearPaint(){if(AI.ctx&&AI.cv){AI.ctx.save();AI.ctx.globalCompositeOperation="destination-out";AI.ctx.fillRect(0,0,AI.w+20,AI.h+20);AI.ctx.restore();}}
