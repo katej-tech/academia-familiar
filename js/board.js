@@ -6,19 +6,21 @@
    volver a abrir (para que no pierda su cuenta). */
 let WB={},WB_SAVE=null;
 const WB_BG="#FCFBF6";
-/* botón flotante: aparece solo en las pantallas del niño */
-function boardFab(theme){
- let f=document.getElementById("wbfab");
- if(!f){
-  f=document.createElement("button");f.id="wbfab";f.type="button";
-  f.innerHTML='<span style="font-size:1.5rem">✏️</span>';
-  f.setAttribute("aria-label","Pizarra");f.onclick=openBoard;
-  f.style.cssText="position:fixed;right:14px;bottom:16px;z-index:150;width:58px;height:58px;border-radius:50%;border:none;"
-   +"background-color:var(--kid-yellow);background-image:linear-gradient(180deg,rgba(255,255,255,.3),rgba(0,0,0,.06));"
-   +"box-shadow:0 6px 16px rgba(30,42,74,.32);cursor:pointer;display:flex;align-items:center;justify-content:center";
-  document.body.appendChild(f);
- }
- f.style.display=(theme==="kid")?"flex":"none";
+/* la pizarra ya NO flota siempre: se abre desde los ejercicios de mate (botón) y desde la zona de Arte */
+function boardFabHide(){var f=document.getElementById("wbfab");if(f)f.remove();}
+/* botón compacto de pizarra para poner dentro de los ejercicios */
+function boardBtn(){return '<button class="kbtn white" style="margin-top:6px;min-height:52px;font-size:1rem" onclick="openBoard()">✏️ Abrir pizarra (para resolver)</button>';}
+/* ===== ZONA DE ARTE Y DIBUJO (todo el dibujo en un solo lugar) ===== */
+function screenArt(){setTheme("kid");
+ var sub=(typeof subHeader==="function")?subHeader("🎨 Arte y dibujo"):'<h2 style="text-align:center;margin:2px 0 12px">🎨 Arte y dibujo</h2>';
+ render(topbar("screenMyStuff()")+sub
+  +'<p class="center" style="margin-bottom:14px">Elige una actividad de dibujo</p>'
+  +'<button class="kbtn yellow" onclick="gameAiDraw()">✨ Dibuja con IA</button>'
+  +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
+  +'<button class="kbtn blue" onclick="gameDots()">🔢 Une los puntos</button>'
+  +'<button class="kbtn green" onclick="gameDrawLesson()">🎨 Cómo dibujar (paso a paso)</button>'
+  +'<button class="kbtn red" onclick="gameCursive()">✍️ Letra cursiva</button>'
+  +'<button class="kbtn white" onclick="openBoard()">✏️ Pizarra (dibujo libre)</button>');
 }
 function openBoard(){
  if(document.getElementById("wbov"))return;

@@ -105,10 +105,7 @@ function screenMyStuff(){setTheme("kid");
  render(topbar("screenKidMap()")+subHeader("🛍️ Mi mundo")
   +'<div class="card center" style="padding:14px">'+(typeof avatarScene==="function"?avatarScene(120):avatarHTML(110))+'</div>'
   +'<button class="kbtn red" onclick="screenTama()">🐾 Mi mascota (cuídala)</button>'
-  +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
-  +'<button class="kbtn blue" onclick="gameDots()">🔢 Une los puntos</button>'
-  +'<button class="kbtn green" onclick="gameDrawLesson()">🎨 Cómo dibujar (paso a paso)</button>'
-  +'<button class="kbtn yellow" onclick="gameAiDraw()">✨ Dibuja con IA</button>'
+  +'<button class="kbtn purple" onclick="screenArt()">🎨 Arte y dibujo</button>'
   +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
@@ -711,6 +708,7 @@ function renderCH(){
  const isEN=it.word||KID_TOPICS[it._topic]&&KID_TOPICS[it._topic].en;
  const topic=KID_TOPICS[it._topic];
  const head=topic?topic.emoji+" "+topic.name:CH.label;
+ const isMath=["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra","palabra_num","problemas2"].indexOf(it._topic)>=0;
  render(topbar("screenKidMap()")
  +'<div class="progressdots">'+dots(CH.items.length,CH.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+head+' · '+(CH.i+1)+'/'+CH.items.length+'</p>'
@@ -718,7 +716,8 @@ function renderCH(){
  +'<div class="bigq center">'+esc(it.q)+'</div>'
  +(isEN&&it.word?'<button class="speaker" onclick="speakEN(\''+esc(it.word).replace(/'/g,"")+'\')"><span class="ic">🔊</span> Escuchar en inglés</button>'
    :'<button class="speaker small" onclick="speakES(\''+esc(it.q).replace(/'/g,"\\'")+'\')">🔊 Leer pregunta</button>')
- +'<div class="choices2">'+shown.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.15rem,5vw,1.45rem)" onclick="ansCH('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>');
+ +'<div class="choices2">'+shown.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.15rem,5vw,1.45rem)" onclick="ansCH('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>'
+ +(isMath&&typeof boardBtn==="function"?boardBtn():''));
  if(isEN&&it.word)setTimeout(()=>speakEN(it.word.replace(/'/g,"")),350);}
 function ansCH(vi){
  const it=CH.items[CH.i];

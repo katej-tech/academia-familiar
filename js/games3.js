@@ -328,7 +328,8 @@ function renderMX(){
   +'<p class="center" style="font-size:.9rem;margin-bottom:10px">Completa para que las sumas cuadren ➡️ y ⬇️</p>'
   +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:340px;margin:0 auto">'+cells.join("")+'</div>'
   +'<p class="center mut" style="margin:12px 0 6px;font-size:.85rem">Toca un número de abajo y luego una casilla vacía</p>'
-  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">'+trayHTML+'</div>');}
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">'+trayHTML+'</div>'
+  +(typeof boardBtn==="function"?boardBtn():''));}
 function tapMXTile(i){if(MX.tray[i].used)return;MX.sel=(MX.sel===i?null:i);beep([520],.05);renderMX();}
 function tapMXCell(idx){
  if(MX.filled[idx]!=null){const ti=MX.filledBy[idx];if(ti!=null)MX.tray[ti].used=false;delete MX.filled[idx];delete MX.filledBy[idx];beep([400],.06);return renderMX();}
@@ -819,7 +820,8 @@ function nextPB2(){
   +(it.pic?'<div class="bigpic">'+it.pic+'</div>':'')
   +'<div class="card" style="font-size:clamp(1.15rem,5vw,1.4rem);line-height:1.5;text-align:center;font-family:Fredoka;font-weight:600">'+esc(it.q)+'</div>'
   +'<button class="speaker small" onclick="speakES(\''+esc(it.q).replace(/'/g,"\'")+'\')">🔊 Leer el problema</button>'
-  +'<div class="choices2">'+order.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.3rem,6vw,1.7rem)" onclick="ansPB2('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>');
+  +'<div class="choices2">'+order.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.3rem,6vw,1.7rem)" onclick="ansPB2('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>'
+  +(typeof boardBtn==="function"?boardBtn():''));
  setTimeout(()=>speakES(it.q),350);
 }
 function ansPB2(vi){
@@ -850,7 +852,8 @@ function nextCA(){
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">➕ Suma en columna</h2>'
   +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Suma las unidades y luego las decenas</p>'
   +'<div class="card center" style="padding:22px">'+col+'</div>'
-  +'<div class="choices2">'+ops.map((o,i)=>'<button class="kbtn white" style="font-size:clamp(1.4rem,7vw,1.9rem)" onclick="ansCA('+i+')">'+o+'</button>').join("")+'</div>');
+  +'<div class="choices2">'+ops.map((o,i)=>'<button class="kbtn white" style="font-size:clamp(1.4rem,7vw,1.9rem)" onclick="ansCA('+i+')">'+o+'</button>').join("")+'</div>'
+  +(typeof boardBtn==="function"?boardBtn():''));
 }
 function ansCA(i){
  const ok=i===CA.a;
