@@ -136,6 +136,7 @@ function screenWritingPick(){setTheme("kid");
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✍️ Escribir bien</h2>'
  +'<p class="center" style="margin-bottom:14px">Frases, letras y palabras</p>'
+ +'<button class="kbtn purple" onclick="gameCursive()">✍️ Letra cursiva (repasar)</button>'
  +'<button class="kbtn yellow" onclick="gameOrder()">🧩 Ordena la frase</button>'
  +'<button class="kbtn green" onclick="gameDictation()">✍️ Dictado de frases</button>'
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'

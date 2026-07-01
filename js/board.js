@@ -64,3 +64,63 @@ function boardTool(t){if(WB.ctx){WB.erase=(t==="erase");boardEraseUI();}}
 function boardEraseUI(){const b=document.getElementById("wberase");if(b)b.style.outline=WB.erase?"3px solid #3EC97C":"none";}
 function boardClear(){if(WB.ctx){WB.ctx.clearRect(0,0,WB.W+20,WB.H+20);WB.ctx.fillStyle=WB_BG;WB.ctx.fillRect(0,0,WB.W+20,WB.H+20);boardGrid();}}
 function closeBoard(){const ov=document.getElementById("wbov");if(!ov)return;try{if(WB.cv)WB_SAVE=WB.cv.toDataURL();}catch(e){}ov.remove();}
+
+/* ============ LETRA CURSIVA (repasar letras guía con el dedo) ============ */
+let CU={};
+function gameCursive(){setTheme("kid");
+ const p=(typeof prof==="function")?prof():null;
+ const base=["a","e","i","o","u","m","p","s","l","t","d","n","r","c"];
+ const words=["mamá","papá","casa","sol","luna","oso","amo"];
+ const name=(p&&p.name)?String(p.name).toLowerCase().slice(0,10):null;
+ CU={items:base.concat(words).concat(name?[name]:[]),i:0};
+ renderCursive();
+}
+function renderCursive(){
+ const it=CU.items[CU.i];
+ render(topbar("screenWritingPick()")
+  +'<div class="progressdots">'+dots(CU.items.length,CU.i)+'</div>'
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">✍️ Letra cursiva</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Pasa el dedo por encima de la letra gris</p>'
+  +'<div style="position:relative;width:100%;max-width:460px;margin:0 auto"><canvas id="cucanvas" style="width:100%;display:block;border:2px solid rgba(30,42,74,.1);border-radius:16px;box-shadow:0 8px 20px rgba(30,42,74,.1);touch-action:none;background:#FCFBF6"></canvas></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:460px;margin:12px auto 0">'
+   +'<button class="kbtn white" onclick="speakES(\''+esc(it)+'\')" style="font-size:1rem;min-height:54px">🔊 Oír</button>'
+   +'<button class="kbtn yellow" onclick="cuClear()" style="font-size:1rem;min-height:54px">🧽 Limpiar</button>'
+   +'<button class="kbtn green" onclick="cuNext()" style="font-size:1rem;min-height:54px">Siguiente →</button>'
+  +'</div>');
+ const cv=document.getElementById("cucanvas");
+ const cssW=cv.clientWidth||360,cssH=Math.round(cssW*0.5);
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ cv.style.height=cssH+"px";cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
+ const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineCap="round";ctx.lineJoin="round";
+ CU.ctx=ctx;CU.cv=cv;CU.W=cssW;CU.H=cssH;CU.drawing=false;
+ cuGuide(it);
+ if(window.FontFace&&document.fonts&&document.fonts.load){document.fonts.load("700 40px 'Dancing Script'").then(()=>{if(CU.items[CU.i]===it)cuGuide(it);}).catch(()=>{});}
+ const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+ cv.addEventListener("pointerdown",e=>{CU.drawing=true;const p=pos(e);ctx.strokeStyle="#3B82F6";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(p.x,p.y);try{cv.setPointerCapture(e.pointerId);}catch(_){}} );
+ cv.addEventListener("pointermove",e=>{if(!CU.drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);});
+ const stop=()=>{CU.drawing=false;};
+ cv.addEventListener("pointerup",stop);cv.addEventListener("pointercancel",stop);cv.addEventListener("pointerleave",stop);
+ speakES(it);
+}
+function cuGuide(text){
+ const c=CU.ctx,W=CU.W,H=CU.H;if(!c)return;
+ c.fillStyle="#FCFBF6";c.fillRect(0,0,W,H);
+ const top=H*0.30,mid=H*0.52,base=H*0.74;
+ c.strokeStyle="rgba(59,130,246,.30)";c.lineWidth=1.5;
+ [top,base].forEach(y=>{c.beginPath();c.moveTo(6,y);c.lineTo(W-6,y);c.stroke();});
+ c.setLineDash([6,7]);c.strokeStyle="rgba(59,130,246,.20)";c.beginPath();c.moveTo(6,mid);c.lineTo(W-6,mid);c.stroke();c.setLineDash([]);
+ c.fillStyle="rgba(30,42,74,.15)";c.textAlign="center";c.textBaseline="alphabetic";
+ let size=H*0.55;c.font="700 "+size+"px 'Dancing Script', cursive";
+ let w=c.measureText(text).width;
+ while(w>W*0.88&&size>18){size-=4;c.font="700 "+size+"px 'Dancing Script', cursive";w=c.measureText(text).width;}
+ c.fillText(text,W/2,base);
+}
+function cuClear(){if(CU.ctx)cuGuide(CU.items[CU.i]);}
+function cuNext(){
+ if(typeof recordAnswer==="function")recordAnswer("Letras",true,15);
+ sOK();CU.i++;
+ if(CU.i>=CU.items.length){confetti(20);toast("¡Terminaste de repasar! ✍️🌟",true,2000);
+  if(typeof nodeWin==="function")return setTimeout(()=>nodeWin(3,"Letras"),400);
+  return setTimeout(screenWritingPick,600);}
+ renderCursive();
+}
