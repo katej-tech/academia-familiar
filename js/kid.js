@@ -135,7 +135,11 @@ function screenStoryPick(){setTheme("kid");
  +'<p class="center" style="margin-bottom:14px">Lee, escucha y responde</p>'
  +CUENTOS.map((c,i)=>'<button class="kbtn yellow" onclick="gameStory('+i+')"><span style="font-size:1.6rem">'+c.pages[0].scene.split(/(?=)/)[0]+'</span> '+esc(c.title)+'</button>').join("")
  +'<button class="kbtn blue" onclick="screenStoryEN()">🇬🇧 Cuentos en inglés (toca y traduce)</button>'
- +(S.geminiKey?'<button class="kbtn green" onclick="aiStoryKid()">✨ Cuento nuevo con IA</button>':'<p class="audiotip">💡 Activa la clave de Gemini en el panel de padres para cuentos nuevos infinitos e ilustrados.</p>'));}
+ +(S.geminiKey?
+    '<button class="kbtn green" onclick="aiStoryKid()">✨ Cuento nuevo con IA</button>'
+   +'<button class="kbtn purple" onclick="aiStoryKid(\'misterio\')">🕵️ Cuento de misterio (IA)</button>'
+   +'<button class="kbtn blue" onclick="aiStoryKid(\'aventura\')">🗺️ Aventura nueva (IA)</button>'
+  :'<p class="audiotip">💡 Activa la clave de Gemini en el panel de padres para cuentos nuevos infinitos e ilustrados (aventura y misterio).</p>'));}
 function screenWritingPick(){setTheme("kid");
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✍️ Escribir bien</h2>'
@@ -195,12 +199,15 @@ function screenMemoryPick(){setTheme("kid");
     +'<span style="font-size:2rem">'+s.ic+'</span><span style="flex:1"><span>'+s.nm+'</span><br><span style="font-size:.78rem;opacity:.8;font-weight:500">'+s.desc+'</span></span></button>';
   }).join(""));}
 function tapNode(id){if(typeof id==="string")openWorld(id);}
-async function aiStoryKid(){
+async function aiStoryKid(genero){
  setTheme("kid");
- render(topbar("screenStoryPick()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Creando un cuento nuevo…</h2></div>');
+ const titulo=genero==="misterio"?"un misterio nuevo…":genero==="aventura"?"una aventura nueva…":"un cuento nuevo…";
+ render(topbar("screenStoryPick()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">'+(genero==="misterio"?"🕵️":genero==="aventura"?"🗺️":"⏳")+'</div><h2 style="margin-top:10px">Creando '+titulo+'</h2></div>');
  try{
-  const temas=["la amistad","el valor de la honestidad","cuidar la naturaleza","el trabajo en equipo","superar el miedo","la importancia de compartir","la perseverancia","ser amable con los demás","la curiosidad por aprender","cuidar a los animales",
-   "un misterio que el protagonista resuelve buscando pistas","un descubrimiento sorprendente (un lugar o un tesoro escondido)","una aventura de exploración y valentía","resolver un enigma usando la lógica","una búsqueda para encontrar algo perdido"];
+  const generales=["la amistad","el valor de la honestidad","cuidar la naturaleza","el trabajo en equipo","superar el miedo","la importancia de compartir","la perseverancia","ser amable con los demás","la curiosidad por aprender","cuidar a los animales"];
+  const misterios=["un misterio con pistas que el protagonista resuelve como detective","un objeto que desaparece y hay que encontrar siguiendo pistas","un enigma en la casa o la escuela que se descubre paso a paso","huellas y señales misteriosas que llevan a una sorpresa","un caso curioso que se resuelve usando la lógica"];
+  const aventuras=["una gran aventura de exploración a un lugar sorprendente","un viaje para encontrar un tesoro escondido","una expedición valiente superando retos","el descubrimiento de un lugar mágico y secreto","una búsqueda emocionante llena de sorpresas"];
+  const temas=genero==="misterio"?misterios:genero==="aventura"?aventuras:generales;
   const tema=temas[Math.floor(Math.random()*temas.length)];
   if(!S.aiStoriesSeen)S.aiStoriesSeen=[];
   const evitar=S.aiStoriesSeen.slice(-12);

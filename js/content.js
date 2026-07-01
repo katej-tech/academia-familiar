@@ -214,7 +214,45 @@ const CUENTOS=[
    {q:"¿Qué desapareció del frasco?",ops:["Las galletas 🍪","El dinero","Un juguete"],a:0},
    {q:"¿Cuál fue la primera pista que siguió Nico?",ops:["Un caminito de migas","Un ruido","Una carta"],a:0},
    {q:"¿Quién se comió las galletas?",ops:["Motas, el perrito 🐶","La abuela","Nico"],a:0},
-   {q:"¿Cómo resolvió Nico el misterio?",ops:["Siguiendo las pistas como detective 🔍","Adivinando","Preguntando a todos"],a:0}]}];
+   {q:"¿Cómo resolvió Nico el misterio?",ops:["Siguiendo las pistas como detective 🔍","Adivinando","Preguntando a todos"],a:0}]},
+ /* ===== FÁBULAS Y LEYENDAS (versiones propias, dominio público) ===== */
+ {title:"El león y el ratón",long:true,classic:true,
+  pages:[
+   {scene:"🦁😴🐭",text:"Un enorme <b>león</b> dormía tranquilo bajo un árbol. Un ratoncito, sin querer, corrió por encima de su melena y lo despertó. El león lo atrapó de un zarpazo. —¡Te voy a comer por molestarme! —rugió enojado."},
+   {scene:"🐭🙏",text:"—¡Por favor, no me comas! —suplicó el <b>ratón</b> temblando—. Suéltame, y algún día yo te ayudaré. El león soltó una carcajada. —¿Tú, tan chiquito, ayudarme a mí? —pero le pareció gracioso y lo dejó ir."},
+   {scene:"🦁🕸️😖",text:"Días después, el león cayó en una <b>red</b> de unos cazadores. Rugía y forcejeaba, pero no podía soltarse. Las cuerdas eran muy fuertes. El poderoso león estaba atrapado y no sabía qué hacer."},
+   {scene:"🐭✂️🕸️",text:"El ratoncito lo escuchó y corrió a ayudarlo. Con sus <b>dientecitos</b> afilados, empezó a roer las cuerdas una por una… hasta que ¡la red se rompió! El león quedó libre gracias a su pequeño amigo."},
+   {scene:"🦁❤️🐭",text:"—Tenías razón —dijo el león agradecido—. Nunca pensé que un ratoncito me salvaría. Desde entonces fueron <b>amigos</b>. Y así aprendieron que hasta el más pequeño puede ayudar al más grande."}],
+  qs:[
+   {q:"¿Qué hizo el león cuando atrapó al ratón?",ops:["Al final lo dejó ir 🐭","Se lo comió","Lo escondió"],a:0},
+   {q:"¿Cómo ayudó el ratón al león?",ops:["Royó la red con sus dientes","Rugió muy fuerte","Llamó a los cazadores"],a:0},
+   {q:"¿Qué nos enseña la fábula?",ops:["Hasta el más pequeño puede ayudar","Que los leones son malos","Que hay que dormir mucho"],a:0},
+   {q:"Al final, el león y el ratón fueron…",ops:["Amigos ❤️","Enemigos","Vecinos"],a:0}]},
+ {title:"El pastor mentiroso",long:true,classic:true,
+  pages:[
+   {scene:"👦🐑⛰️",text:"Un <b>pastor</b> cuidaba sus ovejas en la montaña. Se aburría mucho, así que un día se le ocurrió una travesura para divertirse. —¡Voy a jugarle una broma a la gente del pueblo! —pensó riéndose."},
+   {scene:"👦😱🐺",text:"—¡Auxilio! ¡El <b>lobo</b>! ¡El lobo se come mis ovejas! —gritó. Los del pueblo corrieron a ayudarlo… pero no había ningún lobo. El pastor se reía a carcajadas. —¡Los engañé! —dijo, mientras todos se iban molestos."},
+   {scene:"👦😆",text:"Al día siguiente, el pastor <b>volvió</b> a gritar: —¡El lobo! ¡El lobo! —Y otra vez la gente subió corriendo, y otra vez era <b>mentira</b>. —¡Qué gracioso! —decía el pastor. Pero la gente se enojó todavía más."},
+   {scene:"🐺🐑😨",text:"Pero un día llegó un lobo <b>de verdad</b>. —¡Auxilio! ¡El lobo! ¡Esta vez es cierto! —gritó el pastor con todas sus fuerzas. Sin embargo, nadie del pueblo se movió. —Otra vez sus mentiras —pensaron todos."},
+   {scene:"👦😢💡",text:"El pastor se quedó solo y perdió varias ovejas. Muy triste, entendió la lección: cuando uno dice <b>mentiras</b>, después nadie le cree, ni siquiera cuando dice la <b>verdad</b>. Desde ese día, siempre dijo la verdad."}],
+  qs:[
+   {q:"¿Qué gritaba el pastor de mentira?",ops:["Que venía el lobo 🐺","Que había fuego","Que estaba perdido"],a:0},
+   {q:"¿Qué pasó cuando llegó el lobo de verdad?",ops:["Nadie le creyó ni fue a ayudarlo","Todos corrieron a ayudar","El lobo se fue solo"],a:0},
+   {q:"¿Por qué nadie le creyó al final?",ops:["Porque antes había dicho muchas mentiras","Porque estaban dormidos","Porque no lo oyeron"],a:0},
+   {q:"¿Qué nos enseña la fábula?",ops:["Al mentiroso no le creen, aunque diga la verdad","Que gritar es divertido","Que los lobos son buenos"],a:0}]},
+ {title:"La leyenda de El Dorado",long:true,classic:true,
+  pages:[
+   {scene:"🏔️🌅",text:"Hace muchísimos años, en las montañas de Colombia, vivía el pueblo <b>muisca</b>. Cerca de allí había una laguna sagrada, muy quieta y misteriosa, rodeada de bosques verdes: la laguna de <b>Guatavita</b>."},
+   {scene:"👑✨",text:"Cuando un nuevo <b>jefe</b> (llamado cacique) iba a gobernar, se hacía una ceremonia muy especial. Todo el pueblo se preparaba con música y flores para honrar a los dioses de la laguna."},
+   {scene:"🟡🧑",text:"Al cacique le cubrían todo el cuerpo con <b>polvo de oro</b> brillante, hasta que resplandecía como el sol. Por eso lo llamaban 'El Dorado', que quiere decir 'el dorado', el hombre de oro."},
+   {scene:"🛶💧",text:"En una <b>balsa</b> adornada, el cacique navegaba hasta el centro de la laguna. Allí lanzaba al agua ofrendas de oro y esmeraldas, como un regalo de <b>gracias</b> para los dioses, mientras el pueblo cantaba desde la orilla."},
+   {scene:"🌊✨",text:"Luego se sumergía en el agua fría, y el polvo de oro se soltaba de su cuerpo y se hundía en la laguna. Así, el oro quedaba como un tesoro <b>escondido</b> en el fondo, guardado por la laguna sagrada."},
+   {scene:"📖🏔️❤️",text:"Con el tiempo, muchos vinieron de lejos buscando ese oro. Por eso la leyenda de <b>El Dorado</b> se hizo famosa en todo el mundo. Y así se recuerda la historia de los muiscas y su laguna sagrada de Guatavita."}],
+  qs:[
+   {q:"¿De qué cubrían al cacique en la ceremonia?",ops:["De polvo de oro ✨","De pintura azul","De flores"],a:0},
+   {q:"¿Qué lanzaba a la laguna?",ops:["Oro y esmeraldas como ofrenda","Comida","Piedras comunes"],a:0},
+   {q:"¿Por qué lo llamaban 'El Dorado'?",ops:["Porque brillaba cubierto de oro","Porque era muy alto","Porque vivía en el agua"],a:0},
+   {q:"¿De qué pueblo es esta leyenda?",ops:["Del pueblo muisca de Colombia","De los egipcios","De los vikingos"],a:0}]}];
 
 const ROBOT_LEVELS=[
  {w:3,h:3,start:[0,2],goal:[2,2],walls:[],hint:"2 pasos a la derecha"},
