@@ -147,18 +147,25 @@ const COLOR_PICS=[
   +[[140,90],[120,126],[80,126],[60,90],[80,54],[120,54]].map(function(p){return '<circle class="cr" cx="'+p[0]+'" cy="'+p[1]+'" r="24" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>';}).join("")
   +'<circle class="cr" cx="100" cy="90" r="24" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
  {name:"🐟 Pez",inner:
-  '<polygon class="cr" points="150,100 188,66 188,134" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<ellipse class="cr" cx="94" cy="100" rx="62" ry="40" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<polygon class="cr" points="80,62 110,50 110,72" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
-  +'<circle cx="66" cy="90" r="7" fill="#1E2A4A"/>'},
+  '<polygon class="cr" points="150,100 190,64 190,136" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<ellipse class="cr" cx="92" cy="100" rx="64" ry="42" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="78,60 112,48 108,74" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<polygon class="cr" points="80,140 112,152 106,126" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<path d="M60,72 Q50,100 60,128" fill="none" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<circle cx="52" cy="90" r="6" fill="#1E2A4A"/>'
+  +'<circle class="cr" cx="24" cy="58" r="7" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/><circle class="cr" cx="13" cy="80" r="5" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'},
  {name:"⭐ Estrella",inner:
   '<polygon class="cr" points="'+starPts(100,102,72,30,5)+'" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'},
  {name:"🏠 Casa",inner:
-  '<rect class="cr" x="45" y="92" width="110" height="90" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<polygon class="cr" points="33,92 100,34 167,92" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<rect class="cr" x="88" y="130" width="28" height="52" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
-  +'<rect class="cr" x="56" y="106" width="26" height="26" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
-  +'<rect class="cr" x="118" y="106" width="26" height="26" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+  '<rect class="cr" x="42" y="94" width="116" height="90" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="128" y="48" width="18" height="42" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="30,94 100,36 170,94" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="86" y="132" width="30" height="52" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="109" cy="158" r="3.5" fill="#fff" stroke="#1E2A4A" stroke-width="2"/>'
+  +'<rect class="cr" x="54" y="108" width="30" height="30" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="116" y="108" width="30" height="30" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<line x1="69" y1="108" x2="69" y2="138" stroke="#1E2A4A" stroke-width="2"/><line x1="54" y1="123" x2="84" y2="123" stroke="#1E2A4A" stroke-width="2"/>'
+  +'<line x1="131" y1="108" x2="131" y2="138" stroke="#1E2A4A" stroke-width="2"/><line x1="116" y1="123" x2="146" y2="123" stroke="#1E2A4A" stroke-width="2"/>'},
  {name:"🤖 Robot",inner:
   '<line x1="100" y1="42" x2="100" y2="22" stroke="#1E2A4A" stroke-width="3"/><circle class="cr" cx="100" cy="18" r="7" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
   +'<rect class="cr" x="40" y="100" width="16" height="46" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
@@ -168,19 +175,44 @@ const COLOR_PICS=[
   +'<rect class="cr" x="58" y="94" width="84" height="66" rx="12" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
   +'<rect class="cr" x="66" y="42" width="68" height="52" rx="10" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
   +'<circle class="cr" cx="86" cy="66" r="9" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
-  +'<circle class="cr" cx="114" cy="66" r="9" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+  +'<circle class="cr" cx="114" cy="66" r="9" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="82" y="80" width="36" height="8" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<rect class="cr" x="76" y="112" width="48" height="30" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="88" cy="127" r="5" fill="#fff" stroke="#1E2A4A" stroke-width="2"/><circle class="cr" cx="112" cy="127" r="5" fill="#fff" stroke="#1E2A4A" stroke-width="2"/>'},
  {name:"🏎️ Carro",inner:
-  '<circle class="cr" cx="62" cy="150" r="22" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<circle class="cr" cx="140" cy="150" r="22" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<rect class="cr" x="26" y="112" width="150" height="42" rx="16" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<polygon class="cr" points="68,112 88,80 128,80 148,112" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'},
+  '<circle class="cr" cx="60" cy="152" r="24" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="142" cy="152" r="24" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="20" y="108" width="162" height="48" rx="16" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="60,108 82,74 128,74 150,108" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="70,106 86,80 101,80 101,106" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<polygon class="cr" points="109,106 109,80 124,80 140,106" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="60" cy="152" r="10" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="142" cy="152" r="10" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="176" cy="120" r="6" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<circle class="cr" cx="26" cy="120" r="6" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'},
+ {name:"🚂 Tren",inner:
+  '<circle class="cr" cx="60" cy="158" r="18" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="110" cy="158" r="18" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="158" cy="158" r="14" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="30" y="96" width="150" height="52" rx="8" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="30" y="58" width="52" height="40" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="42" y="68" width="28" height="20" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="140" y="66" width="18" height="32" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="149" cy="52" r="10" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="167" cy="40" r="8" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="176" cy="112" r="7" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="60" cy="158" r="7" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<circle class="cr" cx="110" cy="158" r="7" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<rect class="cr" x="96" y="106" width="24" height="24" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
  {name:"🦕 Dino",inner:
-  '<polygon class="cr" points="52,120 12,96 48,146" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<rect class="cr" x="70" y="140" width="16" height="34" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
-  +'<rect class="cr" x="112" y="140" width="16" height="34" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
-  +'<ellipse class="cr" cx="100" cy="120" rx="56" ry="40" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<circle class="cr" cx="150" cy="86" r="28" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
-  +'<circle cx="158" cy="80" r="5" fill="#1E2A4A"/>'}
+  '<polygon class="cr" points="52,120 10,92 46,150" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="68" y="140" width="16" height="36" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="112" y="140" width="16" height="36" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<ellipse class="cr" cx="100" cy="118" rx="58" ry="42" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<ellipse class="cr" cx="100" cy="134" rx="34" ry="20" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<circle class="cr" cx="152" cy="84" r="28" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="70,80 82,58 94,80" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/><polygon class="cr" points="96,78 108,54 120,78" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<circle cx="160" cy="78" r="5" fill="#1E2A4A"/>'}
 ];
 function gameColoring(){setTheme("kid");if(!CO)CO={color:"#FF6B6B",picIdx:0};CO.color="#FF6B6B";renderColoring();}
 function renderColoring(){
