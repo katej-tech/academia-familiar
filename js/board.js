@@ -124,3 +124,79 @@ function cuNext(){
   return setTimeout(screenWritingPick,600);}
  renderCursive();
 }
+
+/* ============ COLOREAR (pinta las zonas sin salirte) ============ */
+let CO={color:"#FF6B6B",picIdx:0};
+const COLOR_PALETTE=["#FF6B6B","#FF9F1C","#FFC93C","#3EC97C","#3B82F6","#A78BFA","#F472B6","#8B5E3C","#1E2A4A","#FFFFFF"];
+function starPts(cx,cy,ro,ri,n){var s="";for(var i=0;i<n*2;i++){var a=Math.PI/n*i-Math.PI/2;var r=(i%2===0)?ro:ri;s+=(cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1)+" ";}return s.trim();}
+const COLOR_PICS=[
+ {name:"🍎 Manzana",inner:
+  '<ellipse class="cr" cx="100" cy="118" rx="60" ry="62" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="95" y="46" width="10" height="28" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<ellipse class="cr" cx="126" cy="56" rx="20" ry="10" fill="#fff" stroke="#1E2A4A" stroke-width="3" transform="rotate(-20 126 56)"/>'},
+ {name:"🍊 Naranja",inner:
+  '<circle class="cr" cx="100" cy="110" r="64" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<ellipse class="cr" cx="120" cy="46" rx="18" ry="9" fill="#fff" stroke="#1E2A4A" stroke-width="3" transform="rotate(-20 120 46)"/>'},
+ {name:"🌳 Árbol",inner:
+  '<ellipse class="cr" cx="100" cy="185" rx="82" ry="12" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="88" y="115" width="24" height="66" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="100" cy="78" r="56" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'},
+ {name:"🌸 Flor",inner:
+  '<rect class="cr" x="95" y="108" width="10" height="76" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<ellipse class="cr" cx="72" cy="150" rx="22" ry="11" fill="#fff" stroke="#1E2A4A" stroke-width="3" transform="rotate(30 72 150)"/>'
+  +[[140,90],[120,126],[80,126],[60,90],[80,54],[120,54]].map(function(p){return '<circle class="cr" cx="'+p[0]+'" cy="'+p[1]+'" r="24" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>';}).join("")
+  +'<circle class="cr" cx="100" cy="90" r="24" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+ {name:"🐟 Pez",inner:
+  '<polygon class="cr" points="150,100 188,66 188,134" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<ellipse class="cr" cx="94" cy="100" rx="62" ry="40" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="80,62 110,50 110,72" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle cx="66" cy="90" r="7" fill="#1E2A4A"/>'},
+ {name:"⭐ Estrella",inner:
+  '<polygon class="cr" points="'+starPts(100,102,72,30,5)+'" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'},
+ {name:"🏠 Casa",inner:
+  '<rect class="cr" x="45" y="92" width="110" height="90" rx="4" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="33,92 100,34 167,92" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="88" y="130" width="28" height="52" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="56" y="106" width="26" height="26" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="118" y="106" width="26" height="26" rx="3" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+ {name:"🤖 Robot",inner:
+  '<line x1="100" y1="42" x2="100" y2="22" stroke="#1E2A4A" stroke-width="3"/><circle class="cr" cx="100" cy="18" r="7" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="40" y="100" width="16" height="46" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="144" y="100" width="16" height="46" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="72" y="160" width="18" height="30" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="110" y="160" width="18" height="30" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="58" y="94" width="84" height="66" rx="12" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="66" y="42" width="68" height="52" rx="10" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="86" cy="66" r="9" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<circle class="cr" cx="114" cy="66" r="9" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+ {name:"🏎️ Carro",inner:
+  '<circle class="cr" cx="62" cy="150" r="22" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="140" cy="150" r="22" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="26" y="112" width="150" height="42" rx="16" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="68,112 88,80 128,80 148,112" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'},
+ {name:"🦕 Dino",inner:
+  '<polygon class="cr" points="52,120 12,96 48,146" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="70" y="140" width="16" height="34" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="112" y="140" width="16" height="34" rx="5" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<ellipse class="cr" cx="100" cy="120" rx="56" ry="40" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="150" cy="86" r="28" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle cx="158" cy="80" r="5" fill="#1E2A4A"/>'}
+];
+function gameColoring(){setTheme("kid");if(!CO)CO={color:"#FF6B6B",picIdx:0};CO.color="#FF6B6B";renderColoring();}
+function renderColoring(){
+ var pic=COLOR_PICS[CO.picIdx%COLOR_PICS.length];
+ var pal=COLOR_PALETTE.map(function(c){return '<button type="button" onclick="colorSet(\''+c+'\')" aria-label="color" style="width:38px;height:38px;border-radius:50%;border:3px solid '+(CO.color===c?"#1E2A4A":"#fff")+';background:'+c+';box-shadow:0 3px 8px rgba(30,42,74,.2);cursor:pointer"></button>';}).join("");
+ render(topbar("screenMyStuff()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🖍️ Colorear</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">'+pic.name+' — toca un color y pinta cada zona</p>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">'+pal+'</div>'
+  +'<div class="card" style="padding:12px"><svg viewBox="0 0 200 200" onclick="colorTap(event)" style="width:100%;max-width:340px;display:block;margin:0 auto;background:#fff;border-radius:12px">'+pic.inner+'</svg></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto">'
+   +'<button class="kbtn yellow" onclick="colorClear()" style="min-height:52px">🧽 Limpiar</button>'
+   +'<button class="kbtn green" onclick="colorNext()" style="min-height:52px">Otro dibujo →</button>'
+  +'</div>');
+}
+function colorSet(c){CO.color=c;var btns=document.querySelectorAll('[aria-label="color"]');btns.forEach(function(b,i){b.style.borderColor=(COLOR_PALETTE[i]===CO.color)?"#1E2A4A":"#fff";});}
+function colorTap(e){var t=e.target;if(t&&t.classList&&t.classList.contains("cr")){t.setAttribute("fill",CO.color);if(typeof beep==="function")beep([620],.04);}}
+function colorClear(){document.querySelectorAll("svg .cr").forEach(function(el){el.setAttribute("fill","#fff");});}
+function colorNext(){CO.picIdx=(CO.picIdx+1)%COLOR_PICS.length;renderColoring();}

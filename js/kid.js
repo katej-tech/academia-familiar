@@ -105,6 +105,7 @@ function screenMyStuff(){setTheme("kid");
  render(topbar("screenKidMap()")+subHeader("🛍️ Mi mundo")
   +'<div class="card center" style="padding:14px">'+(typeof avatarScene==="function"?avatarScene(120):avatarHTML(110))+'</div>'
   +'<button class="kbtn red" onclick="screenTama()">🐾 Mi mascota (cuídala)</button>'
+  +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
   +'<button class="kbtn yellow" onclick="screenShop()">🛍️ La tienda</button>'
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
