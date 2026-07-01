@@ -110,7 +110,31 @@ function screenMyStuff(){setTheme("kid");
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
   +'<button class="kbtn blue" onclick="screenVideosKid()">🎬 Videos</button>'
+  +(!S.geminiKey&&typeof afSetKeyWithParent==="function"?'<button class="kbtn white" style="font-size:.95rem;margin-top:6px" onclick="screenChildAiKey()">🔑 Activar IA (para adultos)</button>':'')
   +'<button class="kbtn white" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button>');}
+function screenChildAiKey(){setTheme("kid");
+ render(topbar("screenMyStuff()")+subHeader("🔑 Activar IA")
+  +'<div class="card"><p style="line-height:1.55">👨‍👩‍👧 <b>Para papá o mamá:</b> pon la clave de Gemini para activar en esta tablet los <b>dibujos, cuentos y voz con IA</b>. Para hacerlo necesitas tu <b>correo y contraseña de padre</b> (por seguridad).</p>'
+  +'<input type="email" id="ckMail" placeholder="Correo del padre/madre" autocomplete="username">'
+  +'<input type="password" id="ckPass" placeholder="Contraseña del padre/madre" autocomplete="current-password">'
+  +'<input type="text" id="ckKey" placeholder="Clave de Gemini (AIza...)">'
+  +'<button class="kbtn green" style="margin-top:6px" onclick="ckSaveKey()">✅ Activar IA</button>'
+  +'<p id="ckfb" style="margin-top:8px"></p>'
+  +'<p class="tip">💡 La clave se consigue gratis en <b>aistudio.google.com/apikey</b>. Se guarda solo en esta tablet y ya no se pierde.</p></div>');
+}
+function ckSaveKey(){
+ const e=(document.getElementById("ckMail").value||"").trim();
+ const p=document.getElementById("ckPass").value;
+ const k=(document.getElementById("ckKey").value||"").trim();
+ const fb=document.getElementById("ckfb");
+ if(!e||!p||!k){fb.innerHTML='<b style="color:#D97706">Completa los tres campos</b>';return;}
+ fb.innerHTML='⏳ Verificando la cuenta de los padres…';
+ afSetKeyWithParent(e,p,k,function(err){
+  if(err){fb.innerHTML='<b style="color:#DC2626">'+esc(err)+'</b>';return;}
+  fb.innerHTML='<b style="color:#16A34A">✓ ¡IA activada! Ya funciona en esta tablet y no se pierde.</b>';
+  sWIN();confetti(18);
+ });
+}
 function lockedMsg(){}
 function openWorld(id){
  const w=KID_WORLDS.find(x=>x.id===id);curNode=id;

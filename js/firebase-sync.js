@@ -66,6 +66,22 @@ function afLogin(email,pass,cb){afAuth.signInWithEmailAndPassword(email,pass)
 function afLogout(){if(afReady)afAuth.signOut();}
 function afReset(email,cb){if(!afReady){cb({message:"Sin conexión a internet"});return;}
  afAuth.sendPasswordResetEmail(email).then(function(){cb(null);}).catch(cb);}
+/* desde la cuenta del HIJO: poner la clave de Gemini validando el correo y contraseña del PADRE.
+   Verifica con una app secundaria (sin cerrar la sesión del hijo) y guarda la clave en el dispositivo. */
+function afSetKeyWithParent(email,pass,key,cb){
+ if(!afReady){cb("Sin conexión a internet");return;}
+ key=(key||"").trim();
+ if(!/^AIza[\w-]{20,}$/.test(key)){cb("Esa clave no parece válida (empieza por AIza)");return;}
+ var sAuth=afSecondaryApp().auth();
+ sAuth.signInWithEmailAndPassword((email||"").trim(),pass).then(function(cred){
+  var puid=cred.user.uid;
+  var pertenece=(typeof afMember==="undefined"||!afMember)||(afMember.familyId===puid); // el hijo debe ser de ESA familia
+  sAuth.signOut().catch(function(){});
+  if(!pertenece){cb("Esa no es la cuenta de la familia de este niño");return;}
+  S.geminiKey=key;if(typeof save==="function")save();
+  try{if(typeof afMember!=="undefined"&&afMember&&afUser())afDB.collection("families").doc(afMember.familyId).collection("profiles").doc(afUser().uid).set({geminiKey:key},{merge:true});}catch(e){}
+  cb(null);
+ }).catch(function(e){try{sAuth.signOut();}catch(_){}var c=(e&&e.code)||"";cb(/user-not-found|wrong-password|invalid|credential/.test(c)?"Correo o contraseña de los padres incorrectos":"No se pudo verificar, revisa la conexión");});}
 
 /* ============ HIJOS CON SU PROPIA CUENTA (miembros de la familia) ============ */
 var afMember=null; // {familyId} si esta sesión es de un hijo invitado
@@ -142,9 +158,11 @@ function afCheckMember(u,cb){
 function afLoadChild(uid,fid){
  afDB.collection("families").doc(fid).collection("profiles").doc(uid).get().then(function(snap){
   var prof=snap.exists?snap.data():afNewMemberProfile("Estudiante",7,"kid");
+  var localKey=(S&&S.geminiKey)||""; // clave que ya estaba en ESTE dispositivo
   var base=JSON.parse(JSON.stringify(DEFAULT_STATE));
   base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
-  base.geminiKey=prof.geminiKey||""; // hereda la clave de Gemini que el padre compartió → contenido con IA para el hijo
+  base.geminiKey=localKey||prof.geminiKey||""; // la clave del dispositivo gana; si no, la que compartió el padre. Ya NO se borra al entrar.
+  if(base.geminiKey&&!prof.geminiKey){try{afDB.collection("families").doc(fid).collection("profiles").doc(uid).set({geminiKey:base.geminiKey},{merge:true});}catch(e){}} // súbela a su perfil para que persista
   S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();
   localStorage.setItem("academiaFam2",JSON.stringify(S));
   current.profile=uid;if(typeof touchDay==="function")touchDay();

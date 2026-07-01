@@ -385,8 +385,9 @@ function gameAiDraw(){setTheme("kid");
  if(!S.geminiKey){
   return render(topbar("screenMyStuff()")
    +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">✨ Dibuja con IA</h2>'
-   +'<div class="card center"><div style="font-size:3rem">🔒</div><p style="font-size:1.05rem;line-height:1.5;margin-top:8px">Este juego crea dibujos nuevos con Inteligencia Artificial.<br>Pídele a papá o mamá que active la <b>clave de Gemini</b> en el panel de padres.</p>'
-   +'<button class="kbtn green" style="margin-top:12px" onclick="screenMyStuff()">Volver</button></div>');
+   +'<div class="card center"><div style="font-size:3rem">🔒</div><p style="font-size:1.05rem;line-height:1.5;margin-top:8px">Este juego crea dibujos nuevos con Inteligencia Artificial.<br>Papá o mamá puede <b>activar la IA</b> aquí mismo (con su correo y contraseña).</p>'
+   +(typeof afSetKeyWithParent==="function"?'<button class="kbtn green" style="margin-top:12px" onclick="screenChildAiKey()">🔑 Activar IA</button>':'')
+   +'<button class="kbtn white" onclick="screenMyStuff()">Volver</button></div>');
  }
  const chips=["un dinosaurio","un carro de carreras","un gato astronauta","un robot","un tren","un dragón"];
  render(topbar("screenMyStuff()")
