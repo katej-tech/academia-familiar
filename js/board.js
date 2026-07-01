@@ -259,3 +259,88 @@ function dotsTap(e){
  }
 }
 function dotsNext(){DP.figIdx=(DP.figIdx+1)%DOT_FIGS.length;startDots();}
+
+/* ============ CLASES DE DIBUJO PASO A PASO (copia la parte azul) ============ */
+let DL={figIdx:0,step:0};
+const DRAW_FIGS=[
+ {name:"🚗 Carro",steps:[
+   [{t:"rect",x:30,y:98,w:140,h:44,rx:16}],
+   [{t:"poly",p:[[68,98],[88,70],[128,70],[148,98]]}],
+   [{t:"line",a:[108,70],b:[108,98]}],
+   [{t:"circle",x:62,y:144,r:18},{t:"circle",x:138,y:144,r:18}],
+   [{t:"circle",x:40,y:112,r:5},{t:"line",a:[95,105],b:[95,135]}]
+ ]},
+ {name:"🚂 Tren",steps:[
+   [{t:"rect",x:34,y:96,w:150,h:48,rx:6}],
+   [{t:"rect",x:34,y:66,w:46,h:32,rx:4}],
+   [{t:"rect",x:150,y:70,w:16,h:26,rx:2},{t:"circle",x:158,y:60,r:8}],
+   [{t:"circle",x:66,y:146,r:15},{t:"circle",x:150,y:146,r:15}],
+   [{t:"rect",x:44,y:74,w:20,h:16,rx:2},{t:"rect",x:96,y:106,w:22,h:22,rx:2}]
+ ]},
+ {name:"🤖 Robot",steps:[
+   [{t:"rect",x:66,y:44,w:68,h:52,rx:10}],
+   [{t:"rect",x:58,y:98,w:84,h:64,rx:12}],
+   [{t:"line",a:[100,44],b:[100,26]},{t:"circle",x:100,y:22,r:6},{t:"circle",x:86,y:68,r:8},{t:"circle",x:114,y:68,r:8}],
+   [{t:"rect",x:40,y:104,w:16,h:44,rx:6},{t:"rect",x:144,y:104,w:16,h:44,rx:6}],
+   [{t:"rect",x:72,y:162,w:18,h:30,rx:5},{t:"rect",x:110,y:162,w:18,h:30,rx:5}]
+ ]},
+ {name:"🐱 Gato",steps:[
+   [{t:"circle",x:100,y:106,r:55}],
+   [{t:"tri",p:[[58,72],[70,26],[96,60]]},{t:"tri",p:[[142,72],[130,26],[104,60]]}],
+   [{t:"circle",x:82,y:100,r:8},{t:"circle",x:118,y:100,r:8}],
+   [{t:"tri",p:[[92,118],[108,118],[100,128]]},{t:"arc",x:88,y:128,r:12,s:0,e:Math.PI},{t:"arc",x:112,y:128,r:12,s:0,e:Math.PI}],
+   [{t:"line",a:[46,120],b:[76,124]},{t:"line",a:[46,132],b:[76,132]},{t:"line",a:[154,120],b:[124,124]},{t:"line",a:[154,132],b:[124,132]}]
+ ]}
+];
+function dlShape(c,sh){
+ c.beginPath();
+ if(sh.t==="circle")c.arc(sh.x,sh.y,sh.r,0,Math.PI*2);
+ else if(sh.t==="rect")rrect(c,sh.x,sh.y,sh.w,sh.h,sh.rx||0);
+ else if(sh.t==="line"){c.moveTo(sh.a[0],sh.a[1]);c.lineTo(sh.b[0],sh.b[1]);}
+ else if(sh.t==="poly"){c.moveTo(sh.p[0][0],sh.p[0][1]);for(var i=1;i<sh.p.length;i++)c.lineTo(sh.p[i][0],sh.p[i][1]);}
+ else if(sh.t==="tri"){c.moveTo(sh.p[0][0],sh.p[0][1]);c.lineTo(sh.p[1][0],sh.p[1][1]);c.lineTo(sh.p[2][0],sh.p[2][1]);c.closePath();}
+ else if(sh.t==="arc")c.arc(sh.x,sh.y,sh.r,sh.s,sh.e);
+ c.stroke();
+}
+function gameDrawLesson(){setTheme("kid");if(!DL)DL={};if(DL.figIdx==null)DL.figIdx=0;DL.step=0;startDrawLesson();}
+function startDrawLesson(){
+ var fig=DRAW_FIGS[DL.figIdx%DRAW_FIGS.length];
+ render(topbar("screenMyStuff()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎨 Cómo dibujar</h2>'
+  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">'+fig.name+' — Paso <b><span id="dlstep">1</span> de '+fig.steps.length+'</b>. Copia la parte <span style="color:#3B82F6;font-weight:800">azul</span>.</p>'
+  +'<div style="position:relative;width:100%;max-width:340px;margin:0 auto"><canvas id="dlguide" style="width:100%;display:block;border:2px solid rgba(30,42,74,.1);border-radius:14px;background:#FCFBF6"></canvas><canvas id="dldraw" style="position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none"></canvas></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:340px;margin:12px auto 0">'
+   +'<button class="kbtn white" onclick="dlPrev()" style="min-height:50px">◀ Atrás</button>'
+   +'<button class="kbtn blue" onclick="dlNext()" style="min-height:50px">Siguiente ▶</button>'
+   +'<button class="kbtn yellow" onclick="dlClear()" style="min-height:50px">🧽 Limpiar</button>'
+   +'<button class="kbtn green" onclick="dlOther()" style="min-height:50px">Otro dibujo →</button>'
+  +'</div>');
+ var gc=document.getElementById("dlguide"),dc=document.getElementById("dldraw");
+ var W=Math.min(340,gc.clientWidth||320),dpr=Math.min(2,window.devicePixelRatio||1);
+ gc.style.height=W+"px";dc.style.height=W+"px";
+ gc.width=Math.round(W*dpr);gc.height=Math.round(W*dpr);dc.width=Math.round(W*dpr);dc.height=Math.round(W*dpr);
+ var gctx=gc.getContext("2d");gctx.scale(dpr*W/200,dpr*W/200);gctx.lineCap="round";gctx.lineJoin="round";
+ var dctx=dc.getContext("2d");dctx.scale(dpr,dpr);dctx.lineCap="round";dctx.lineJoin="round";
+ DL.gctx=gctx;DL.dctx=dctx;DL.dc=dc;DL.W=W;DL.fig=fig;DL.drawing=false;
+ dlGuide();
+ var pos=function(e){var r=dc.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+ dc.addEventListener("pointerdown",function(e){DL.drawing=true;var p=pos(e);dctx.strokeStyle="#1E2A4A";dctx.lineWidth=4;dctx.beginPath();dctx.moveTo(p.x,p.y);try{dc.setPointerCapture(e.pointerId);}catch(_){}} );
+ dc.addEventListener("pointermove",function(e){if(!DL.drawing)return;var p=pos(e);dctx.lineTo(p.x,p.y);dctx.stroke();dctx.beginPath();dctx.moveTo(p.x,p.y);});
+ var stop=function(){DL.drawing=false;};
+ dc.addEventListener("pointerup",stop);dc.addEventListener("pointercancel",stop);dc.addEventListener("pointerleave",stop);
+}
+function dlGuide(){
+ var c=DL.gctx,fig=DL.fig;if(!c)return;c.clearRect(0,0,200,200);
+ for(var s=0;s<=DL.step;s++){var hi=(s===DL.step);
+  c.strokeStyle=hi?"rgba(59,130,246,.95)":"rgba(30,42,74,.16)";c.lineWidth=hi?4:3;
+  fig.steps[s].forEach(function(sh){dlShape(c,sh);});
+ }
+ var el=document.getElementById("dlstep");if(el)el.textContent=DL.step+1;
+}
+function dlPrev(){if(DL.step>0){DL.step--;dlGuide();}}
+function dlNext(){
+ if(DL.step<DL.fig.steps.length-1){DL.step++;dlGuide();beep([560],.05);}
+ else{confetti(20);if(typeof recordAnswer==="function")recordAnswer("Ordenar",true,15);toast("¡Terminaste tu dibujo! 🎨🌟",true,2000);}
+}
+function dlClear(){if(DL.dctx&&DL.dc)DL.dctx.clearRect(0,0,DL.W+10,DL.W+10);}
+function dlOther(){DL.figIdx=(DL.figIdx+1)%DRAW_FIGS.length;DL.step=0;startDrawLesson();}
