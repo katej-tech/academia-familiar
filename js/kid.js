@@ -245,6 +245,9 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<div class="card center" style="padding:8px;margin-bottom:6px;background:linear-gradient(180deg,#E8FBF0,#D6F5E3)">✅ ¡Desbloqueaste los juegos de hoy! 🎉</div>'
  +sub("⚔️ Reto del día")
  +'<button class="kbtn red" style="text-align:left;display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#FF8FB0,#FF6B9D)" onclick="gameDuel()"><span style="font-size:1.8rem">🤖</span> <span style="flex:1">Duelo contra la IA <span style="opacity:.85;font-size:.85rem">· por niveles</span></span></button>'
+ +sub("🧠 Saber y trivias")
+ +'<button class="kbtn purple" onclick="gameKidTrivia()">🧠 Trivia Divertida <span style="opacity:.8;font-size:.82rem">· dinos, animales, espacio…</span></button>'
+ +'<button class="kbtn blue" onclick="gameFlags()">🏴 Adivina la bandera</button>'
  +sub("🧠 Letras y palabras")
  +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
  +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'

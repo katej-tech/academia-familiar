@@ -938,3 +938,88 @@ function duelLevelEnd(){
  sNO();
  render(topbar("gameDuel()")+'<div class="card endcard"><div class="big">🤖</div><h2>La IA ganó este nivel</h2><p style="font-size:1.1rem;margin:8px 0">🧒 Tú '+DU.kid+' · 🤖 IA '+DU.ai+'</p><p>¡Casi! Inténtalo otra vez 💪</p><button class="kbtn green" onclick="duelLevel()">Reintentar nivel →</button><button class="kbtn white" onclick="gameDuel()">Cambiar materia</button></div>');
 }
+
+/* ============ TRIVIA DIVERTIDA (estilo apps IA para niños, en español, para menores de 9) ============ */
+/* Con clave de Gemini genera preguntas nuevas infinitas; sin clave usa un banco fiable. */
+const KTRIVIA={
+ dino:{ic:"🦕",nm:"Dinosaurios",qs:[
+  {q:"¿Qué comía el Tiranosaurio Rex?",ops:["Carne","Flores","Piedras"],a:0},
+  {q:"¿Cómo nacían los bebés dinosaurio?",ops:["De huevos","De la nieve","De las nubes"],a:0},
+  {q:"¿Qué dinosaurio tenía el cuello muy largo?",ops:["Braquiosaurio","Tiranosaurio","Velociraptor"],a:0},
+  {q:"¿Qué tenía el Triceratops en la cabeza?",ops:["Cuernos","Alas","Cabello"],a:0},
+  {q:"¿Los dinosaurios viven hoy con nosotros?",ops:["No, se extinguieron","Sí, en la ciudad","Sí, en casa"],a:0},
+  {q:"¿Dónde vivían los dinosaurios?",ops:["En la Tierra hace mucho","En la Luna","En el mar de hoy"],a:0},
+  {q:"¿Cómo era la piel de muchos dinosaurios?",ops:["Con escamas","De lana","De plumas suaves"],a:0}]},
+ animales:{ic:"🐾",nm:"Animales",qs:[
+  {q:"¿Qué animal dice 'muu'?",ops:["La vaca","El perro","El gato"],a:0},
+  {q:"¿Cuántas patas tiene una araña?",ops:["8","4","2"],a:0},
+  {q:"¿Qué animal puede volar?",ops:["El pájaro","El pez","La serpiente"],a:0},
+  {q:"¿Dónde vive el pez?",ops:["En el agua","En el árbol","En el desierto"],a:0},
+  {q:"¿Quién es el rey de la selva?",ops:["El león","El ratón","El conejo"],a:0},
+  {q:"¿Qué animal lleva su casa a cuestas?",ops:["El caracol","El perro","El caballo"],a:0},
+  {q:"¿Qué come el conejo?",ops:["Zanahorias","Carne","Piedras"],a:0}]},
+ espacio:{ic:"🚀",nm:"El espacio",qs:[
+  {q:"¿Qué vemos en el cielo de noche?",ops:["Estrellas","Peces","Flores"],a:0},
+  {q:"¿Cómo se llama nuestro planeta?",ops:["La Tierra","Marte","El Sol"],a:0},
+  {q:"¿Qué es el Sol?",ops:["Una estrella","Una nube","Una montaña"],a:0},
+  {q:"¿Quién viaja al espacio?",ops:["El astronauta","El bombero","El panadero"],a:0},
+  {q:"¿En qué viajamos al espacio?",ops:["En un cohete","En bicicleta","En barco"],a:0},
+  {q:"¿Cuándo vemos la Luna?",ops:["De noche","En el mar","En la sopa"],a:0}]},
+ mar:{ic:"🌊",nm:"El mar",qs:[
+  {q:"¿Quién vive en el mar?",ops:["El pez","La vaca","La gallina"],a:0},
+  {q:"¿Qué animal enorme vive en el mar?",ops:["La ballena","El elefante","La jirafa"],a:0},
+  {q:"¿De qué color se ve el mar?",ops:["Azul","Rojo","Morado"],a:0},
+  {q:"¿Qué tiene el pulpo?",ops:["Muchos brazos","Alas","Ruedas"],a:0},
+  {q:"¿Dónde encontramos conchas?",ops:["En la playa","En el cielo","En el bosque"],a:0},
+  {q:"¿Qué tiene el tiburón en la boca?",ops:["Muchos dientes","Pelos","Zapatos"],a:0}]},
+ comida:{ic:"🍎",nm:"La comida",qs:[
+  {q:"¿Cuál de estas es una fruta?",ops:["La manzana","La silla","El zapato"],a:0},
+  {q:"¿Qué es más sano comer?",ops:["Verduras","Muchos dulces","Piedritas"],a:0},
+  {q:"¿De dónde sale la leche?",ops:["De la vaca","Del árbol","Del carro"],a:0},
+  {q:"¿Qué fruta es amarilla y curva?",ops:["El banano","La uva","La sandía"],a:0},
+  {q:"¿Qué bebemos cuando tenemos sed?",ops:["Agua","Aceite","Barro"],a:0},
+  {q:"¿Con qué se hace el pan?",ops:["Con harina","Con arena","Con hojas"],a:0}]},
+ colores:{ic:"🌈",nm:"Colores y formas",qs:[
+  {q:"¿De qué color es el cielo de día?",ops:["Azul","Negro","Café"],a:0},
+  {q:"¿Cuántos lados tiene un triángulo?",ops:["3","4","6"],a:0},
+  {q:"¿De qué color es el pasto?",ops:["Verde","Rosado","Azul"],a:0},
+  {q:"¿Qué forma tiene una pelota?",ops:["Redonda","Cuadrada","Triángulo"],a:0},
+  {q:"Si mezclas azul y amarillo, ¿qué color sale?",ops:["Verde","Rojo","Negro"],a:0},
+  {q:"¿De qué color es una naranja?",ops:["Naranja","Azul","Gris"],a:0}]}};
+let KT={};
+function gameKidTrivia(){setTheme("kid");
+ render(topbar("exitGame('games')")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🧠 Trivia Divertida</h2>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:12px">Elige un tema y responde. '+(S.geminiKey?'La IA inventa preguntas nuevas cada vez 🤖':'¡A ver cuántas aciertas!')+'</p>'
+ +Object.keys(KTRIVIA).map(function(k){var c=["green","red","blue","purple","yellow","white"][Object.keys(KTRIVIA).indexOf(k)%6];
+   return '<button class="kbtn '+c+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="ktStart(\''+k+'\')"><span style="font-size:1.9rem">'+KTRIVIA[k].ic+'</span> <span style="flex:1">'+KTRIVIA[k].nm+'</span></button>';}).join(""));}
+async function ktStart(theme){
+ KT={theme:theme,i:0,score:0,qs:[]};setTheme("kid");
+ if(S.geminiKey){
+  render(topbar("gameKidTrivia()")+'<div class="card center" style="padding:22px"><div style="font-size:2.4rem" class="spin">⏳</div><p style="margin-top:8px">La IA está creando preguntas de <b>'+KTRIVIA[theme].nm+'</b>…</p></div>');
+  try{
+   var seen=aiSeenList("kt_"+theme).slice(-18);
+   var obj=await geminiJSON('Crea 6 preguntas de trivia MUY FÁCILES y divertidas para un niño de 6 a 8 años, en español sencillo y alegre, sobre el tema "'+KTRIVIA[theme].nm+'". Cada pregunta con 3 opciones y una sola correcta. Preguntas cortas y claras. NO repitas estas: '+(seen.join(" | ")||"(ninguna)")+'. Responde SOLO JSON: {"qs":[{"q":"...","ops":["..","..",".."],"a":0}]} con exactamente 6 preguntas.');
+   var qs=(obj.qs||[]).filter(function(q){return q&&q.q&&q.ops&&q.ops.length>=2&&typeof q.a==="number"&&q.a>=0&&q.a<q.ops.length;});
+   if(qs.length>=3){aiRemember("kt_"+theme,qs.map(function(q){return q.q;}));KT.qs=qs.slice(0,6).map(function(q){return {q:q.q,ops:q.ops.slice(),a:q.a};});return ktRender();}
+  }catch(e){/* si falla la IA, usamos el banco sin molestar al niño */}
+ }
+ KT.qs=shuffled(KTRIVIA[theme].qs.slice()).slice(0,6).map(function(q){return {q:q.q,ops:q.ops.slice(),a:q.a};});
+ ktRender();}
+function ktRender(){
+ if(KT.i>=KT.qs.length)return ktEnd();
+ var q=KT.qs[KT.i];var order=shuffled(q.ops.map(function(o,idx){return {o:o,idx:idx};}));KT.order=order;KT.a=q.a;
+ render(topbar("gameKidTrivia()")
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:4px">'+KTRIVIA[KT.theme].ic+' '+KTRIVIA[KT.theme].nm+'</h2>'
+ +'<div class="progressdots">'+dots(KT.qs.length,KT.i)+'</div>'
+ +'<div class="bigq center">'+esc(q.q)+'</div>'
+ +'<div class="choices2">'+order.map(function(s,vi){return '<button class="kbtn white" style="font-size:clamp(1.1rem,4.8vw,1.4rem)" onclick="ktAns('+vi+')">'+esc(s.o)+'</button>';}).join("")+'</div>');}
+function ktAns(vi){
+ var q=KT.qs[KT.i];var ok=KT.order[vi].idx===KT.a;
+ recordAnswer("Lógica",ok,10);
+ if(ok){sOK();confetti(6);KT.score++;toast("¡Correcto! 🎉",true,1100);}else{sNO();toast("Era: "+q.ops[q.a],false,1600);}
+ KT.i++;setTimeout(ktRender,ok?1000:1650);}
+function ktEnd(){
+ var p=prof();if(p){p.coins+=KT.score;p.xp+=KT.score*3;save();}
+ sWIN();confetti(24);
+ render(topbar("gameKidTrivia()")+'<div class="card endcard"><div class="big">🏆</div><h2>¡'+KT.score+' de '+KT.qs.length+'!</h2><p style="font-size:1.1rem;margin:8px 0">Ganaste '+KT.score+' 🪙</p><button class="kbtn green" onclick="gameKidTrivia()">Otra trivia 🧠</button><button class="kbtn white" onclick="screenKidMap()">Al mapa 🌍</button></div>');}
