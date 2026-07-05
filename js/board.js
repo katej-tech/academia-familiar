@@ -22,48 +22,60 @@ function screenArt(){setTheme("kid");
   +'<button class="kbtn red" onclick="gameCursive()">✍️ Letra cursiva</button>'
   +'<button class="kbtn white" onclick="openBoard()">✏️ Pizarra (dibujo libre)</button>');
 }
+const WB_COLORS=["#1E2A4A","#EF4444","#F97316","#FACC15","#22C55E","#14B8A6","#3B82F6","#6366F1","#A855F7","#EC4899","#8B5A2B","#9CA3AF","#FFFFFF"];
+const WB_BRUSHES={lapiz:{ic:"✏️",nm:"Lápiz",width:3,alpha:1},marcador:{ic:"🖊️",nm:"Marcador",width:8,alpha:1},grueso:{ic:"🖌️",nm:"Grueso",width:17,alpha:1},crayon:{ic:"🖍️",nm:"Crayón",width:11,alpha:.85},resaltador:{ic:"🟡",nm:"Resaltador",width:26,alpha:.35,hl:true}};
 function openBoard(){
  if(document.getElementById("wbov"))return;
  const btn=(txt,fn,extra)=>'<button type="button" onclick="'+fn+'" style="border:none;background:#fff;border-radius:12px;padding:8px 12px;font-family:Fredoka;font-weight:700;font-size:.95rem;box-shadow:0 3px 8px rgba(30,42,74,.15);cursor:pointer;'+(extra||"")+'">'+txt+'</button>';
- const sw=(c)=>'<button type="button" onclick="boardColor(\''+c+'\')" title="color" style="width:34px;height:34px;border-radius:50%;border:3px solid #fff;background:'+c+';box-shadow:0 2px 6px rgba(30,42,74,.25);cursor:pointer"></button>';
+ const sw=(c)=>'<button type="button" onclick="boardColor(\''+c+'\')" title="color" data-c="'+c+'" style="width:30px;height:30px;border-radius:50%;border:3px solid '+(c==="#FFFFFF"?"#D1D5DB":"#fff")+';background:'+c+';box-shadow:0 2px 5px rgba(30,42,74,.25);cursor:pointer;flex:0 0 auto"></button>';
+ const brush=(k)=>'<button type="button" id="wbbr_'+k+'" onclick="boardBrush(\''+k+'\')" title="'+WB_BRUSHES[k].nm+'" style="border:2px solid transparent;background:#F3F4F6;border-radius:12px;padding:6px 9px;font-size:1.1rem;cursor:pointer;line-height:1">'+WB_BRUSHES[k].ic+'</button>';
  const ov=document.createElement("div");ov.id="wbov";
  ov.style.cssText="position:fixed;inset:0;z-index:300;background:"+WB_BG+";display:flex;flex-direction:column";
- ov.innerHTML='<div style="display:flex;gap:8px;align-items:center;padding:9px 10px;flex-wrap:wrap;background:#fff;box-shadow:0 2px 12px rgba(30,42,74,.12)">'
-  +'<b style="font-family:Fredoka;font-size:1rem;color:#1E2A4A;margin-right:6px">✏️ Pizarra</b>'
-  +sw("#1E2A4A")+sw("#3B82F6")+sw("#FF6B6B")+sw("#3EC97C")
-  +btn("🧽 Borrador","boardTool(\'erase\')","")
-  +'<span style="flex:1"></span>'
-  +btn("🗑️ Limpiar","boardClear()","")
-  +btn("✖ Cerrar","closeBoard()","background:#1E2A4A;color:#fff")
+ ov.innerHTML='<div style="padding:8px 10px;background:#fff;box-shadow:0 2px 12px rgba(30,42,74,.12)">'
+  +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:7px">'
+   +Object.keys(WB_BRUSHES).map(brush).join("")
+   +'<button type="button" id="wberase" onclick="boardBrush(\'erase\')" title="Borrador" style="border:2px solid transparent;background:#F3F4F6;border-radius:12px;padding:6px 9px;font-size:1.1rem;cursor:pointer;line-height:1">🧽</button>'
+   +'<span style="flex:1"></span>'
+   +btn("🗑️","boardClear()","padding:6px 10px")
+   +btn("✖","closeBoard()","background:#1E2A4A;color:#fff;padding:6px 11px")
+  +'</div>'
+  +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+WB_COLORS.map(sw).join("")+'</div>'
   +'</div>'
   +'<canvas id="wbcanvas" style="flex:1;width:100%;display:block;touch-action:none;background:'+WB_BG+'"></canvas>';
  document.body.appendChild(ov);
- // marcar el borrador con id para el contorno de activo
- const eraseBtns=ov.querySelectorAll("button");eraseBtns.forEach(b=>{if(b.textContent.indexOf("🧽")>=0)b.id="wberase";});
  const cv=document.getElementById("wbcanvas");
  const rect=cv.getBoundingClientRect();const dpr=Math.min(2,window.devicePixelRatio||1);
  cv.width=Math.round(rect.width*dpr);cv.height=Math.round(rect.height*dpr);
  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineCap="round";ctx.lineJoin="round";
- WB={ctx,cv,color:"#1E2A4A",erase:false,drawing:false,W:rect.width,H:rect.height};
- // líneas de cuaderno suaves
+ WB={ctx,cv,color:"#1E2A4A",erase:false,drawing:false,W:rect.width,H:rect.height,brush:Object.assign({type:"marcador"},WB_BRUSHES.marcador)};
  boardGrid();
+ boardBrushUI("marcador");boardColorUI("#1E2A4A");
  if(WB_SAVE){const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,rect.width,rect.height);img.src=WB_SAVE;}
  const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
- cv.addEventListener("pointerdown",e=>{WB.drawing=true;const p=pos(e);WB.ctx.beginPath();WB.ctx.moveTo(p.x,p.y);try{cv.setPointerCapture(e.pointerId);}catch(_){}} );
- cv.addEventListener("pointermove",e=>{if(!WB.drawing)return;const p=pos(e);
-  WB.ctx.strokeStyle=WB.erase?WB_BG:WB.color;WB.ctx.lineWidth=WB.erase?28:4.5;
-  WB.ctx.lineTo(p.x,p.y);WB.ctx.stroke();WB.ctx.beginPath();WB.ctx.moveTo(p.x,p.y);});
- const stop=()=>{WB.drawing=false;};
+ cv.addEventListener("pointerdown",e=>{WB.drawing=true;const p=pos(e);WB.ctx.beginPath();WB.ctx.moveTo(p.x,p.y);boardStroke(p);try{cv.setPointerCapture(e.pointerId);}catch(_){}} );
+ cv.addEventListener("pointermove",e=>{if(!WB.drawing)return;boardStroke(pos(e));});
+ const stop=()=>{WB.drawing=false;WB.ctx.globalAlpha=1;WB.ctx.globalCompositeOperation="source-over";};
  cv.addEventListener("pointerup",stop);cv.addEventListener("pointercancel",stop);cv.addEventListener("pointerleave",stop);
 }
+function boardStroke(p){const c=WB.ctx,b=WB.brush||{};
+ if(WB.erase){c.globalCompositeOperation="source-over";c.globalAlpha=1;c.strokeStyle=WB_BG;c.lineWidth=32;}
+ else{c.globalCompositeOperation=b.hl?"multiply":"source-over";c.globalAlpha=b.alpha||1;c.strokeStyle=WB.color;c.lineWidth=b.width||6;}
+ c.lineTo(p.x,p.y);c.stroke();c.beginPath();c.moveTo(p.x,p.y);
+ c.globalAlpha=1;c.globalCompositeOperation="source-over";}
 function boardGrid(){
  const c=WB.ctx;if(!c)return;c.save();c.strokeStyle="rgba(59,130,246,.10)";c.lineWidth=1;
  for(let y=34;y<WB.H;y+=34){c.beginPath();c.moveTo(0,y);c.lineTo(WB.W,y);c.stroke();}
  c.restore();
 }
-function boardColor(c){if(WB.ctx){WB.color=c;WB.erase=false;boardEraseUI();}}
-function boardTool(t){if(WB.ctx){WB.erase=(t==="erase");boardEraseUI();}}
-function boardEraseUI(){const b=document.getElementById("wberase");if(b)b.style.outline=WB.erase?"3px solid #3EC97C":"none";}
+function boardColor(c){if(WB.ctx){WB.color=c;if(WB.erase){WB.erase=false;boardBrushUI(WB.brush&&WB.brush.type);}boardColorUI(c);}}
+function boardBrush(t){if(!WB.ctx)return;
+ if(t==="erase"){WB.erase=true;}
+ else{WB.erase=false;WB.brush=Object.assign({type:t},WB_BRUSHES[t]||WB_BRUSHES.marcador);}
+ boardBrushUI(WB.erase?"erase":t);}
+function boardBrushUI(active){
+ Object.keys(WB_BRUSHES).forEach(k=>{const b=document.getElementById("wbbr_"+k);if(b)b.style.borderColor=(active===k)?"#3B82F6":"transparent";if(b)b.style.background=(active===k)?"#DBEAFE":"#F3F4F6";});
+ const e=document.getElementById("wberase");if(e){e.style.borderColor=(active==="erase")?"#3B82F6":"transparent";e.style.background=(active==="erase")?"#DBEAFE":"#F3F4F6";}}
+function boardColorUI(c){document.querySelectorAll('#wbov [data-c]').forEach(b=>{b.style.transform=(b.getAttribute("data-c")===c)?"scale(1.28)":"scale(1)";b.style.borderColor=(b.getAttribute("data-c")===c)?"#1E2A4A":(b.getAttribute("data-c")==="#FFFFFF"?"#D1D5DB":"#fff");});}
 function boardClear(){if(WB.ctx){WB.ctx.clearRect(0,0,WB.W+20,WB.H+20);WB.ctx.fillStyle=WB_BG;WB.ctx.fillRect(0,0,WB.W+20,WB.H+20);boardGrid();}}
 function closeBoard(){const ov=document.getElementById("wbov");if(!ov)return;try{if(WB.cv)WB_SAVE=WB.cv.toDataURL();}catch(e){}ov.remove();}
 
@@ -90,7 +102,7 @@ function renderCursive(){
    +'<button class="kbtn green" onclick="cuNext()" style="font-size:1rem;min-height:54px">Siguiente →</button>'
   +'</div>');
  const cv=document.getElementById("cucanvas");
- const cssW=cv.clientWidth||360,cssH=Math.round(cssW*0.5);
+ const cssW=cv.clientWidth||360,cssH=Math.round(cssW*0.64);
  const dpr=Math.min(2,window.devicePixelRatio||1);
  cv.style.height=cssH+"px";cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineCap="round";ctx.lineJoin="round";
@@ -111,10 +123,10 @@ function cuGuide(text){
  c.strokeStyle="rgba(59,130,246,.30)";c.lineWidth=1.5;
  [top,base].forEach(y=>{c.beginPath();c.moveTo(6,y);c.lineTo(W-6,y);c.stroke();});
  c.setLineDash([6,7]);c.strokeStyle="rgba(59,130,246,.20)";c.beginPath();c.moveTo(6,mid);c.lineTo(W-6,mid);c.stroke();c.setLineDash([]);
- c.fillStyle="rgba(30,42,74,.15)";c.textAlign="center";c.textBaseline="alphabetic";
- let size=H*0.55;c.font="700 "+size+"px 'Dancing Script', cursive";
+ c.fillStyle="rgba(30,42,74,.22)";c.textAlign="center";c.textBaseline="alphabetic";
+ let size=H*0.70;c.font="700 "+size+"px 'Dancing Script', cursive";
  let w=c.measureText(text).width;
- while(w>W*0.88&&size>18){size-=4;c.font="700 "+size+"px 'Dancing Script', cursive";w=c.measureText(text).width;}
+ while(w>W*0.92&&size>22){size-=3;c.font="700 "+size+"px 'Dancing Script', cursive";w=c.measureText(text).width;}
  c.fillText(text,W/2,base);
 }
 function cuClear(){if(CU.ctx)cuGuide(CU.items[CU.i]);}
@@ -276,9 +288,10 @@ function dotsDraw(){
  }
  // puntos
  for(var j=0;j<fig.pts.length;j++){var p=fig.pts[j];var n=j+1;var isNext=(n===DP.next);var doneP=(n<DP.next);
-  c.beginPath();c.arc(p[0],p[1],isNext?11:9,0,Math.PI*2);
+  if(isNext&&!DP.done){c.beginPath();c.arc(p[0],p[1],18,0,Math.PI*2);c.fillStyle="rgba(255,107,107,.22)";c.fill();} // halo del siguiente
+  c.beginPath();c.arc(p[0],p[1],isNext?13:10,0,Math.PI*2);
   c.fillStyle=doneP?"#3EC97C":(isNext?"#FF6B6B":"#fff");c.fill();c.lineWidth=2.5;c.strokeStyle="#1E2A4A";c.stroke();
-  c.fillStyle=doneP?"#fff":"#1E2A4A";c.font="700 11px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(n,p[0],p[1]+0.5);
+  c.fillStyle=doneP?"#fff":(isNext?"#fff":"#1E2A4A");c.font="800 "+(isNext?13:11)+"px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(n,p[0],p[1]+0.5);
  }
 }
 function dotsTap(e){
@@ -286,10 +299,12 @@ function dotsTap(e){
  var r=cv.getBoundingClientRect();var x=(e.clientX-r.left)/r.width*200,y=(e.clientY-r.top)/r.height*200;
  var fig=DP.fig,exp=DP.next-1;var p=fig.pts[exp];
  if(!p)return;
- if(Math.hypot(x-p[0],y-p[1])<22){ // acertó el punto esperado
+ if(Math.hypot(x-p[0],y-p[1])<32){ // acertó el punto esperado (tolerancia amplia)
   DP.next++;if(typeof beep==="function")beep([500+DP.next*60],.05);
   if(DP.next>fig.pts.length){DP.done=true;dotsDraw();sWIN();confetti(22);if(typeof recordAnswer==="function")recordAnswer("Secuencias",true,15);toast("¡Lo lograste! "+fig.name,true,1800);}
   else dotsDraw();
+ }else{ // tocó otro lado: pista suave
+  if(typeof toast==="function")toast("Toca el punto rojo número "+DP.next+" 👆",false,1300);
  }
 }
 function dotsNext(){DP.figIdx=(DP.figIdx+1)%DOT_FIGS.length;startDots();}
@@ -366,7 +381,7 @@ function startDrawLesson(){
 function dlGuide(){
  var c=DL.gctx,fig=DL.fig;if(!c)return;c.clearRect(0,0,200,200);
  for(var s=0;s<=DL.step;s++){var hi=(s===DL.step);
-  c.strokeStyle=hi?"rgba(59,130,246,.95)":"rgba(30,42,74,.16)";c.lineWidth=hi?4:3;
+  c.strokeStyle=hi?"#3B82F6":"rgba(30,42,74,.42)";c.lineWidth=hi?5.5:4;
   fig.steps[s].forEach(function(sh){dlShape(c,sh);});
  }
  var el=document.getElementById("dlstep");if(el)el.textContent=DL.step+1;
@@ -414,7 +429,7 @@ async function aiCreate(){
  setTheme("kid");
  render(topbar("gameAiDraw()")+'<div class="card center" style="padding:44px"><div class="spin" style="font-size:3rem">✨</div><h2 style="margin-top:10px">Dibujando "'+esc(what)+'"…</h2><p class="mut">La IA está creando tu dibujo</p></div>');
  try{
-  var url=await geminiImage("Black and white line art coloring page for young children of: "+what+". Show the FULL BODY / complete figure (not just the face or head), whole character visible and centered. Thick clean black outlines only, NO color, NO shading, NO gray, pure white background, simple cute cartoon style, no text or letters.");
+  var url=await geminiImage("Professional children's coloring book page of: "+what+". Style: clean bold black vector outlines, smooth confident lines of even thickness, cute friendly kawaii cartoon, rounded shapes. Show the FULL BODY / complete figure centered with generous empty white spaces inside the shapes so a child can color easily. Pure white background. STRICTLY line art: absolutely NO fill color, NO gray, NO shading, NO crosshatching, NO texture, no text or letters. High quality, printable coloring page look.");
   aiShow(url,what);
  }catch(e){if(typeof renderAiError==="function")renderAiError(e,"gameAiDraw()");else{toast("No se pudo crear, intenta otra vez",false,2200);gameAiDraw();}}
 }
