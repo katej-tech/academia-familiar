@@ -1,46 +1,36 @@
 "use strict";
-/* ============ JUEGOS v8: Simón Dice + Carrera Obby (estilo Roblox) ============ */
+/* ============ JUEGOS v8: Rompecabezas deslizante + Carrera Obby (estilo Roblox) ============ */
 
-/* ---- SIMÓN DICE (memoria y concentración) ---- */
-const SIMON_PADS=[["🔴","#FF6B6B",330],["🔵","#3B82F6",392],["🟢","#3EC97C",494],["🟡","#FFC93C",587]];
-let SI={};
-function gameSimon(){setTheme("kid");
- SI={seq:[],step:0,round:0,best:0,lock:true};
+/* ---- ROMPECABEZAS DESLIZANTE (15-puzzle, lógica espacial y orden) ---- */
+let SL={};
+function gameSlide(){setTheme("kid");SL={n:3,moves:0,tiles:[]};slideNew();}
+function slideSolved(a){for(let i=0;i<a.length-1;i++)if(a[i]!==i+1)return false;return a[a.length-1]===0;}
+function slideSolvable(a){var inv=0,f=a.filter(x=>x);for(var i=0;i<f.length;i++)for(var j=i+1;j<f.length;j++)if(f[i]>f[j])inv++;return inv%2===0;} // n impar: resoluble si inversiones pares
+function slideNew(){
+ const n=SL.n,N=n*n;let a;
+ do{a=[];for(let i=1;i<N;i++)a.push(i);a.push(0);a=shuffled(a);}while(!slideSolvable(a)||slideSolved(a));
+ SL.tiles=a;SL.moves=0;slideRender();}
+function slideColor(t){return 'linear-gradient(180deg,hsl('+((t*47)%360)+',75%,62%),hsl('+((t*47)%360)+',75%,50%))';}
+function slideTap(i){
+ const n=SL.n,z=SL.tiles.indexOf(0);
+ const zr=Math.floor(z/n),zc=z%n,ir=Math.floor(i/n),ic=i%n;
+ if((Math.abs(zr-ir)===1&&zc===ic)||(Math.abs(zc-ic)===1&&zr===ir)){
+  SL.tiles[z]=SL.tiles[i];SL.tiles[i]=0;SL.moves++;if(typeof tone==="function")tone(460,.07);
+  if(slideSolved(SL.tiles)){sWIN();confetti(30);recordAnswer("Lógica",true,10);slideRender();
+   const st=SL.moves<20?3:SL.moves<35?2:1;return setTimeout(()=>nodeWin(st,"Lógica"),1200);}
+  slideRender();}}
+function slideRender(){
+ const n=SL.n,solved=slideSolved(SL.tiles);
  render(topbar("exitGame('games')")
- +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🎵 Simón Dice</h2>'
- +'<p class="center" style="font-size:.95rem;margin-bottom:12px">Mira la secuencia y repítela tocando los colores</p>'
- +simonGrid()
- +'<div id="simsg" class="center" style="font-family:Fredoka;font-weight:700;font-size:1.2rem;min-height:32px;margin-top:12px">¡Prepárate!</div>'
- +'<button class="kbtn green" id="simstart" onclick="simonNext()">▶️ Empezar</button>');}
-function simonGrid(){
- return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:340px;margin:0 auto">'
-  +SIMON_PADS.map((p,i)=>'<button id="sim'+i+'" onclick="simonTap('+i+')" style="aspect-ratio:1;border-radius:22px;border:5px solid var(--kid-ink);background:'+p[1]+';box-shadow:0 7px 0 rgba(30,42,74,.7);font-size:clamp(2.4rem,12vw,3.4rem);opacity:.55;transition:opacity .12s,transform .08s">'+p[0]+'</button>').join("")
-  +'</div>';}
-function simonFlash(i,cb){
- const el=document.getElementById("sim"+i);if(!el){if(cb)cb();return;}
- el.style.opacity="1";el.style.transform="scale(1.06)";tone(SIMON_PADS[i][2],.32);
- setTimeout(()=>{el.style.opacity=".55";el.style.transform="scale(1)";if(cb)cb();},340);}
-function simonNext(){
- const btn=document.getElementById("simstart");if(btn)btn.classList.add("hidden");
- SI.round++;SI.seq.push(rnd(4));SI.step=0;SI.lock=true;
- const sg=document.getElementById("simsg");if(sg)sg.textContent="Mira bien… 👀 (ronda "+SI.round+")";
- let i=0;
- const play=()=>{if(i>=SI.seq.length){SI.lock=false;const s=document.getElementById("simsg");if(s)s.textContent="¡Tu turno! 👆";return;}
-  simonFlash(SI.seq[i],()=>{i++;setTimeout(play,180);});};
- setTimeout(play,600);}
-function simonTap(i){
- if(SI.lock)return;
- simonFlash(i);
- if(i===SI.seq[SI.step]){SI.step++;
-  if(SI.step===SI.seq.length){SI.lock=true;sOK();
-   recordAnswer("Lógica",true,10);
-   if(SI.round>=7){confetti(30);return setTimeout(()=>nodeWin(3,"Lógica"),700);}
-   const sg=document.getElementById("simsg");if(sg)sg.textContent="¡Bien! +1 ⭐";
-   setTimeout(simonNext,900);}}
- else{SI.lock=true;sNO();recordAnswer("Lógica",false,10);
-  const sg=document.getElementById("simsg");if(sg)sg.textContent="¡Casi! Llegaste a la ronda "+SI.round;
-  const st=SI.round>=5?3:SI.round>=3?2:1;
-  setTimeout(()=>nodeWin(st,"Lógica"),1400);}}
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🧩 Rompecabezas deslizante</h2>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:12px">'+(solved?'🎉 ¡Lo lograste!':'Desliza las fichas para ordenar del 1 al '+(n*n-1))+'</p>'
+ +'<div style="display:grid;grid-template-columns:repeat('+n+',1fr);gap:8px;max-width:300px;margin:0 auto;background:rgba(30,42,74,.08);padding:8px;border-radius:20px">'
+ +SL.tiles.map((t,i)=>t===0
+   ?'<div style="aspect-ratio:1;border-radius:14px;background:transparent"></div>'
+   :'<button onclick="slideTap('+i+')" style="aspect-ratio:1;border-radius:14px;border:4px solid var(--kid-ink);background:'+slideColor(t)+';box-shadow:0 5px 0 rgba(30,42,74,.5);font-family:Fredoka;font-weight:800;font-size:clamp(1.6rem,9vw,2.4rem);color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.25)">'+t+'</button>').join("")
+ +'</div>'
+ +'<p class="center" style="margin-top:12px;font-family:Fredoka;font-weight:700">Movimientos: '+SL.moves+'</p>'
+ +'<button class="kbtn white" onclick="slideNew()">🔀 Revolver otra vez</button>');}
 
 /* ---- CARRERA OBBY (estilo Roblox: avanza saltando si respondes bien) ---- */
 const OBBY_LEN=8;

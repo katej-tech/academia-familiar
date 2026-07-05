@@ -71,7 +71,7 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  const p=prof();const pet=(typeof legendaryPet==="function"&&legendaryPet())||petStage(p.xp);
  render(topbar("screenStart()")
  +'<div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">'
- +'<div onclick="screenAvatar()">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'</div>'
+ +'<div onclick="openProfileMenu()" style="cursor:pointer;position:relative">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'<span style="position:absolute;bottom:-2px;right:-2px;background:var(--kid-ink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.8rem">⚙️</span></div>'
  +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.2rem,5.5vw,1.5rem)">¡Hola, '+esc(p.name)+'!</h1>'
  +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
  +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="screenTama()">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
@@ -83,8 +83,22 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +hubTile("screenGamesPick()","🎮","Jugar","Arcade, impostor, culebra y más","blue")
  +hubTile("screenMyStuff()","🛍️","Mi mundo","Tienda, personaje y premios","purple")
  +((courses().length&&prof()&&(prof().age||0)>=10)?hubTile("screenCourses()","🎓","Cursos","Cursos en video que te asignaron","yellow"):"")
- +'</div>'
- +'<p class="center" style="margin-top:14px"><button class="kbtn white" style="width:auto;display:inline-block;min-height:46px;padding:10px 18px;font-size:.95rem;margin:0" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button></p>');}
+ +'</div>');}
+/* ===== Menú de perfil estilo Facebook: clic en el avatar → opciones de cuenta ===== */
+function openProfileMenu(){const p=prof();if(!p)return;closeProfileMenu();
+ const ov=document.createElement("div");ov.id="pmOverlay";
+ ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(20,28,50,.35);backdrop-filter:blur(2px)";
+ ov.onclick=function(e){if(e.target===ov)closeProfileMenu();};
+ ov.innerHTML='<div style="position:absolute;top:60px;left:14px;right:14px;max-width:360px;margin:0 auto;background:#fff;border:4px solid var(--kid-ink);border-radius:22px;box-shadow:0 12px 0 rgba(30,42,74,.25);padding:16px">'
+  +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'+(typeof avatarHTML==="function"?avatarHTML(54):"🧒")+'<div style="flex:1"><b style="font-size:1.2rem">'+esc(p.name)+'</b><br><span class="mut" style="font-size:.85rem">⭐ Nivel '+level(p.xp)+' · 🪙 '+p.coins+'</span></div></div>'
+  +'<button class="kbtn white" style="margin:5px 0" onclick="closeProfileMenu();screenAvatar()">😎 Mi personaje</button>'
+  +'<button class="kbtn white" style="margin:5px 0" onclick="closeProfileMenu();screenMyStuff()">🛍️ Mi mundo</button>'
+  +'<button class="kbtn yellow" style="margin:5px 0" onclick="closeProfileMenu();screenStart()">🔄 Cambiar de cuenta</button>'
+  +'<button class="kbtn red" style="margin:5px 0" onclick="closeProfileMenu();doLogout()">🚪 Cerrar sesión</button>'
+  +'<button class="pbtn ghost" style="margin-top:2px" onclick="closeProfileMenu()">Cerrar</button>'
+  +'</div>';
+ document.getElementById("app").appendChild(ov);}
+function closeProfileMenu(){const e=document.getElementById("pmOverlay");if(e)e.remove();}
 function subHeader(title){return '<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin:2px 0 12px">'+title+'</h2>';}
 function screenCole(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="cole"||w.cat==="pensar");
@@ -111,8 +125,8 @@ function screenMyStuff(){setTheme("kid");
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
   +'<button class="kbtn blue" onclick="screenVideosKid()">🎬 Videos</button>'
-  +(!S.geminiKey&&typeof afSetKeyWithParent==="function"?'<button class="kbtn white" style="font-size:.95rem;margin-top:6px" onclick="screenChildAiKey()">🔑 Activar IA (para adultos)</button>':'')
-  +'<button class="kbtn white" style="margin-top:8px" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button>');}
+  +(!S.geminiKey&&typeof afSetKeyWithParent==="function"?'<button class="kbtn white" style="font-size:.95rem;margin-top:6px" onclick="screenChildAiKey()">🔑 Activar IA (para papá o mamá)</button>':'')
+  +'<p class="center mut" style="margin-top:14px;font-size:.85rem">Para cerrar sesión o cambiar de cuenta, toca tu ⚙️ avatar arriba 👆</p>');}
 function screenChildAiKey(){setTheme("kid");
  render(topbar("screenMyStuff()")+subHeader("🔑 Activar IA")
   +'<div class="card"><p style="line-height:1.55">👨‍👩‍👧 <b>Para papá o mamá:</b> pon la clave de Gemini para activar en esta tablet los <b>dibujos, cuentos y voz con IA</b>. Para hacerlo necesitas tu <b>correo y contraseña de padre</b> (por seguridad).</p>'
@@ -243,7 +257,7 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn blue" onclick="gameGateRun()">🔢 Carrera de números (hazte más grande)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
- +'<button class="kbtn red" onclick="gameSimon()">🎵 Simón Dice</button>'
+ +'<button class="kbtn red" onclick="gameSlide()">🧩 Rompecabezas deslizante</button>'
  +sub("🇬🇧 Inglés")
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
  +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
