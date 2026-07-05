@@ -175,6 +175,7 @@ function screenParentDash(){setTheme("parent");
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
  +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
  +'<p class="tip">💡 Clave gratuita: <b>aistudio.google.com</b> → Get API key. Nunca la escribas dentro del archivo ni la subas a GitHub.</p></div>'
+ +coursesCard()
  +'<div class="card"><h3>🗂️ Datos</h3><p class="mut" style="margin:8px 0">El progreso se guarda en cada dispositivo (y en la nube si inicias sesión). Respáldalo o muévelo:</p>'
  +'<button class="pbtn ghost" onclick="exportData()">⬇️ Exportar respaldo</button>'
  +'<button class="pbtn ghost" onclick="document.getElementById(\'impfile\').click()">⬆️ Importar</button>'
@@ -222,6 +223,30 @@ async function testGeminiKey(){
    +(m?'<br><span class="mut" style="font-size:.8rem">'+esc(m.slice(0,150))+'</span>':'')
    +'<p style="font-size:.88rem;margin-top:6px;line-height:1.5">'+hint+'</p>';
  }catch(e){fb.innerHTML='<b style="color:#DC2626">Sin conexión a internet — intenta de nuevo</b>';}}
+function coursesCard(){
+ var cs=(typeof courses==="function")?courses():(S.courses||[]);
+ var list=cs.length?cs.map(function(c,i){return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--par-line)"><span style="flex:1;font-size:.9rem"><b>'+esc(c.t)+'</b><br><span class="mut" style="font-size:.75rem">'+esc(c.area||"")+'</span></span><button class="pbtn danger" style="padding:6px 12px;margin:0" onclick="removeCourse('+i+')">✕</button></div>';}).join(""):'<p class="mut" style="margin:8px 0">No hay cursos aún.</p>';
+ return '<div class="card"><h3>🎓 Cursos externos (Udemy u otros)</h3>'
+  +'<p class="mut" style="margin:8px 0;line-height:1.5">Asigna links de cursos. A tus hijos les aparecen en <b>🎓 Cursos</b> y se abren en el navegador (tu hijo entra con su propia cuenta de Udemy). Recomendado: cursos <b>en español</b> y aptos para su edad.</p>'
+  +list
+  +'<p class="mut" style="margin:12px 0 4px">Agregar curso nuevo:</p>'
+  +'<input type="text" id="cvT" placeholder="Nombre del curso (ej: Inglés A1)">'
+  +'<input type="text" id="cvA" placeholder="Área (ej: Matemáticas, Inglés, Excel)">'
+  +'<input type="text" id="cvU" placeholder="Link del curso (https://www.udemy.com/...)">'
+  +'<button class="pbtn" onclick="addCourse()">➕ Agregar curso</button><span id="cvfb"></span></div>';
+}
+function addCourse(){
+ var t=(document.getElementById("cvT").value||"").trim();
+ var a=(document.getElementById("cvA").value||"").trim();
+ var u=(document.getElementById("cvU").value||"").trim();
+ var fb=document.getElementById("cvfb");
+ if(!t||!u){if(fb)fb.innerHTML=' <b style="color:#D97706">Pon el nombre y el link</b>';return;}
+ if(!/^https?:\/\//i.test(u)){if(fb)fb.innerHTML=' <b style="color:#D97706">El link debe empezar por https://</b>';return;}
+ (typeof courses==="function"?courses():(S.courses=S.courses||[])).push({t:t,u:u,area:a||"📚 Otros"});
+ save();if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({courses:S.courses});
+ screenParentDash();
+}
+function removeCourse(i){var cs=(typeof courses==="function")?courses():(S.courses||[]);cs.splice(i,1);save();if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({courses:S.courses});screenParentDash();}
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;

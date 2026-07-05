@@ -40,14 +40,14 @@ function afPush(){var u=afUser();if(!u)return;
   // para que el padre la tenga en sus dispositivos. A los hijos invitados se les comparte aparte (afShareKeyWithChildren).
   afDB.collection("families").doc(u.uid).set(JSON.parse(JSON.stringify(S)),{merge:true}).catch(function(){});
  }catch(e){}}
-/* comparte la clave de Gemini del padre con TODOS los hijos invitados (la escribe en el perfil de cada uno) */
-function afShareKeyWithChildren(key){
+/* comparte datos del padre (clave de Gemini, cursos…) con TODOS los hijos invitados */
+function afSharePayloadWithChildren(payload){
  var u=afUser();if(!u||!afReady||afMember)return; // solo el dueño de la familia
  afDB.collection("families").doc(u.uid).collection("profiles").get().then(function(qs){
-  qs.forEach(function(d){
-   afDB.collection("families").doc(u.uid).collection("profiles").doc(d.id).set({geminiKey:key||""},{merge:true}).catch(function(){});
-  });
+  qs.forEach(function(d){afDB.collection("families").doc(u.uid).collection("profiles").doc(d.id).set(payload,{merge:true}).catch(function(){});});
  }).catch(function(){});}
+window.afSharePayloadWithChildren=afSharePayloadWithChildren;
+function afShareKeyWithChildren(key){afSharePayloadWithChildren({geminiKey:key||""});}
 window.afShareKeyWithChildren=afShareKeyWithChildren;
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
@@ -162,6 +162,7 @@ function afLoadChild(uid,fid){
   var base=JSON.parse(JSON.stringify(DEFAULT_STATE));
   base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
   base.geminiKey=localKey||prof.geminiKey||""; // la clave del dispositivo gana; si no, la que compartió el padre. Ya NO se borra al entrar.
+  if(prof.courses)base.courses=prof.courses; // hereda los cursos que asignó el padre
   if(base.geminiKey&&!prof.geminiKey){try{afDB.collection("families").doc(fid).collection("profiles").doc(uid).set({geminiKey:base.geminiKey},{merge:true});}catch(e){}} // súbela a su perfil para que persista
   S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();
   localStorage.setItem("academiaFam2",JSON.stringify(S));

@@ -82,6 +82,7 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +hubTile("screenLeer()","📖","Cuentos y escribir","Lee, escucha y ordena frases","yellow")
  +hubTile("screenGamesPick()","🎮","Jugar","Arcade, impostor, culebra y más","blue")
  +hubTile("screenMyStuff()","🛍️","Mi mundo","Tienda, personaje y premios","purple")
+ +(courses().length?hubTile("screenCourses()","🎓","Cursos","Cursos en video que te asignaron","yellow"):"")
  +'</div>'
  +'<p class="center" style="margin-top:14px"><button class="kbtn white" style="width:auto;display:inline-block;min-height:46px;padding:10px 18px;font-size:.95rem;margin:0" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button></p>');}
 function subHeader(title){return '<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin:2px 0 12px">'+title+'</h2>';}
@@ -148,6 +149,32 @@ function ckSaveKey(){
  });
 }
 function lockedMsg(){}
+/* ===== CURSOS EXTERNOS (links que asigna el adulto; se abren en Udemy u otro) ===== */
+const DEFAULT_COURSES=[
+ {t:"Inglés desde cero (A1)",u:"https://www.udemy.com/course/curso-de-ingles-para-principiantes-aprende-desde-cero-a1/",area:"🇬🇧 Inglés"},
+ {t:"Nuevas palabras en inglés",u:"https://www.udemy.com/course/aprende-nuevas-palabras-en-ingles/",area:"🇬🇧 Inglés"},
+ {t:"Matemáticas: fracciones y racionales",u:"https://www.udemy.com/course/3-matematicas-desde-cero-numeros-racionales-fracciones/",area:"🔢 Matemáticas"},
+ {t:"Matemáticas: de principiante a avanzado",u:"https://www.udemy.com/course/aprende-matematicas-de-principiante-a-avanzado/",area:"🔢 Matemáticas"},
+ {t:"Matemáticas súper fácil",u:"https://www.udemy.com/course/master-en-matematicas-super-facil-para-brillar-en-la-u/",area:"🔢 Matemáticas"},
+ {t:"Matemáticas exprés",u:"https://www.udemy.com/course/matematicas-expres/",area:"🔢 Matemáticas"},
+ {t:"Excel de principiante a avanzado",u:"https://www.udemy.com/course/megacurso-completo-de-excel-de-principiante-a-avanzado/",area:"💻 Herramientas"},
+ {t:"CapCut (editar video)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=4479466",area:"💻 Herramientas"},
+ {t:"Canva (diseño)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=4685584",area:"💻 Herramientas"}];
+function courses(){if(!S.courses)S.courses=JSON.parse(JSON.stringify(DEFAULT_COURSES));return S.courses;}
+function openCourse(i){const c=courses()[i];if(!c)return;try{window.open(c.u,"_blank","noopener");}catch(e){location.href=c.u;}}
+function screenCourses(){setTheme("kid");
+ const cs=courses();const areas={};
+ cs.forEach((c,i)=>{(areas[c.area||"📚 Otros"]=areas[c.area||"📚 Otros"]||[]).push({_i:i,t:c.t});});
+ let body="";
+ if(!cs.length)body='<div class="card center"><p style="line-height:1.5">Aún no hay cursos.<br>Papá o mamá puede agregarlos en el <b>panel de padres</b>.</p></div>';
+ else Object.keys(areas).forEach(a=>{
+  body+='<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+a+'</p>';
+  body+=areas[a].map(c=>'<button class="kbtn white" style="text-align:left;display:flex;align-items:center;gap:10px" onclick="openCourse('+c._i+')"><span style="font-size:1.4rem">🎓</span><span style="flex:1">'+esc(c.t)+'</span><span style="opacity:.5;font-size:1.2rem">↗</span></button>').join("");
+ });
+ render(topbar("screenKidMap()")+subHeader("🎓 Cursos")
+  +'<p class="center" style="margin-bottom:12px;font-size:.9rem">Cursos en video para aprender más. Se abren en <b>Udemy</b> (necesitas tu cuenta).</p>'
+  +body);
+}
 function openWorld(id){
  const w=KID_WORLDS.find(x=>x.id===id);curNode=id;
  if(w.special==="stories")return screenStoryPick();
