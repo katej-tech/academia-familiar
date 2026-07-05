@@ -1,22 +1,35 @@
 /* ============ HOME TEEN ============ */
 function screenTeenHome(){setTheme("teen");
- const ai=S.geminiKey?'<button class="tbtn acc" onclick="screenAIGen()">✨ Generar reto nuevo con IA</button>':'';
+ const p=prof();const best=p.best||{};
+ const rec=s=>best[s]?("récord "+best[s]+" pts"):"reto cronometrado";
+ const tile=(onclick,ic,tt,ts,cls)=>'<button class="ttile'+(cls?" "+cls:"")+'" onclick="'+onclick+'"><span class="ti">'+ic+'</span><span class="tt">'+tt+'</span>'+(ts?'<span class="ts">'+ts+'</span>':'')+'</button>';
+ const sec=t=>'<p class="tsection">'+t+'</p>';
+ const ai=S.geminiKey?'<button class="tbtn acc" style="margin-bottom:8px" onclick="screenAIGen()">✨ Generar reto nuevo con IA</button>':'';
  render(topbar("screenStart()")
- +'<div class="card" style="display:flex;align-items:center;justify-content:space-between">'
- +'<div><h1 class="title">Hey, '+esc(prof().name)+' '+prof().emoji+'</h1><p class="mut">Reto rápido: responde antes de que acabe el tiempo y arma combos ⚡</p></div>'
- +'<div class="eq"><i></i><i></i><i></i><i></i><i></i></div></div>'
+ +'<div class="thero"><div class="thero-row">'
+  +'<div class="tav" onclick="openProfileMenu()">'+(typeof avatarHTML==="function"?avatarHTML(56):"🧑")+'<span class="tgear">⚙️</span></div>'
+  +'<div style="flex:1"><h1 class="title" style="margin:0;font-size:1.5rem">Hey, '+esc(p.name)+' '+p.emoji+'</h1>'
+  +'<p class="mut" style="margin:3px 0 0;font-size:.88rem">⭐ Nivel '+level(p.xp)+' &nbsp;·&nbsp; 🪙 '+p.coins+' &nbsp;·&nbsp; 🔥 '+p.streak+'</p></div>'
+  +'<div class="eq"><i></i><i></i><i></i><i></i><i></i></div></div></div>'
  +missionsHTML()+ai
- +'<button class="tbtn acc" onclick="screenAcademyTeen()">🎓 &nbsp;English Academy <span class="mut">· unidades y coronas 👑</span></button>'
- +'<button class="tbtn" onclick="screenLevelsEN()">📈 &nbsp;Inglés por niveles A1→B2 <span class="mut">· exámenes</span></button>'
- +'<button class="tbtn" onclick="startQuiz(\'Química\',B_QUIMICA)">⚗️ &nbsp;Química <span class="mut">· reto cronometrado</span></button>'
- +'<button class="tbtn" onclick="startQuiz(\'Física\',B_FISICA)">🚀 &nbsp;Física <span class="mut">· reto cronometrado</span></button>'
- +'<button class="tbtn" onclick="screenReadList()">📖 &nbsp;Lecturas en inglés <span class="mut">· toca y traduce</span></button>'
- +'<button class="tbtn" onclick="startFlash()">🎴 &nbsp;Flashcards de vocabulario</button>'
- +'<button class="tbtn" onclick="startQuiz(\'Grammar\',B_GRAMMAR)">🇬🇧 &nbsp;Grammar challenge</button>'
- +'<button class="tbtn" onclick="startComprension()">🧠 &nbsp;Comprensión lectora</button>'
- +'<button class="tbtn" onclick="startQuiz(\'Lógica\',B_LOGICA)">💻 &nbsp;Lógica & código</button>'
- +'<button class="tbtn" onclick="startQuiz(\'Música\',B_MUSICA)">🎧 &nbsp;Teoría musical</button>'
- +'<button class="tbtn" onclick="startEar()">🎹 &nbsp;Entrena tu oído</button>');}
+ +sec("🇬🇧 Inglés")
+ +'<div class="tgrid">'
+  +tile("screenAcademyTeen()","🎓","English Academy","unidades · 👑","acc wide")
+  +tile("screenLevelsEN()","📈","Niveles A1→B2","exámenes")
+  +tile("startFlash()","🎴","Flashcards","vocabulario")
+  +tile("screenReadList()","📖","Lecturas","toca y traduce")
+  +tile("startQuiz('Grammar',B_GRAMMAR)","✍️","Grammar",rec("Grammar"))
+  +tile("startComprension()","🧠","Comprensión","lectura")
+  +tile("startEar()","🎹","Tu oído","escucha y adivina")
+ +'</div>'
+ +sec("🔬 Ciencias y lógica")
+ +'<div class="tgrid">'
+  +tile("startQuiz('Química',B_QUIMICA)","⚗️","Química",rec("Química"))
+  +tile("startQuiz('Física',B_FISICA)","🚀","Física",rec("Física"))
+  +tile("startQuiz('Lógica',B_LOGICA)","💻","Lógica & código",rec("Lógica"))
+  +tile("startQuiz('Música',B_MUSICA)","🎼","Teoría musical",rec("Música"))
+ +'</div>'
+ +((typeof courses==="function"&&courses().length)?sec("🎓 Cursos")+'<div class="tgrid">'+tile("screenCourses()","🎓","Mis cursos","asignados por tu familia","wide")+'</div>':''));}
 
 /* ============ QUIZ TEEN: cronómetro + combos ============ */
 let QZ={};

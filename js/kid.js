@@ -86,16 +86,24 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +'</div>');}
 /* ===== Menú de perfil estilo Facebook: clic en el avatar → opciones de cuenta ===== */
 function openProfileMenu(){const p=prof();if(!p)return;closeProfileMenu();
+ const teen=(typeof profType==="function"&&profType()==="teen");
  const ov=document.createElement("div");ov.id="pmOverlay";
- ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(20,28,50,.35);backdrop-filter:blur(2px)";
+ ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(10,12,24,.45);backdrop-filter:blur(3px)";
  ov.onclick=function(e){if(e.target===ov)closeProfileMenu();};
- ov.innerHTML='<div style="position:absolute;top:60px;left:14px;right:14px;max-width:360px;margin:0 auto;background:#fff;border:4px solid var(--kid-ink);border-radius:22px;box-shadow:0 12px 0 rgba(30,42,74,.25);padding:16px">'
-  +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'+(typeof avatarHTML==="function"?avatarHTML(54):"🧒")+'<div style="flex:1"><b style="font-size:1.2rem">'+esc(p.name)+'</b><br><span class="mut" style="font-size:.85rem">⭐ Nivel '+level(p.xp)+' · 🪙 '+p.coins+'</span></div></div>'
-  +'<button class="kbtn white" style="margin:5px 0" onclick="closeProfileMenu();screenAvatar()">😎 Mi personaje</button>'
+ const cardStyle=teen
+  ?"position:absolute;top:60px;left:14px;right:14px;max-width:360px;margin:0 auto;background:var(--teen-card);border:1px solid #3A3360;border-radius:22px;box-shadow:0 18px 50px -10px #000;padding:16px;color:var(--teen-ink)"
+  :"position:absolute;top:60px;left:14px;right:14px;max-width:360px;margin:0 auto;background:#fff;border:4px solid var(--kid-ink);border-radius:22px;box-shadow:0 12px 0 rgba(30,42,74,.25);padding:16px";
+ const kidBtns='<button class="kbtn white" style="margin:5px 0" onclick="closeProfileMenu();screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn white" style="margin:5px 0" onclick="closeProfileMenu();screenMyStuff()">🛍️ Mi mundo</button>'
   +'<button class="kbtn yellow" style="margin:5px 0" onclick="closeProfileMenu();screenStart()">🔄 Cambiar de cuenta</button>'
   +'<button class="kbtn red" style="margin:5px 0" onclick="closeProfileMenu();doLogout()">🚪 Cerrar sesión</button>'
-  +'<button class="pbtn ghost" style="margin-top:2px" onclick="closeProfileMenu()">Cerrar</button>'
+  +'<button class="pbtn ghost" style="margin-top:2px" onclick="closeProfileMenu()">Cerrar</button>';
+ const teenBtns='<button class="tbtn" style="margin:6px 0" onclick="closeProfileMenu();screenStart()">🔄 &nbsp;Cambiar de cuenta</button>'
+  +'<button class="tbtn" style="margin:6px 0;border-color:#7F1D1D;color:#F87171" onclick="closeProfileMenu();doLogout()">🚪 &nbsp;Cerrar sesión</button>'
+  +'<button class="tbtn" style="margin:6px 0;text-align:center;font-size:.95rem;min-height:48px" onclick="closeProfileMenu()">Cerrar</button>';
+ ov.innerHTML='<div style="'+cardStyle+'">'
+  +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'+(typeof avatarHTML==="function"?avatarHTML(54):"🙂")+'<div style="flex:1"><b style="font-size:1.2rem">'+esc(p.name)+'</b><br><span class="mut" style="font-size:.85rem">⭐ Nivel '+level(p.xp)+' · 🪙 '+p.coins+'</span></div></div>'
+  +(teen?teenBtns:kidBtns)
   +'</div>';
  document.getElementById("app").appendChild(ov);}
 function closeProfileMenu(){const e=document.getElementById("pmOverlay");if(e)e.remove();}
@@ -176,17 +184,20 @@ const DEFAULT_COURSES=[
  {t:"Canva (diseño)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=4685584",area:"💻 Herramientas"}];
 function courses(){if(!S.courses)S.courses=JSON.parse(JSON.stringify(DEFAULT_COURSES));return S.courses;}
 function openCourse(i){const c=courses()[i];if(!c)return;try{window.open(c.u,"_blank","noopener");}catch(e){location.href=c.u;}}
-function screenCourses(){setTheme("kid");
+function screenCourses(){
+ const teen=(typeof profType==="function"&&profType()==="teen");
+ setTheme(teen?"teen":"kid");
+ const btn=teen?"tbtn":"kbtn white";const back=teen?"screenTeenHome()":"screenKidMap()";
  const cs=courses();const areas={};
  cs.forEach((c,i)=>{(areas[c.area||"📚 Otros"]=areas[c.area||"📚 Otros"]||[]).push({_i:i,t:c.t});});
  let body="";
  if(!cs.length)body='<div class="card center"><p style="line-height:1.5">Aún no hay cursos.<br>Papá o mamá puede agregarlos en el <b>panel de padres</b>.</p></div>';
  else Object.keys(areas).forEach(a=>{
-  body+='<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+a+'</p>';
-  body+=areas[a].map(c=>'<button class="kbtn white" style="text-align:left;display:flex;align-items:center;gap:10px" onclick="openCourse('+c._i+')"><span style="font-size:1.4rem">🎓</span><span style="flex:1">'+esc(c.t)+'</span><span style="opacity:.5;font-size:1.2rem">↗</span></button>').join("");
+  body+='<p style="font-size:1rem;margin:16px 2px 8px;font-weight:700'+(teen?';color:var(--teen-mut);text-transform:uppercase;letter-spacing:.05em;font-size:.82rem':";font-family:Fredoka")+'">'+a+'</p>';
+  body+=areas[a].map(c=>'<button class="'+btn+'" style="text-align:left;display:flex;align-items:center;gap:10px" onclick="openCourse('+c._i+')"><span style="font-size:1.4rem">🎓</span><span style="flex:1">'+esc(c.t)+'</span><span style="opacity:.5;font-size:1.2rem">↗</span></button>').join("");
  });
- render(topbar("screenKidMap()")+subHeader("🎓 Cursos")
-  +'<p class="center" style="margin-bottom:12px;font-size:.9rem">Cursos en video para aprender más. Se abren en <b>Udemy</b> (necesitas tu cuenta).</p>'
+ render(topbar(back)+(teen?'<h2 style="font-size:1.5rem;margin:2px 0 8px">🎓 Mis cursos</h2>':subHeader("🎓 Cursos"))
+  +'<p class="'+(teen?"mut":"center")+'" style="margin-bottom:12px;font-size:.9rem'+(teen?"":";text-align:center")+'">Cursos en video para aprender más. Se abren en <b>Udemy</b> (necesitas tu cuenta).</p>'
   +body);
 }
 function openWorld(id){

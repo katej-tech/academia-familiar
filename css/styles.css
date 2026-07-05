@@ -244,3 +244,23 @@ body.teen .progressdots i.on{background:var(--teen-cyan)}
 .racecar{transition:left .12s ease}
 .roadline{position:absolute;width:6px;background:repeating-linear-gradient(#fff 0 22px,transparent 22px 44px);left:50%;transform:translateX(-50%);top:0;bottom:0;animation:roadmove .5s linear infinite}
 @keyframes roadmove{to{background-position:0 44px}}
+
+/* ===== TEEN HOME v9.50: hero + grid de tiles moderno ===== */
+.thero{background:linear-gradient(135deg,#2A1B4E,#1C1830);border:1px solid #3A3360;border-radius:22px;padding:18px;margin-bottom:16px;position:relative;overflow:hidden}
+.thero::after{content:"";position:absolute;top:-50px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(139,92,246,.4),transparent 70%);pointer-events:none}
+.thero-row{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.tav{position:relative;cursor:pointer;flex-shrink:0}
+.tgear{position:absolute;bottom:-3px;right:-3px;background:var(--teen-violet);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.72rem;border:2px solid var(--teen-bg)}
+.tsection{font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--teen-mut);font-weight:700;margin:20px 4px 10px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+.ttile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--teen-card);border:1px solid #3A3360;border-radius:18px;padding:15px 14px;text-align:left;color:var(--teen-ink);min-height:106px;transition:transform .08s,border-color .15s,box-shadow .2s;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+.ttile:active{transform:scale(.97)}
+.ttile:hover{border-color:var(--teen-violet);box-shadow:0 0 0 1px var(--teen-violet),0 10px 26px -14px var(--teen-violet)}
+.ttile .ti{font-size:1.85rem;margin-bottom:6px;filter:drop-shadow(0 2px 7px rgba(139,92,246,.55))}
+.ttile .tt{font-weight:700;font-size:1.02rem;line-height:1.15}
+.ttile .ts{font-size:.73rem;color:var(--teen-mut);font-weight:500;margin-top:2px}
+.ttile.acc{background:linear-gradient(135deg,var(--teen-violet),var(--teen-pink));border:none}
+.ttile.acc .ts{color:rgba(255,255,255,.85)}
+.ttile.wide{grid-column:1 / -1;flex-direction:row;align-items:center;min-height:auto;gap:12px}
+.ttile.wide .ti{margin-bottom:0}
+.pm-card.teen{background:var(--teen-card);border-color:#3A3360;color:var(--teen-ink)}
