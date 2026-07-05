@@ -862,3 +862,89 @@ function ansCA(i){
  else{sNO();toast("La respuesta era "+CA.ans,false,1900);}
  CA.round++;setTimeout(nextCA,ok?1200:2000);
 }
+
+/* ============ DUELO CONTRA LA IA (retos por niveles, según la materia y la edad) ============ */
+let DU={};
+function gameDuel(){setTheme("kid");
+ render(topbar("screenKidMap()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🤖 Duelo contra la IA</h2>'
+  +'<p class="center" style="margin-bottom:14px">Compite contra la IA. ¡Gana más puntos para subir de nivel!</p>'
+  +'<button class="kbtn green" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="duelStart(\'mate\')"><span style="font-size:2rem">🔢</span> <span style="flex:1">Matemáticas</span></button>'
+  +'<button class="kbtn red" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="duelStart(\'ingles\')"><span style="font-size:2rem">🇬🇧</span> <span style="flex:1">Inglés</span></button>'
+  +'<button class="kbtn blue" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="duelStart(\'ciencias\')"><span style="font-size:2rem">🌎</span> <span style="flex:1">Ciencias</span></button>');
+}
+function duelStart(subject){
+ var age=(typeof prof==="function"&&prof()&&prof().age)||7;
+ DU={subject:subject,age:age,level:1,maxLevel:8,per:5};
+ duelLevel();
+}
+function duelMate(level,age){
+ var L=level+(age>=10?2:age>=9?1:0);
+ if(L<=2){var M=8+L*8,a=1+rnd(M),b=1+rnd(M);if(L>=2&&Math.random()<.5){if(b>a){var t=a;a=b;b=t;}return mcq(a+" − "+b+" = ?",a-b);}return mcq(a+" + "+b+" = ?",a+b);}
+ if(L<=4){var f=2+rnd(Math.min(9,L+3)),n=2+rnd(Math.min(9,L+3));return mcq(f+" × "+n+" = ?",f*n);}
+ if(typeof genProblema2==="function"){var r=genProblema2();return{q:r.q,ops:r.ops,a:r.a,pic:r.pic};}
+ var x=20+rnd(60),y=20+rnd(60);return mcq(x+" + "+y+" = ?",x+y);
+}
+function duelIngles(level){
+ if(level>=4&&typeof EN_PHRASES!=="undefined"){var p=pick(EN_PHRASES);return enMCQ([[p[0],p[1],"💬"]]);}
+ if(typeof EN_VOCAB!=="undefined"){var cats=Object.keys(EN_VOCAB);return enMCQ(EN_VOCAB[cats[rnd(cats.length)]]);}
+ return {q:'¿Qué significa "dog"?',ops:["perro","gato","sol"],a:0};
+}
+function duelCiencias(level){
+ var gens=[];
+ if(typeof genCuerpoParte==="function")gens.push(genCuerpoParte);
+ if(typeof genSistema==="function")gens.push(genSistema);
+ if(typeof genGeo==="function")gens.push(genGeo);
+ if(typeof genCultura==="function")gens.push(genCultura);
+ if(typeof CICLO_AGUA_QS!=="undefined")gens.push(function(){var x=pick(CICLO_AGUA_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};});
+ if(typeof NATURA_QS!=="undefined")gens.push(function(){var x=pick(NATURA_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};});
+ if(!gens.length)return{q:"¿De qué color es el cielo?",ops:["Azul","Rojo","Verde"],a:0};
+ return gens[rnd(gens.length)]();
+}
+function duelQ(subject,level,age){
+ var q=subject==="mate"?duelMate(level,age):subject==="ingles"?duelIngles(level):duelCiencias(level);
+ if(q.a===-1&&q.fixAns!==undefined)q.a=q.ops.indexOf(q.fixAns);
+ return q;
+}
+function duelLevel(){
+ DU.i=0;DU.kid=0;DU.ai=0;DU.qs=[];
+ for(var k=0;k<DU.per;k++)DU.qs.push(duelQ(DU.subject,DU.level,DU.age));
+ duelRenderQ();
+}
+function duelRenderQ(){
+ if(DU.i>=DU.per)return duelLevelEnd();
+ var q=DU.qs[DU.i];var order=shuffled(q.ops.map(function(o,i){return{o:o,i:i};}));DU.order=order;DU.a=q.a;
+ var sc='<div style="display:flex;justify-content:center;gap:18px;font-family:Fredoka;font-weight:800;margin-bottom:8px"><span style="color:var(--kid-blue)">🧒 Tú '+DU.kid+'</span><span style="color:var(--kid-red)">🤖 IA '+DU.ai+'</span></div>';
+ render(topbar("gameDuel()")
+  +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:4px">🤖 Duelo · Nivel '+DU.level+'</h2>'
+  +sc
+  +'<div class="progressdots">'+dots(DU.per,DU.i)+'</div>'
+  +(q.pic?'<div class="bigpic">'+q.pic+'</div>':'')
+  +'<div class="bigq center">'+esc(q.q)+'</div>'
+  +(q.word?'<button class="speaker small" onclick="speakEN(\''+esc(q.word).replace(/'/g,"")+'\')">🔊 '+esc(q.word)+'</button>':'')
+  +'<div class="choices2">'+order.map(function(s,vi){return '<button class="kbtn white" style="font-size:clamp(1.15rem,5vw,1.45rem)" onclick="duelAns('+vi+')">'+esc(s.o)+'</button>';}).join("")+'</div>');
+ if(q.word)setTimeout(function(){speakEN(q.word.replace(/'/g,""));},300);
+}
+function duelAns(vi){
+ var q=DU.qs[DU.i];var ok=DU.order[vi].i===DU.a;
+ var subj=DU.subject==="mate"?"Mate":DU.subject==="ingles"?"Inglés":"La naturaleza";
+ recordAnswer(subj,ok,12);
+ if(ok){sOK();confetti(6);DU.kid++;}else{sNO();}
+ var p=Math.min(0.85,0.42+DU.level*0.05);var aiOk=Math.random()<p;if(aiOk)DU.ai++;
+ toast((ok?"¡Bien! ":"Era: "+q.ops[q.a]+" · ")+"🤖 "+(aiOk?"acertó":"falló"),ok,1500);
+ DU.i++;setTimeout(duelRenderQ,ok?1150:1750);
+}
+function duelLevelEnd(){
+ var win=DU.kid>DU.ai;
+ if(win){
+  var p=prof();if(p){p.coins+=DU.level*4;p.xp+=DU.level*8;save();}
+  sWIN();confetti(30);
+  if(DU.level>=DU.maxLevel){
+   return render(topbar("gameDuel()")+'<div class="card endcard"><div class="big">🏆</div><h2>¡Campeón!</h2><p style="font-size:1.1rem;margin:8px 0">¡Venciste a la IA en todos los niveles!</p><button class="kbtn green" onclick="gameDuel()">Jugar otra materia</button><button class="kbtn white" onclick="screenKidMap()">Al mapa 🌍</button></div>');
+  }
+  DU.level++;
+  return render(topbar("gameDuel()")+'<div class="card endcard"><div class="big">🏆</div><h2>¡Ganaste el nivel!</h2><p style="font-size:1.1rem;margin:8px 0">🧒 Tú '+DU.kid+' · 🤖 IA '+DU.ai+'</p><button class="kbtn green" onclick="duelLevel()">Siguiente nivel ('+DU.level+') →</button><button class="kbtn white" onclick="gameDuel()">Cambiar materia</button></div>');
+ }
+ sNO();
+ render(topbar("gameDuel()")+'<div class="card endcard"><div class="big">🤖</div><h2>La IA ganó este nivel</h2><p style="font-size:1.1rem;margin:8px 0">🧒 Tú '+DU.kid+' · 🤖 IA '+DU.ai+'</p><p>¡Casi! Inténtalo otra vez 💪</p><button class="kbtn green" onclick="duelLevel()">Reintentar nivel →</button><button class="kbtn white" onclick="gameDuel()">Cambiar materia</button></div>');
+}

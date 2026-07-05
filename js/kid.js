@@ -82,7 +82,7 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +hubTile("screenLeer()","📖","Cuentos y escribir","Lee, escucha y ordena frases","yellow")
  +hubTile("screenGamesPick()","🎮","Jugar","Arcade, impostor, culebra y más","blue")
  +hubTile("screenMyStuff()","🛍️","Mi mundo","Tienda, personaje y premios","purple")
- +(courses().length?hubTile("screenCourses()","🎓","Cursos","Cursos en video que te asignaron","yellow"):"")
+ +((courses().length&&prof()&&(prof().age||0)>=10)?hubTile("screenCourses()","🎓","Cursos","Cursos en video que te asignaron","yellow"):"")
  +'</div>'
  +'<p class="center" style="margin-top:14px"><button class="kbtn white" style="width:auto;display:inline-block;min-height:46px;padding:10px 18px;font-size:.95rem;margin:0" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button></p>');}
 function subHeader(title){return '<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin:2px 0 12px">'+title+'</h2>';}
@@ -229,6 +229,8 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎮 Juegos</h2>'
  +'<div class="card center" style="padding:8px;margin-bottom:6px;background:linear-gradient(180deg,#E8FBF0,#D6F5E3)">✅ ¡Desbloqueaste los juegos de hoy! 🎉</div>'
+ +sub("⚔️ Reto del día")
+ +'<button class="kbtn red" style="text-align:left;display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#FF8FB0,#FF6B9D)" onclick="gameDuel()"><span style="font-size:1.8rem">🤖</span> <span style="flex:1">Duelo contra la IA <span style="opacity:.85;font-size:.85rem">· por niveles</span></span></button>'
  +sub("🧠 Letras y palabras")
  +'<button class="kbtn white" onclick="gameHangman(\'es\')">⛄ Salva al muñeco (palabras)</button>'
  +'<button class="kbtn yellow" onclick="gameWordSearch()">🔍 Sopa de letras</button>'
