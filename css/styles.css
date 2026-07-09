@@ -145,7 +145,7 @@ body.parent .pill{background:#fff;border:1px solid var(--par-line)}
 body.kid .back{background:rgba(255,255,255,.95);border:2px solid rgba(30,42,74,.10);box-shadow:0 4px 12px rgba(30,42,74,.14)}
 body.teen .back{background:var(--teen-card);border:1px solid #3A3360}
 h1.title{font-size:1.7rem;line-height:1.2;margin-bottom:6px}
-.bigq{font-size:1.5rem;font-weight:800;margin:8px 0 18px;line-height:1.3}
+.bigq{font-size:1.5rem;font-weight:800;margin:8px 0 18px;line-height:1.3;white-space:pre-line}
 body.teen .bigq{font-weight:700;font-size:1.25rem}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;padding:16px 26px;border-radius:20px;
   font-weight:800;font-size:1.3rem;text-align:center;min-width:70%;animation:toastIn .25s}

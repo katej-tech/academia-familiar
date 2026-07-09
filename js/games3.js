@@ -886,6 +886,8 @@ function duelCiencias(level){
  if(typeof genSistema==="function")gens.push(genSistema);
  if(typeof genGeo==="function")gens.push(genGeo);
  if(typeof genCultura==="function")gens.push(genCultura);
+ if(typeof genAlimentos==="function")gens.push(genAlimentos);
+ if(typeof genTierra==="function")gens.push(genTierra);
  if(typeof CICLO_AGUA_QS!=="undefined")gens.push(function(){var x=pick(CICLO_AGUA_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};});
  if(typeof NATURA_QS!=="undefined")gens.push(function(){var x=pick(NATURA_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};});
  if(!gens.length)return{q:"¿De qué color es el cielo?",ops:["Azul","Rojo","Verde"],a:0};

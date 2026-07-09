@@ -39,9 +39,9 @@ function enterTeen(){enterProfile("nina");}
 /* ============ MAPA DE AVENTURA (NIÑO) ============ */
 /* MUNDOS temáticos: cada uno agrupa temas y se juega con el motor infinito */
 const KID_WORLDS=[
- {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",cat:"cole",topics:["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra","palabra_num","problemas2"],desc:"Sumas, restas, problemas, decenas y números en letras"},
+ {id:"mate",ic:"🔢",nm:"Matemáticas",color:"green",cat:"cole",topics:["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra","palabra_num","problemas2","poligonos","diagramas"],desc:"Sumas, restas, problemas, polígonos y diagramas de barras"},
  {id:"lenguaje",ic:"📚",nm:"Lenguaje",color:"red",cat:"cole",topics:["sustantivos","silabas","ortografia","narracion"],desc:"Sustantivos, sílabas, ortografía y cuentos"},
- {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",cat:"cole",topics:["ciclo_agua","cuerpo_es","cuerpo_partes","sistemas","natura"],desc:"Ciclo del agua, el cuerpo, sus sistemas y naturaleza"},
+ {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",cat:"cole",topics:["ciclo_agua","cuerpo_es","cuerpo_partes","sistemas","natura","alimentos","tierra"],desc:"El cuerpo, los alimentos, la Tierra y el espacio"},
  {id:"cuerpo",ic:"🫀",nm:"El cuerpo humano",color:"red",cat:"cole",special:"body",topics:["cuerpo_partes","sistemas","cuerpo_es"],desc:"Señala las partes y aprende los sistemas"},
  {id:"sociales",ic:"🌎",nm:"Sociales y trivias",color:"blue",cat:"cole",special:"social",topics:["geografia","sociales","cultura","informatica"],desc:"Banderas, geografía, sociales y cultura"},
  {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",cat:"cole",topics:["tiempo","diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
@@ -817,7 +817,7 @@ function renderCH(){
  const isEN=it.word||KID_TOPICS[it._topic]&&KID_TOPICS[it._topic].en;
  const topic=KID_TOPICS[it._topic];
  const head=topic?topic.emoji+" "+topic.name:CH.label;
- const isMath=["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra","palabra_num","problemas2"].indexOf(it._topic)>=0;
+ const isMath=["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra","palabra_num","problemas2","poligonos","diagramas"].indexOf(it._topic)>=0;
  render(topbar("screenKidMap()")
  +'<div class="progressdots">'+dots(CH.items.length,CH.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+head+' · '+(CH.i+1)+'/'+CH.items.length+'</p>'

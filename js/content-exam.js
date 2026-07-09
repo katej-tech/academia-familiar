@@ -260,3 +260,71 @@ function genCapital(){
  const ops=shuffled([it[1],others[0][1],others[1][1]]);
  return{q:"¿Cuál es la capital de "+it[0]+"?",pic:"🏛️",ops,a:ops.indexOf(it[1])};
 }
+
+/* ===== TEMAS DEL TABLERO DEL COLE (v9.52): poligonos, diagramas de barras, alimentos, la Tierra y el espacio ===== */
+const POLI_QS=[
+ {q:"¿Cuántos lados tiene un triángulo?",ops:["3","4","5"],a:0,pic:"🔺"},
+ {q:"¿Cómo se llama el polígono de 4 lados iguales?",ops:["Cuadrado","Triángulo","Pentágono"],a:0,pic:"🟥"},
+ {q:"¿Cuántos lados tiene un pentágono?",ops:["5","4","8"],a:0,pic:"⬠"},
+ {q:"¿Cuántos lados tiene un hexágono?",ops:["6","5","3"],a:0,pic:"⬡"},
+ {q:"¿Cuál de estas figuras NO es un polígono?",ops:["El círculo","El cuadrado","El triángulo"],a:0,pic:"⭕"},
+ {q:"Un rectángulo tiene 4 lados. ¿Cómo son sus lados?",ops:["2 largos y 2 cortos","Todos iguales","Todos curvos"],a:0,pic:"▭"},
+ {q:"¿Cómo se llaman las esquinas de un polígono?",ops:["Vértices","Círculos","Puntas de flecha"],a:0,pic:"📐"},
+ {q:"¿Qué polígono tiene 8 lados, como la señal de PARE?",ops:["Octágono","Hexágono","Cuadrado"],a:0,pic:"🛑"},
+ {q:"¿Qué es un polígono?",ops:["Una figura cerrada con lados rectos","Una línea curva","Un número grande"],a:0,pic:"🔷"},
+ {q:"El lado de un polígono es…",ops:["Una línea recta","Un círculo","Un punto"],a:0,pic:"📏"}];
+function genPoligono(){const x=pick(POLI_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
+/* diagramas de barras: genera un mini diagrama con emojis y pregunta leerlo */
+function genBarras(){
+ const temas=[["🍎","manzanas"],["🚗","carros"],["⚽","balones"],["🐟","peces"],["🌸","flores"]];
+ const t=pick(temas);
+ const names=shuffled(["Ana","Leo","Mía","Juan"]).slice(0,3);
+ const vals=shuffled([2,3,4,5,6,7]).slice(0,3);
+ const rows=names.map((n,i)=>n+": "+t[0].repeat(vals[i])+" ("+vals[i]+")").join("\n");
+ const tipo=rnd(3);
+ if(tipo===0){ // ¿quién tiene más?
+  const maxI=vals.indexOf(Math.max.apply(null,vals));
+  return{q:"Mira el diagrama de "+t[1]+":\n"+rows+"\n¿Quién tiene MÁS "+t[1]+"?",ops:shuffledFix(names,names[maxI])};}
+ if(tipo===1){ // ¿quién tiene menos?
+  const minI=vals.indexOf(Math.min.apply(null,vals));
+  return{q:"Mira el diagrama de "+t[1]+":\n"+rows+"\n¿Quién tiene MENOS "+t[1]+"?",ops:shuffledFix(names,names[minI])};}
+ const who=rnd(3); // ¿cuántos tiene X?
+ const ans=String(vals[who]);
+ const set=new Set([ans]);while(set.size<3){const d=vals[who]+(1+rnd(3))*(Math.random()<.5?-1:1);if(d>0)set.add(String(d));}
+ return{q:"Mira el diagrama de "+t[1]+":\n"+rows+"\n¿Cuántos "+t[1]+" tiene "+names[who]+"?",ops:shuffledFix([...set],ans)};}
+function shuffledFix(arr,ans){const ops=shuffled(arr.slice());return{__ops:ops,__a:ops.indexOf(ans)};}
+/* corrige la forma: genBarras debe devolver {q,ops,a} */
+function genBarrasQ(){const r=genBarras();return{q:r.q,ops:r.ops.__ops,a:r.ops.__a,pic:"📊"};}
+const ALIM_QS=[
+ {q:"En la pirámide alimenticia, ¿qué debemos comer MÁS?",ops:["Frutas y verduras","Dulces","Gaseosas"],a:0,pic:"🥗"},
+ {q:"En la pirámide alimenticia, ¿qué va arriba (comer POQUITO)?",ops:["Dulces y grasas","Frutas","Arroz"],a:0,pic:"🍬"},
+ {q:"¿Cuál de estos alimentos nos da energía (carbohidrato)?",ops:["El arroz","La lechuga","El agua"],a:0,pic:"🍚"},
+ {q:"¿Qué son los carbohidratos?",ops:["Alimentos que dan energía","Juguetes","Vitaminas del sol"],a:0,pic:"⚡"},
+ {q:"¿Cuál de estos alimentos tiene mucha grasa?",ops:["La mantequilla","La manzana","La zanahoria"],a:0,pic:"🧈"},
+ {q:"¿Las grasas se deben comer…",ops:["Con moderación (poquito)","Todo el día","Nunca jamás"],a:0,pic:"🥑"},
+ {q:"¿Cuál alimento ayuda a crecer (proteína)?",ops:["El huevo","El dulce","La gaseosa"],a:0,pic:"🥚"},
+ {q:"¿Cuál es una fruta?",ops:["El mango","El pan","El queso"],a:0,pic:"🥭"},
+ {q:"¿Cuál es una verdura?",ops:["La zanahoria","La galleta","El chocolate"],a:0,pic:"🥕"},
+ {q:"Los lácteos como la leche y el queso nos dan…",ops:["Calcio para los huesos","Sueño","Alas"],a:0,pic:"🥛"},
+ {q:"En la cadena alimenticia, ¿qué come el conejo?",ops:["Plantas","Carne","Piedras"],a:0,pic:"🐰"},
+ {q:"En la cadena alimenticia, el león es…",ops:["Carnívoro (come carne)","Herbívoro","Una planta"],a:0,pic:"🦁"},
+ {q:"¿Cómo empieza casi toda cadena alimenticia?",ops:["Con las plantas","Con el león","Con las piedras"],a:0,pic:"🌱"},
+ {q:"Un animal que come plantas Y carne se llama…",ops:["Omnívoro","Herbívoro","Volador"],a:0,pic:"🐻"},
+ {q:"¿Quién fabrica su propio alimento con la luz del sol?",ops:["Las plantas","Los perros","Los peces"],a:0,pic:"🌻"}];
+function genAlimentos(){const x=pick(ALIM_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
+const TIERRA_QS=[
+ {q:"¿Qué forma tiene la Tierra?",ops:["Redonda (esfera)","Cuadrada","Plana como mesa"],a:0,pic:"🌍"},
+ {q:"¿Cómo se llama el movimiento de la Tierra sobre sí misma?",ops:["Rotación","Traslación","Salto"],a:0,pic:"🔄"},
+ {q:"¿Qué produce la rotación de la Tierra?",ops:["El día y la noche","La lluvia","Los ríos"],a:0,pic:"🌗"},
+ {q:"¿Cómo se llama la vuelta que da la Tierra alrededor del Sol?",ops:["Traslación","Rotación","Caminata"],a:0,pic:"🌞"},
+ {q:"¿Cuánto tarda la Tierra en dar la vuelta al Sol?",ops:["Un año","Un día","Una hora"],a:0,pic:"📅"},
+ {q:"¿Qué es el Sol?",ops:["Una estrella","Un planeta","Una nube caliente"],a:0,pic:"☀️"},
+ {q:"¿Qué es la Luna?",ops:["El satélite de la Tierra","Una estrella","Un planeta con mar"],a:0,pic:"🌙"},
+ {q:"¿Cuándo podemos ver las estrellas?",ops:["De noche","Al mediodía","Cuando llueve"],a:0,pic:"⭐"},
+ {q:"¿Cómo se llama el conjunto del Sol y sus planetas?",ops:["Sistema solar","Sistema lunar","Familia espacial"],a:0,pic:"🪐"},
+ {q:"¿Qué planeta está más cerca del Sol?",ops:["Mercurio","La Tierra","Júpiter"],a:0,pic:"🔥"},
+ {q:"¿Cuál es el planeta más grande del sistema solar?",ops:["Júpiter","Marte","La Luna"],a:0,pic:"🪐"},
+ {q:"¿En qué planeta vivimos?",ops:["La Tierra","Marte","Venus"],a:0,pic:"🌎"},
+ {q:"¿De qué color se ve Marte?",ops:["Rojo","Verde","Rosado"],a:0,pic:"🔴"},
+ {q:"¿Qué nos da el Sol?",ops:["Luz y calor","Frío","Lluvia de dulces"],a:0,pic:"🌞"}];
+function genTierra(){const x=pick(TIERRA_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
