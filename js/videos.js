@@ -6,20 +6,26 @@ function videoList(){if(!S.videos)S.videos=[];return S.videos;}
 function ytId(url){
  const m=String(url).match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/);
  return m?m[1]:null;}
+function topicLabel(k){return (typeof KID_TOPICS!=="undefined"&&KID_TOPICS[k])?(KID_TOPICS[k].emoji+" "+KID_TOPICS[k].name):"";}
 function screenVideosKid(){setTheme("kid");
  const vids=videoList();
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🎬 Videos para aprender</h2>'
- +(vids.length?'<p class="center" style="margin-bottom:12px">Elegidos para ti con amor 💛</p>'
-  +vids.map((v,i)=>'<button class="kbtn blue" onclick="watchVideo('+i+')">▶️ '+esc(v.title||("Video "+(i+1)))+'</button>').join("")
+ +(vids.length?'<p class="center" style="margin-bottom:12px">Mira la clase y después practica 💪</p>'
+  +vids.map((v,i)=>'<button class="kbtn blue" style="text-align:left" onclick="watchVideo('+i+')">▶️ '+esc(v.title||("Video "+(i+1)))+(v.topic?'<br><span style="font-size:.78rem;opacity:.85;font-weight:600">'+topicLabel(v.topic)+' · después practicas este tema</span>':'')+'</button>').join("")
  :'<div class="card center"><div style="font-size:3rem">📺</div><p style="font-size:1.05rem;margin-top:8px">Todavía no hay videos. Pídele a papá o mamá que agreguen algunos desde su panel 👨‍👩‍👧</p></div>'));}
 function watchVideo(i){setTheme("kid");
  const v=videoList()[i];if(!v)return screenVideosKid();
  render(topbar("screenVideosKid()")
  +'<h2 style="font-size:clamp(1.1rem,5vw,1.35rem);margin-bottom:8px">▶️ '+esc(v.title||"Video")+'</h2>'
+ +(v.topic?'<p style="font-size:.9rem;margin-bottom:8px">📚 Clase de: <b>'+topicLabel(v.topic)+'</b></p>':'')
  +'<div style="position:relative;width:100%;padding-top:56.25%;border-radius:18px;overflow:hidden;border:4px solid var(--kid-ink);box-shadow:0 6px 0 rgba(30,42,74,.8)">'
  +'<iframe src="https://www.youtube-nocookie.com/embed/'+esc(v.id)+'?rel=0" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>'
- +'<button class="kbtn green" style="margin-top:14px" onclick="videoDone('+i+')">¡Ya lo vi todo! ✅ (+5 🪙)</button>');}
+ +'<button class="kbtn green" style="margin-top:14px" onclick="videoDone('+i+')">¡Ya lo vi todo! ✅ (+5 🪙)</button>'
+ +(v.topic?'<button class="kbtn purple" onclick="videoPractice('+i+')">🧠 ¡A practicar lo que aprendí!</button>':''));}
+function videoPractice(i){
+ const v=videoList()[i];if(!v||!v.topic||typeof KID_TOPICS==="undefined"||!KID_TOPICS[v.topic])return screenVideosKid();
+ playTopics(KID_TOPICS[v.topic].name,[v.topic],{perTopic:6,topicsPerSession:1,total:6});}
 function videoDone(i){
  const d=touchDay();
  if(!d.vids)d.vids=[];
@@ -29,18 +35,25 @@ function videoDone(i){
 /* gestión desde el panel de padres */
 function parentAddVideo(){
  const inp=document.getElementById("vidurl"),tit=document.getElementById("vidtitle");
+ const sel=document.getElementById("vidtopic");
  const id=ytId(inp.value);
  if(!id){alert("Pega un enlace válido de YouTube (youtube.com o youtu.be)");return;}
- videoList().push({id,title:tit.value.trim()||("Video "+(videoList().length+1))});
- save();screenParentDash();}
-function parentDelVideo(i){videoList().splice(i,1);save();screenParentDash();}
+ const v={id,title:tit.value.trim()||("Video "+(videoList().length+1))};
+ if(sel&&sel.value)v.topic=sel.value;
+ videoList().push(v);
+ save();if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({videos:S.videos});
+ screenParentDash();}
+function parentDelVideo(i){videoList().splice(i,1);save();if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({videos:S.videos});screenParentDash();}
 function parentVideosHTML(){
  const vids=videoList();
- return '<div class="card"><h3>🎬 Videos para el niño</h3>'
- +'<p class="mut" style="margin:8px 0">Pega enlaces de YouTube que tú apruebes; el niño los ve dentro de la app y gana monedas.</p>'
- +(vids.length?vids.map((v,i)=>'<p style="display:flex;align-items:center;gap:8px;margin:6px 0"><span style="flex:1">▶️ '+esc(v.title)+'</span><button class="pbtn ghost" style="width:auto;padding:6px 12px" onclick="parentDelVideo('+i+')">🗑️</button></p>').join(""):'<p class="mut">Sin videos aún.</p>')
- +'<input type="text" id="vidtitle" placeholder="Título (ej: Los planetas)">'
+ const tsel=(typeof KID_TOPICS!=="undefined")?'<select id="vidtopic" style="width:100%;padding:12px;border:1px solid var(--par-line);border-radius:10px;margin:6px 0;background:#fff;font-size:.95rem"><option value="">(Sin tema — video libre)</option>'
+   +Object.keys(KID_TOPICS).filter(k=>!KID_TOPICS[k].en).map(k=>'<option value="'+k+'">'+KID_TOPICS[k].emoji+' '+esc(KID_TOPICS[k].name)+'</option>').join("")+'</select>':'';
+ return '<div class="card"><h3>🎬 Videos para el niño (aprender y practicar)</h3>'
+ +'<p class="mut" style="margin:8px 0">Pega enlaces de YouTube que tú apruebes. Si le asignas un <b>tema</b>, al niño le aparece "🧠 ¡A practicar!" al final del video y resuelve ejercicios de ese mismo tema: primero la clase, luego la práctica.</p>'
+ +(vids.length?vids.map((v,i)=>'<p style="display:flex;align-items:center;gap:8px;margin:6px 0"><span style="flex:1">▶️ '+esc(v.title)+(v.topic&&KID_TOPICS[v.topic]?' <span class="mut" style="font-size:.8rem">→ '+KID_TOPICS[v.topic].emoji+' '+esc(KID_TOPICS[v.topic].name)+'</span>':'')+'</span><button class="pbtn ghost" style="width:auto;padding:6px 12px" onclick="parentDelVideo('+i+')">🗑️</button></p>').join(""):'<p class="mut">Sin videos aún.</p>')
+ +'<input type="text" id="vidtitle" placeholder="Título (ej: Los polígonos)">'
  +'<input type="text" id="vidurl" placeholder="https://www.youtube.com/watch?v=...">'
+ +tsel
  +'<button class="pbtn" onclick="parentAddVideo()">➕ Agregar video</button>'
  +(S.geminiKey?'<button class="pbtn ghost" onclick="parentSuggestVideos()">🤖 Sugerir videos con IA (según lo que debe reforzar)</button>':'<p class="tip">💡 Activa la clave de Gemini arriba para que la IA sugiera videos según las falencias del niño.</p>')
  +'<div id="vidsug"></div></div>';}
@@ -68,16 +81,21 @@ async function parentSuggestVideos(){
 async function geminiImage(promptText){
  const models=["gemini-2.5-flash-image","gemini-2.5-flash-image-preview","gemini-2.0-flash-preview-image-generation"];
  let lastDetail="",lastStatus=0;
- for(const m of models){
-  try{
-   const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
+ const call=m=>fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
     {method:"POST",headers:{"Content-Type":"application/json"},
      body:JSON.stringify({contents:[{parts:[{text:promptText}]}],generationConfig:{responseModalities:["TEXT","IMAGE"]}})});
-   if(!res.ok){lastStatus=res.status;try{const j=await res.json();lastDetail=(j.error&&j.error.message)||"";}catch(e){}if(res.status!==404)break;continue;}
+ for(const m of models){
+  try{
+   let res=await call(m);
+   if(res.status===429||res.status===503){await new Promise(r=>setTimeout(r,1600));res=await call(m);} // saturado: espera y reintenta
+   if(!res.ok){lastStatus=res.status;try{const j=await res.json();lastDetail=(j.error&&j.error.message)||"";}catch(e){}
+    if(res.status===404||res.status===429||res.status===503)continue; // siguiente modelo
+    break;} // 400/403: clave mala o restringida, no ayuda reintentar
    const data=await res.json();
    const parts=(data.candidates&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
    const img=parts.find(p=>p.inlineData&&p.inlineData.data);
    if(img)return "data:"+(img.inlineData.mimeType||"image/png")+";base64,"+img.inlineData.data;
+   lastDetail=lastDetail||"el modelo no devolvió imagen";
   }catch(e){lastDetail=lastDetail||(e&&e.message)||"";}}
  throw new Error("Error de la imagen ("+(lastStatus||"red")+")"+(lastDetail?": "+lastDetail.slice(0,130):"")+" — revisa la clave.");}
 async function illustratePage(){

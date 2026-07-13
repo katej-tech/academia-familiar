@@ -170,15 +170,26 @@ function ansEar(k){
 /* ============ IA GEMINI ============ */
 async function geminiJSON(promptText){
  const models=["gemini-2.5-flash","gemini-2.0-flash","gemini-flash-latest"];
- let res=null;
- for(const m of models){
-  res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
+ let res=null,lastDetail="",lastStatus=0;
+ const call=async m=>fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),
    {method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({contents:[{parts:[{text:promptText}]}],generationConfig:{temperature:0.9}})});
-  if(res.ok)break;if(res.status!==404)break;}
- if(!res||!res.ok){
-  let detalle="";try{const j=await res.json();detalle=(j.error&&j.error.message)||"";}catch(e){}
-  throw new Error("Error de la API ("+(res?res.status:"red")+")"+(detalle?": "+detalle.slice(0,130):"")+" — prueba la clave en el panel de padres.");}
+ for(const m of models){
+  try{res=await call(m);}catch(e){lastDetail="sin internet o bloqueado";continue;}
+  if(res.ok)break;
+  lastStatus=res.status;try{const j=await res.json();lastDetail=(j.error&&j.error.message)||lastDetail;}catch(e){}
+  if(res.status===429||res.status===503){ // saturado: espera y reintenta el mismo modelo una vez
+   await new Promise(r=>setTimeout(r,1600));
+   try{res=await call(m);}catch(e){continue;}
+   if(res.ok)break;
+   lastStatus=res.status;try{const j=await res.json();lastDetail=(j.error&&j.error.message)||lastDetail;}catch(e){}
+   continue; // prueba el siguiente modelo
+  }
+  if(res.status===404)continue; // modelo no existe: siguiente
+  break; // 400/403: la clave está mal o restringida, no sirve reintentar
+ }
+ if(!res||!res.ok)
+  throw new Error("Error de la API ("+(lastStatus||"red")+")"+(lastDetail?": "+String(lastDetail).slice(0,130):"")+" — prueba la clave en el panel de padres.");
  const data=await res.json();
  let txt=(data.candidates&&data.candidates[0].content.parts.map(p=>p.text||"").join(""))||"";
  txt=txt.replace(/```json|```/g,"").trim();

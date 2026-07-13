@@ -826,7 +826,8 @@ function renderCH(){
  +(isEN&&it.word?'<button class="speaker" onclick="speakEN(\''+esc(it.word).replace(/'/g,"")+'\')"><span class="ic">🔊</span> Escuchar en inglés</button>'
    :'<button class="speaker small" onclick="speakES(\''+esc(it.q).replace(/'/g,"\\'")+'\')">🔊 Leer pregunta</button>')
  +'<div class="choices2">'+shown.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.15rem,5vw,1.45rem)" onclick="ansCH('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>'
- +(isMath&&typeof boardBtn==="function"?boardBtn():''));
+ +(isMath&&typeof boardBtn==="function"?boardBtn():'')
+ +(function(){const vi=(S.videos||[]).findIndex(v=>v.topic===it._topic);return vi>=0?'<button class="kbtn white" style="margin-top:6px;min-height:52px;font-size:1rem" onclick="watchVideo('+vi+')">📺 Ver la clase de este tema</button>':'';})());
  if(isEN&&it.word)setTimeout(()=>speakEN(it.word.replace(/'/g,"")),350);}
 function ansCH(vi){
  const it=CH.items[CH.i];

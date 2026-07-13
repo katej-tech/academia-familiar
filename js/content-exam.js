@@ -275,26 +275,43 @@ const POLI_QS=[
  {q:"El lado de un polígono es…",ops:["Una línea recta","Un círculo","Un punto"],a:0,pic:"📏"}];
 function genPoligono(){const x=pick(POLI_QS);return{q:x.q,ops:x.ops.slice(),a:x.a,pic:x.pic};}
 /* diagramas de barras: genera un mini diagrama con emojis y pregunta leerlo */
-function genBarras(){
- const temas=[["🍎","manzanas"],["🚗","carros"],["⚽","balones"],["🐟","peces"],["🌸","flores"]];
+/* dibuja un diagrama de barras SVG de verdad (como en los libros): eje, cuadrícula, barras de colores con su valor */
+function barChartSVG(names,vals,emoji){
+ const W=300,H=195,pad=34,baseY=H-34,maxV=8;
+ const cols=["#3EC97C","#3B82F6","#FF6B6B"];
+ const bw=52,gap=(W-pad-16-names.length*bw)/(names.length+1);
+ let grid="";
+ for(let v=2;v<=maxV;v+=2){const y=baseY-(v/maxV)*(baseY-30);
+  grid+='<line x1="'+pad+'" y1="'+y+'" x2="'+(W-12)+'" y2="'+y+'" stroke="rgba(30,42,74,.12)" stroke-width="1"/>'
+   +'<text x="'+(pad-6)+'" y="'+(y+4)+'" text-anchor="end" font-family="Fredoka,sans-serif" font-size="11" fill="rgba(30,42,74,.55)">'+v+'</text>';}
+ let bars="";
+ names.forEach((n,i)=>{
+  const h=(vals[i]/maxV)*(baseY-30);
+  const x=pad+gap+i*(bw+gap),y=baseY-h;
+  bars+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="6" fill="'+cols[i%3]+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+   +'<text x="'+(x+bw/2)+'" y="'+(y-6)+'" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="15" fill="#1E2A4A">'+vals[i]+'</text>'
+   +'<text x="'+(x+bw/2)+'" y="'+(baseY+17)+'" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="13.5" fill="#1E2A4A">'+n+'</text>';
+ });
+ return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:330px;background:#fff;border:3px solid #1E2A4A;border-radius:14px" xmlns="http://www.w3.org/2000/svg">'
+  +'<text x="'+(W/2)+'" y="19" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="14" fill="#1E2A4A">'+emoji+' que tiene cada niño</text>'
+  +grid
+  +'<line x1="'+pad+'" y1="'+baseY+'" x2="'+(W-12)+'" y2="'+baseY+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +'<line x1="'+pad+'" y1="26" x2="'+pad+'" y2="'+baseY+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+  +bars+'</svg>';}
+function genBarrasQ(){
+ const temas=[["🍎","manzanas"],["🚗","carritos"],["⚽","balones"],["🐟","peces"],["🌸","flores"],["📚","libros"]];
  const t=pick(temas);
- const names=shuffled(["Ana","Leo","Mía","Juan"]).slice(0,3);
- const vals=shuffled([2,3,4,5,6,7]).slice(0,3);
- const rows=names.map((n,i)=>n+": "+t[0].repeat(vals[i])+" ("+vals[i]+")").join("\n");
+ const names=shuffled(["Ana","Leo","Mía","Juan","Sofi"]).slice(0,3);
+ const vals=shuffled([2,3,4,5,6,7,8]).slice(0,3);
+ const pic=barChartSVG(names,vals,t[0]);
  const tipo=rnd(3);
- if(tipo===0){ // ¿quién tiene más?
-  const maxI=vals.indexOf(Math.max.apply(null,vals));
-  return{q:"Mira el diagrama de "+t[1]+":\n"+rows+"\n¿Quién tiene MÁS "+t[1]+"?",ops:shuffledFix(names,names[maxI])};}
- if(tipo===1){ // ¿quién tiene menos?
-  const minI=vals.indexOf(Math.min.apply(null,vals));
-  return{q:"Mira el diagrama de "+t[1]+":\n"+rows+"\n¿Quién tiene MENOS "+t[1]+"?",ops:shuffledFix(names,names[minI])};}
- const who=rnd(3); // ¿cuántos tiene X?
- const ans=String(vals[who]);
- const set=new Set([ans]);while(set.size<3){const d=vals[who]+(1+rnd(3))*(Math.random()<.5?-1:1);if(d>0)set.add(String(d));}
- return{q:"Mira el diagrama de "+t[1]+":\n"+rows+"\n¿Cuántos "+t[1]+" tiene "+names[who]+"?",ops:shuffledFix([...set],ans)};}
-function shuffledFix(arr,ans){const ops=shuffled(arr.slice());return{__ops:ops,__a:ops.indexOf(ans)};}
-/* corrige la forma: genBarras debe devolver {q,ops,a} */
-function genBarrasQ(){const r=genBarras();return{q:r.q,ops:r.ops.__ops,a:r.ops.__a,pic:"📊"};}
+ let q,ansTxt,opsArr;
+ if(tipo===0){q="Mira el diagrama: ¿quién tiene MÁS "+t[1]+"?";ansTxt=names[vals.indexOf(Math.max.apply(null,vals))];opsArr=names.slice();}
+ else if(tipo===1){q="Mira el diagrama: ¿quién tiene MENOS "+t[1]+"?";ansTxt=names[vals.indexOf(Math.min.apply(null,vals))];opsArr=names.slice();}
+ else{const who=rnd(3);q="Según el diagrama, ¿cuántos "+t[1]+" tiene "+names[who]+"?";ansTxt=String(vals[who]);
+  const set=new Set([ansTxt]);while(set.size<3){const d=vals[who]+(1+rnd(3))*(Math.random()<.5?-1:1);if(d>0)set.add(String(d));}opsArr=[...set];}
+ const ops=shuffled(opsArr);
+ return{q,ops,a:ops.indexOf(ansTxt),pic};}
 const ALIM_QS=[
  {q:"En la pirámide alimenticia, ¿qué debemos comer MÁS?",ops:["Frutas y verduras","Dulces","Gaseosas"],a:0,pic:"🥗"},
  {q:"En la pirámide alimenticia, ¿qué va arriba (comer POQUITO)?",ops:["Dulces y grasas","Frutas","Arroz"],a:0,pic:"🍬"},

@@ -241,8 +241,8 @@ const KID_TOPICS={
    fallback:()=>genInfo()},
  poligonos:{name:"Polígonos",emoji:"🔷",prompt:"tipos de polígonos (triángulo, cuadrado, rectángulo, pentágono, hexágono, octágono, sus lados y vértices, y que el círculo NO es polígono) para niño de segundo de primaria",
    fallback:()=>genPoligono()},
- diagramas:{name:"Diagramas de barras",emoji:"📊",prompt:"leer diagramas de barras sencillos (quién tiene más, quién tiene menos, cuántos tiene alguien, ordenar y clasificar la información del diagrama) para niño de segundo de primaria; describe el diagrama con emojis en el enunciado",
-   fallback:()=>genBarrasQ()},
+ diagramas:{name:"Diagramas de barras",emoji:"📊",noAI:true,prompt:"leer diagramas de barras",
+   fallback:()=>genBarrasQ()}, // siempre usa el generador local: dibuja un diagrama SVG real (la IA no puede dibujarlo)
  alimentos:{name:"Los alimentos",emoji:"🥗",prompt:"la pirámide alimenticia, clasificación de los alimentos (frutas, verduras, proteínas, lácteos), qué son los carbohidratos y las grasas, y la cadena alimenticia (herbívoros, carnívoros, omnívoros, las plantas producen su alimento) para niño de segundo de primaria",
    fallback:()=>genAlimentos()},
  tierra:{name:"La Tierra y el espacio",emoji:"🌍",prompt:"la Tierra y sus movimientos (rotación=día y noche, traslación=el año), la Luna, el Sol, las estrellas y el sistema solar (planetas, Mercurio más cerca, Júpiter el más grande) para niño de segundo de primaria",
@@ -301,7 +301,7 @@ function aiSeenList(topicKey){if(!S.aiSeen)S.aiSeen={};if(!S.aiSeen[topicKey])S.
 function aiRemember(topicKey,texts){const l=aiSeenList(topicKey);texts.forEach(t=>{const k=String(t).toLowerCase().trim();if(k&&!l.includes(k))l.push(k);});while(l.length>40)l.shift();save();}
 async function buildChallenges(topicKey,n){
  const topic=KID_TOPICS[topicKey];
- if(S.geminiKey){
+ if(S.geminiKey&&!topic.noAI){
   try{
    const seen=aiSeenList(topicKey);
    const avoid=seen.slice(-18);

@@ -163,6 +163,7 @@ function afLoadChild(uid,fid){
   base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
   base.geminiKey=localKey||prof.geminiKey||""; // la clave del dispositivo gana; si no, la que compartió el padre. Ya NO se borra al entrar.
   if(prof.courses)base.courses=prof.courses; // hereda los cursos que asignó el padre
+  if(prof.videos)base.videos=prof.videos; // hereda los videos (clases) que asignó el padre
   if(base.geminiKey&&!prof.geminiKey){try{afDB.collection("families").doc(fid).collection("profiles").doc(uid).set({geminiKey:base.geminiKey},{merge:true});}catch(e){}} // súbela a su perfil para que persista
   S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();
   localStorage.setItem("academiaFam2",JSON.stringify(S));
