@@ -1026,35 +1026,63 @@ function ktEnd(){
  sWIN();confetti(24);
  render(topbar("gameKidTrivia()")+'<div class="card endcard"><div class="big">🏆</div><h2>¡'+KT.score+' de '+KT.qs.length+'!</h2><p style="font-size:1.1rem;margin:8px 0">Ganaste '+KT.score+' 🪙</p><button class="kbtn green" onclick="gameKidTrivia()">Otra trivia 🧠</button><button class="kbtn white" onclick="screenKidMap()">Al mapa 🌍</button></div>');}
 
-/* ============ PENALES MATEMATICOS (escena SVG dibujada: estadio, arquero, delantero) ============ */
+
+/* ============ PENALES MATEMATICOS v2 (jugadores originales, niveles que suben, cuenta regresiva) ============ */
 let PN={};
-const PN_KITS=[["#EF4444","#991B1B"],["#3B82F6","#1E3A8A"],["#FACC15","#A16207"],["#22C55E","#15803D"]];
+const PN_PLAYERS=[
+ {n:"Rayo",skin:"#FCD9B6",hair:"#F59E0B",style:"spiky",kit:["#EF4444","#991B1B"]},
+ {n:"Toro",skin:"#8D5524",hair:"#111827",style:"short",kit:["#3B82F6","#1E3A8A"]},
+ {n:"Kili",skin:"#C68642",hair:"#3B2410",style:"curly",kit:["#22C55E","#15803D"]},
+ {n:"Luna",skin:"#FFDFC4",hair:"#7C3AED",style:"pony",kit:["#FACC15","#A16207"]}];
 const PN_BUB=[[95,118],[180,112],[265,118]];
+/* retrato (busto de frente) para elegir jugador */
+function pnBust(p){
+ let hair="";
+ if(p.style==="spiky")hair='<path d="M-16 -6 L-13 -16 L-8 -8 L-4 -18 L0 -9 L4 -18 L8 -8 L13 -16 L16 -6 L16 0 L-16 0 Z" fill="'+p.hair+'"/>';
+ else if(p.style==="short")hair='<path d="M-16 -4 Q-16 -18 0 -18 Q16 -18 16 -4 L16 -2 Q8 -10 0 -10 Q-8 -10 -16 -2 Z" fill="'+p.hair+'"/>';
+ else if(p.style==="curly")hair='<circle cx="-10" cy="-10" r="7" fill="'+p.hair+'"/><circle cx="0" cy="-13" r="8" fill="'+p.hair+'"/><circle cx="10" cy="-10" r="7" fill="'+p.hair+'"/><circle cx="-15" cy="-3" r="5" fill="'+p.hair+'"/><circle cx="15" cy="-3" r="5" fill="'+p.hair+'"/>';
+ else hair='<path d="M-16 -4 Q-16 -18 0 -18 Q16 -18 16 -4 L16 -2 Q8 -10 0 -10 Q-8 -10 -16 -2 Z" fill="'+p.hair+'"/><ellipse cx="19" cy="8" rx="5" ry="12" fill="'+p.hair+'"/>';
+ return '<svg viewBox="-30 -34 60 66" style="width:100%;display:block">'
+ +'<rect x="-24" y="14" width="48" height="20" rx="9" fill="'+p.kit[0]+'" stroke="#1E2A4A" stroke-width="2.2"/>'
+ +'<rect x="-24" y="24" width="10" height="10" rx="4" fill="'+p.kit[1]+'"/><rect x="14" y="24" width="10" height="10" rx="4" fill="'+p.kit[1]+'"/>'
+ +'<text x="0" y="30" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="11" fill="#fff">7</text>'
+ +'<circle cx="0" cy="0" r="15" fill="'+p.skin+'" stroke="#1E2A4A" stroke-width="2.2"/>'
+ +hair
+ +'<circle cx="-5" cy="1" r="1.9" fill="#1E2A4A"/><circle cx="5" cy="1" r="1.9" fill="#1E2A4A"/>'
+ +'<path d="M-4 7 Q0 10 4 7" stroke="#1E2A4A" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+ +'<circle cx="-9" cy="5" r="2.4" fill="rgba(244,114,182,.5)"/><circle cx="9" cy="5" r="2.4" fill="rgba(244,114,182,.5)"/>'
+ +'</svg>';}
 function gamePenalty(){setTheme("kid");if(PN.tick)clearInterval(PN.tick);
- PN={kit:PN.kit||0,diff:0,tick:null};
- const kitBtn=(i)=>'<button type="button" id="pnk'+i+'" onclick="pnKit('+i+')" style="width:44px;height:44px;border-radius:50%;border:4px solid '+(i===PN.kit?"#1E2A4A":"#fff")+';background:linear-gradient(180deg,'+PN_KITS[i][0]+','+PN_KITS[i][1]+');box-shadow:0 3px 8px rgba(30,42,74,.3);cursor:pointer"></button>';
+ PN={player:PN.player||0,tick:null};
+ const card=(i)=>{const p=PN_PLAYERS[i];
+  return '<button type="button" id="pnp'+i+'" onclick="pnPick('+i+')" style="border:4px solid '+(i===PN.player?"#1E2A4A":"rgba(30,42,74,.12)")+';background:#fff;border-radius:18px;padding:8px 6px 5px;cursor:pointer;box-shadow:0 4px 0 rgba(30,42,74,.15)">'
+  +pnBust(p)+'<div style="font-family:Fredoka;font-weight:800;font-size:.95rem;color:#1E2A4A;margin-top:3px">'+p.n+'</div></button>';};
  render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">⚽ Penales Matemáticos</h2>'
- +'<p class="center" style="margin-bottom:12px">Resuelve la cuenta y toca el número correcto para anotar</p>'
- +'<div class="card"><p style="font-family:Fredoka;font-weight:700;margin-bottom:8px">Tu camiseta</p>'
- +'<div style="display:flex;gap:12px;justify-content:center;margin-bottom:6px">'+[0,1,2,3].map(kitBtn).join("")+'</div></div>'
- +'<p style="font-family:Fredoka;font-weight:700;margin:8px 2px">Dificultad</p>'
- +'<button class="kbtn green" onclick="pnStart(0)">🟢 Fácil <span style="opacity:.8;font-size:.85rem">· sumas y restas hasta 20</span></button>'
- +'<button class="kbtn yellow" onclick="pnStart(1)">🟡 Intermedio <span style="opacity:.8;font-size:.85rem">· hasta 99 y tablas</span></button>'
- +'<button class="kbtn red" onclick="pnStart(2)">🔴 Difícil <span style="opacity:.8;font-size:.85rem">· multiplicar y dividir</span></button>');}
-function pnKit(i){PN.kit=i;for(let k=0;k<4;k++){const el=document.getElementById("pnk"+k);if(el)el.style.borderColor=(k===i)?"#1E2A4A":"#fff";}}
-function pnQ(diff){
- let a,b,ans,txt;
- if(diff===0){if(Math.random()<.5){a=2+rnd(15);b=1+rnd(Math.min(20-a,10));ans=a+b;txt=a+" + "+b;}
-  else{a=5+rnd(15);b=1+rnd(a-1);ans=a-b;txt=a+" − "+b;}}
+ +'<p class="center" style="margin-bottom:12px">Elige tu jugador y la dificultad</p>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:4px 2px">Jugador</p>'
+ +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px">'+[0,1,2,3].map(card).join("")+'</div>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:4px 2px">Dificultad <span style="font-size:.8rem;opacity:.7;font-weight:600">(y dentro del partido va subiendo de nivel)</span></p>'
+ +'<button class="kbtn green" onclick="pnStart(0)">🟢 Fácil <span style="opacity:.8;font-size:.85rem">· 1° a 3°</span></button>'
+ +'<button class="kbtn yellow" onclick="pnStart(1)">🟡 Intermedio <span style="opacity:.8;font-size:.85rem">· 4° y 5°</span></button>'
+ +'<button class="kbtn red" onclick="pnStart(2)">🔴 Difícil <span style="opacity:.8;font-size:.85rem">· ¡reto total!</span></button>');}
+function pnPick(i){PN.player=i;for(let k=0;k<4;k++){const el=document.getElementById("pnp"+k);if(el)el.style.borderColor=(k===i)?"#1E2A4A":"rgba(30,42,74,.12)";}}
+/* preguntas: la dificultad base la da el modo, y el NIVEL (1-5) las hace crecer */
+function pnQ(diff,lvl){
+ let a,b,ans,txt;lvl=lvl||1;
+ if(diff===0){
+  const max=8+lvl*5; // nivel 1: hasta 13 · nivel 5: hasta 33
+  if(Math.random()<.5){a=2+rnd(max-4);b=1+rnd(Math.min(max-a,12));ans=a+b;txt=a+" + "+b;}
+  else{a=4+rnd(max);b=1+rnd(a-1);ans=a-b;txt=a+" − "+b;}}
  else if(diff===1){const r=rnd(3);
-  if(r===0){a=12+rnd(60);b=10+rnd(Math.min(99-a,50));ans=a+b;txt=a+" + "+b;}
-  else if(r===1){a=30+rnd(65);b=11+rnd(a-12);ans=a-b;txt=a+" − "+b;}
-  else{a=2+rnd(8);b=2+rnd(8);ans=a*b;txt=a+" × "+b;}}
+  const top=30+lvl*15;
+  if(r===0){a=11+rnd(top);b=10+rnd(top);ans=a+b;txt=a+" + "+b;}
+  else if(r===1){a=25+rnd(top+20);b=11+rnd(a-12);ans=a-b;txt=a+" − "+b;}
+  else{a=2+rnd(4+lvl);b=2+rnd(7);ans=a*b;txt=a+" × "+b;}}
  else{const r=rnd(3);
-  if(r===0){a=12+rnd(14);b=2+rnd(5);ans=a*b;txt=a+" × "+b;}
-  else if(r===1){b=2+rnd(7);ans=3+rnd(9);a=b*ans;txt=a+" ÷ "+b;}
-  else{a=120+rnd(500);b=100+rnd(300);ans=a+b;txt=a+" + "+b;}}
+  if(r===0){a=8+lvl*3+rnd(10);b=2+rnd(3+Math.min(lvl,4));ans=a*b;txt=a+" × "+b;}
+  else if(r===1){b=2+rnd(5+Math.min(lvl,4));ans=2+rnd(7+lvl);a=b*ans;txt=a+" ÷ "+b;}
+  else{a=100+lvl*80+rnd(300);b=90+rnd(200+lvl*60);ans=a+b;txt=a+" + "+b;}}
  const set=new Set([ans]);
  while(set.size<3){const d=ans+(1+rnd(Math.max(4,Math.round(ans*0.2))))*(Math.random()<.5?-1:1);if(d>=0&&d!==ans)set.add(d);}
  const ops=shuffled([...set]);
@@ -1064,8 +1092,14 @@ function pnCrowd(){
  for(let r=0;r<3;r++)for(let i=0;i<24;i++){const x=12+i*14.5+(r%2)*7,y=14+r*13;
   s+='<circle cx="'+x+'" cy="'+y+'" r="4.2" fill="'+cols[(i*3+r*5)%7]+'" opacity=".85"/>';}
  return s;}
+/* pelo de espaldas segun estilo */
+function pnHairBack(p){
+ if(p.style==="spiky")return '<path d="M-14 -40 L-11 -52 L-6 -44 L-2 -55 L2 -46 L6 -55 L10 -44 L14 -52 L14 -34 Q0 -46 -14 -34 Z" fill="'+p.hair+'"/>';
+ if(p.style==="curly")return '<circle cx="-9" cy="-49" r="7" fill="'+p.hair+'"/><circle cx="0" cy="-52" r="8" fill="'+p.hair+'"/><circle cx="9" cy="-49" r="7" fill="'+p.hair+'"/><circle cx="-13" cy="-42" r="6" fill="'+p.hair+'"/><circle cx="13" cy="-42" r="6" fill="'+p.hair+'"/><circle cx="0" cy="-42" r="8" fill="'+p.hair+'"/>';
+ if(p.style==="pony")return '<path d="M-14 -42 Q-14 -56 0 -56 Q14 -56 14 -42 L14 -30 Q0 -40 -14 -30 Z" fill="'+p.hair+'"/><path d="M-3 -44 Q0 -30 -2 -18" stroke="'+p.hair+'" stroke-width="7" fill="none" stroke-linecap="round"/>';
+ return '<path d="M-14 -42 Q-14 -56 0 -56 Q14 -56 14 -42 L14 -32 Q0 -44 -14 -32 Z" fill="'+p.hair+'"/>';}
 function pnScene(){
- const k=PN_KITS[PN.kit];
+ const p=PN_PLAYERS[PN.player];const k=p.kit;
  return '<svg id="pnsvg" viewBox="0 0 360 400" style="width:100%;display:block;border-radius:18px;border:4px solid var(--kid-ink);box-shadow:0 8px 0 rgba(30,42,74,.5)" xmlns="http://www.w3.org/2000/svg">'
  +'<defs>'
  +'<linearGradient id="pnsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DD3FC"/><stop offset="1" stop-color="#BAE6FD"/></linearGradient>'
@@ -1081,29 +1115,36 @@ function pnScene(){
  +'<rect x="46" y="82" width="10" height="162" rx="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>'
  +'<rect x="304" y="82" width="10" height="162" rx="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>'
  +'<rect x="46" y="80" width="268" height="10" rx="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>'
+ /* arquero: naranja, brazos arriba con guantes grandes */
  +'<g id="pnkeeper" style="transition:transform .5s cubic-bezier(.4,1.6,.6,1)"><g transform="translate(180,196)">'
- +'<rect x="-16" y="-14" width="32" height="34" rx="9" fill="#84CC16" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<rect x="-13" y="20" width="10" height="18" rx="4" fill="#0F172A"/><rect x="3" y="20" width="10" height="18" rx="4" fill="#0F172A"/>'
- +'<rect x="-26" y="-12" width="9" height="22" rx="4" fill="#84CC16" stroke="#1E2A4A" stroke-width="2"/>'
- +'<rect x="17" y="-12" width="9" height="22" rx="4" fill="#84CC16" stroke="#1E2A4A" stroke-width="2"/>'
- +'<circle cx="-21" cy="14" r="5.5" fill="#FDE68A" stroke="#1E2A4A" stroke-width="2"/><circle cx="21" cy="14" r="5.5" fill="#FDE68A" stroke="#1E2A4A" stroke-width="2"/>'
- +'<circle cx="0" cy="-26" r="13" fill="#FCD9B6" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<path d="M-12 -31 Q0 -44 12 -31 L12 -27 Q0 -36 -12 -27 Z" fill="#7C4A21"/>'
+ +'<rect x="-27" y="-34" width="10" height="26" rx="5" fill="#FB923C" stroke="#1E2A4A" stroke-width="2" transform="rotate(18 -22 -21)"/>'
+ +'<rect x="17" y="-34" width="10" height="26" rx="5" fill="#FB923C" stroke="#1E2A4A" stroke-width="2" transform="rotate(-18 22 -21)"/>'
+ +'<circle cx="-27" cy="-36" r="6.5" fill="#F1F5F9" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<circle cx="27" cy="-36" r="6.5" fill="#F1F5F9" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<rect x="-16" y="-14" width="32" height="34" rx="9" fill="#FB923C" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<rect x="-16" y="-14" width="32" height="8" rx="4" fill="rgba(255,255,255,.35)"/>'
+ +'<text x="0" y="8" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="13" fill="#fff" stroke="#1E2A4A" stroke-width=".5">1</text>'
+ +'<rect x="-13" y="20" width="10" height="16" rx="4" fill="#0F172A"/><rect x="3" y="20" width="10" height="16" rx="4" fill="#0F172A"/>'
+ +'<circle cx="0" cy="-26" r="12.5" fill="#EAB995" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<path d="M-12 -30 Q-12 -42 0 -42 Q12 -42 12 -30 L12 -28 Q0 -36 -12 -28 Z" fill="#1F2937"/>'
  +'<circle cx="-4.5" cy="-26" r="1.8" fill="#1E2A4A"/><circle cx="4.5" cy="-26" r="1.8" fill="#1E2A4A"/>'
+ +'<path d="M-3 -20 Q0 -18 3 -20" stroke="#1E2A4A" stroke-width="1.5" fill="none" stroke-linecap="round"/>'
  +'</g></g>'
  +'<g id="pnbubs"></g>'
+ /* delantero de espaldas: colores y peinado del jugador elegido */
  +'<g id="pnstriker"><g transform="translate(180,318)">'
  +'<rect x="-19" y="-26" width="38" height="42" rx="11" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<path d="M-19 -10 L-19 16 L19 16 L19 -10 L12 -4 L-12 -4 Z" fill="'+k[1]+'" opacity=".35"/>'
- +'<text x="0" y="0" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="17" fill="#fff" stroke="#1E2A4A" stroke-width=".6">7</text>'
+ +'<path d="M-19 -26 L-19 -14 L-8 -26 Z" fill="'+k[1]+'"/><path d="M19 -26 L19 -14 L8 -26 Z" fill="'+k[1]+'"/>'
+ +'<text x="0" y="2" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="18" fill="#fff" stroke="#1E2A4A" stroke-width=".6">7</text>'
  +'<rect x="-15" y="16" width="30" height="14" rx="5" fill="'+k[1]+'" stroke="#1E2A4A" stroke-width="2"/>'
- +'<rect x="-12" y="30" width="9" height="16" rx="4" fill="#FCD9B6"/><rect x="3" y="30" width="9" height="16" rx="4" fill="#FCD9B6"/>'
- +'<rect x="-13" y="42" width="11" height="10" rx="3" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="1.8"/><rect x="2" y="42" width="11" height="10" rx="3" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="1.8"/>'
- +'<rect x="-15" y="50" width="14" height="6" rx="3" fill="#0F172A"/><rect x="1" y="50" width="14" height="6" rx="3" fill="#0F172A"/>'
- +'<rect x="-26" y="-22" width="8" height="26" rx="4" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2"/>'
- +'<rect x="18" y="-22" width="8" height="26" rx="4" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2"/>'
- +'<circle cx="0" cy="-40" r="14" fill="#FCD9B6" stroke="#1E2A4A" stroke-width="2.5"/>'
- +'<path d="M-14 -42 Q-14 -56 0 -56 Q14 -56 14 -42 L14 -38 Q0 -48 -14 -38 Z" fill="#3B2410"/>'
+ +'<rect x="-12" y="30" width="9" height="15" rx="4" fill="'+p.skin+'"/><rect x="3" y="30" width="9" height="15" rx="4" fill="'+p.skin+'"/>'
+ +'<rect x="-13" y="41" width="11" height="11" rx="3" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="1.8"/><rect x="2" y="41" width="11" height="11" rx="3" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="1.8"/>'
+ +'<rect x="-16" y="50" width="15" height="6" rx="3" fill="#0F172A"/><rect x="1" y="50" width="15" height="6" rx="3" fill="#0F172A"/>'
+ +'<rect x="-26" y="-22" width="8" height="24" rx="4" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<rect x="18" y="-22" width="8" height="24" rx="4" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<circle cx="-22" cy="4" r="4.5" fill="'+p.skin+'"/><circle cx="22" cy="4" r="4.5" fill="'+p.skin+'"/>'
+ +'<circle cx="0" cy="-40" r="14" fill="'+p.skin+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +pnHairBack(p)
  +'</g></g>'
  +'<g id="pnball" style="transition:transform .45s cubic-bezier(.3,.9,.6,1)"><g>'
  +'<circle cx="0" cy="0" r="10" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
@@ -1112,37 +1153,42 @@ function pnScene(){
  +'</svg>';}
 function pnStart(diff){
  if(PN.tick)clearInterval(PN.tick);
- PN.diff=diff;PN.shot=0;PN.goals=0;PN.streak=0;PN.total=10;PN.lock=false;
+ PN.diff=diff;PN.shot=0;PN.goals=0;PN.streak=0;PN.total=10;PN.lock=false;PN.level=1;
  setTheme("kid");
  const pill=(ic,lb,id,v)=>'<div style="flex:1;background:#1E3A5F;border-radius:14px;padding:8px 6px;text-align:center;color:#fff"><div style="font-size:.68rem;letter-spacing:.05em;opacity:.8;font-family:Fredoka;font-weight:700">'+ic+' '+lb+'</div><div id="'+id+'" style="font-family:Fredoka;font-weight:800;font-size:1.25rem">'+v+'</div></div>';
  render(topbar("gamePenalty()")
- +'<div style="display:flex;gap:8px;margin-bottom:8px">'+pill("🏆","GOLES","pngoals",0)+pill("🔥","RACHA","pnstreak",0)+pill("⚽","TIRO","pnshot","1/10")+'</div>'
- +'<div style="background:#FACC15;border:3px solid var(--kid-ink);border-radius:14px;padding:7px 12px;text-align:center;margin-bottom:6px;box-shadow:0 4px 0 rgba(30,42,74,.4)"><span style="font-size:.68rem;letter-spacing:.08em;font-family:Fredoka;font-weight:700;opacity:.7">RESUELVE</span><div id="pnqt" style="font-family:Fredoka;font-weight:800;font-size:1.7rem;line-height:1.1">…</div></div>'
+ +'<div style="display:flex;gap:7px;margin-bottom:8px">'+pill("🏆","GOLES","pngoals",0)+pill("🔥","RACHA","pnstreak",0)+pill("⭐","NIVEL","pnlevel",1)+pill("⏱️","TIEMPO","pntime","–")+'</div>'
+ +'<div style="background:#FACC15;border:3px solid var(--kid-ink);border-radius:14px;padding:7px 12px;text-align:center;margin-bottom:6px;box-shadow:0 4px 0 rgba(30,42,74,.4)"><span style="font-size:.68rem;letter-spacing:.08em;font-family:Fredoka;font-weight:700;opacity:.7">RESUELVE · <span id="pnshot">TIRO 1/10</span></span><div id="pnqt" style="font-family:Fredoka;font-weight:800;font-size:1.7rem;line-height:1.1">…</div></div>'
  +'<div class="timerbar" style="background:rgba(30,42,74,.15);height:9px;margin:0 0 8px"><div id="pntb" style="width:100%;height:100%;border-radius:999px;background:linear-gradient(90deg,#22C55E,#FACC15);transition:width .1s linear"></div></div>'
  +pnScene()
- +'<div id="pnbanner" style="display:none;position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:50;background:#FACC15;border:4px solid var(--kid-ink);border-radius:20px;padding:14px 26px;font-family:Fredoka;font-weight:800;font-size:1.7rem;box-shadow:0 10px 0 rgba(30,42,74,.35)"></div>'
+ +'<div id="pnbanner" style="display:none;position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:50;background:#FACC15;border:4px solid var(--kid-ink);border-radius:20px;padding:14px 26px;font-family:Fredoka;font-weight:800;font-size:1.6rem;box-shadow:0 10px 0 rgba(30,42,74,.35);text-align:center"></div>'
  +'<p class="center" style="margin-top:8px;font-size:.85rem">Toca el número correcto para meter gol ⚽</p>');
  pnNext();}
 function pnNext(){
  if(PN.tick)clearInterval(PN.tick);
  if(PN.shot>=PN.total)return pnEnd();
- PN.q=pnQ(PN.diff);PN.lock=false;
+ PN.level=1+Math.min(4,Math.floor(PN.goals/2)); // sube de nivel cada 2 goles
+ PN.q=pnQ(PN.diff,PN.level);PN.lock=false;
  const qt=document.getElementById("pnqt");if(qt)qt.textContent=PN.q.txt;
- const sh=document.getElementById("pnshot");if(sh)sh.textContent=(PN.shot+1)+"/10";
+ const sh=document.getElementById("pnshot");if(sh)sh.textContent="TIRO "+(PN.shot+1)+"/10";
+ const lv=document.getElementById("pnlevel");if(lv)lv.textContent=PN.level;
  const bb=document.getElementById("pnbubs");
  if(bb)bb.innerHTML=PN.q.ops.map((o,i)=>'<g onclick="pnShoot('+i+')" style="cursor:pointer"><circle cx="'+PN_BUB[i][0]+'" cy="'+PN_BUB[i][1]+'" r="24" fill="#FACC15" stroke="#fff" stroke-width="4"/><circle cx="'+PN_BUB[i][0]+'" cy="'+PN_BUB[i][1]+'" r="24" fill="none" stroke="#1E2A4A" stroke-width="2"/><text x="'+PN_BUB[i][0]+'" y="'+(PN_BUB[i][1]+6)+'" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="'+(String(o).length>3?13:16)+'" fill="#1E2A4A">'+o+'</text></g>').join("");
- const ball=document.getElementById("pnball"),kp=document.getElementById("pnkeeper"),st=document.getElementById("pnstriker");
+ const ball=document.getElementById("pnball"),kp=document.getElementById("pnkeeper");
  if(ball){ball.style.transition="none";ball.style.transform="translate(180px,332px)";void ball.getBoundingClientRect();ball.style.transition="transform .45s cubic-bezier(.3,.9,.6,1)";}
  if(kp){kp.style.transition="none";kp.style.transform="translate(0,0)";void kp.getBoundingClientRect();kp.style.transition="transform .5s cubic-bezier(.4,1.6,.6,1)";}
- if(st)st.style.transform="translate(0,0)";
- PN.time=100;const secs=PN.diff===0?14:11;
+ /* cuenta regresiva en segundos (numero) + barra */
+ PN.secs=PN.diff===0?12:10;PN.left=PN.secs;
  const tb=document.getElementById("pntb");if(tb)tb.style.width="100%";
- PN.tick=setInterval(()=>{PN.time-=10/secs;
-  const el=document.getElementById("pntb");if(!el){clearInterval(PN.tick);return;}
-  el.style.width=Math.max(0,PN.time)+"%";
-  if(PN.time<=0){clearInterval(PN.tick);pnTimeout();}},100);}
+ const tm=document.getElementById("pntime");if(tm){tm.textContent=PN.secs;tm.style.color="#fff";}
+ PN.tick=setInterval(()=>{PN.left-=0.1;
+  const el=document.getElementById("pntb"),t2=document.getElementById("pntime");
+  if(!el){clearInterval(PN.tick);return;}
+  el.style.width=Math.max(0,PN.left/PN.secs*100)+"%";
+  if(t2){const s=Math.max(0,Math.ceil(PN.left));t2.textContent=s;t2.style.color=s<=3?"#F87171":"#fff";}
+  if(PN.left<=0){clearInterval(PN.tick);pnTimeout();}},100);}
 function pnBanner(txt,ms,cb){const b=document.getElementById("pnbanner");if(!b){if(cb)cb();return;}
- b.textContent=txt;b.style.display="block";setTimeout(()=>{b.style.display="none";if(cb)cb();},ms);}
+ b.innerHTML=txt;b.style.display="block";setTimeout(()=>{b.style.display="none";if(cb)cb();},ms);}
 function pnTimeout(){
  if(PN.lock)return;PN.lock=true;PN.streak=0;sNO();recordAnswer("Mate",false,12);
  const st=document.getElementById("pnstreak");if(st)st.textContent=0;
@@ -1159,11 +1205,13 @@ function pnShoot(i){
  recordAnswer("Mate",ok,12);
  setTimeout(()=>{
   PN.shot++;
-  if(ok){PN.goals++;PN.streak++;sWIN();confetti(16);
+  if(ok){const lvlBefore=PN.level;PN.goals++;PN.streak++;sWIN();confetti(16);
    const g=document.getElementById("pngoals"),s=document.getElementById("pnstreak");
    if(g)g.textContent=PN.goals;if(s)s.textContent=PN.streak;
-   const p=prof();if(p){p.coins+=1+(PN.streak>=3?1:0);p.xp+=4;save();}
-   pnBanner("¡GOOOOL! ⚽"+(PN.streak>=3?" 🔥x"+PN.streak:""),1400,pnNext);}
+   const p=prof();if(p){p.coins+=1+(PN.streak>=3?1:0);p.xp+=3+PN.level;save();}
+   const lvlAfter=1+Math.min(4,Math.floor(PN.goals/2));
+   const up=lvlAfter>lvlBefore?'<br><span style="font-size:1.05rem">⭐ ¡Subes al nivel '+lvlAfter+'!</span>':'';
+   pnBanner("¡GOOOOL! ⚽"+(PN.streak>=3?" 🔥x"+PN.streak:"")+up,up?1800:1400,pnNext);}
   else{PN.streak=0;sNO();
    const s=document.getElementById("pnstreak");if(s)s.textContent=0;
    pnBanner("🧤 ¡Atajada! Era "+PN.q.ans,1600,pnNext);}
@@ -1174,8 +1222,8 @@ function pnEnd(){
  if(PN.goals>=5){sWIN();confetti(30);}
  render(topbar("gamePenalty()")+'<div class="card endcard"><div class="big">'+(PN.goals>=8?"🏆":PN.goals>=5?"⚽":"🧤")+'</div>'
  +'<h2>'+PN.goals+' goles de '+PN.total+'</h2>'
- +'<p style="font-size:1.05rem;margin:8px 0">'+(PN.goals>=8?"¡Eres una estrella del fútbol matemático!":PN.goals>=5?"¡Muy buen partido!":"¡Sigue entrenando, campeón!")+'</p>'
+ +'<p style="font-size:1.05rem;margin:8px 0">'+(PN.goals>=8?"¡Eres una estrella del fútbol matemático!":PN.goals>=5?"¡Muy buen partido!":"¡Sigue entrenando, campeón!")+' · Llegaste al nivel '+PN.level+'</p>'
  +'<div style="font-size:1.6rem;margin-bottom:10px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>'
  +'<button class="kbtn green" onclick="pnStart('+PN.diff+')">🔁 Jugar otra vez</button>'
- +'<button class="kbtn white" onclick="gamePenalty()">Cambiar dificultad</button>'
+ +'<button class="kbtn white" onclick="gamePenalty()">Cambiar jugador o dificultad</button>'
  +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
