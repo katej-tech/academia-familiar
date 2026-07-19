@@ -133,7 +133,7 @@ function screenMyStuff(){setTheme("kid");
   +'<button class="kbtn white" onclick="screenAvatar()">😎 Mi personaje</button>'
   +'<button class="kbtn green" onclick="screenCritters()">🎒 Mi colección</button>'
   +'<button class="kbtn blue" onclick="screenVideosKid()">🎬 Videos</button>'
-  +(!S.geminiKey&&typeof afSetKeyWithParent==="function"?'<button class="kbtn white" style="font-size:.95rem;margin-top:6px" onclick="screenChildAiKey()">🔑 Activar IA (para papá o mamá)</button>':'')
+  +(typeof afSetKeyWithParent==="function"?'<button class="kbtn white" style="font-size:.95rem;margin-top:6px" onclick="screenChildAiKey()">🔑 '+(S.geminiKey?"Clave de IA (cambiar o arreglar)":"Activar IA (para papá o mamá)")+'</button>':'')
   +'<p class="center mut" style="margin-top:14px;font-size:.85rem">Para cerrar sesión o cambiar de cuenta, toca tu ⚙️ avatar arriba 👆</p>');}
 function screenChildAiKey(){setTheme("kid");
  render(topbar("screenMyStuff()")+subHeader("🔑 Activar IA")
@@ -142,6 +142,7 @@ function screenChildAiKey(){setTheme("kid");
   +'<input type="password" id="ckPass" placeholder="Contraseña del padre/madre" autocomplete="current-password">'
   +'<input type="text" id="ckKey" placeholder="Clave de Gemini (AIza...)">'
   +'<button class="kbtn green" style="margin-top:6px" onclick="ckSaveKey()">✅ Activar IA</button>'
+  +(typeof afRefreshFamilyKey==="function"?'<button class="kbtn blue" style="margin-top:8px" onclick="aiKeyRefresh()">🔄 Usar la clave de la familia (sin escribir nada)</button>':'')
   +'<button class="kbtn white" style="margin-top:8px" onclick="ckTestKey()">🧪 Probar la IA</button>'
   +'<p id="ckfb" style="margin-top:8px"></p>'
   +'<p class="tip">💡 La clave se consigue gratis en <b>aistudio.google.com/apikey</b>. Se guarda solo en esta tablet y ya no se pierde.</p></div>');
@@ -329,8 +330,16 @@ function renderAiError(e,backFn){
    +'<li>Usa la clave de <b>aistudio.google.com/apikey</b> (esa viene sin restricciones y activa la API sola).</li>'
    +'<li>Si dice "quota" o "límite", es el <b>tope gratis del día</b>: espera unas horas.</li>'
   +'</ul>'
-  +'<button class="kbtn green" style="margin-top:14px" onclick="'+(backFn||"screenKidMap()")+'">Volver</button></div>');
+  +(typeof afRefreshFamilyKey==="function"?'<button class="kbtn blue" style="margin-top:14px" onclick="aiKeyRefresh()">🔄 Usar la clave de la familia (si papá/mamá ya la arregló)</button>':'')
+  +'<button class="kbtn green" style="margin-top:8px" onclick="'+(backFn||"screenKidMap()")+'">Volver</button></div>');
 }
+/* trae la clave buena guardada por el padre en la nube y reemplaza la de esta tablet */
+function aiKeyRefresh(){
+ toast("Buscando la clave de la familia… ☁️",true,1400);
+ afRefreshFamilyKey(function(ok,msg){
+  if(ok)toast("✓ ¡Clave actualizada! Prueba de nuevo la IA 🎉",true,2500);
+  else toast("No se pudo: "+msg,false,3200);
+ });}
 function nodeWin(stars,subject){
  const p=prof();
  if(typeof curNode==="string")bumpWorld(curNode);

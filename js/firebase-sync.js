@@ -49,6 +49,26 @@ function afSharePayloadWithChildren(payload){
 window.afSharePayloadWithChildren=afSharePayloadWithChildren;
 function afShareKeyWithChildren(key){afSharePayloadWithChildren({geminiKey:key||""});}
 window.afShareKeyWithChildren=afShareKeyWithChildren;
+/* trae la clave de Gemini guardada por la familia en la nube y REEMPLAZA la local (arregla claves viejas mal copiadas) */
+function afRefreshFamilyKey(cb){
+ var u=afUser();
+ if(!u||!afReady){if(cb)cb(false,"Necesitas internet y sesión iniciada");return;}
+ var done=function(k){if(k){S.geminiKey=k;save();if(cb)cb(true,"");}else if(cb)cb(false,"La familia aún no tiene una clave guardada en la nube. Papá/mamá: pon la clave en el panel de padres (Diagnóstico de la IA).");};
+ if(afMember&&afMember.familyId){
+  afDB.collection("families").doc(afMember.familyId).collection("profiles").doc(u.uid).get()
+   .then(function(d){var k=(d.exists&&d.data().geminiKey)||"";
+    if(k)return done(k);
+    // si el perfil no la tiene, intenta el doc de la familia
+    afDB.collection("families").doc(afMember.familyId).get()
+     .then(function(f){done((f.exists&&f.data().geminiKey)||"");})
+     .catch(function(){done("");});})
+   .catch(function(e){if(cb)cb(false,e&&e.message||"error");});
+ }else{
+  afDB.collection("families").doc(u.uid).get()
+   .then(function(d){done((d.exists&&d.data().geminiKey)||"");})
+   .catch(function(e){if(cb)cb(false,e&&e.message||"error");});
+ }}
+window.afRefreshFamilyKey=afRefreshFamilyKey;
 function afPull(done){var u=afUser();if(!u){if(done)done();return;}
  afDB.collection("families").doc(u.uid).get().then(function(snap){
   if(snap.exists){var cloud=snap.data();var lt=S.updatedAt||0,ct=cloud.updatedAt||0;
@@ -161,7 +181,7 @@ function afLoadChild(uid,fid){
   var localKey=(S&&S.geminiKey)||""; // clave que ya estaba en ESTE dispositivo
   var base=JSON.parse(JSON.stringify(DEFAULT_STATE));
   base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
-  base.geminiKey=localKey||prof.geminiKey||""; // la clave del dispositivo gana; si no, la que compartió el padre. Ya NO se borra al entrar.
+  base.geminiKey=prof.geminiKey||localKey||""; // gana la clave que compartió el padre (la buena); si no hay, se queda la local. Así una clave vieja mal copiada en la tablet se corrige sola al entrar.
   if(prof.courses)base.courses=prof.courses; // hereda los cursos que asignó el padre
   if(prof.videos)base.videos=prof.videos; // hereda los videos (clases) que asignó el padre
   if(base.geminiKey&&!prof.geminiKey){try{afDB.collection("families").doc(fid).collection("profiles").doc(uid).set({geminiKey:base.geminiKey},{merge:true});}catch(e){}} // súbela a su perfil para que persista

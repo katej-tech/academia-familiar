@@ -1367,8 +1367,8 @@ function gameMaze(){setTheme("kid");
   else if(ch==="P"){px=x;py=y;}
   else if(ch==="G")monsters.push({x,y});
  }
- MZ.pl={fx:px,fy:py,tx:px,ty:py,t:1,dir:"left",want:"left",speed:4.6};
- MZ.mon=monsters.map((m,i)=>({fx:m.x,fy:m.y,tx:m.x,ty:m.y,t:1,dir:"down",speed:3.6+i*0.2,col:i?"#22D3EE":"#F472B6",home:{x:m.x,y:m.y}}));
+ MZ.pl={fx:px,fy:py,tx:px,ty:py,t:1,dir:"left",want:"left",speed:3.1};
+ MZ.mon=monsters.map((m,i)=>({fx:m.x,fy:m.y,tx:m.x,ty:m.y,t:1,dir:"down",speed:2.2+i*0.15,col:i?"#22D3EE":"#F472B6",home:{x:m.x,y:m.y}}));
  render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🟡 Laberinto glotón</h2>'
  +'<div style="display:flex;justify-content:center;gap:16px;font-family:Fredoka;font-weight:800;margin-bottom:6px"><span>⭐ <span id="mzscore">0</span></span><span id="mzlives">❤️❤️❤️</span></div>'
@@ -1378,7 +1378,7 @@ function gameMaze(){setTheme("kid");
  +'<button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'left\')">⬅️</button>'
  +'<button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'down\')">⬇️</button>'
  +'<button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'right\')">➡️</button></div>'
- +'<p class="center" style="font-size:.82rem;margin-top:8px">Cómete todos los puntos sin que te atrapen. También puedes deslizar el dedo sobre el laberinto.</p>');
+ +'<p class="center" style="font-size:.82rem;margin-top:8px">👆 <b>Toca el laberinto hacia donde quieras ir</b> (o desliza, o usa las flechas). ¡Cómete todos los puntos sin que te atrapen!</p>');
  const cv=document.getElementById("mzcv");
  const C=13,R=15,T=26;
  const dpr=Math.min(2,window.devicePixelRatio||1);
@@ -1387,12 +1387,18 @@ function gameMaze(){setTheme("kid");
  cv.width=Math.round(C*T*dpr*(cssW/(C*T)));cv.height=Math.round(R*T*dpr*(cssW/(C*T)));
  const ctx=cv.getContext("2d");ctx.scale(dpr*cssW/(C*T),dpr*cssW/(C*T));
  MZ.ctx=ctx;MZ.T=T;
- // swipe
+ // control por TOQUE: tocas hacia dónde quieres ir (respecto al comelón); también sirve deslizar
  let sx=0,sy=0;
  cv.addEventListener("pointerdown",e=>{sx=e.clientX;sy=e.clientY;});
- cv.addEventListener("pointerup",e=>{const dx=e.clientX-sx,dy=e.clientY-sy;
-  if(Math.abs(dx)<14&&Math.abs(dy)<14)return;
-  mzGo(Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up"));});
+ cv.addEventListener("pointerup",e=>{
+  const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.abs(dx)>=14||Math.abs(dy)>=14){ // deslizó
+   mzGo(Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up"));return;}
+  // toque simple: dirección desde el comelón hacia el punto tocado
+  const r=cv.getBoundingClientRect();
+  const tx=(e.clientX-r.left)/r.width*13,ty=(e.clientY-r.top)/r.height*15;
+  const ddx=tx-(MZ.pl.x+0.5),ddy=ty-(MZ.pl.y+0.5);
+  mzGo(Math.abs(ddx)>Math.abs(ddy)?(ddx>0?"right":"left"):(ddy>0?"down":"up"));});
  MZ.keyfn=e=>{const m={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right"};if(m[e.key]){mzGo(m[e.key]);e.preventDefault();}};
  window.addEventListener("keydown",MZ.keyfn);
  MZ.last=performance.now();
@@ -1510,14 +1516,14 @@ function gamePlatform(world){
  setTheme("kid");world=world||1;
  PL={world:world,hearts:3,coins:0,over:false,raf:0,last:0,t:0,inv:0,win:false};
  // construir nivel
- const speed=185+world*22;
+ const speed=140+world*18;
  PL.speed=speed;
  const plats=[],coins=[],foes=[];
  let x=0;const groundY=250;
  plats.push({x:0,y:groundY,w:340,ground:1});x=340;
  let n=0;
  while(x<2500){
-  const gap=62+rnd(40)+world*12;
+  const gap=50+rnd(30)+world*10;
   x+=gap;
   const w=150+rnd(170);
   plats.push({x:x,y:groundY,w:w,ground:1});
@@ -1555,15 +1561,15 @@ function gamePlatform(world){
  PL.raf=requestAnimationFrame(plLoop);}
 function plJump(){
  const p=PL.p;if(!p||PL.over)return;
- if(p.ground){p.vy=-500;p.ground=false;p.jumps=1;if(typeof tone==="function")tone(500,.06);}
- else if(p.jumps<2){p.vy=-440;p.jumps=2;if(typeof tone==="function")tone(640,.06);}}
+ if(p.ground){p.vy=-470;p.ground=false;p.jumps=1;if(typeof tone==="function")tone(500,.06);}
+ else if(p.jumps<2){p.vy=-430;p.jumps=2;if(typeof tone==="function")tone(640,.06);}}
 function plLoop(now){
  if(PL.over)return;
  const dt=Math.min(0.04,(now-PL.last)/1000);PL.last=now;PL.t+=dt;
  const p=PL.p;
  if(PL.inv>0)PL.inv-=dt;
  p.x+=PL.speed*dt;
- p.vy+=1350*dt;const prevY=p.y;p.y+=p.vy*dt;
+ p.vy+=1200*dt;const prevY=p.y;p.y+=p.vy*dt;
  // plataformas
  p.ground=false;
  for(const pl of PL.plats){
