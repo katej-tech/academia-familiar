@@ -281,7 +281,7 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +sub("🕹️ Arcade (pura diversión)")
  +'<button class="kbtn green" onclick="gamePenalty()">⚽ Penales matemáticos</button>'
  +'<button class="kbtn yellow" onclick="gameMaze()">🟡 Laberinto glotón <span style="opacity:.8;font-size:.82rem">· come los puntos</span></button>'
- +'<button class="kbtn blue" onclick="gamePlatform(1)">⛰️ Mundo Saltarín <span style="opacity:.8;font-size:.82rem">· plataformas y monedas</span></button>'
+ +'<button class="kbtn blue" onclick="gamePlatform()">⛰️ Mundo Saltarín <span style="opacity:.8;font-size:.82rem">· elige personaje y mundo</span></button>'
  +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
  +'<button class="kbtn blue" onclick="gameRace()">🏎️ Carrera izquierda y derecha</button>'
  +'<button class="kbtn purple" onclick="gameDoodle()">🦘 Saltarín</button>');}

@@ -1512,9 +1512,30 @@ function mzDraw(){
 
 /* ============ MUNDO SALTARIN (plataformas: corre, salta, monedas y bandera; personaje original) ============ */
 let PL={};
-function gamePlatform(world){
+const PL_THEMES=[
+ {n:"Pradera 🌼",sky1:"#7DD3FC",sky2:"#E0F2FE",hill:"#86EFAC",gTop:"#22C55E",gBody:"#92400E",plat:"#F97316",platLine:"#7C2D12",foe:"#A855F7",decor:"flor"},
+ {n:"Desierto 🌵",sky1:"#FDBA74",sky2:"#FEF3C7",hill:"#FCD34D",gTop:"#FBBF24",gBody:"#B45309",plat:"#F59E0B",platLine:"#92400E",foe:"#DC2626",decor:"cactus"},
+ {n:"Nieve ❄️",sky1:"#93C5FD",sky2:"#E0E7FF",hill:"#E2E8F0",gTop:"#F8FAFC",gBody:"#64748B",plat:"#38BDF8",platLine:"#0369A1",foe:"#0EA5E9",decor:"pino"}];
+function gamePlatform(){setTheme("kid");
+ if(PL&&PL.raf)cancelAnimationFrame(PL.raf);
+ PL={player:(PL&&PL.player)||0};
+ const card=(i)=>{const p=PN_PLAYERS[i];
+  return '<button type="button" id="plp'+i+'" onclick="plPick('+i+')" style="border:4px solid '+(i===PL.player?"#1E2A4A":"rgba(30,42,74,.12)")+';background:#fff;border-radius:18px;padding:8px 6px 5px;cursor:pointer;box-shadow:0 4px 0 rgba(30,42,74,.15)">'
+  +pnBust(p)+'<div style="font-family:Fredoka;font-weight:800;font-size:.95rem;color:#1E2A4A;margin-top:3px">'+p.n+'</div></button>';};
+ render(topbar("exitGame('games')")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">⛰️ Mundo Saltarín</h2>'
+ +'<p class="center" style="margin-bottom:12px">Elige tu personaje y tu mundo</p>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:4px 2px">Personaje</p>'
+ +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px">'+[0,1,2,3].map(card).join("")+'</div>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:4px 2px">Mundo</p>'
+ +'<button class="kbtn green" onclick="plStart(1)">🌼 Mundo 1 · Pradera <span style="opacity:.8;font-size:.85rem">· tranquilo</span></button>'
+ +'<button class="kbtn yellow" onclick="plStart(2)">🌵 Mundo 2 · Desierto <span style="opacity:.8;font-size:.85rem">· más rápido</span></button>'
+ +'<button class="kbtn blue" onclick="plStart(3)">❄️ Mundo 3 · Nieve <span style="opacity:.8;font-size:.85rem">· ¡reto helado!</span></button>');}
+function plPick(i){PL.player=i;for(let k=0;k<4;k++){const el=document.getElementById("plp"+k);if(el)el.style.borderColor=(k===i)?"#1E2A4A":"rgba(30,42,74,.12)";}}
+function plStart(world){
  setTheme("kid");world=world||1;
- PL={world:world,hearts:3,coins:0,over:false,raf:0,last:0,t:0,inv:0,win:false};
+ const keepP=(PL&&PL.player)||0;
+ PL={world:world,player:keepP,hearts:3,coins:0,over:false,raf:0,last:0,t:0,inv:0,win:false};
  // construir nivel
  const speed=140+world*18;
  PL.speed=speed;
@@ -1541,7 +1562,7 @@ function gamePlatform(world){
  PL.plats=plats;PL.coins=coins;PL.foes=foes;
  PL.p={x:60,y:groundY-28,vy:0,w:24,h:28,ground:true,jumps:0};
  render(topbar("exitGame('games')")
- +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">⛰️ Mundo Saltarín · Mundo '+world+'</h2>'
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">⛰️ Mundo '+world+' · '+PL_THEMES[world-1].n+'</h2>'
  +'<div style="display:flex;justify-content:center;gap:16px;font-family:Fredoka;font-weight:800;margin-bottom:6px"><span id="plh">❤️❤️❤️</span><span>🪙 <span id="plc">0</span></span></div>'
  +'<canvas id="plcv" style="width:100%;max-width:430px;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none"></canvas>'
  +'<button class="kbtn green" style="max-width:430px;display:block;margin:10px auto 0;min-height:58px" onclick="plJump()">⬆️ ¡SALTAR!</button>'
@@ -1610,19 +1631,20 @@ function plEnd(win){
  const st=win?(PL.hearts>=3?3:PL.hearts===2?2:1):0;
  const p=prof();if(p){p.coins+=Math.round(sc/2)+(win?6:1);p.xp+=win?14:4;save();}
  if(win){sWIN();confetti(30);}
- const next=PL.world<3?'<button class="kbtn green" onclick="gamePlatform('+(PL.world+1)+')">➡️ Mundo '+(PL.world+1)+'</button>':'';
- render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">'+(win?(PL.world>=3?"👑":"🚩"):"💔")+'</div>'
+ const next=PL.world<3?'<button class="kbtn green" onclick="plStart('+(PL.world+1)+')">➡️ Mundo '+(PL.world+1)+' · '+PL_THEMES[PL.world].n+'</button>':'';
+ render(topbar("gamePlatform()")+'<div class="card endcard"><div class="big">'+(win?(PL.world>=3?"👑":"🚩"):"💔")+'</div>'
  +'<h2>'+(win?(PL.world>=3?"¡Campeón de los 3 mundos!":"¡Llegaste a la bandera!"):"¡Oh no!")+'</h2>'
- +'<p style="font-size:1.05rem;margin:8px 0">🪙 '+sc+' monedas · Mundo '+PL.world+'</p>'
+ +'<p style="font-size:1.05rem;margin:8px 0">🪙 '+sc+' monedas · '+PL_THEMES[PL.world-1].n+'</p>'
  +(st?'<div style="font-size:1.5rem;margin-bottom:8px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>':'')
- +(win?next:'<button class="kbtn green" onclick="gamePlatform('+PL.world+')">🔁 Reintentar</button>')
- +'<button class="kbtn white" onclick="gamePlatform(1)">Desde el mundo 1</button>'
+ +(win?next:'<button class="kbtn green" onclick="plStart('+PL.world+')">🔁 Reintentar</button>')
+ +'<button class="kbtn white" onclick="gamePlatform()">👤 Cambiar personaje o mundo</button>'
  +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
 function plDraw(){
  const c=PL.ctx,W=PL.W,H=PL.H,p=PL.p;if(!c)return;
+ const TH=PL_THEMES[(PL.world||1)-1];
  const cam=Math.max(0,p.x-110);
  // cielo
- const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,"#7DD3FC");g.addColorStop(1,"#E0F2FE");
+ const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,TH.sky1);g.addColorStop(1,TH.sky2);
  c.fillStyle=g;c.fillRect(0,0,W,H);
  // sol
  c.fillStyle="#FDE047";c.beginPath();c.arc(W-50,42,20,0,Math.PI*2);c.fill();
@@ -1630,21 +1652,30 @@ function plDraw(){
  c.fillStyle="rgba(255,255,255,.9)";
  for(let i=0;i<6;i++){const cx=((i*260-cam*0.35)%(W+240))-120+(i%2)*40;const cy=40+(i%3)*26;
   c.beginPath();c.arc(cx,cy,14,0,Math.PI*2);c.arc(cx+16,cy-6,11,0,Math.PI*2);c.arc(cx+30,cy,12,0,Math.PI*2);c.fill();}
- // colinas
- c.fillStyle="#86EFAC";
+ // colinas / dunas / montañas nevadas
+ c.fillStyle=TH.hill;
  for(let i=0;i<8;i++){const hx=((i*300-cam*0.55)%(W+340))-160;
   c.beginPath();c.arc(hx,H-30,70,Math.PI,0);c.fill();}
+ // nieve cayendo
+ if(TH.decor==="pino"){c.fillStyle="rgba(255,255,255,.85)";
+  for(let i=0;i<26;i++){const sx=((i*67+PL.t*30)%(W+20))-10;const sy=(i*41+PL.t*55)%H;
+   c.beginPath();c.arc(sx,sy,1.8,0,Math.PI*2);c.fill();}}
  // plataformas
  for(const pl of PL.plats){
   const x=pl.x-cam;if(x>W||x+pl.w<0)continue;
   if(pl.ground){
-   c.fillStyle="#92400E";c.fillRect(x,pl.y,pl.w,H-pl.y);
-   c.fillStyle="#22C55E";c.fillRect(x,pl.y,pl.w,14);
+   c.fillStyle=TH.gBody;c.fillRect(x,pl.y,pl.w,H-pl.y);
+   c.fillStyle=TH.gTop;c.fillRect(x,pl.y,pl.w,14);
    c.fillStyle="rgba(255,255,255,.18)";c.fillRect(x,pl.y,pl.w,4);
+   // decoración del mundo sobre el suelo
+   for(let dx=30;dx<pl.w-20;dx+=90){const ddx=x+dx;
+    if(TH.decor==="flor"){c.fillStyle="#F472B6";c.beginPath();c.arc(ddx,pl.y-6,4,0,Math.PI*2);c.fill();c.fillStyle="#FDE047";c.beginPath();c.arc(ddx,pl.y-6,1.8,0,Math.PI*2);c.fill();c.strokeStyle="#16A34A";c.lineWidth=2;c.beginPath();c.moveTo(ddx,pl.y-3);c.lineTo(ddx,pl.y);c.stroke();}
+    else if(TH.decor==="cactus"){c.fillStyle="#16A34A";c.fillRect(ddx-3,pl.y-18,6,18);c.fillRect(ddx-10,pl.y-13,7,4);c.fillRect(ddx+3,pl.y-10,7,4);}
+    else{c.fillStyle="#166534";c.beginPath();c.moveTo(ddx,pl.y-24);c.lineTo(ddx-9,pl.y);c.lineTo(ddx+9,pl.y);c.closePath();c.fill();c.fillStyle="rgba(255,255,255,.7)";c.beginPath();c.moveTo(ddx,pl.y-24);c.lineTo(ddx-5,pl.y-12);c.lineTo(ddx+5,pl.y-12);c.closePath();c.fill();}}
   }else{
-   c.fillStyle="#F97316";c.beginPath();
+   c.fillStyle=TH.plat;c.beginPath();
    if(c.roundRect)c.roundRect(x,pl.y,pl.w,14,7);else c.rect(x,pl.y,pl.w,14);c.fill();
-   c.strokeStyle="#7C2D12";c.lineWidth=2;c.stroke();
+   c.strokeStyle=TH.platLine;c.lineWidth=2;c.stroke();
   }}
  // monedas (giran con escala)
  for(const co of PL.coins){if(co.got)continue;const x=co.x-cam;if(x>W+20||x<-20)continue;
@@ -1653,7 +1684,7 @@ function plDraw(){
   c.strokeStyle="#A16207";c.lineWidth=2;c.stroke();}
  // enemigos (bichos morados)
  for(const f of PL.foes){if(f.dead)continue;const x=f.x-cam;if(x>W+30||x<-30)continue;
-  c.fillStyle="#A855F7";c.beginPath();c.ellipse(x,f.y+6,13,11,0,0,Math.PI*2);c.fill();
+  c.fillStyle=TH.foe;c.beginPath();c.ellipse(x,f.y+6,13,11,0,0,Math.PI*2);c.fill();
   c.strokeStyle="#1E2A4A";c.lineWidth=2;c.stroke();
   c.fillStyle="#fff";c.beginPath();c.arc(x-4,f.y+2,3.5,0,Math.PI*2);c.arc(x+4,f.y+2,3.5,0,Math.PI*2);c.fill();
   c.fillStyle="#1E2A4A";c.beginPath();c.arc(x-4+f.dir*1.5,f.y+2,1.8,0,Math.PI*2);c.arc(x+4+f.dir*1.5,f.y+2,1.8,0,Math.PI*2);c.fill();}
@@ -1661,27 +1692,38 @@ function plDraw(){
  const fx=PL.flagX-cam;
  if(fx<W+40){c.strokeStyle="#64748B";c.lineWidth=4;c.beginPath();c.moveTo(fx,PL.plats[PL.plats.length-1].y);c.lineTo(fx,PL.plats[PL.plats.length-1].y-90);c.stroke();
   c.fillStyle="#22C55E";c.beginPath();c.moveTo(fx,PL.plats[PL.plats.length-1].y-90);c.lineTo(fx+34,PL.plats[PL.plats.length-1].y-76);c.lineTo(fx,PL.plats[PL.plats.length-1].y-62);c.closePath();c.fill();}
- // heroe (redondito turquesa con gorra amarilla hacia atras) — parpadea si invencible
+ // heroe: el personaje elegido (colores de su camiseta, piel y pelo) — parpadea si invencible
  if(PL.inv<=0||Math.floor(PL.t*10)%2===0){
+  const PJ=PN_PLAYERS[PL.player||0];
   const x=p.x-cam,y=p.y;
   const squash=p.ground?1:0.92;
   c.save();c.translate(x,y+p.h/2);c.scale(1,squash);
-  c.fillStyle="#14B8A6";c.beginPath();c.ellipse(0,0,p.w/2+2,p.h/2,0,0,Math.PI*2);c.fill();
+  // cuerpo con la camiseta del jugador
+  c.fillStyle=PJ.kit[0];c.beginPath();c.ellipse(0,2,p.w/2+2,p.h/2-2,0,0,Math.PI*2);c.fill();
   c.strokeStyle="#1E2A4A";c.lineWidth=2.5;c.stroke();
-  c.fillStyle="#FACC15";c.beginPath();c.arc(0,-p.h/2+3,10,Math.PI,0);c.fill();
-  c.fillRect(-14,-p.h/2+1,9,5);
-  c.fillStyle="#fff";c.beginPath();c.arc(3,-4,4.5,0,Math.PI*2);c.fill();
-  c.fillStyle="#1E2A4A";c.beginPath();c.arc(4.5,-4,2.2,0,Math.PI*2);c.fill();
-  c.beginPath();c.arc(-6,2,2,0,Math.PI*2);c.fill(); // mejilla/nariz
-  c.fillStyle="#0F766E";c.fillRect(-8,p.h/2-6,7,6);c.fillRect(2,p.h/2-6,7,6);
+  // cabeza con su tono de piel
+  c.fillStyle=PJ.skin;c.beginPath();c.arc(1,-p.h/2+4,8.5,0,Math.PI*2);c.fill();
+  c.strokeStyle="#1E2A4A";c.lineWidth=2;c.stroke();
+  // pelo con su color y estilo
+  c.fillStyle=PJ.hair;
+  if(PJ.style==="spiky"){c.beginPath();c.moveTo(-7,-p.h/2+1);c.lineTo(-5,-p.h/2-7);c.lineTo(-2,-p.h/2-1);c.lineTo(1,-p.h/2-8);c.lineTo(4,-p.h/2-1);c.lineTo(7,-p.h/2-6);c.lineTo(9,-p.h/2+1);c.closePath();c.fill();}
+  else if(PJ.style==="curly"){c.beginPath();c.arc(-4,-p.h/2-1,4,0,Math.PI*2);c.arc(1,-p.h/2-3,4.5,0,Math.PI*2);c.arc(6,-p.h/2-1,4,0,Math.PI*2);c.fill();}
+  else if(PJ.style==="pony"){c.beginPath();c.arc(1,-p.h/2+1,8.5,Math.PI,0);c.fill();c.beginPath();c.ellipse(-8,-p.h/2+6,3,6,0.5,0,Math.PI*2);c.fill();}
+  else{c.beginPath();c.arc(1,-p.h/2+1,8.5,Math.PI,0);c.fill();}
+  // ojo y sonrisa
+  c.fillStyle="#fff";c.beginPath();c.arc(4,-p.h/2+3,3.4,0,Math.PI*2);c.fill();
+  c.fillStyle="#1E2A4A";c.beginPath();c.arc(5,-p.h/2+3,1.7,0,Math.PI*2);c.fill();
+  c.strokeStyle="#1E2A4A";c.lineWidth=1.4;c.beginPath();c.arc(2,-p.h/2+7,2.6,0.2,Math.PI-0.6);c.stroke();
+  // piernas con el color secundario
+  c.fillStyle=PJ.kit[1];c.fillRect(-8,p.h/2-6,7,6);c.fillRect(2,p.h/2-6,7,6);
   c.restore();}
 }
 
 /* ============ NAVE IMPOSTORA (mapa, caminar tocando, tareas interactivas, sabotajes y votacion) ============ */
 let NV={};
-const NV_WALK=[[20,20,90,70],[250,20,90,70],[20,210,90,70],[250,210,90,70],[135,115,90,70],[20,135,320,30],[50,20,30,260],[280,20,30,260]];
-const NV_ROOMS=[{n:"Reactor",x:20,y:20,w:90,h:70},{n:"Navegación",x:250,y:20,w:90,h:70},{n:"Cocina",x:20,y:210,w:90,h:70},{n:"Motores",x:250,y:210,w:90,h:70},{n:"Sala central",x:135,y:115,w:90,h:70}];
-const NV_MACH=[{id:"cables",x:300,y:46,room:"Navegación",icon:"🔌",nm:"Conectar cables"},{id:"motor",x:300,y:246,room:"Motores",icon:"⚙️",nm:"Arreglar el motor"},{id:"basura",x:60,y:246,room:"Cocina",icon:"🗑️",nm:"Sacar la basura"}];
+const NV_WALK=[[20,20,90,70],[250,20,90,70],[20,210,90,70],[250,210,90,70],[135,115,90,70],[20,135,320,30],[50,20,30,260],[280,20,30,260],[135,20,90,70],[135,210,90,70],[165,85,30,35],[165,180,30,35]];
+const NV_ROOMS=[{n:"Reactor",x:20,y:20,w:90,h:70},{n:"Navegación",x:250,y:20,w:90,h:70},{n:"Cocina",x:20,y:210,w:90,h:70},{n:"Motores",x:250,y:210,w:90,h:70},{n:"Sala central",x:135,y:115,w:90,h:70},{n:"Laboratorio",x:135,y:20,w:90,h:70},{n:"Cabina",x:135,y:210,w:90,h:70}];
+const NV_MACH=[{id:"cables",x:300,y:46,room:"Navegación",icon:"🔌",nm:"Conectar cables"},{id:"motor",x:300,y:246,room:"Motores",icon:"⚙️",nm:"Arreglar el motor"},{id:"basura",x:60,y:246,room:"Cocina",icon:"🗑️",nm:"Sacar la basura"},{id:"scan",x:180,y:44,room:"Laboratorio",icon:"🩻",nm:"Escanearte"},{id:"pilot",x:180,y:248,room:"Cabina",icon:"🕹️",nm:"Pilotar la nave"}];
 const NV_SAB=[{room:"Reactor",x:60,y:46},{room:"Sala central",x:180,y:142}];
 function nvWalkable(px,py){for(const r of NV_WALK){if(px>=r[0]&&px<=r[0]+r[2]&&py>=r[1]&&py<=r[1]+r[3])return true;}return false;}
 function nvCell(px,py){return[Math.floor(px/10),Math.floor(py/10)];}
@@ -1715,10 +1757,10 @@ function gameNave(){setTheme("kid");
  NV.done={};
  render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:2px">🛸 Nave impostora</h2>'
- +'<div style="display:flex;justify-content:center;gap:14px;font-family:Fredoka;font-weight:800;margin-bottom:6px;font-size:.95rem"><span>🧰 Tareas <span id="nvtask">0</span>/3</span><span>🚨 Pistas <span id="nvev">0</span></span></div>'
+ +'<div style="display:flex;justify-content:center;gap:14px;font-family:Fredoka;font-weight:800;margin-bottom:6px;font-size:.95rem"><span>🧰 Tareas <span id="nvtask">0</span>/5</span><span>🚨 Pistas <span id="nvev">0</span></span></div>'
  +'<canvas id="nvcv" style="width:100%;max-width:430px;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none;background:#0B1026"></canvas>'
  +'<div id="nvbtn" style="max-width:430px;margin:8px auto 0"></div>'
- +'<p class="center" style="font-size:.82rem;margin-top:6px">👆 <b>Toca el mapa para caminar</b>. Ve a las máquinas brillantes ✨ y haz las 3 tareas. ¡Cuidado: hay un impostor entre los tripulantes!</p>');
+ +'<p class="center" style="font-size:.82rem;margin-top:6px">👆 <b>Toca el mapa para caminar</b>. Ve a las máquinas brillantes ✨ y haz las <b>5 tareas</b>. ¡Cuidado: hay un impostor entre los tripulantes!</p>');
  const cv=document.getElementById("nvcv");
  const W=360,H=300;
  const dpr=Math.min(2,window.devicePixelRatio||1);
@@ -1821,12 +1863,61 @@ function nvOverlay(inner){
  ov.style.cssText="position:fixed;inset:0;z-index:400;background:rgba(11,16,38,.8);display:flex;align-items:center;justify-content:center;padding:16px";
  ov.innerHTML='<div style="background:#fff;border:4px solid var(--kid-ink);border-radius:22px;max-width:380px;width:100%;padding:16px;max-height:86vh;overflow:auto">'+inner+'</div>';
  document.body.appendChild(ov);}
-function nvCloseOverlay(){const o=document.getElementById("nvov");if(o)o.remove();if(NV.mgTimer){clearInterval(NV.mgTimer);NV.mgTimer=null;}}
+function nvCloseOverlay(){const o=document.getElementById("nvov");if(o)o.remove();if(NV.mgTimer){clearInterval(NV.mgTimer);NV.mgTimer=null;}if(NV.mgUp){window.removeEventListener("pointerup",NV.mgUp);NV.mgUp=null;}}
 function nvOpenTask(id){
  if(NV.done[id])return;
  if(id==="cables")nvTaskCables();
  else if(id==="motor")nvTaskMotor();
+ else if(id==="scan")nvTaskScan();
+ else if(id==="pilot")nvTaskPilot();
  else nvTaskBasura();}
+/* escaner: manten presionado sin soltar hasta completar el escaneo */
+function nvTaskScan(){
+ NV.mg={p:0,holding:false};
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🩻 Escáner médico</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Mantén presionado el botón <b>sin soltar</b> hasta terminar el escaneo</p>'
+ +'<div style="position:relative;text-align:center;font-size:3.4rem;padding:8px 0;overflow:hidden">🧍<div id="nvscanline" style="position:absolute;left:20%;right:20%;top:0;height:4px;background:#22D3EE;border-radius:2px;box-shadow:0 0 10px #22D3EE"></div></div>'
+ +'<div style="height:20px;border:3px solid #1E2A4A;border-radius:10px;background:#E2E8F0;overflow:hidden;margin:8px 0"><div id="nvscanbar" style="height:100%;width:0%;background:linear-gradient(90deg,#22D3EE,#3EC97C)"></div></div>'
+ +'<button class="kbtn blue" id="nvholdbtn" style="touch-action:none">🖐️ MANTÉN PRESIONADO</button>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ const b=document.getElementById("nvholdbtn");
+ b.addEventListener("pointerdown",e=>{e.preventDefault();NV.mg.holding=true;});
+ NV.mgUp=()=>{NV.mg.holding=false;};
+ window.addEventListener("pointerup",NV.mgUp);
+ NV.mgTimer=setInterval(()=>{
+  if(!NV.mg)return;
+  if(NV.mg.holding)NV.mg.p=Math.min(100,NV.mg.p+1.4);
+  const bar=document.getElementById("nvscanbar");if(bar)bar.style.width=NV.mg.p+"%";
+  const ln=document.getElementById("nvscanline");if(ln)ln.style.top=(NV.mg.p*0.9)+"%";
+  if(NV.mg.p>=100){nvCloseOverlay();nvTaskComplete("scan");}},30);}
+/* pilotar: esquiva 5 asteroides tocando el carril al que quieres mover la nave */
+function nvTaskPilot(){
+ NV.mg={lane:1,dodged:0,aLane:rnd(3),aTop:0};
+ const cols=[0,1,2].map(i=>'<button onclick="nvPilotLane('+i+')" style="background:transparent;border:none;position:absolute;top:0;bottom:0;width:33.3%;left:'+(i*33.3)+'%;cursor:pointer"></button>').join("");
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🕹️ Pilota la nave</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">¡Esquiva <b>5 asteroides</b>! Toca el carril al que quieras mover la nave</p>'
+ +'<div id="nvpz" style="position:relative;height:230px;background:linear-gradient(180deg,#0B1026,#1E1B4B);border:3px solid #1E2A4A;border-radius:14px;overflow:hidden">'
+ +'<div id="nvast" style="position:absolute;top:-14%;left:'+(NV.mg.aLane*33.3+11)+'%;font-size:2rem;transition:top .1s linear">☄️</div>'
+ +'<div id="nvship" style="position:absolute;bottom:6px;left:'+(NV.mg.lane*33.3+11)+'%;font-size:2.2rem;transition:left .15s">🚀</div>'
+ +cols+'</div>'
+ +'<p class="center" id="nvdodge" style="font-family:Fredoka;font-weight:800;margin-top:6px">0/5 esquivados</p>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ NV.mgTimer=setInterval(()=>{
+  if(!NV.mg)return;
+  NV.mg.aTop+=3.2;
+  const a=document.getElementById("nvast");if(a)a.style.top=NV.mg.aTop+"%";
+  if(NV.mg.aTop>=78&&NV.mg.aTop<92&&NV.mg.aLane===NV.mg.lane){ // choque
+   sNO();NV.mg.aTop=-14;NV.mg.aLane=rnd(3);
+   if(a){a.style.transition="none";a.style.top="-14%";a.style.left=(NV.mg.aLane*33.3+11)+"%";void a.getBoundingClientRect();a.style.transition="top .1s linear";}
+   const d=document.getElementById("nvdodge");if(d)d.textContent="💥 ¡Choque! "+NV.mg.dodged+"/5 esquivados";
+  }else if(NV.mg.aTop>=100){ // esquivado
+   NV.mg.dodged++;if(typeof tone==="function")tone(700,.05);
+   const d=document.getElementById("nvdodge");if(d)d.textContent=NV.mg.dodged+"/5 esquivados";
+   if(NV.mg.dodged>=5){nvCloseOverlay();nvTaskComplete("pilot");return;}
+   NV.mg.aTop=-14;NV.mg.aLane=rnd(3);
+   if(a){a.style.transition="none";a.style.top="-14%";a.style.left=(NV.mg.aLane*33.3+11)+"%";void a.getBoundingClientRect();a.style.transition="top .1s linear";}
+  }},60);}
+function nvPilotLane(i){if(!NV.mg)return;NV.mg.lane=i;const s=document.getElementById("nvship");if(s)s.style.left=(i*33.3+11)+"%";}
 /* cables: toca un cable de la izquierda y su color a la derecha */
 function nvTaskCables(){
  const cols=shuffled([["#EF4444","Rojo"],["#3B82F6","Azul"],["#22C55E","Verde"],["#FACC15","Amarillo"]]);
@@ -1887,8 +1978,9 @@ function nvTrash(i){
 function nvTaskComplete(id){
  NV.done[id]=true;NV.tasksDone++;sOK();confetti(10);
  const el=document.getElementById("nvtask");if(el)el.textContent=NV.tasksDone;
- if(NV.tasksDone<=2)nvSabotage(NV.tasksDone-1);
- if(NV.tasksDone>=3)setTimeout(nvMeeting,1600);}
+ if(NV.tasksDone===2)nvSabotage(0);
+ if(NV.tasksDone===4)nvSabotage(1);
+ if(NV.tasksDone>=5)setTimeout(nvMeeting,1600);}
 function nvSabotage(idx){
  if(idx>=NV_SAB.length)return;
  const s=NV_SAB[idx];
