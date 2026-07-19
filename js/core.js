@@ -385,6 +385,7 @@ function stopGames(){
  try{if(typeof OB!=="undefined")OB.done=true;}catch(e){}
  try{if(typeof PN!=="undefined"&&PN.tick)clearInterval(PN.tick);}catch(e){}
  try{if(typeof MZ!=="undefined"){MZ.over=true;cancelAnimationFrame(MZ.raf);}}catch(e){}
+ try{if(typeof NV!=="undefined"){NV.over=true;cancelAnimationFrame(NV.raf);if(NV.mgTimer)clearInterval(NV.mgTimer);var _no=document.getElementById("nvov");if(_no)_no.remove();}}catch(e){}
  try{if(typeof PL!=="undefined"){PL.over=true;cancelAnimationFrame(PL.raf);}}catch(e){}
  try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}}
 /* sale de un juego con confirmación (la flecha de atrás de los juegos) */

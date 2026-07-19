@@ -272,7 +272,8 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn blue" onclick="gameGateRun()">🔢 Carrera de números (hazte más grande)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
- +'<button class="kbtn red" onclick="gameDetective()">🕵️ Detective del impostor <span style="opacity:.8;font-size:.82rem">· misiones y pistas</span></button>'
+ +'<button class="kbtn red" onclick="gameNave()">🛸 Nave impostora <span style="opacity:.8;font-size:.82rem">· camina, haz tareas y vota</span></button>'
+ +'<button class="kbtn white" onclick="gameDetective()">🕵️ Detective del impostor <span style="opacity:.8;font-size:.82rem">· misiones y pistas</span></button>'
  +'<button class="kbtn red" onclick="gameSlide()">🧩 Rompecabezas deslizante</button>'
  +sub("🇬🇧 Inglés")
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
