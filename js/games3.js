@@ -1025,3 +1025,157 @@ function ktEnd(){
  var p=prof();if(p){p.coins+=KT.score;p.xp+=KT.score*3;save();}
  sWIN();confetti(24);
  render(topbar("gameKidTrivia()")+'<div class="card endcard"><div class="big">🏆</div><h2>¡'+KT.score+' de '+KT.qs.length+'!</h2><p style="font-size:1.1rem;margin:8px 0">Ganaste '+KT.score+' 🪙</p><button class="kbtn green" onclick="gameKidTrivia()">Otra trivia 🧠</button><button class="kbtn white" onclick="screenKidMap()">Al mapa 🌍</button></div>');}
+
+/* ============ PENALES MATEMATICOS (escena SVG dibujada: estadio, arquero, delantero) ============ */
+let PN={};
+const PN_KITS=[["#EF4444","#991B1B"],["#3B82F6","#1E3A8A"],["#FACC15","#A16207"],["#22C55E","#15803D"]];
+const PN_BUB=[[95,118],[180,112],[265,118]];
+function gamePenalty(){setTheme("kid");if(PN.tick)clearInterval(PN.tick);
+ PN={kit:PN.kit||0,diff:0,tick:null};
+ const kitBtn=(i)=>'<button type="button" id="pnk'+i+'" onclick="pnKit('+i+')" style="width:44px;height:44px;border-radius:50%;border:4px solid '+(i===PN.kit?"#1E2A4A":"#fff")+';background:linear-gradient(180deg,'+PN_KITS[i][0]+','+PN_KITS[i][1]+');box-shadow:0 3px 8px rgba(30,42,74,.3);cursor:pointer"></button>';
+ render(topbar("exitGame('games')")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">⚽ Penales Matemáticos</h2>'
+ +'<p class="center" style="margin-bottom:12px">Resuelve la cuenta y toca el número correcto para anotar</p>'
+ +'<div class="card"><p style="font-family:Fredoka;font-weight:700;margin-bottom:8px">Tu camiseta</p>'
+ +'<div style="display:flex;gap:12px;justify-content:center;margin-bottom:6px">'+[0,1,2,3].map(kitBtn).join("")+'</div></div>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:8px 2px">Dificultad</p>'
+ +'<button class="kbtn green" onclick="pnStart(0)">🟢 Fácil <span style="opacity:.8;font-size:.85rem">· sumas y restas hasta 20</span></button>'
+ +'<button class="kbtn yellow" onclick="pnStart(1)">🟡 Intermedio <span style="opacity:.8;font-size:.85rem">· hasta 99 y tablas</span></button>'
+ +'<button class="kbtn red" onclick="pnStart(2)">🔴 Difícil <span style="opacity:.8;font-size:.85rem">· multiplicar y dividir</span></button>');}
+function pnKit(i){PN.kit=i;for(let k=0;k<4;k++){const el=document.getElementById("pnk"+k);if(el)el.style.borderColor=(k===i)?"#1E2A4A":"#fff";}}
+function pnQ(diff){
+ let a,b,ans,txt;
+ if(diff===0){if(Math.random()<.5){a=2+rnd(15);b=1+rnd(Math.min(20-a,10));ans=a+b;txt=a+" + "+b;}
+  else{a=5+rnd(15);b=1+rnd(a-1);ans=a-b;txt=a+" − "+b;}}
+ else if(diff===1){const r=rnd(3);
+  if(r===0){a=12+rnd(60);b=10+rnd(Math.min(99-a,50));ans=a+b;txt=a+" + "+b;}
+  else if(r===1){a=30+rnd(65);b=11+rnd(a-12);ans=a-b;txt=a+" − "+b;}
+  else{a=2+rnd(8);b=2+rnd(8);ans=a*b;txt=a+" × "+b;}}
+ else{const r=rnd(3);
+  if(r===0){a=12+rnd(14);b=2+rnd(5);ans=a*b;txt=a+" × "+b;}
+  else if(r===1){b=2+rnd(7);ans=3+rnd(9);a=b*ans;txt=a+" ÷ "+b;}
+  else{a=120+rnd(500);b=100+rnd(300);ans=a+b;txt=a+" + "+b;}}
+ const set=new Set([ans]);
+ while(set.size<3){const d=ans+(1+rnd(Math.max(4,Math.round(ans*0.2))))*(Math.random()<.5?-1:1);if(d>=0&&d!==ans)set.add(d);}
+ const ops=shuffled([...set]);
+ return{txt,ans,ops,a:ops.indexOf(ans)};}
+function pnCrowd(){
+ const cols=["#F87171","#FBBF24","#60A5FA","#34D399","#F472B6","#A78BFA","#FDE68A"];let s="";
+ for(let r=0;r<3;r++)for(let i=0;i<24;i++){const x=12+i*14.5+(r%2)*7,y=14+r*13;
+  s+='<circle cx="'+x+'" cy="'+y+'" r="4.2" fill="'+cols[(i*3+r*5)%7]+'" opacity=".85"/>';}
+ return s;}
+function pnScene(){
+ const k=PN_KITS[PN.kit];
+ return '<svg id="pnsvg" viewBox="0 0 360 400" style="width:100%;display:block;border-radius:18px;border:4px solid var(--kid-ink);box-shadow:0 8px 0 rgba(30,42,74,.5)" xmlns="http://www.w3.org/2000/svg">'
+ +'<defs>'
+ +'<linearGradient id="pnsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DD3FC"/><stop offset="1" stop-color="#BAE6FD"/></linearGradient>'
+ +'<linearGradient id="pngrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ADE80"/><stop offset="1" stop-color="#22C55E"/></linearGradient>'
+ +'<pattern id="pnnet" width="13" height="13" patternUnits="userSpaceOnUse"><path d="M0 0H13M0 0V13" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/></pattern>'
+ +'</defs>'
+ +'<rect width="360" height="250" fill="url(#pnsky)"/>'
+ +'<rect y="0" width="360" height="52" fill="#1E3A5F"/>'+pnCrowd()
+ +'<rect y="250" width="360" height="150" fill="url(#pngrass)"/>'
+ +[0,1,2,3].map(i=>'<rect y="'+(250+i*38)+'" width="360" height="19" fill="rgba(255,255,255,.07)"/>').join("")
+ +'<ellipse cx="180" cy="330" rx="120" ry="12" fill="rgba(0,0,0,.08)"/>'
+ +'<rect x="52" y="88" width="256" height="150" fill="url(#pnnet)" opacity=".9"/>'
+ +'<rect x="46" y="82" width="10" height="162" rx="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>'
+ +'<rect x="304" y="82" width="10" height="162" rx="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>'
+ +'<rect x="46" y="80" width="268" height="10" rx="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width="2"/>'
+ +'<g id="pnkeeper" style="transition:transform .5s cubic-bezier(.4,1.6,.6,1)"><g transform="translate(180,196)">'
+ +'<rect x="-16" y="-14" width="32" height="34" rx="9" fill="#84CC16" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<rect x="-13" y="20" width="10" height="18" rx="4" fill="#0F172A"/><rect x="3" y="20" width="10" height="18" rx="4" fill="#0F172A"/>'
+ +'<rect x="-26" y="-12" width="9" height="22" rx="4" fill="#84CC16" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<rect x="17" y="-12" width="9" height="22" rx="4" fill="#84CC16" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<circle cx="-21" cy="14" r="5.5" fill="#FDE68A" stroke="#1E2A4A" stroke-width="2"/><circle cx="21" cy="14" r="5.5" fill="#FDE68A" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<circle cx="0" cy="-26" r="13" fill="#FCD9B6" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<path d="M-12 -31 Q0 -44 12 -31 L12 -27 Q0 -36 -12 -27 Z" fill="#7C4A21"/>'
+ +'<circle cx="-4.5" cy="-26" r="1.8" fill="#1E2A4A"/><circle cx="4.5" cy="-26" r="1.8" fill="#1E2A4A"/>'
+ +'</g></g>'
+ +'<g id="pnbubs"></g>'
+ +'<g id="pnstriker"><g transform="translate(180,318)">'
+ +'<rect x="-19" y="-26" width="38" height="42" rx="11" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<path d="M-19 -10 L-19 16 L19 16 L19 -10 L12 -4 L-12 -4 Z" fill="'+k[1]+'" opacity=".35"/>'
+ +'<text x="0" y="0" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="17" fill="#fff" stroke="#1E2A4A" stroke-width=".6">7</text>'
+ +'<rect x="-15" y="16" width="30" height="14" rx="5" fill="'+k[1]+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<rect x="-12" y="30" width="9" height="16" rx="4" fill="#FCD9B6"/><rect x="3" y="30" width="9" height="16" rx="4" fill="#FCD9B6"/>'
+ +'<rect x="-13" y="42" width="11" height="10" rx="3" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="1.8"/><rect x="2" y="42" width="11" height="10" rx="3" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="1.8"/>'
+ +'<rect x="-15" y="50" width="14" height="6" rx="3" fill="#0F172A"/><rect x="1" y="50" width="14" height="6" rx="3" fill="#0F172A"/>'
+ +'<rect x="-26" y="-22" width="8" height="26" rx="4" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<rect x="18" y="-22" width="8" height="26" rx="4" fill="'+k[0]+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<circle cx="0" cy="-40" r="14" fill="#FCD9B6" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<path d="M-14 -42 Q-14 -56 0 -56 Q14 -56 14 -42 L14 -38 Q0 -48 -14 -38 Z" fill="#3B2410"/>'
+ +'</g></g>'
+ +'<g id="pnball" style="transition:transform .45s cubic-bezier(.3,.9,.6,1)"><g>'
+ +'<circle cx="0" cy="0" r="10" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<circle cx="0" cy="0" r="3.4" fill="#1E2A4A"/><circle cx="-6" cy="-4" r="2" fill="#1E2A4A"/><circle cx="6" cy="-4" r="2" fill="#1E2A4A"/><circle cx="-5" cy="5" r="2" fill="#1E2A4A"/><circle cx="5" cy="5" r="2" fill="#1E2A4A"/>'
+ +'</g></g>'
+ +'</svg>';}
+function pnStart(diff){
+ if(PN.tick)clearInterval(PN.tick);
+ PN.diff=diff;PN.shot=0;PN.goals=0;PN.streak=0;PN.total=10;PN.lock=false;
+ setTheme("kid");
+ const pill=(ic,lb,id,v)=>'<div style="flex:1;background:#1E3A5F;border-radius:14px;padding:8px 6px;text-align:center;color:#fff"><div style="font-size:.68rem;letter-spacing:.05em;opacity:.8;font-family:Fredoka;font-weight:700">'+ic+' '+lb+'</div><div id="'+id+'" style="font-family:Fredoka;font-weight:800;font-size:1.25rem">'+v+'</div></div>';
+ render(topbar("gamePenalty()")
+ +'<div style="display:flex;gap:8px;margin-bottom:8px">'+pill("🏆","GOLES","pngoals",0)+pill("🔥","RACHA","pnstreak",0)+pill("⚽","TIRO","pnshot","1/10")+'</div>'
+ +'<div style="background:#FACC15;border:3px solid var(--kid-ink);border-radius:14px;padding:7px 12px;text-align:center;margin-bottom:6px;box-shadow:0 4px 0 rgba(30,42,74,.4)"><span style="font-size:.68rem;letter-spacing:.08em;font-family:Fredoka;font-weight:700;opacity:.7">RESUELVE</span><div id="pnqt" style="font-family:Fredoka;font-weight:800;font-size:1.7rem;line-height:1.1">…</div></div>'
+ +'<div class="timerbar" style="background:rgba(30,42,74,.15);height:9px;margin:0 0 8px"><div id="pntb" style="width:100%;height:100%;border-radius:999px;background:linear-gradient(90deg,#22C55E,#FACC15);transition:width .1s linear"></div></div>'
+ +pnScene()
+ +'<div id="pnbanner" style="display:none;position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:50;background:#FACC15;border:4px solid var(--kid-ink);border-radius:20px;padding:14px 26px;font-family:Fredoka;font-weight:800;font-size:1.7rem;box-shadow:0 10px 0 rgba(30,42,74,.35)"></div>'
+ +'<p class="center" style="margin-top:8px;font-size:.85rem">Toca el número correcto para meter gol ⚽</p>');
+ pnNext();}
+function pnNext(){
+ if(PN.tick)clearInterval(PN.tick);
+ if(PN.shot>=PN.total)return pnEnd();
+ PN.q=pnQ(PN.diff);PN.lock=false;
+ const qt=document.getElementById("pnqt");if(qt)qt.textContent=PN.q.txt;
+ const sh=document.getElementById("pnshot");if(sh)sh.textContent=(PN.shot+1)+"/10";
+ const bb=document.getElementById("pnbubs");
+ if(bb)bb.innerHTML=PN.q.ops.map((o,i)=>'<g onclick="pnShoot('+i+')" style="cursor:pointer"><circle cx="'+PN_BUB[i][0]+'" cy="'+PN_BUB[i][1]+'" r="24" fill="#FACC15" stroke="#fff" stroke-width="4"/><circle cx="'+PN_BUB[i][0]+'" cy="'+PN_BUB[i][1]+'" r="24" fill="none" stroke="#1E2A4A" stroke-width="2"/><text x="'+PN_BUB[i][0]+'" y="'+(PN_BUB[i][1]+6)+'" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="800" font-size="'+(String(o).length>3?13:16)+'" fill="#1E2A4A">'+o+'</text></g>').join("");
+ const ball=document.getElementById("pnball"),kp=document.getElementById("pnkeeper"),st=document.getElementById("pnstriker");
+ if(ball){ball.style.transition="none";ball.style.transform="translate(180px,332px)";void ball.getBoundingClientRect();ball.style.transition="transform .45s cubic-bezier(.3,.9,.6,1)";}
+ if(kp){kp.style.transition="none";kp.style.transform="translate(0,0)";void kp.getBoundingClientRect();kp.style.transition="transform .5s cubic-bezier(.4,1.6,.6,1)";}
+ if(st)st.style.transform="translate(0,0)";
+ PN.time=100;const secs=PN.diff===0?14:11;
+ const tb=document.getElementById("pntb");if(tb)tb.style.width="100%";
+ PN.tick=setInterval(()=>{PN.time-=10/secs;
+  const el=document.getElementById("pntb");if(!el){clearInterval(PN.tick);return;}
+  el.style.width=Math.max(0,PN.time)+"%";
+  if(PN.time<=0){clearInterval(PN.tick);pnTimeout();}},100);}
+function pnBanner(txt,ms,cb){const b=document.getElementById("pnbanner");if(!b){if(cb)cb();return;}
+ b.textContent=txt;b.style.display="block";setTimeout(()=>{b.style.display="none";if(cb)cb();},ms);}
+function pnTimeout(){
+ if(PN.lock)return;PN.lock=true;PN.streak=0;sNO();recordAnswer("Mate",false,12);
+ const st=document.getElementById("pnstreak");if(st)st.textContent=0;
+ PN.shot++;pnBanner("⏱️ ¡Tiempo! Era "+PN.q.ans,1500,pnNext);}
+function pnShoot(i){
+ if(PN.lock)return;PN.lock=true;if(PN.tick)clearInterval(PN.tick);
+ const ok=(i===PN.q.a);
+ const tx=PN_BUB[i][0],ty=PN_BUB[i][1];
+ const ball=document.getElementById("pnball"),kp=document.getElementById("pnkeeper");
+ if(ball)ball.style.transform="translate("+tx+"px,"+ty+"px)";
+ const wrong=[0,1,2].filter(x=>x!==i);const dive=ok?wrong[rnd(2)]:i;
+ const dx=PN_BUB[dive][0]-180,dy=PN_BUB[dive][1]-196+26;
+ if(kp)kp.style.transform="translate("+dx*0.82+"px,"+Math.min(0,dy)*0.55+"px) rotate("+(dx<0?-32:dx>0?32:0)+"deg)";
+ recordAnswer("Mate",ok,12);
+ setTimeout(()=>{
+  PN.shot++;
+  if(ok){PN.goals++;PN.streak++;sWIN();confetti(16);
+   const g=document.getElementById("pngoals"),s=document.getElementById("pnstreak");
+   if(g)g.textContent=PN.goals;if(s)s.textContent=PN.streak;
+   const p=prof();if(p){p.coins+=1+(PN.streak>=3?1:0);p.xp+=4;save();}
+   pnBanner("¡GOOOOL! ⚽"+(PN.streak>=3?" 🔥x"+PN.streak:""),1400,pnNext);}
+  else{PN.streak=0;sNO();
+   const s=document.getElementById("pnstreak");if(s)s.textContent=0;
+   pnBanner("🧤 ¡Atajada! Era "+PN.q.ans,1600,pnNext);}
+ },480);}
+function pnEnd(){
+ if(PN.tick)clearInterval(PN.tick);
+ const st=PN.goals>=8?3:PN.goals>=5?2:1;
+ if(PN.goals>=5){sWIN();confetti(30);}
+ render(topbar("gamePenalty()")+'<div class="card endcard"><div class="big">'+(PN.goals>=8?"🏆":PN.goals>=5?"⚽":"🧤")+'</div>'
+ +'<h2>'+PN.goals+' goles de '+PN.total+'</h2>'
+ +'<p style="font-size:1.05rem;margin:8px 0">'+(PN.goals>=8?"¡Eres una estrella del fútbol matemático!":PN.goals>=5?"¡Muy buen partido!":"¡Sigue entrenando, campeón!")+'</p>'
+ +'<div style="font-size:1.6rem;margin-bottom:10px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>'
+ +'<button class="kbtn green" onclick="pnStart('+PN.diff+')">🔁 Jugar otra vez</button>'
+ +'<button class="kbtn white" onclick="gamePenalty()">Cambiar dificultad</button>'
+ +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}

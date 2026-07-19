@@ -276,6 +276,7 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
  +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
  +sub("🕹️ Arcade (pura diversión)")
+ +'<button class="kbtn green" onclick="gamePenalty()">⚽ Penales matemáticos</button>'
  +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
  +'<button class="kbtn blue" onclick="gameRace()">🏎️ Carrera izquierda y derecha</button>'
  +'<button class="kbtn purple" onclick="gameDoodle()">🦘 Saltarín</button>');}
