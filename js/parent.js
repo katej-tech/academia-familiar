@@ -171,7 +171,8 @@ function screenParentDash(){setTheme("parent");
  +'<p class="mut" style="margin:12px 0 4px">Clave de API de Gemini (vive solo en este dispositivo)</p>'
  +'<div style="display:flex;gap:8px;align-items:stretch"><input type="password" id="gkey" style="flex:1;margin:0" placeholder="AIza..." value="'+esc(S.geminiKey)+'">'
  +'<button class="pbtn ghost" style="width:auto;padding:0 14px;margin:0" onclick="toggleKeyVisible()" title="Mostrar/ocultar">👁</button></div>'
- +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button><div id="keyfb" style="margin:4px 0"></div>'
+ +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button>'
+ +'<button class="pbtn ghost" onclick="screenAiDiag()">🩺 Diagnóstico completo de la IA</button><div id="keyfb" style="margin:4px 0"></div>'
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
  +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
  +'<p class="tip">💡 Clave gratuita: <b>aistudio.google.com</b> → Get API key. Nunca la escribas dentro del archivo ni la subas a GitHub.</p></div>'
@@ -262,3 +263,93 @@ function importData(ev){
  const r=new FileReader();
  r.onload=()=>{try{const base=JSON.parse(JSON.stringify(DEFAULT_STATE));deepMerge(base,JSON.parse(r.result));S=base;if(typeof normalizeProfiles==="function")normalizeProfiles();save();screenParentDash();}catch(e){alert("Archivo no válido");}};
  r.readAsText(f);}
+
+/* ============ DIAGNOSTICO COMPLETO DE LA IA (paso a paso, con informe copiable) ============ */
+let AID={log:[]};
+function screenAiDiag(){setTheme("parent");
+ render('<div class="topbar"><button class="back" onclick="screenParentDash()">←</button><b style="font-size:1.1rem">Diagnóstico de la IA</b></div>'
+ +'<h2 style="margin-bottom:4px">🩺 Diagnóstico de la IA</h2>'
+ +'<p class="mut" style="margin-bottom:12px">Prueba la clave de Gemini paso a paso y muestra el error EXACTO de Google (si lo hay).</p>'
+ +'<div class="card">'
+ +'<p class="mut" style="margin-bottom:4px">Clave a probar (se usa la guardada; puedes pegar otra):</p>'
+ +'<input type="password" id="aidKey" placeholder="AIza..." value="'+esc(S.geminiKey||"")+'">'
+ +'<button class="pbtn" onclick="aiDiagRun()">▶️ Ejecutar diagnóstico</button>'
+ +'<button class="pbtn ghost" onclick="aiDiagImg()">🖼️ Probar también generación de imágenes</button>'
+ +'</div>'
+ +'<div id="aidout"></div>'
+ +'<div id="aidcopy"></div>');}
+function aidRow(icon,title,detail){
+ return '<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--par-line)">'
+ +'<span style="font-size:1.2rem;flex:none">'+icon+'</span>'
+ +'<div style="flex:1"><b style="font-size:.95rem">'+title+'</b>'
+ +(detail?'<p class="mut" style="font-size:.82rem;margin-top:3px;line-height:1.5;word-break:break-word">'+detail+'</p>':'')+'</div></div>';}
+function aidPaint(){
+ const out=document.getElementById("aidout");
+ if(out)out.innerHTML='<div class="card">'+AID.rows.join("")+(AID.verdict?'<div style="margin-top:10px;padding:12px;border-radius:12px;background:'+(AID.okAll?'#DCFCE7':'#FEF2F2')+';border:2px solid '+(AID.okAll?'#16A34A':'#DC2626')+'"><b>'+AID.verdict+'</b><p style="font-size:.88rem;margin-top:6px;line-height:1.55">'+(AID.fix||"")+'</p></div>':'')+'</div>';
+ const cp=document.getElementById("aidcopy");
+ if(cp&&AID.done)cp.innerHTML='<button class="pbtn ghost" onclick="aiDiagCopy()">📋 Copiar informe (para pedir ayuda)</button><span id="aidcopyfb"></span>';}
+async function aiDiagRun(){
+ const k=(document.getElementById("aidKey").value||"").trim();
+ AID={rows:[],log:[],done:false,okAll:false,verdict:"",fix:""};
+ const push=(icon,title,detail)=>{AID.rows.push(aidRow(icon,title,detail));AID.log.push(title+(detail?" | "+detail:""));aidPaint();};
+ // PASO 1: formato
+ if(!k)return push("❌","Paso 1: No hay clave","Pega la clave en el campo de arriba.");
+ if(!/^AIza[\w-]{30,}$/.test(k)){AID.done=true;AID.verdict="✗ La clave no tiene el formato correcto";AID.fix="Debe empezar por <b>AIza</b> y tener ~39 caracteres, sin espacios ni saltos de línea. Cópiala con el botón de copiar de <b>aistudio.google.com/apikey</b> (no a mano). Largo actual: "+k.length+" caracteres.";
+  push("❌","Paso 1: Formato de la clave","Empieza con: "+esc(k.slice(0,6))+"… · largo: "+k.length);aidPaint();return;}
+ push("✅","Paso 1: Formato correcto","AIza…"+esc(k.slice(-4))+" · "+k.length+" caracteres");
+ // PASO 2: listar modelos (verifica clave + restricciones + API habilitada)
+ let st=0,msg="",reason="";
+ try{
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models?key="+encodeURIComponent(k));
+  st=r.status;
+  if(r.ok){const j=await r.json();push("✅","Paso 2: Conexión con Google OK","La clave es válida y este sitio NO está bloqueado ("+((j.models||[]).length)+" modelos disponibles)");}
+  else{try{const j=await r.json();msg=(j.error&&j.error.message)||"";reason=(j.error&&j.error.status)||"";}catch(e){}
+   push("❌","Paso 2: Google respondió error "+st,esc(msg.slice(0,220)));}
+ }catch(e){st=-1;push("❌","Paso 2: Sin conexión con Google",esc(String(e&&e.message||e).slice(0,150))+" — ¿hay internet? ¿un bloqueador/firewall?");}
+ if(st!==200){
+  AID.done=true;AID.okAll=false;
+  const low=(msg||"").toLowerCase();
+  if(st===-1){AID.verdict="✗ No hay conexión con los servidores de Google";AID.fix="Revisa el internet del dispositivo. Si usas un bloqueador de anuncios o control parental de red, permite <b>generativelanguage.googleapis.com</b>.";}
+  else if(/referer|referrer|blocked|http referrer/i.test(low)){AID.verdict="✗ CONFIRMADO: la clave tiene restricción de sitios web y bloquea esta app";AID.fix="En <b>console.cloud.google.com</b> → APIs y servicios → Credenciales → tu clave → <b>Restricciones de aplicación</b> → elige <b>Ninguna</b> (o agrega <code>katej-tech.github.io/*</code>). Guarda y espera 5 minutos. O MÁS FÁCIL: crea una clave nueva en <b>aistudio.google.com/apikey</b> y usa esa.";}
+  else if(/api key not valid|api_key_invalid|invalid api key/i.test(low)){AID.verdict="✗ CONFIRMADO: la clave no es válida";AID.fix="La clave está mal copiada, fue borrada, o es de otro servicio de Google (Maps, Firebase…). Entra a <b>aistudio.google.com/apikey</b>, crea/copia la clave de <b>Gemini</b> con el botón 📋 y pégala aquí.";}
+  else if(/not been used|disabled|enable|service_disabled/i.test(low)){AID.verdict="✗ CONFIRMADO: falta habilitar la API Generative Language en tu proyecto";AID.fix="La clave existe pero su proyecto no tiene la API activa. Solución fácil: crea la clave en <b>aistudio.google.com/apikey</b> (la activa sola). O en Google Cloud busca <b>Generative Language API</b> y dale Habilitar.";}
+  else if(st===429||/quota|exhausted/i.test(low)){AID.verdict="✗ Límite gratuito agotado por hoy";AID.fix="La clave funciona pero se acabó la cuota gratis del día. Espera unas horas (se reinicia a medianoche, hora del Pacífico) o crea otra clave en otro proyecto.";}
+  else{AID.verdict="✗ Error "+st+(reason?" ("+reason+")":"");AID.fix="Mensaje de Google: "+esc(msg.slice(0,220))+". Copia el informe y pégalo en el chat para ayudarte.";}
+  aidPaint();return;}
+ // PASO 3: generar texto de verdad
+ try{
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(k),
+   {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Responde SOLO la palabra: hola"}]}]})});
+  if(r.ok){const j=await r.json();const t=(j.candidates&&j.candidates[0].content.parts.map(p=>p.text||"").join(""))||"";
+   push("✅","Paso 3: Generación de texto OK","Gemini respondió: “"+esc(t.slice(0,40))+"”");
+   AID.done=true;AID.okAll=true;AID.verdict="✓ ¡TODO FUNCIONA! La IA está lista en este dispositivo";
+   AID.fix="Guardando esta clave… Los cuentos, trivias y dibujos con IA ya deben funcionar aquí. Si en la tablet del niño no funciona, abre este mismo diagnóstico allá (la clave vive en cada dispositivo) o usa 🔑 Activar IA en la cuenta del niño.";
+   S.geminiKey=k;save();if(typeof afShareKeyWithChildren==="function")afShareKeyWithChildren(k);if(typeof afPush==="function")afPush();
+  }else{let m="";try{const j=await r.json();m=(j.error&&j.error.message)||"";}catch(e){}
+   push("❌","Paso 3: Error al generar texto ("+r.status+")",esc(m.slice(0,220)));
+   AID.done=true;
+   AID.verdict=(r.status===429||/quota/i.test(m))?"✗ La clave es válida pero se agotó la cuota gratis de hoy":"✗ La conexión sirve pero la generación falla ("+r.status+")";
+   AID.fix=(r.status===429||/quota/i.test(m))?"Espera unas horas o crea una clave en otro proyecto de <b>aistudio.google.com/apikey</b>.":"Copia el informe y pégalo en el chat para revisarlo.";}
+ }catch(e){AID.done=true;push("❌","Paso 3: Falló la generación",esc(String(e&&e.message||e).slice(0,150)));AID.verdict="✗ Error inesperado generando texto";AID.fix="Copia el informe y pégalo en el chat.";}
+ aidPaint();}
+async function aiDiagImg(){
+ const k=(document.getElementById("aidKey").value||S.geminiKey||"").trim();
+ if(!k)return;
+ AID.rows=AID.rows||[];const push=(icon,title,detail)=>{AID.rows.push(aidRow(icon,title,detail));AID.log.push(title+(detail?" | "+detail:""));aidPaint();};
+ push("⏳","Paso 4: Probando generación de imágenes…","(esto gasta un poquito de cuota)");
+ try{
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key="+encodeURIComponent(k),
+   {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"a single red circle, white background"}]}],generationConfig:{responseModalities:["TEXT","IMAGE"]}})});
+  AID.rows.pop();AID.log.pop();
+  if(r.ok){const j=await r.json();const parts=(j.candidates&&j.candidates[0].content&&j.candidates[0].content.parts)||[];
+   const img=parts.find(p=>p.inlineData);
+   push(img?"✅":"⚠️","Paso 4: Imágenes "+(img?"OK":"respondió sin imagen"),img?"El modelo de imágenes funciona — los dibujos IA y las ilustraciones de cuentos servirán":"Respondió pero sin imagen; puede ser temporal, prueba de nuevo");}
+  else{let m="";try{const j=await r.json();m=(j.error&&j.error.message)||"";}catch(e){}
+   push("❌","Paso 4: Imágenes fallan ("+r.status+")",esc(m.slice(0,200))+(r.status===429?" — cuota agotada; el texto puede seguir funcionando":""));}
+ }catch(e){AID.rows.pop();AID.log.pop();push("❌","Paso 4: Imágenes fallan",esc(String(e&&e.message||e).slice(0,150)));}
+ aidPaint();}
+function aiDiagCopy(){
+ const txt="DIAGNOSTICO IA Academia Familiar "+(new Date().toISOString())+"\n"+AID.log.join("\n")+"\nVeredicto: "+AID.verdict.replace(/<[^>]+>/g,"");
+ const fb=document.getElementById("aidcopyfb");
+ try{navigator.clipboard.writeText(txt).then(()=>{if(fb)fb.innerHTML=' <b style="color:#16A34A">✓ Copiado</b>';});}
+ catch(e){if(fb)fb.innerHTML=' <b style="color:#DC2626">No se pudo copiar</b>';}}
