@@ -271,12 +271,15 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn blue" onclick="gameGateRun()">🔢 Carrera de números (hazte más grande)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
  +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
+ +'<button class="kbtn red" onclick="gameDetective()">🕵️ Detective del impostor <span style="opacity:.8;font-size:.82rem">· misiones y pistas</span></button>'
  +'<button class="kbtn red" onclick="gameSlide()">🧩 Rompecabezas deslizante</button>'
  +sub("🇬🇧 Inglés")
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
  +'<button class="kbtn green" onclick="gameSay()">🎤 Di la palabra (micrófono)</button>'
  +sub("🕹️ Arcade (pura diversión)")
  +'<button class="kbtn green" onclick="gamePenalty()">⚽ Penales matemáticos</button>'
+ +'<button class="kbtn yellow" onclick="gameMaze()">🟡 Laberinto glotón <span style="opacity:.8;font-size:.82rem">· come los puntos</span></button>'
+ +'<button class="kbtn blue" onclick="gamePlatform(1)">⛰️ Mundo Saltarín <span style="opacity:.8;font-size:.82rem">· plataformas y monedas</span></button>'
  +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
  +'<button class="kbtn blue" onclick="gameRace()">🏎️ Carrera izquierda y derecha</button>'
  +'<button class="kbtn purple" onclick="gameDoodle()">🦘 Saltarín</button>');}

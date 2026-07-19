@@ -383,6 +383,9 @@ function stopGames(){
  try{if(typeof DJ!=="undefined")DJ.run=false;}catch(e){}
  try{if(typeof SI!=="undefined")SI.lock=true;}catch(e){}
  try{if(typeof OB!=="undefined")OB.done=true;}catch(e){}
+ try{if(typeof PN!=="undefined"&&PN.tick)clearInterval(PN.tick);}catch(e){}
+ try{if(typeof MZ!=="undefined"){MZ.over=true;cancelAnimationFrame(MZ.raf);}}catch(e){}
+ try{if(typeof PL!=="undefined"){PL.over=true;cancelAnimationFrame(PL.raf);}}catch(e){}
  try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}}
 /* sale de un juego con confirmación (la flecha de atrás de los juegos) */
 function exitGame(target){

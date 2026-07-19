@@ -1227,3 +1227,446 @@ function pnEnd(){
  +'<button class="kbtn green" onclick="pnStart('+PN.diff+')">🔁 Jugar otra vez</button>'
  +'<button class="kbtn white" onclick="gamePenalty()">Cambiar jugador o dificultad</button>'
  +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
+
+/* ============ DETECTIVE DEL IMPOSTOR (deduccion con bots + misiones de preguntas) ============ */
+let DT={};
+const DT_COLORS=[["#EF4444","Rojo",1],["#3B82F6","Azul",0],["#22C55E","Verde",0],["#FACC15","Amarillo",1],["#A855F7","Morado",0],["#F472B6","Rosado",1]]; // [hex,nombre,esCalido]
+const DT_HATS=[["gorra","una gorra"],["sombrero","un sombrero"],["antena","una antena"],["nada","nada en la cabeza"]];
+const DT_ITEMS=[["⚽","un balón"],["📘","un libro"],["🍦","un helado"],["🎈","un globo"]];
+function dtSuspectSVG(s,dead){
+ let hat="";
+ if(s.hat==="gorra")hat='<path d="M-13 -21 Q-13 -30 0 -30 Q13 -30 13 -21 Z" fill="#1E3A8A"/><rect x="8" y="-24" width="14" height="5" rx="2.5" fill="#1E3A8A"/>';
+ else if(s.hat==="sombrero")hat='<ellipse cx="0" cy="-22" rx="19" ry="5" fill="#78350F"/><path d="M-10 -22 Q-10 -34 0 -34 Q10 -34 10 -22 Z" fill="#92400E"/>';
+ else if(s.hat==="antena")hat='<line x1="0" y1="-28" x2="0" y2="-38" stroke="#1E2A4A" stroke-width="2.5"/><circle cx="0" cy="-41" r="4" fill="#FDE047" stroke="#1E2A4A" stroke-width="2"/>';
+ return '<svg viewBox="-30 -48 60 82" style="width:100%;display:block'+(dead?';filter:grayscale(1);opacity:.45':'')+'">'
+ +'<ellipse cx="0" cy="28" rx="16" ry="4" fill="rgba(0,0,0,.12)"/>'
+ +'<path d="M-14 -12 Q-14 -28 0 -28 Q14 -28 14 -12 L14 12 Q14 22 6 22 L-6 22 Q-14 22 -14 12 Z" fill="'+s.color+'" stroke="#1E2A4A" stroke-width="2.5"/>'
+ +'<rect x="-9" y="22" width="7" height="6" rx="3" fill="'+s.color+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<rect x="2" y="22" width="7" height="6" rx="3" fill="'+s.color+'" stroke="#1E2A4A" stroke-width="2"/>'
+ +'<circle cx="-5" cy="-10" r="2.6" fill="#1E2A4A"/><circle cx="5" cy="-10" r="2.6" fill="#1E2A4A"/>'
+ +(dead?'<path d="M-6 0 Q0 -4 6 0" stroke="#1E2A4A" stroke-width="2" fill="none" stroke-linecap="round" transform="scale(1,-1) translate(0,2)"/>':'<path d="M-5 -2 Q0 2 5 -2" stroke="#1E2A4A" stroke-width="2" fill="none" stroke-linecap="round"/>')
+ +hat
+ +'<text x="17" y="14" font-size="13" text-anchor="middle">'+s.item+'</text>'
+ +(dead?'<text x="0" y="-2" font-size="26" text-anchor="middle">❌</text>':'')
+ +'</svg>';}
+function gameDetective(){setTheme("kid");
+ // crear 6 sospechosos con atributos variados
+ const hats=shuffled(["gorra","gorra","sombrero","sombrero","antena","nada"]);
+ const items=shuffled(["⚽","⚽","📘","📘","🍦","🎈"]);
+ DT={suspects:DT_COLORS.map((c,i)=>({color:c[0],nm:c[1],warm:c[2],hat:hats[i],item:items[i],out:false})),
+  clueIdx:0,cluesShown:[],tasksOk:0,tasksTotal:0,over:false};
+ DT.imp=rnd(6);
+ const im=DT.suspects[DT.imp];
+ // pistas: cada una elimina sospechosos; el orden garantiza llegar a 1
+ const pool=[];
+ pool.push({t:"El impostor lleva "+DT_HATS.find(h=>h[0]===im.hat)[1]+".",f:s=>s.hat!==im.hat});
+ pool.push({t:"El impostor tiene "+DT_ITEMS.find(x=>x[0]===im.item)[1]+" "+im.item+".",f:s=>s.item!==im.item});
+ pool.push({t:"El impostor es de un color "+(im.warm?"CÁLIDO (rojo, amarillo o rosado)":"FRÍO (azul, verde o morado)")+".",f:s=>s.warm!==im.warm});
+ pool.push({t:"¡Pista final! El impostor es de color "+im.nm.toUpperCase()+".",f:s=>s.nm!==im.nm});
+ DT.clues=shuffled(pool.slice(0,3)).concat([pool[3]]);
+ dtBoard();}
+function dtAlive(){return DT.suspects.filter(s=>!s.out).length;}
+function dtBoard(msg){
+ setTheme("kid");
+ const cards=DT.suspects.map((s,i)=>'<button '+(s.out?'disabled':'onclick="dtAccuse('+i+')"')+' style="background:#FFFEF8;border:4px solid '+(s.out?'rgba(30,42,74,.15)':'var(--kid-ink)')+';border-radius:18px;padding:8px 4px 4px;box-shadow:0 5px 0 rgba(30,42,74,'+(s.out?'.1':'.5')+')">'
+  +dtSuspectSVG(s,s.out)
+  +'<div style="font-family:Fredoka;font-weight:700;font-size:.85rem;color:#1E2A4A;'+(s.out?'text-decoration:line-through;opacity:.5':'')+'">'+s.nm+'</div></button>').join("");
+ const clues=DT.cluesShown.length?'<div class="card" style="background:#FFF7E0;border:3px solid #F59E0B"><b style="font-family:Fredoka">🔎 Pistas:</b>'
+  +DT.cluesShown.map(c=>'<p style="margin:6px 0;font-size:.95rem;line-height:1.4">• '+c+'</p>').join("")+'</div>':'';
+ render(topbar("exitGame('games')")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🕵️ Detective del impostor</h2>'
+ +'<p class="center" style="font-size:.9rem;margin-bottom:10px">Hay un impostor entre los 6. Cumple <b>misiones</b> para ganar pistas y ¡acúsalo tocándolo!</p>'
+ +(msg?'<div class="card center" style="padding:10px;background:#E8FBF0;border:3px solid #3EC97C;font-family:Fredoka;font-weight:700">'+msg+'</div>':'')
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:10px">'+cards+'</div>'
+ +clues
+ +(DT.clueIdx<DT.clues.length?'<button class="kbtn green" onclick="dtTask()">🛰️ Hacer misión (ganas una pista)</button>':'<p class="center" style="font-family:Fredoka;font-weight:700">¡Ya tienes todas las pistas! Acusa al impostor 👆</p>'));}
+function dtGens(){
+ const g=[];
+ if(typeof genCultura==="function")g.push(genCultura);
+ if(typeof genGeo==="function")g.push(genGeo);
+ if(typeof genAlimentos==="function")g.push(genAlimentos);
+ if(typeof genTierra==="function")g.push(genTierra);
+ if(typeof genInfo==="function")g.push(genInfo);
+ if(typeof genSistema==="function")g.push(genSistema);
+ if(typeof genPoligono==="function")g.push(genPoligono);
+ return g;}
+function dtTask(){
+ const gens=dtGens();const q=gens[rnd(gens.length)]();
+ if(q.a===-1&&q.fixAns!==undefined)q.a=q.ops.indexOf(q.fixAns);
+ DT.q=q;DT.order=shuffled(q.ops.map((o,i)=>({o:o,i:i})));
+ render(topbar("gameDetectiveBack()")
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:4px">🛰️ Misión de conocimiento</h2>'
+ +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Responde bien y el detective te da una pista</p>'
+ +(q.pic?'<div class="bigpic">'+q.pic+'</div>':'')
+ +'<div class="bigq center">'+esc(q.q)+'</div>'
+ +'<div class="choices2">'+DT.order.map((s,vi)=>'<button class="kbtn white" style="font-size:clamp(1.05rem,4.6vw,1.35rem)" onclick="dtAns('+vi+')">'+esc(s.o)+'</button>').join("")+'</div>');}
+function gameDetectiveBack(){dtBoard();}
+function dtAns(vi){
+ const ok=DT.order[vi].i===DT.q.a;DT.tasksTotal++;
+ recordAnswer("Lógica",ok,12);
+ if(ok){DT.tasksOk++;sOK();confetti(8);
+  const clue=DT.clues[DT.clueIdx];DT.clueIdx++;
+  DT.cluesShown.push(clue.t);
+  DT.suspects.forEach(s=>{if(clue.f(s))s.out=true;});
+  // no eliminar jamás al impostor por error (f siempre lo respeta)
+  setTimeout(()=>dtBoard("✅ ¡Misión cumplida! Nueva pista conseguida 🔎"),900);
+  toast("¡Correcto! 🎉",true,850);}
+ else{sNO();toast("Era: "+DT.q.ops[DT.q.a]+" — el impostor se escapó esta vez 😼",false,2000);
+  setTimeout(()=>dtBoard("❌ Misión fallida. ¡Intenta otra misión!"),1900);}}
+function dtAccuse(i){
+ if(DT.over)return;
+ const s=DT.suspects[i];
+ if(!confirm("¿Acusar a "+s.nm+"? ¡Piénsalo bien, detective!"))return;
+ DT.over=true;
+ const win=(i===DT.imp);
+ const im=DT.suspects[DT.imp];
+ if(win){sWIN();confetti(30);
+  const alive=dtAlive();
+  const st=alive>=4?3:alive>=2?2:1; // acusar con menos pistas = más estrellas... al reves: acusar temprano con acierto = crack
+  const p=prof();if(p){p.coins+=6+st*2;p.xp+=18;save();}
+  render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">🎉</div><h2>¡Atrapaste al impostor!</h2>'
+  +'<div style="max-width:110px;margin:8px auto">'+dtSuspectSVG(im,false)+'</div>'
+  +'<p style="font-size:1.05rem;margin:8px 0">Era <b>'+im.nm+'</b> · Misiones: '+DT.tasksOk+'/'+DT.tasksTotal+'</p>'
+  +'<div style="font-size:1.5rem;margin-bottom:8px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>'
+  +'<button class="kbtn green" onclick="gameDetective()">🔁 Otro caso</button>'
+  +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
+ else{sNO();
+  render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">😱</div><h2>¡Ese no era!</h2>'
+  +'<p style="font-size:1.05rem;margin:8px 0">El impostor era <b>'+im.nm+'</b>…</p>'
+  +'<div style="max-width:110px;margin:8px auto">'+dtSuspectSVG(im,false)+'</div>'
+  +'<button class="kbtn green" onclick="gameDetective()">🔁 Nuevo caso</button>'
+  +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}}
+
+/* ============ LABERINTO GLOTON (come-puntos con monstruitos; jugabilidad clasica, personajes originales) ============ */
+let MZ={};
+const MZ_MAP=[
+"#############",
+"#.....#.....#",
+"#.##..#..##.#",
+"#..#.....#..#",
+"##.#.###.#.##",
+"#....#G#....#",
+"#.##.#.#.##.#",
+"#.....F....G#",
+"#.##.###.##.#",
+"#..#.....#..#",
+"##.#.#.#.#.##",
+"#....#.#....#",
+"#.##.#.#.##.#",
+"#.....P.....#",
+"#############"];
+const MZ_DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+function mzOpen(cx,cy){return MZ_MAP[cy]&&MZ_MAP[cy][cx]&&MZ_MAP[cy][cx]!=="#";}
+function gameMaze(){setTheme("kid");
+ MZ={score:0,lives:3,over:false,won:false,raf:0,last:0,dots:{},nDots:0,fruit:null,t:0};
+ let px=6,py=13;const monsters=[];
+ for(let y=0;y<MZ_MAP.length;y++)for(let x=0;x<MZ_MAP[y].length;x++){
+  const ch=MZ_MAP[y][x];
+  if(ch==="."){MZ.dots[x+","+y]=1;MZ.nDots++;}
+  else if(ch==="F")MZ.fruit={x,y};
+  else if(ch==="P"){px=x;py=y;}
+  else if(ch==="G")monsters.push({x,y});
+ }
+ MZ.pl={fx:px,fy:py,tx:px,ty:py,t:1,dir:"left",want:"left",speed:4.6};
+ MZ.mon=monsters.map((m,i)=>({fx:m.x,fy:m.y,tx:m.x,ty:m.y,t:1,dir:"down",speed:3.6+i*0.2,col:i?"#22D3EE":"#F472B6",home:{x:m.x,y:m.y}}));
+ render(topbar("exitGame('games')")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🟡 Laberinto glotón</h2>'
+ +'<div style="display:flex;justify-content:center;gap:16px;font-family:Fredoka;font-weight:800;margin-bottom:6px"><span>⭐ <span id="mzscore">0</span></span><span id="mzlives">❤️❤️❤️</span></div>'
+ +'<canvas id="mzcv" style="width:100%;max-width:390px;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none;background:#0B1220"></canvas>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,64px);gap:7px;justify-content:center;margin-top:10px">'
+ +'<span></span><button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'up\')">⬆️</button><span></span>'
+ +'<button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'left\')">⬅️</button>'
+ +'<button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'down\')">⬇️</button>'
+ +'<button class="kbtn white" style="min-height:52px;margin:0;font-size:1.3rem" onclick="mzGo(\'right\')">➡️</button></div>'
+ +'<p class="center" style="font-size:.82rem;margin-top:8px">Cómete todos los puntos sin que te atrapen. También puedes deslizar el dedo sobre el laberinto.</p>');
+ const cv=document.getElementById("mzcv");
+ const C=13,R=15,T=26;
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ const cssW=Math.min(390,cv.clientWidth||330);
+ cv.style.height=Math.round(cssW*R/C)+"px";
+ cv.width=Math.round(C*T*dpr*(cssW/(C*T)));cv.height=Math.round(R*T*dpr*(cssW/(C*T)));
+ const ctx=cv.getContext("2d");ctx.scale(dpr*cssW/(C*T),dpr*cssW/(C*T));
+ MZ.ctx=ctx;MZ.T=T;
+ // swipe
+ let sx=0,sy=0;
+ cv.addEventListener("pointerdown",e=>{sx=e.clientX;sy=e.clientY;});
+ cv.addEventListener("pointerup",e=>{const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.abs(dx)<14&&Math.abs(dy)<14)return;
+  mzGo(Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up"));});
+ MZ.keyfn=e=>{const m={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right"};if(m[e.key]){mzGo(m[e.key]);e.preventDefault();}};
+ window.addEventListener("keydown",MZ.keyfn);
+ MZ.last=performance.now();
+ MZ.raf=requestAnimationFrame(mzLoop);}
+function mzGo(d){if(MZ.pl)MZ.pl.want=d;}
+function mzStep(e,decide){
+ // avanza interpolando de (fx,fy) a (tx,ty)
+ if(e.t>=1){e.fx=e.tx;e.fy=e.ty;
+  const nd=decide(e);
+  if(nd){e.dir=nd;const v=MZ_DIRS[nd];
+   if(mzOpen(e.fx+v[0],e.fy+v[1])){e.tx=e.fx+v[0];e.ty=e.fy+v[1];e.t=0;}}
+ }
+ if(e.t<1)e.t=Math.min(1,e.t+e.speed*MZ.dt);
+ e.x=e.fx+(e.tx-e.fx)*e.t;e.y=e.fy+(e.ty-e.fy)*e.t;}
+function mzLoop(now){
+ if(MZ.over)return;
+ MZ.dt=Math.min(0.05,(now-MZ.last)/1000);MZ.last=now;MZ.t+=MZ.dt;
+ // jugador
+ mzStep(MZ.pl,e=>{
+  const w=MZ_DIRS[e.want];
+  if(w&&mzOpen(e.fx+w[0],e.fy+w[1]))return e.want;
+  const c=MZ_DIRS[e.dir];
+  if(c&&mzOpen(e.fx+c[0],e.fy+c[1]))return e.dir;
+  return null;});
+ // comer
+ const key=MZ.pl.fx+","+MZ.pl.fy;
+ if(MZ.dots[key]){delete MZ.dots[key];MZ.score++;MZ.nDots--;if(typeof tone==="function"&&MZ.nDots%3===0)tone(620,.04);
+  const el=document.getElementById("mzscore");if(el)el.textContent=MZ.score;
+  if(MZ.nDots<=0)return mzWin();}
+ if(MZ.fruit&&MZ.pl.fx===MZ.fruit.x&&MZ.pl.fy===MZ.fruit.y){MZ.score+=10;MZ.fruit=null;sOK();
+  const el=document.getElementById("mzscore");if(el)el.textContent=MZ.score;}
+ // monstruos
+ MZ.mon.forEach(m=>mzStep(m,e=>{
+  const opts=Object.keys(MZ_DIRS).filter(d=>{
+   const v=MZ_DIRS[d];if(!mzOpen(e.fx+v[0],e.fy+v[1]))return false;
+   const rev={up:"down",down:"up",left:"right",right:"left"}[e.dir];
+   return d!==rev;});
+  const pool=opts.length?opts:Object.keys(MZ_DIRS).filter(d=>{const v=MZ_DIRS[d];return mzOpen(e.fx+v[0],e.fy+v[1]);});
+  if(!pool.length)return null;
+  if(Math.random()<0.3)return pool[rnd(pool.length)];
+  let best=pool[0],bd=1e9;
+  pool.forEach(d=>{const v=MZ_DIRS[d];const dd=Math.abs(e.fx+v[0]-MZ.pl.x)+Math.abs(e.fy+v[1]-MZ.pl.y);if(dd<bd){bd=dd;best=d;}});
+  return best;}));
+ // choque
+ for(const m of MZ.mon){
+  if(Math.hypot(m.x-MZ.pl.x,m.y-MZ.pl.y)<0.62){return mzHit();}}
+ mzDraw();
+ MZ.raf=requestAnimationFrame(mzLoop);}
+function mzHit(){
+ MZ.lives--;sNO();
+ const el=document.getElementById("mzlives");if(el)el.textContent="❤️".repeat(Math.max(0,MZ.lives));
+ if(MZ.lives<=0)return mzEnd(false);
+ // reset posiciones
+ MZ.pl.fx=6;MZ.pl.fy=13;MZ.pl.tx=6;MZ.pl.ty=13;MZ.pl.t=1;MZ.pl.dir="left";MZ.pl.want="left";
+ MZ.mon.forEach(m=>{m.fx=m.home.x;m.fy=m.home.y;m.tx=m.home.x;m.ty=m.home.y;m.t=1;});
+ mzDraw();
+ setTimeout(()=>{if(!MZ.over){MZ.last=performance.now();MZ.raf=requestAnimationFrame(mzLoop);}},700);}
+function mzWin(){MZ.won=true;mzEnd(true);}
+function mzEnd(win){
+ MZ.over=true;cancelAnimationFrame(MZ.raf);window.removeEventListener("keydown",MZ.keyfn);
+ const st=win?(MZ.lives>=3?3:MZ.lives===2?2:1):(MZ.score>=40?1:0);
+ const p=prof();if(p){p.coins+=Math.round(MZ.score/8)+(win?5:0);p.xp+=win?15:5;save();}
+ if(win){sWIN();confetti(28);}
+ render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">'+(win?"🏆":"👾")+'</div>'
+ +'<h2>'+(win?"¡Te comiste todo el laberinto!":"¡Te atraparon!")+'</h2>'
+ +'<p style="font-size:1.05rem;margin:8px 0">Puntos: '+MZ.score+'</p>'
+ +(st?'<div style="font-size:1.5rem;margin-bottom:8px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>':'')
+ +'<button class="kbtn green" onclick="gameMaze()">🔁 Jugar otra vez</button>'
+ +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
+function mzDraw(){
+ const c=MZ.ctx,T=MZ.T;if(!c)return;
+ c.fillStyle="#0B1220";c.fillRect(0,0,13*T,15*T);
+ // muros
+ for(let y=0;y<15;y++)for(let x=0;x<13;x++){
+  if(MZ_MAP[y][x]==="#"){
+   c.fillStyle="#1D4ED8";c.beginPath();
+   if(c.roundRect)c.roundRect(x*T+2,y*T+2,T-4,T-4,5);else c.rect(x*T+2,y*T+2,T-4,T-4);
+   c.fill();
+   c.fillStyle="rgba(147,197,253,.25)";c.fillRect(x*T+4,y*T+4,T-8,4);
+  }}
+ // puntos
+ c.fillStyle="#FDE047";
+ for(const k in MZ.dots){const [x,y]=k.split(",").map(Number);
+  c.beginPath();c.arc(x*T+T/2,y*T+T/2,3,0,Math.PI*2);c.fill();}
+ // fruta
+ if(MZ.fruit){c.font="16px serif";c.textAlign="center";c.textBaseline="middle";
+  c.fillText("🍓",MZ.fruit.x*T+T/2,MZ.fruit.y*T+T/2+1);}
+ // jugador (bolita amarilla con boca animada segun direccion)
+ const p=MZ.pl,pxx=p.x*T+T/2,pyy=p.y*T+T/2;
+ const ang={right:0,down:Math.PI/2,left:Math.PI,up:-Math.PI/2}[p.dir]||0;
+ const mouth=0.28+0.24*Math.abs(Math.sin(MZ.t*9));
+ c.fillStyle="#FDE047";c.beginPath();
+ c.moveTo(pxx,pyy);c.arc(pxx,pyy,T/2-3,ang+mouth,ang-mouth+Math.PI*2);c.closePath();c.fill();
+ c.strokeStyle="#1E2A4A";c.lineWidth=2;c.stroke();
+ const ex=pxx+Math.cos(ang-Math.PI/2)*5,ey=pyy+Math.sin(ang-Math.PI/2)*5;
+ c.fillStyle="#1E2A4A";c.beginPath();c.arc(ex,ey,2.2,0,Math.PI*2);c.fill();
+ // monstruitos (bolitas con antena y ojos, personajes propios)
+ MZ.mon.forEach(m=>{
+  const mx=m.x*T+T/2,my=m.y*T+T/2;
+  c.fillStyle=m.col;c.beginPath();c.arc(mx,my,T/2-4,0,Math.PI*2);c.fill();
+  c.strokeStyle="#1E2A4A";c.lineWidth=2;c.stroke();
+  c.beginPath();c.moveTo(mx,my-T/2+4);c.lineTo(mx,my-T/2-2);c.stroke();
+  c.fillStyle="#FDE047";c.beginPath();c.arc(mx,my-T/2-4,2.5,0,Math.PI*2);c.fill();
+  const v=MZ_DIRS[m.dir]||[0,0];
+  c.fillStyle="#fff";
+  c.beginPath();c.arc(mx-4,my-2,3.4,0,Math.PI*2);c.fill();c.beginPath();c.arc(mx+4,my-2,3.4,0,Math.PI*2);c.fill();
+  c.fillStyle="#1E2A4A";
+  c.beginPath();c.arc(mx-4+v[0]*1.6,my-2+v[1]*1.6,1.7,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(mx+4+v[0]*1.6,my-2+v[1]*1.6,1.7,0,Math.PI*2);c.fill();
+ });}
+
+/* ============ MUNDO SALTARIN (plataformas: corre, salta, monedas y bandera; personaje original) ============ */
+let PL={};
+function gamePlatform(world){
+ setTheme("kid");world=world||1;
+ PL={world:world,hearts:3,coins:0,over:false,raf:0,last:0,t:0,inv:0,win:false};
+ // construir nivel
+ const speed=185+world*22;
+ PL.speed=speed;
+ const plats=[],coins=[],foes=[];
+ let x=0;const groundY=250;
+ plats.push({x:0,y:groundY,w:340,ground:1});x=340;
+ let n=0;
+ while(x<2500){
+  const gap=62+rnd(40)+world*12;
+  x+=gap;
+  const w=150+rnd(170);
+  plats.push({x:x,y:groundY,w:w,ground:1});
+  // monedas sobre el hueco (arco)
+  coins.push({x:x-gap/2,y:groundY-95-rnd(25),r:9});
+  if(w>190){ // plataforma flotante con monedas
+   if(n%2===0){const fy=groundY-92;plats.push({x:x+30,y:fy,w:86});coins.push({x:x+52,y:fy-24,r:9},{x:x+82,y:fy-24,r:9});}
+   else{foes.push({x:x+w*0.55,y:groundY-18,dir:-1,min:x+30,max:x+w-30,dead:false});}
+  }
+  coins.push({x:x+40+rnd(Math.max(20,w-80)),y:groundY-28,r:9});
+  x+=w;n++;
+ }
+ const endW=240;plats.push({x:x+70,y:groundY,w:endW,ground:1});
+ PL.flagX=x+70+endW-70;
+ PL.plats=plats;PL.coins=coins;PL.foes=foes;
+ PL.p={x:60,y:groundY-28,vy:0,w:24,h:28,ground:true,jumps:0};
+ render(topbar("exitGame('games')")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">⛰️ Mundo Saltarín · Mundo '+world+'</h2>'
+ +'<div style="display:flex;justify-content:center;gap:16px;font-family:Fredoka;font-weight:800;margin-bottom:6px"><span id="plh">❤️❤️❤️</span><span>🪙 <span id="plc">0</span></span></div>'
+ +'<canvas id="plcv" style="width:100%;max-width:430px;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none"></canvas>'
+ +'<button class="kbtn green" style="max-width:430px;display:block;margin:10px auto 0;min-height:58px" onclick="plJump()">⬆️ ¡SALTAR!</button>'
+ +'<p class="center" style="font-size:.82rem;margin-top:6px">Corre solo — tú salta los huecos y esquiva o aplasta a los bichos. ¡Llega a la bandera! (también puedes tocar la pantalla del juego)</p>');
+ const cv=document.getElementById("plcv");
+ const W=360,H=300;
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ const cssW=Math.min(430,cv.clientWidth||330);
+ cv.style.height=Math.round(cssW*H/W)+"px";
+ cv.width=Math.round(W*dpr*cssW/(W));cv.height=Math.round(H*dpr*cssW/(W));
+ const ctx=cv.getContext("2d");ctx.scale(dpr*cssW/W,dpr*cssW/W);
+ PL.ctx=ctx;PL.W=W;PL.H=H;
+ cv.addEventListener("pointerdown",e=>{e.preventDefault();plJump();});
+ PL.keyfn=e=>{if(e.key===" "||e.key==="ArrowUp"){plJump();e.preventDefault();}};
+ window.addEventListener("keydown",PL.keyfn);
+ PL.last=performance.now();
+ PL.raf=requestAnimationFrame(plLoop);}
+function plJump(){
+ const p=PL.p;if(!p||PL.over)return;
+ if(p.ground){p.vy=-500;p.ground=false;p.jumps=1;if(typeof tone==="function")tone(500,.06);}
+ else if(p.jumps<2){p.vy=-440;p.jumps=2;if(typeof tone==="function")tone(640,.06);}}
+function plLoop(now){
+ if(PL.over)return;
+ const dt=Math.min(0.04,(now-PL.last)/1000);PL.last=now;PL.t+=dt;
+ const p=PL.p;
+ if(PL.inv>0)PL.inv-=dt;
+ p.x+=PL.speed*dt;
+ p.vy+=1350*dt;const prevY=p.y;p.y+=p.vy*dt;
+ // plataformas
+ p.ground=false;
+ for(const pl of PL.plats){
+  if(p.x+p.w*0.5>pl.x&&p.x-p.w*0.5<pl.x+pl.w){
+   if(prevY+p.h<=pl.y+6&&p.y+p.h>=pl.y&&p.vy>=0){p.y=pl.y-p.h;p.vy=0;p.ground=true;p.jumps=0;}
+  }}
+ // caida
+ if(p.y>PL.H+40)return plHurt(true);
+ // monedas
+ for(const c of PL.coins){if(!c.got&&Math.abs(c.x-p.x)<18&&Math.abs(c.y-(p.y+p.h/2))<24){c.got=true;PL.score=(PL.score||0)+1;
+  const el=document.getElementById("plc");if(el)el.textContent=PL.score;if(typeof tone==="function")tone(880,.05);}}
+ // enemigos
+ for(const f of PL.foes){
+  if(f.dead)continue;
+  f.x+=f.dir*55*dt;if(f.x<f.min){f.dir=1;}if(f.x>f.max){f.dir=-1;}
+  if(Math.abs(f.x-p.x)<20&&Math.abs((f.y)-(p.y+p.h))<16){
+   if(p.vy>60){f.dead=true;p.vy=-380;PL.score=(PL.score||0)+3;sOK();const el=document.getElementById("plc");if(el)el.textContent=PL.score;}
+   else if(PL.inv<=0)return plHurt(false);
+  }}
+ // bandera
+ if(p.x>=PL.flagX)return plWin();
+ plDraw();
+ PL.raf=requestAnimationFrame(plLoop);}
+function plHurt(fell){
+ PL.hearts--;sNO();
+ const el=document.getElementById("plh");if(el)el.textContent="❤️".repeat(Math.max(0,PL.hearts));
+ if(PL.hearts<=0)return plEnd(false);
+ // respawn: plataforma mas cercana hacia atras
+ const p=PL.p;let best=PL.plats[0];
+ for(const pl of PL.plats){if(pl.x<p.x-10&&pl.x>best.x)best=pl;}
+ p.x=best.x+40;p.y=best.y-p.h-2;p.vy=0;p.ground=true;p.jumps=0;PL.inv=1.6;
+ PL.last=performance.now();
+ PL.raf=requestAnimationFrame(plLoop);}
+function plWin(){PL.win=true;plEnd(true);}
+function plEnd(win){
+ PL.over=true;cancelAnimationFrame(PL.raf);window.removeEventListener("keydown",PL.keyfn);
+ const sc=PL.score||0;
+ const st=win?(PL.hearts>=3?3:PL.hearts===2?2:1):0;
+ const p=prof();if(p){p.coins+=Math.round(sc/2)+(win?6:1);p.xp+=win?14:4;save();}
+ if(win){sWIN();confetti(30);}
+ const next=PL.world<3?'<button class="kbtn green" onclick="gamePlatform('+(PL.world+1)+')">➡️ Mundo '+(PL.world+1)+'</button>':'';
+ render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">'+(win?(PL.world>=3?"👑":"🚩"):"💔")+'</div>'
+ +'<h2>'+(win?(PL.world>=3?"¡Campeón de los 3 mundos!":"¡Llegaste a la bandera!"):"¡Oh no!")+'</h2>'
+ +'<p style="font-size:1.05rem;margin:8px 0">🪙 '+sc+' monedas · Mundo '+PL.world+'</p>'
+ +(st?'<div style="font-size:1.5rem;margin-bottom:8px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>':'')
+ +(win?next:'<button class="kbtn green" onclick="gamePlatform('+PL.world+')">🔁 Reintentar</button>')
+ +'<button class="kbtn white" onclick="gamePlatform(1)">Desde el mundo 1</button>'
+ +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
+function plDraw(){
+ const c=PL.ctx,W=PL.W,H=PL.H,p=PL.p;if(!c)return;
+ const cam=Math.max(0,p.x-110);
+ // cielo
+ const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,"#7DD3FC");g.addColorStop(1,"#E0F2FE");
+ c.fillStyle=g;c.fillRect(0,0,W,H);
+ // sol
+ c.fillStyle="#FDE047";c.beginPath();c.arc(W-50,42,20,0,Math.PI*2);c.fill();
+ // nubes (parallax)
+ c.fillStyle="rgba(255,255,255,.9)";
+ for(let i=0;i<6;i++){const cx=((i*260-cam*0.35)%(W+240))-120+(i%2)*40;const cy=40+(i%3)*26;
+  c.beginPath();c.arc(cx,cy,14,0,Math.PI*2);c.arc(cx+16,cy-6,11,0,Math.PI*2);c.arc(cx+30,cy,12,0,Math.PI*2);c.fill();}
+ // colinas
+ c.fillStyle="#86EFAC";
+ for(let i=0;i<8;i++){const hx=((i*300-cam*0.55)%(W+340))-160;
+  c.beginPath();c.arc(hx,H-30,70,Math.PI,0);c.fill();}
+ // plataformas
+ for(const pl of PL.plats){
+  const x=pl.x-cam;if(x>W||x+pl.w<0)continue;
+  if(pl.ground){
+   c.fillStyle="#92400E";c.fillRect(x,pl.y,pl.w,H-pl.y);
+   c.fillStyle="#22C55E";c.fillRect(x,pl.y,pl.w,14);
+   c.fillStyle="rgba(255,255,255,.18)";c.fillRect(x,pl.y,pl.w,4);
+  }else{
+   c.fillStyle="#F97316";c.beginPath();
+   if(c.roundRect)c.roundRect(x,pl.y,pl.w,14,7);else c.rect(x,pl.y,pl.w,14);c.fill();
+   c.strokeStyle="#7C2D12";c.lineWidth=2;c.stroke();
+  }}
+ // monedas (giran con escala)
+ for(const co of PL.coins){if(co.got)continue;const x=co.x-cam;if(x>W+20||x<-20)continue;
+  const sc=Math.abs(Math.sin(PL.t*4+co.x));
+  c.fillStyle="#FACC15";c.beginPath();c.ellipse(x,co.y,9*Math.max(0.25,sc),9,0,0,Math.PI*2);c.fill();
+  c.strokeStyle="#A16207";c.lineWidth=2;c.stroke();}
+ // enemigos (bichos morados)
+ for(const f of PL.foes){if(f.dead)continue;const x=f.x-cam;if(x>W+30||x<-30)continue;
+  c.fillStyle="#A855F7";c.beginPath();c.ellipse(x,f.y+6,13,11,0,0,Math.PI*2);c.fill();
+  c.strokeStyle="#1E2A4A";c.lineWidth=2;c.stroke();
+  c.fillStyle="#fff";c.beginPath();c.arc(x-4,f.y+2,3.5,0,Math.PI*2);c.arc(x+4,f.y+2,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle="#1E2A4A";c.beginPath();c.arc(x-4+f.dir*1.5,f.y+2,1.8,0,Math.PI*2);c.arc(x+4+f.dir*1.5,f.y+2,1.8,0,Math.PI*2);c.fill();}
+ // bandera
+ const fx=PL.flagX-cam;
+ if(fx<W+40){c.strokeStyle="#64748B";c.lineWidth=4;c.beginPath();c.moveTo(fx,PL.plats[PL.plats.length-1].y);c.lineTo(fx,PL.plats[PL.plats.length-1].y-90);c.stroke();
+  c.fillStyle="#22C55E";c.beginPath();c.moveTo(fx,PL.plats[PL.plats.length-1].y-90);c.lineTo(fx+34,PL.plats[PL.plats.length-1].y-76);c.lineTo(fx,PL.plats[PL.plats.length-1].y-62);c.closePath();c.fill();}
+ // heroe (redondito turquesa con gorra amarilla hacia atras) — parpadea si invencible
+ if(PL.inv<=0||Math.floor(PL.t*10)%2===0){
+  const x=p.x-cam,y=p.y;
+  const squash=p.ground?1:0.92;
+  c.save();c.translate(x,y+p.h/2);c.scale(1,squash);
+  c.fillStyle="#14B8A6";c.beginPath();c.ellipse(0,0,p.w/2+2,p.h/2,0,0,Math.PI*2);c.fill();
+  c.strokeStyle="#1E2A4A";c.lineWidth=2.5;c.stroke();
+  c.fillStyle="#FACC15";c.beginPath();c.arc(0,-p.h/2+3,10,Math.PI,0);c.fill();
+  c.fillRect(-14,-p.h/2+1,9,5);
+  c.fillStyle="#fff";c.beginPath();c.arc(3,-4,4.5,0,Math.PI*2);c.fill();
+  c.fillStyle="#1E2A4A";c.beginPath();c.arc(4.5,-4,2.2,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(-6,2,2,0,Math.PI*2);c.fill(); // mejilla/nariz
+  c.fillStyle="#0F766E";c.fillRect(-8,p.h/2-6,7,6);c.fillRect(2,p.h/2-6,7,6);
+  c.restore();}
+}
