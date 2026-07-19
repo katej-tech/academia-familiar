@@ -1515,7 +1515,8 @@ let PL={};
 const PL_THEMES=[
  {n:"Pradera 🌼",sky1:"#7DD3FC",sky2:"#E0F2FE",hill:"#86EFAC",gTop:"#22C55E",gBody:"#92400E",plat:"#F97316",platLine:"#7C2D12",foe:"#A855F7",decor:"flor"},
  {n:"Desierto 🌵",sky1:"#FDBA74",sky2:"#FEF3C7",hill:"#FCD34D",gTop:"#FBBF24",gBody:"#B45309",plat:"#F59E0B",platLine:"#92400E",foe:"#DC2626",decor:"cactus"},
- {n:"Nieve ❄️",sky1:"#93C5FD",sky2:"#E0E7FF",hill:"#E2E8F0",gTop:"#F8FAFC",gBody:"#64748B",plat:"#38BDF8",platLine:"#0369A1",foe:"#0EA5E9",decor:"pino"}];
+ {n:"Nieve ❄️",sky1:"#93C5FD",sky2:"#E0E7FF",hill:"#E2E8F0",gTop:"#F8FAFC",gBody:"#64748B",plat:"#38BDF8",platLine:"#0369A1",foe:"#0EA5E9",decor:"pino"},
+ {n:"Lava 🌋",sky1:"#7F1D1D",sky2:"#F97316",hill:"#44403C",gTop:"#57534E",gBody:"#292524",plat:"#F97316",platLine:"#7C2D12",foe:"#FB923C",decor:"roca"}];
 function gamePlatform(){setTheme("kid");
  if(PL&&PL.raf)cancelAnimationFrame(PL.raf);
  PL={player:(PL&&PL.player)||0};
@@ -1530,7 +1531,8 @@ function gamePlatform(){setTheme("kid");
  +'<p style="font-family:Fredoka;font-weight:700;margin:4px 2px">Mundo</p>'
  +'<button class="kbtn green" onclick="plStart(1)">🌼 Mundo 1 · Pradera <span style="opacity:.8;font-size:.85rem">· tranquilo</span></button>'
  +'<button class="kbtn yellow" onclick="plStart(2)">🌵 Mundo 2 · Desierto <span style="opacity:.8;font-size:.85rem">· más rápido</span></button>'
- +'<button class="kbtn blue" onclick="plStart(3)">❄️ Mundo 3 · Nieve <span style="opacity:.8;font-size:.85rem">· ¡reto helado!</span></button>');}
+ +'<button class="kbtn blue" onclick="plStart(3)">❄️ Mundo 3 · Nieve <span style="opacity:.8;font-size:.85rem">· ¡reto helado!</span></button>'
+ +'<button class="kbtn red" onclick="plStart(4)">🌋 Mundo 4 · Lava <span style="opacity:.8;font-size:.85rem">· ¡solo valientes!</span></button>');}
 function plPick(i){PL.player=i;for(let k=0;k<4;k++){const el=document.getElementById("plp"+k);if(el)el.style.borderColor=(k===i)?"#1E2A4A":"rgba(30,42,74,.12)";}}
 function plStart(world){
  setTheme("kid");world=world||1;
@@ -1631,9 +1633,9 @@ function plEnd(win){
  const st=win?(PL.hearts>=3?3:PL.hearts===2?2:1):0;
  const p=prof();if(p){p.coins+=Math.round(sc/2)+(win?6:1);p.xp+=win?14:4;save();}
  if(win){sWIN();confetti(30);}
- const next=PL.world<3?'<button class="kbtn green" onclick="plStart('+(PL.world+1)+')">➡️ Mundo '+(PL.world+1)+' · '+PL_THEMES[PL.world].n+'</button>':'';
- render(topbar("gamePlatform()")+'<div class="card endcard"><div class="big">'+(win?(PL.world>=3?"👑":"🚩"):"💔")+'</div>'
- +'<h2>'+(win?(PL.world>=3?"¡Campeón de los 3 mundos!":"¡Llegaste a la bandera!"):"¡Oh no!")+'</h2>'
+ const next=PL.world<4?'<button class="kbtn green" onclick="plStart('+(PL.world+1)+')">➡️ Mundo '+(PL.world+1)+' · '+PL_THEMES[PL.world].n+'</button>':'';
+ render(topbar("gamePlatform()")+'<div class="card endcard"><div class="big">'+(win?(PL.world>=4?"👑":"🚩"):"💔")+'</div>'
+ +'<h2>'+(win?(PL.world>=4?"¡Campeón de los 4 mundos!":"¡Llegaste a la bandera!"):"¡Oh no!")+'</h2>'
  +'<p style="font-size:1.05rem;margin:8px 0">🪙 '+sc+' monedas · '+PL_THEMES[PL.world-1].n+'</p>'
  +(st?'<div style="font-size:1.5rem;margin-bottom:8px">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div>':'')
  +(win?next:'<button class="kbtn green" onclick="plStart('+PL.world+')">🔁 Reintentar</button>')
@@ -1656,10 +1658,13 @@ function plDraw(){
  c.fillStyle=TH.hill;
  for(let i=0;i<8;i++){const hx=((i*300-cam*0.55)%(W+340))-160;
   c.beginPath();c.arc(hx,H-30,70,Math.PI,0);c.fill();}
- // nieve cayendo
+ // partículas: nieve cayendo o brasas subiendo
  if(TH.decor==="pino"){c.fillStyle="rgba(255,255,255,.85)";
   for(let i=0;i<26;i++){const sx=((i*67+PL.t*30)%(W+20))-10;const sy=(i*41+PL.t*55)%H;
    c.beginPath();c.arc(sx,sy,1.8,0,Math.PI*2);c.fill();}}
+ else if(TH.decor==="roca"){c.fillStyle="rgba(251,146,60,.8)";
+  for(let i=0;i<20;i++){const sx=((i*83+PL.t*22)%(W+20))-10;const sy=H-((i*47+PL.t*48)%H);
+   c.beginPath();c.arc(sx,sy,1.6,0,Math.PI*2);c.fill();}}
  // plataformas
  for(const pl of PL.plats){
   const x=pl.x-cam;if(x>W||x+pl.w<0)continue;
@@ -1671,7 +1676,8 @@ function plDraw(){
    for(let dx=30;dx<pl.w-20;dx+=90){const ddx=x+dx;
     if(TH.decor==="flor"){c.fillStyle="#F472B6";c.beginPath();c.arc(ddx,pl.y-6,4,0,Math.PI*2);c.fill();c.fillStyle="#FDE047";c.beginPath();c.arc(ddx,pl.y-6,1.8,0,Math.PI*2);c.fill();c.strokeStyle="#16A34A";c.lineWidth=2;c.beginPath();c.moveTo(ddx,pl.y-3);c.lineTo(ddx,pl.y);c.stroke();}
     else if(TH.decor==="cactus"){c.fillStyle="#16A34A";c.fillRect(ddx-3,pl.y-18,6,18);c.fillRect(ddx-10,pl.y-13,7,4);c.fillRect(ddx+3,pl.y-10,7,4);}
-    else{c.fillStyle="#166534";c.beginPath();c.moveTo(ddx,pl.y-24);c.lineTo(ddx-9,pl.y);c.lineTo(ddx+9,pl.y);c.closePath();c.fill();c.fillStyle="rgba(255,255,255,.7)";c.beginPath();c.moveTo(ddx,pl.y-24);c.lineTo(ddx-5,pl.y-12);c.lineTo(ddx+5,pl.y-12);c.closePath();c.fill();}}
+    else if(TH.decor==="pino"){c.fillStyle="#166534";c.beginPath();c.moveTo(ddx,pl.y-24);c.lineTo(ddx-9,pl.y);c.lineTo(ddx+9,pl.y);c.closePath();c.fill();c.fillStyle="rgba(255,255,255,.7)";c.beginPath();c.moveTo(ddx,pl.y-24);c.lineTo(ddx-5,pl.y-12);c.lineTo(ddx+5,pl.y-12);c.closePath();c.fill();}
+    else{c.fillStyle="#1C1917";c.beginPath();c.moveTo(ddx-8,pl.y);c.lineTo(ddx-3,pl.y-13);c.lineTo(ddx+2,pl.y-5);c.lineTo(ddx+7,pl.y-15);c.lineTo(ddx+10,pl.y);c.closePath();c.fill();c.fillStyle="#F97316";c.beginPath();c.arc(ddx+2,pl.y-3,2,0,Math.PI*2);c.fill();}}
   }else{
    c.fillStyle=TH.plat;c.beginPath();
    if(c.roundRect)c.roundRect(x,pl.y,pl.w,14,7);else c.rect(x,pl.y,pl.w,14);c.fill();
@@ -1719,24 +1725,32 @@ function plDraw(){
   c.restore();}
 }
 
-/* ============ NAVE IMPOSTORA (mapa, caminar tocando, tareas interactivas, sabotajes y votacion) ============ */
+
+/* ============ NAVE IMPOSTORA v2 (2 mapas, 8 jugadores, roles, personalizacion, 7 tareas) ============ */
 let NV={};
-const NV_WALK=[[20,20,90,70],[250,20,90,70],[20,210,90,70],[250,210,90,70],[135,115,90,70],[20,135,320,30],[50,20,30,260],[280,20,30,260],[135,20,90,70],[135,210,90,70],[165,85,30,35],[165,180,30,35]];
-const NV_ROOMS=[{n:"Reactor",x:20,y:20,w:90,h:70},{n:"Navegación",x:250,y:20,w:90,h:70},{n:"Cocina",x:20,y:210,w:90,h:70},{n:"Motores",x:250,y:210,w:90,h:70},{n:"Sala central",x:135,y:115,w:90,h:70},{n:"Laboratorio",x:135,y:20,w:90,h:70},{n:"Cabina",x:135,y:210,w:90,h:70}];
-const NV_MACH=[{id:"cables",x:300,y:46,room:"Navegación",icon:"🔌",nm:"Conectar cables"},{id:"motor",x:300,y:246,room:"Motores",icon:"⚙️",nm:"Arreglar el motor"},{id:"basura",x:60,y:246,room:"Cocina",icon:"🗑️",nm:"Sacar la basura"},{id:"scan",x:180,y:44,room:"Laboratorio",icon:"🩻",nm:"Escanearte"},{id:"pilot",x:180,y:248,room:"Cabina",icon:"🕹️",nm:"Pilotar la nave"}];
-const NV_SAB=[{room:"Reactor",x:60,y:46},{room:"Sala central",x:180,y:142}];
-function nvWalkable(px,py){for(const r of NV_WALK){if(px>=r[0]&&px<=r[0]+r[2]&&py>=r[1]&&py<=r[1]+r[3])return true;}return false;}
-function nvCell(px,py){return[Math.floor(px/10),Math.floor(py/10)];}
+const NV_COLS=[["Rojo","#EF4444"],["Verde","#22C55E"],["Amarillo","#FACC15"],["Rosado","#F472B6"],["Naranja","#FB923C"],["Morado","#A855F7"],["Celeste","#22D3EE"],["Blanco","#E2E8F0"]];
+const NV_HATS=[["nada","Sin gorro"],["antena","📡 Antena"],["gorra","🧢 Gorra"],["sombrero","👒 Sombrero"],["mono","🎀 Moño"]];
+const NV_MAPS=[
+ {n:"Nave Espacial 🚀",W:360,H:300,start:[180,150],
+  walk:[[20,20,90,70],[250,20,90,70],[20,210,90,70],[250,210,90,70],[135,115,90,70],[135,20,90,70],[135,210,90,70],[20,135,320,30],[50,20,30,260],[280,20,30,260],[165,85,30,35],[165,180,30,35]],
+  rooms:[{n:"Reactor",x:20,y:20,w:90,h:70},{n:"Navegación",x:250,y:20,w:90,h:70},{n:"Cocina",x:20,y:210,w:90,h:70},{n:"Motores",x:250,y:210,w:90,h:70},{n:"Sala central",x:135,y:115,w:90,h:70},{n:"Laboratorio",x:135,y:20,w:90,h:70},{n:"Cabina",x:135,y:210,w:90,h:70}],
+  mach:[{id:"cables",x:300,y:46},{id:"motor",x:300,y:246},{id:"basura",x:60,y:246},{id:"scan",x:180,y:44},{id:"pilot",x:180,y:248}],
+  sab:[{room:"Reactor",x:60,y:46},{room:"Sala central",x:180,y:142}]},
+ {n:"Estación Lunar 🌙",W:560,H:420,start:[280,210],
+  walk:[[30,30,90,80],[235,30,90,80],[440,30,90,80],[30,170,90,80],[235,170,90,80],[440,170,90,80],[30,310,90,80],[235,310,90,80],[440,310,90,80],[30,195,500,30],[60,30,30,360],[265,30,30,360],[470,30,30,360]],
+  rooms:[{n:"Reactor",x:30,y:30,w:90,h:80},{n:"Laboratorio",x:235,y:30,w:90,h:80},{n:"Navegación",x:440,y:30,w:90,h:80},{n:"Invernadero",x:30,y:170,w:90,h:80},{n:"Sala central",x:235,y:170,w:90,h:80},{n:"Escudos",x:440,y:170,w:90,h:80},{n:"Cocina",x:30,y:310,w:90,h:80},{n:"Cabina",x:235,y:310,w:90,h:80},{n:"Motores",x:440,y:310,w:90,h:80}],
+  mach:[{id:"cables",x:485,y:60},{id:"motor",x:485,y:346},{id:"basura",x:75,y:346},{id:"scan",x:280,y:58},{id:"pilot",x:280,y:346},{id:"vidrio",x:75,y:206},{id:"fuego",x:485,y:206}],
+  sab:[{room:"Reactor",x:75,y:60},{room:"Sala central",x:280,y:206},{room:"Invernadero",x:75,y:230}]}];
+const NV_TASKINFO={cables:{icon:"🔌",nm:"Conectar cables"},motor:{icon:"⚙️",nm:"Arreglar el motor"},basura:{icon:"🗑️",nm:"Sacar la basura"},scan:{icon:"🩻",nm:"Escanearte"},pilot:{icon:"🕹️",nm:"Pilotar"},vidrio:{icon:"🪟",nm:"Limpiar el vidrio"},fuego:{icon:"🧯",nm:"Apagar el fuego"}};
+function nvWalkable(px,py){for(const r of NV.walk){if(px>=r[0]&&px<=r[0]+r[2]&&py>=r[1]&&py<=r[1]+r[3])return true;}return false;}
 function nvCellOpen(cx,cy){return nvWalkable(cx*10+5,cy*10+5);}
 function nvPath(x0,y0,x1,y1){
- const s=nvCell(x0,y0),g=nvCell(x1,y1);
- if(!nvCellOpen(g[0],g[1])){ // busca celda abierta cercana al destino
-  let best=null,bd=1e9;
+ const s=[Math.floor(x0/10),Math.floor(y0/10)],g=[Math.floor(x1/10),Math.floor(y1/10)];
+ if(!nvCellOpen(g[0],g[1])){let best=null,bd=1e9;
   for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){const nx=g[0]+dx,ny=g[1]+dy;
    if(nvCellOpen(nx,ny)){const d=dx*dx+dy*dy;if(d<bd){bd=d;best=[nx,ny];}}}
   if(!best)return[];g[0]=best[0];g[1]=best[1];}
- const key=(c)=>c[0]+","+c[1];
- const prev={};prev[key(s)]=null;const q=[s];
+ const key=c=>c[0]+","+c[1];const prev={};prev[key(s)]=null;const q=[s];
  while(q.length){const c=q.shift();
   if(c[0]===g[0]&&c[1]===g[1])break;
   [[1,0],[-1,0],[0,1],[0,-1]].forEach(d=>{const n=[c[0]+d[0],c[1]+d[1]];
@@ -1745,34 +1759,65 @@ function nvPath(x0,y0,x1,y1){
  const path=[];let c=g;
  while(c){path.unshift([c[0]*10+5,c[1]*10+5]);c=prev[key(c)];}
  path.shift();return path;}
+/* ---- pantalla de inicio: personaliza, elige mapa y rol ---- */
 function gameNave(){setTheme("kid");
- const bots=[["Rojo","#EF4444"],["Verde","#22C55E"],["Amarillo","#FACC15"],["Rosado","#F472B6"]];
- const impIdx=rnd(4);
- // testigos inocentes distintos para cada sabotaje (garantiza deducción única)
- const inn=[0,1,2,3].filter(i=>i!==impIdx);
- const w=shuffled(inn);
- NV={over:false,raf:0,last:0,t:0,tasksDone:0,alarm:0,evidence:[],impIdx:impIdx,wit:[w[0],w[1]],meeting:false,mgTimer:null,
-  chars:[{n:"Tú",col:"#22D3EE",x:180,y:150,path:[],player:1}].concat(
-   bots.map((b,i)=>({n:b[0],col:b[1],x:60+rnd(20),y:150+rnd(10),path:[],idle:1+Math.random()*2,imp:i===impIdx})))};
- NV.done={};
+ if(NV&&NV.raf)cancelAnimationFrame(NV.raf);
+ const p=prof();const saved=(p&&p.nv)||{col:6,hat:"antena"};
+ NV={sel:{col:saved.col,hat:saved.hat,map:0,role:"crew"}};
  render(topbar("exitGame('games')")
- +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:2px">🛸 Nave impostora</h2>'
- +'<div style="display:flex;justify-content:center;gap:14px;font-family:Fredoka;font-weight:800;margin-bottom:6px;font-size:.95rem"><span>🧰 Tareas <span id="nvtask">0</span>/5</span><span>🚨 Pistas <span id="nvev">0</span></span></div>'
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🛸 Nave impostora</h2>'
+ +'<p class="center" style="margin-bottom:10px">Personaliza tu tripulante y elige cómo jugar</p>'
+ +'<div class="card"><p style="font-family:Fredoka;font-weight:700;margin-bottom:6px">🎨 Tu color</p>'
+ +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'+NV_COLS.map((c,i)=>'<button type="button" id="nvc'+i+'" onclick="nvSelCol('+i+')" style="width:36px;height:36px;border-radius:50%;border:4px solid '+(i===NV.sel.col?"#1E2A4A":"#fff")+';background:'+c[1]+';box-shadow:0 2px 6px rgba(30,42,74,.3);cursor:pointer"></button>').join("")+'</div>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin-bottom:6px">🎩 Tu gorro</p>'
+ +'<div style="display:flex;gap:7px;flex-wrap:wrap">'+NV_HATS.map((h,i)=>'<button type="button" id="nvh'+i+'" onclick="nvSelHat(\''+h[0]+'\')" style="border:3px solid '+(h[0]===NV.sel.hat?"#3B82F6":"rgba(30,42,74,.15)")+';background:#fff;border-radius:12px;padding:7px 10px;font-family:Fredoka;font-weight:700;font-size:.85rem;cursor:pointer">'+h[1]+'</button>').join("")+'</div></div>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:8px 2px">🗺️ Mapa</p>'
+ +'<button class="kbtn blue" id="nvm0" onclick="nvSelMap(0)" style="border-width:4px">🚀 Nave Espacial <span style="opacity:.8;font-size:.85rem">· 7 salas · 5 tareas</span></button>'
+ +'<button class="kbtn white" id="nvm1" onclick="nvSelMap(1)" style="border-width:4px">🌙 Estación Lunar <span style="opacity:.8;font-size:.85rem">· ¡GRANDE! 9 salas · 7 tareas</span></button>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:8px 2px">🎭 Tu rol</p>'
+ +'<button class="kbtn green" onclick="nvBegin(\'crew\')">🧑‍🚀 Tripulante <span style="opacity:.8;font-size:.85rem">· haz tareas y descubre al impostor</span></button>'
+ +'<button class="kbtn red" onclick="nvBegin(\'imp\')">😈 ¡Ser el IMPOSTOR! <span style="opacity:.8;font-size:.85rem">· sabotea sin que te vean</span></button>'
+ +'<button class="kbtn purple" onclick="nvBegin(Math.random()<.5?\'crew\':\'imp\')">🎲 Sorpresa</button>');}
+function nvSelCol(i){NV.sel.col=i;for(let k=0;k<NV_COLS.length;k++){const b=document.getElementById("nvc"+k);if(b)b.style.borderColor=(k===i)?"#1E2A4A":"#fff";}}
+function nvSelHat(h){NV.sel.hat=h;NV_HATS.forEach((x,k)=>{const b=document.getElementById("nvh"+k);if(b)b.style.borderColor=(x[0]===h)?"#3B82F6":"rgba(30,42,74,.15)";});}
+function nvSelMap(i){NV.sel.map=i;const a=document.getElementById("nvm0"),b=document.getElementById("nvm1");
+ if(a)a.className="kbtn "+(i===0?"blue":"white");if(b)b.className="kbtn "+(i===1?"blue":"white");}
+function nvBegin(role){
+ const p=prof();if(p){p.nv={col:NV.sel.col,hat:NV.sel.hat};save();}
+ const sel=NV.sel;const map=NV_MAPS[sel.map];
+ const others=shuffled(NV_COLS.map((c,i)=>i).filter(i=>i!==sel.col)).slice(0,7);
+ const hats=["nada","antena","gorra","sombrero","mono"];
+ NV={sel:sel,map:map,walk:map.walk,role:role,over:false,raf:0,last:0,t:0,alarm:0,alarmAt:null,evidence:[],meeting:false,mgTimer:null,mgUp:null,
+  tasksDone:0,done:{},sabDone:0,strikes:0,
+  chars:[{n:"Tú",col:NV_COLS[sel.col][1],hat:sel.hat,x:map.start[0],y:map.start[1],path:[],player:1}].concat(
+   others.map((ci,i)=>({n:NV_COLS[ci][0],col:NV_COLS[ci][1],hat:hats[(i+1)%hats.length],x:map.start[0]+((i%4)-1.5)*24,y:map.start[1]+(i>3?26:-26),path:[],idle:0.5+Math.random()*2})))};
+ if(role==="crew"){
+  const impIdx=rnd(7);NV.impIdx=impIdx;NV.chars[impIdx+1].imp=true;
+  const inn=shuffled([0,1,2,3,4,5,6].filter(i=>i!==impIdx));
+  NV.wit=inn.slice(0,map.sab.length);
+ }
+ render(topbar("gameNave()")
+ +'<h2 style="font-size:clamp(1.1rem,5vw,1.35rem);text-align:center;margin-bottom:2px">'+(role==="imp"?"😈 ¡Eres el IMPOSTOR!":"🧑‍🚀 Tripulante")+' · '+map.n+'</h2>'
+ +'<div style="display:flex;justify-content:center;gap:14px;font-family:Fredoka;font-weight:800;margin-bottom:6px;font-size:.92rem">'
+ +(role==="imp"?'<span>💥 Sabotajes <span id="nvtask">0</span>/'+map.sab.length+'</span><span>👀 Avisos <span id="nvev">0</span>/2</span>'
+  :'<span>🧰 Tareas <span id="nvtask">0</span>/'+map.mach.length+'</span><span>🚨 Pistas <span id="nvev">0</span></span>')+'</div>'
  +'<canvas id="nvcv" style="width:100%;max-width:430px;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none;background:#0B1026"></canvas>'
- +'<div id="nvbtn" style="max-width:430px;margin:8px auto 0"></div>'
- +'<p class="center" style="font-size:.82rem;margin-top:6px">👆 <b>Toca el mapa para caminar</b>. Ve a las máquinas brillantes ✨ y haz las <b>5 tareas</b>. ¡Cuidado: hay un impostor entre los tripulantes!</p>');
+ +'<div id="nvbtn" style="max-width:430px;margin:8px auto 0;min-height:56px"></div>'
+ +'<p class="center" style="font-size:.8rem;margin-top:4px">'+(role==="imp"
+   ?'👆 Toca para caminar. Ve a las <b>zonas rojas</b> 💥 y sabotea cuando <b>nadie te esté mirando</b>. ¡2 avisos y te expulsan!'
+   :'👆 Toca para caminar. Haz las <b>'+map.mach.length+' tareas</b> ✨ y luego vota para expulsar al impostor.')+'</p>');
  const cv=document.getElementById("nvcv");
- const W=360,H=300;
+ const VW=360,VH=300;
  const dpr=Math.min(2,window.devicePixelRatio||1);
  const cssW=Math.min(430,cv.clientWidth||330);
- cv.style.height=Math.round(cssW*H/W)+"px";
- cv.width=Math.round(W*dpr*cssW/W);cv.height=Math.round(H*dpr*cssW/W);
- const ctx=cv.getContext("2d");ctx.scale(dpr*cssW/W,dpr*cssW/W);
- NV.ctx=ctx;NV.W=W;NV.H=H;
+ cv.style.height=Math.round(cssW*VH/VW)+"px";
+ cv.width=Math.round(VW*dpr*cssW/VW);cv.height=Math.round(VH*dpr*cssW/VW);
+ const ctx=cv.getContext("2d");ctx.scale(dpr*cssW/VW,dpr*cssW/VW);
+ NV.ctx=ctx;NV.VW=VW;NV.VH=VH;NV.cam={x:0,y:0};
  cv.addEventListener("pointerdown",e=>{
   if(NV.meeting||NV.over)return;
   const r=cv.getBoundingClientRect();
-  const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+  const x=(e.clientX-r.left)/r.width*VW+NV.cam.x,y=(e.clientY-r.top)/r.height*VH+NV.cam.y;
   NV.chars[0].path=nvPath(NV.chars[0].x,NV.chars[0].y,x,y);});
  NV.last=performance.now();
  NV.raf=requestAnimationFrame(nvLoop);}
@@ -1785,78 +1830,150 @@ function nvLoop(now){
  if(NV.over)return;
  const dt=Math.min(0.05,(now-NV.last)/1000);NV.last=now;NV.t+=dt;
  if(NV.alarm>0)NV.alarm-=dt;
- // jugador
  nvMoveChar(NV.chars[0],85,dt);
- // bots deambulan
  for(let i=1;i<NV.chars.length;i++){const b=NV.chars[i];
-  if(b.path&&b.path.length)nvMoveChar(b,48,dt);
+  if(b.path&&b.path.length)nvMoveChar(b,46,dt);
   else{b.idle-=dt;
-   if(b.idle<=0){b.idle=1.5+Math.random()*3;
-    const r=NV_WALK[rnd(NV_WALK.length)];
+   if(b.idle<=0){b.idle=1.2+Math.random()*3;
+    const r=NV.walk[rnd(NV.walk.length)];
     b.path=nvPath(b.x,b.y,r[0]+8+rnd(Math.max(1,r[2]-16)),r[1]+8+rnd(Math.max(1,r[3]-16)));}}}
- // ¿cerca de una máquina pendiente?
- const p=NV.chars[0];let near=null;
- for(const m of NV_MACH){if(!NV.done[m.id]&&Math.hypot(m.x-p.x,m.y-p.y)<30)near=m;}
- const bb=document.getElementById("nvbtn");
- if(bb){const want=near?('<button class="kbtn green" style="margin:0" onclick="nvOpenTask(\''+near.id+'\')">'+near.icon+' ¡Hacer tarea: '+near.nm+'!</button>'):"";
-  if(bb.innerHTML!==want)bb.innerHTML=want;}
+ // camara sigue al jugador
+ const map=NV.map;
+ NV.cam.x=Math.max(0,Math.min(map.W-NV.VW,NV.chars[0].x-NV.VW/2));
+ NV.cam.y=Math.max(0,Math.min(map.H-NV.VH,NV.chars[0].y-NV.VH/2));
+ // boton contextual
+ const p=NV.chars[0];const bb=document.getElementById("nvbtn");let want="";
+ if(NV.role==="crew"){
+  let near=null;
+  for(const m of map.mach){if(!NV.done[m.id]&&Math.hypot(m.x-p.x,m.y-p.y)<30)near=m;}
+  if(near)want='<button class="kbtn green" style="margin:0" onclick="nvOpenTask(\''+near.id+'\')">'+NV_TASKINFO[near.id].icon+' ¡Hacer tarea: '+NV_TASKINFO[near.id].nm+'!</button>';
+ }else{
+  let near=null,ni=-1;
+  map.sab.forEach((s,i)=>{if(!NV["sabbed"+i]&&Math.hypot(s.x-p.x,s.y-p.y)<32){near=s;ni=i;}});
+  if(near){
+   const watchers=NV.chars.slice(1).filter(b=>Math.hypot(b.x-p.x,b.y-p.y)<80);
+   want=watchers.length
+    ?'<button class="kbtn white" style="margin:0" disabled>👀 ¡'+watchers[0].n+' te está mirando! Espera…</button>'
+    :'<button class="kbtn red" style="margin:0" onclick="nvSabotear('+ni+')">💥 ¡SABOTEAR '+near.room+'!</button>';}
+ }
+ if(bb&&bb.innerHTML!==want)bb.innerHTML=want;
  nvDraw();
  NV.raf=requestAnimationFrame(nvLoop);}
+function nvHatDraw(c,x,y,hat,scale){
+ const s=scale||1;
+ if(hat==="antena"){c.strokeStyle="rgba(255,255,255,.7)";c.lineWidth=1.6;c.beginPath();c.moveTo(x,y);c.lineTo(x,y-6*s);c.stroke();
+  c.fillStyle="#FDE047";c.beginPath();c.arc(x,y-7.5*s,2*s,0,Math.PI*2);c.fill();}
+ else if(hat==="gorra"){c.fillStyle="#1E3A8A";c.beginPath();c.arc(x,y+1,6.5*s,Math.PI,0);c.fill();c.fillRect(x+3*s,y-1,6*s,2.5*s);}
+ else if(hat==="sombrero"){c.fillStyle="#92400E";c.beginPath();c.ellipse(x,y+1,9*s,2.5*s,0,0,Math.PI*2);c.fill();c.fillRect(x-4*s,y-6*s,8*s,7*s);}
+ else if(hat==="mono"){c.fillStyle="#F472B6";c.beginPath();c.moveTo(x,y);c.lineTo(x-6*s,y-5*s);c.lineTo(x-6*s,y+3*s);c.closePath();c.fill();
+  c.beginPath();c.moveTo(x,y);c.lineTo(x+6*s,y-5*s);c.lineTo(x+6*s,y+3*s);c.closePath();c.fill();
+  c.fillStyle="#BE185D";c.beginPath();c.arc(x,y,2*s,0,Math.PI*2);c.fill();}}
 function nvDraw(){
- const c=NV.ctx,W=NV.W,H=NV.H;if(!c)return;
- // espacio con estrellas
- c.fillStyle="#0B1026";c.fillRect(0,0,W,H);
- c.fillStyle="rgba(255,255,255,.6)";
- for(let i=0;i<40;i++){const sx=(i*97)%W,sy=(i*53)%H;if(!nvWalkable(sx,sy))c.fillRect(sx,sy,1.6,1.6);}
- // piso (salas y pasillos)
- for(const r of NV_WALK){
-  c.fillStyle="#233252";c.beginPath();
-  if(c.roundRect)c.roundRect(r[0]-3,r[1]-3,r[2]+6,r[3]+6,8);else c.rect(r[0]-3,r[1]-3,r[2]+6,r[3]+6);c.fill();}
- for(const r of NV_WALK){
-  c.fillStyle="#31446E";c.beginPath();
-  if(c.roundRect)c.roundRect(r[0],r[1],r[2],r[3],6);else c.rect(r[0],r[1],r[2],r[3]);c.fill();}
+ const c=NV.ctx,VW=NV.VW,VH=NV.VH,map=NV.map;if(!c)return;
+ c.fillStyle="#0B1026";c.fillRect(0,0,VW,VH);
+ c.save();c.translate(-NV.cam.x,-NV.cam.y);
+ // estrellas que titilan
+ for(let i=0;i<70;i++){const sx=(i*97)%map.W,sy=(i*53)%map.H;
+  if(!nvWalkable(sx,sy)){c.fillStyle="rgba(255,255,255,"+(0.25+0.5*Math.abs(Math.sin(NV.t*1.5+i)))+")";c.fillRect(sx,sy,1.6,1.6);}}
+ // casco exterior
+ for(const r of NV.walk){c.fillStyle="#1B2745";c.beginPath();
+  if(c.roundRect)c.roundRect(r[0]-5,r[1]-5,r[2]+10,r[3]+10,10);else c.rect(r[0]-5,r[1]-5,r[2]+10,r[3]+10);c.fill();}
+ for(const r of NV.walk){c.fillStyle="#233252";c.beginPath();
+  if(c.roundRect)c.roundRect(r[0]-2,r[1]-2,r[2]+4,r[3]+4,7);else c.rect(r[0]-2,r[1]-2,r[2]+4,r[3]+4);c.fill();}
+ // pasillos primero (las salas se pintan encima)
+ NV.walk.slice(map.rooms.length).forEach(r=>{c.fillStyle="#2A3A61";c.fillRect(r[0],r[1],r[2],r[3]);});
+ // pisos: salas con tinte alternado + baldosas
+ map.rooms.forEach((r,i)=>{
+  c.fillStyle=i%2?"#31446E":"#3A4C78";c.beginPath();
+  if(c.roundRect)c.roundRect(r.x,r.y,r.w,r.h,6);else c.rect(r.x,r.y,r.w,r.h);c.fill();
+  c.strokeStyle="rgba(255,255,255,.06)";c.lineWidth=1;
+  for(let gx=r.x+18;gx<r.x+r.w;gx+=18){c.beginPath();c.moveTo(gx,r.y);c.lineTo(gx,r.y+r.h);c.stroke();}
+  for(let gy=r.y+18;gy<r.y+r.h;gy+=18){c.beginPath();c.moveTo(r.x,gy);c.lineTo(r.x+r.w,gy);c.stroke();}
+  c.strokeStyle="rgba(147,197,253,.25)";c.lineWidth=1.5;c.beginPath();
+  if(c.roundRect)c.roundRect(r.x+2,r.y+2,r.w-4,r.h-4,5);else c.rect(r.x+2,r.y+2,r.w-4,r.h-4);c.stroke();});
  // nombres de salas
- c.font="700 9px Fredoka,sans-serif";c.textAlign="center";c.fillStyle="rgba(255,255,255,.5)";
- for(const r of NV_ROOMS)c.fillText(r.n,r.x+r.w/2,r.y+11);
- // máquinas
+ c.font="700 9px Fredoka,sans-serif";c.textAlign="center";c.fillStyle="rgba(255,255,255,.55)";
+ for(const r of map.rooms)c.fillText(r.n,r.x+r.w/2,r.y+12);
+
+ // maquinas (modo tripulante) o zonas de sabotaje (modo impostor)
  c.font="14px serif";
- for(const m of NV_MACH){
-  if(!NV.done[m.id]){const g=6+3*Math.sin(NV.t*5);
-   c.fillStyle="rgba(250,204,21,.25)";c.beginPath();c.arc(m.x,m.y,12+g/2,0,Math.PI*2);c.fill();}
-  c.fillText(NV.done[m.id]?"✅":m.icon,m.x,m.y+5);}
- // puntos de sabotaje dañados
- c.font="12px serif";
- NV.evidence.forEach((ev,i)=>{const s=NV_SAB[i];c.fillText("💥",s.x,s.y+4);});
+ if(NV.role==="crew"){
+  for(const m of map.mach){
+   if(!NV.done[m.id]){const g=6+3*Math.sin(NV.t*5);
+    c.fillStyle="rgba(250,204,21,.28)";c.beginPath();c.arc(m.x,m.y,12+g/2,0,Math.PI*2);c.fill();}
+   c.fillText(NV.done[m.id]?"✅":NV_TASKINFO[m.id].icon,m.x,m.y+5);}
+  NV.evidence.forEach((ev,i)=>{const s=map.sab[i];c.fillText("💥",s.x,s.y+4);
+   // humo del daño
+   for(let k=0;k<3;k++){const yy=s.y-8-((NV.t*14+k*10)%26);c.fillStyle="rgba(148,163,184,"+(0.35-((NV.t*14+k*10)%26)/90)+")";c.beginPath();c.arc(s.x+Math.sin(NV.t*2+k)*4,yy,3+k,0,Math.PI*2);c.fill();}});
+ }else{
+  map.sab.forEach((s,i)=>{
+   if(NV["sabbed"+i]){c.fillText("💥",s.x,s.y+4);}
+   else{const g=6+3*Math.sin(NV.t*5);
+    c.fillStyle="rgba(239,68,68,.30)";c.beginPath();c.arc(s.x,s.y,13+g/2,0,Math.PI*2);c.fill();
+    c.fillText("🎯",s.x,s.y+4);}});
+ }
  // tripulantes
  const sorted=NV.chars.slice().sort((a,b)=>a.y-b.y);
  for(const ch of sorted){
-  const bob=Math.sin(NV.t*8+ch.x)* (ch.path&&ch.path.length?1.6:0.4);
+  const bob=Math.sin(NV.t*8+ch.x)*(ch.path&&ch.path.length?1.6:0.4);
   const x=ch.x,y=ch.y+bob;
-  c.fillStyle="rgba(0,0,0,.25)";c.beginPath();c.ellipse(x,ch.y+13,8,2.6,0,0,Math.PI*2);c.fill();
+  c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.ellipse(x,ch.y+13,8,2.6,0,0,Math.PI*2);c.fill();
+  if(ch.player){c.strokeStyle="rgba(34,211,238,.7)";c.lineWidth=2;c.beginPath();c.ellipse(x,ch.y+13,10,3.6,0,0,Math.PI*2);c.stroke();}
   c.fillStyle=ch.col;c.strokeStyle="#0B1026";c.lineWidth=2;
   c.beginPath();
   if(c.roundRect)c.roundRect(x-8,y-14,16,24,7);else c.rect(x-8,y-14,16,24);
   c.fill();c.stroke();
-  // patitas
+  c.fillStyle="rgba(255,255,255,.25)";c.beginPath();c.ellipse(x-3.5,y-8,3,5,0,0,Math.PI*2);c.fill();
   c.fillStyle=ch.col;c.fillRect(x-7,y+9,5,4);c.fillRect(x+2,y+9,5,4);
-  // antena
-  c.strokeStyle=ch.col;c.beginPath();c.moveTo(x,y-14);c.lineTo(x,y-19);c.stroke();
-  c.fillStyle="#FDE047";c.beginPath();c.arc(x,y-20,2,0,Math.PI*2);c.fill();
-  // ojos
   c.fillStyle="#fff";c.beginPath();c.arc(x-3,y-6,2.6,0,Math.PI*2);c.arc(x+3,y-6,2.6,0,Math.PI*2);c.fill();
   c.fillStyle="#0B1026";c.beginPath();c.arc(x-3,y-6,1.3,0,Math.PI*2);c.arc(x+3,y-6,1.3,0,Math.PI*2);c.fill();
-  // nombre
+  nvHatDraw(c,x,y-15,ch.hat,1);
   c.font="700 8px Fredoka,sans-serif";c.textAlign="center";
   c.fillStyle=ch.player?"#22D3EE":"rgba(255,255,255,.75)";
   c.fillText(ch.n,x,y+22);
-  if(ch.player){c.font="9px serif";c.fillText("⭐",x,y-24);}
  }
- // alarma
+ c.restore();
+ // viñeta
+ const vg=c.createRadialGradient(VW/2,VH/2,VH*0.45,VW/2,VH/2,VH*0.85);
+ vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.35)");
+ c.fillStyle=vg;c.fillRect(0,0,VW,VH);
  if(NV.alarm>0&&Math.floor(NV.t*6)%2===0){
-  c.fillStyle="rgba(220,38,38,.22)";c.fillRect(0,0,W,H);
+  c.fillStyle="rgba(220,38,38,.22)";c.fillRect(0,0,VW,VH);
   c.font="800 16px Fredoka,sans-serif";c.fillStyle="#FCA5A5";c.textAlign="center";
-  c.fillText("🚨 ¡SABOTAJE!",W/2,H/2);}
+  c.fillText("🚨 ¡SABOTAJE!",VW/2,VH/2);}
 }
+/* ---- MODO IMPOSTOR: sabotear sin testigos ---- */
+function nvSabotear(i){
+ if(NV["sabbed"+i]||NV.over)return;
+ const p=NV.chars[0];
+ const watchers=NV.chars.slice(1).filter(b=>Math.hypot(b.x-p.x,b.y-p.y)<80);
+ if(watchers.length){
+  NV.strikes++;sNO();
+  const ev=document.getElementById("nvev");if(ev)ev.textContent=NV.strikes;
+  toast("👀 ¡"+watchers[0].n+" te vio! Aviso "+NV.strikes+"/2",false,2200);
+  if(NV.strikes>=2)return nvImpCaught();
+  return;}
+ NV["sabbed"+i]=true;NV.sabDone++;NV.alarm=2.2;sOK();
+ const el=document.getElementById("nvtask");if(el)el.textContent=NV.sabDone;
+ toast("💥 ¡Sabotaje logrado! Nadie te vio 😏",true,2000);
+ // los bots corren a mirar el daño
+ const s=NV.map.sab[i];
+ NV.chars.slice(1).forEach(b=>{if(Math.random()<.5)b.path=nvPath(b.x,b.y,s.x+((rnd(40))-20),s.y+((rnd(40))-20));});
+ if(NV.sabDone>=NV.map.sab.length)setTimeout(nvImpWin,1200);}
+function nvImpWin(){
+ NV.over=true;cancelAnimationFrame(NV.raf);sWIN();confetti(30);
+ const p=prof();if(p){p.coins+=14;p.xp+=22;save();}
+ render(topbar("gameNave()")+'<div class="card endcard"><div class="big">😈</div><h2>¡Misión impostora cumplida!</h2>'
+ +'<p style="font-size:1.05rem;margin:8px 0">Saboteaste toda la '+(NV.map.n)+' sin que te descubrieran 🕶️<br>+14 🪙 · +22 XP</p>'
+ +'<div style="font-size:1.5rem;margin-bottom:8px">⭐⭐⭐</div>'
+ +'<button class="kbtn green" onclick="gameNave()">🔁 Otra partida</button>'
+ +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
+function nvImpCaught(){
+ NV.over=true;cancelAnimationFrame(NV.raf);
+ render(topbar("gameNave()")+'<div class="card endcard"><div class="big">🚨</div><h2>¡Te descubrieron!</h2>'
+ +'<p style="font-size:1.05rem;margin:8px 0">La tripulación te expulsó de la nave…<br>Consejo: espera a que <b>nadie esté cerca</b> antes de sabotear 😉</p>'
+ +'<button class="kbtn green" onclick="gameNave()">🔁 Reintentar</button>'
+ +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
 /* ---- tareas interactivas (overlay) ---- */
 function nvOverlay(inner){
  const ov=document.createElement("div");ov.id="nvov";
@@ -1870,55 +1987,9 @@ function nvOpenTask(id){
  else if(id==="motor")nvTaskMotor();
  else if(id==="scan")nvTaskScan();
  else if(id==="pilot")nvTaskPilot();
+ else if(id==="vidrio")nvTaskVidrio();
+ else if(id==="fuego")nvTaskFuego();
  else nvTaskBasura();}
-/* escaner: manten presionado sin soltar hasta completar el escaneo */
-function nvTaskScan(){
- NV.mg={p:0,holding:false};
- nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🩻 Escáner médico</h3>'
- +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Mantén presionado el botón <b>sin soltar</b> hasta terminar el escaneo</p>'
- +'<div style="position:relative;text-align:center;font-size:3.4rem;padding:8px 0;overflow:hidden">🧍<div id="nvscanline" style="position:absolute;left:20%;right:20%;top:0;height:4px;background:#22D3EE;border-radius:2px;box-shadow:0 0 10px #22D3EE"></div></div>'
- +'<div style="height:20px;border:3px solid #1E2A4A;border-radius:10px;background:#E2E8F0;overflow:hidden;margin:8px 0"><div id="nvscanbar" style="height:100%;width:0%;background:linear-gradient(90deg,#22D3EE,#3EC97C)"></div></div>'
- +'<button class="kbtn blue" id="nvholdbtn" style="touch-action:none">🖐️ MANTÉN PRESIONADO</button>'
- +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
- const b=document.getElementById("nvholdbtn");
- b.addEventListener("pointerdown",e=>{e.preventDefault();NV.mg.holding=true;});
- NV.mgUp=()=>{NV.mg.holding=false;};
- window.addEventListener("pointerup",NV.mgUp);
- NV.mgTimer=setInterval(()=>{
-  if(!NV.mg)return;
-  if(NV.mg.holding)NV.mg.p=Math.min(100,NV.mg.p+1.4);
-  const bar=document.getElementById("nvscanbar");if(bar)bar.style.width=NV.mg.p+"%";
-  const ln=document.getElementById("nvscanline");if(ln)ln.style.top=(NV.mg.p*0.9)+"%";
-  if(NV.mg.p>=100){nvCloseOverlay();nvTaskComplete("scan");}},30);}
-/* pilotar: esquiva 5 asteroides tocando el carril al que quieres mover la nave */
-function nvTaskPilot(){
- NV.mg={lane:1,dodged:0,aLane:rnd(3),aTop:0};
- const cols=[0,1,2].map(i=>'<button onclick="nvPilotLane('+i+')" style="background:transparent;border:none;position:absolute;top:0;bottom:0;width:33.3%;left:'+(i*33.3)+'%;cursor:pointer"></button>').join("");
- nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🕹️ Pilota la nave</h3>'
- +'<p class="center" style="font-size:.85rem;margin-bottom:8px">¡Esquiva <b>5 asteroides</b>! Toca el carril al que quieras mover la nave</p>'
- +'<div id="nvpz" style="position:relative;height:230px;background:linear-gradient(180deg,#0B1026,#1E1B4B);border:3px solid #1E2A4A;border-radius:14px;overflow:hidden">'
- +'<div id="nvast" style="position:absolute;top:-14%;left:'+(NV.mg.aLane*33.3+11)+'%;font-size:2rem;transition:top .1s linear">☄️</div>'
- +'<div id="nvship" style="position:absolute;bottom:6px;left:'+(NV.mg.lane*33.3+11)+'%;font-size:2.2rem;transition:left .15s">🚀</div>'
- +cols+'</div>'
- +'<p class="center" id="nvdodge" style="font-family:Fredoka;font-weight:800;margin-top:6px">0/5 esquivados</p>'
- +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
- NV.mgTimer=setInterval(()=>{
-  if(!NV.mg)return;
-  NV.mg.aTop+=3.2;
-  const a=document.getElementById("nvast");if(a)a.style.top=NV.mg.aTop+"%";
-  if(NV.mg.aTop>=78&&NV.mg.aTop<92&&NV.mg.aLane===NV.mg.lane){ // choque
-   sNO();NV.mg.aTop=-14;NV.mg.aLane=rnd(3);
-   if(a){a.style.transition="none";a.style.top="-14%";a.style.left=(NV.mg.aLane*33.3+11)+"%";void a.getBoundingClientRect();a.style.transition="top .1s linear";}
-   const d=document.getElementById("nvdodge");if(d)d.textContent="💥 ¡Choque! "+NV.mg.dodged+"/5 esquivados";
-  }else if(NV.mg.aTop>=100){ // esquivado
-   NV.mg.dodged++;if(typeof tone==="function")tone(700,.05);
-   const d=document.getElementById("nvdodge");if(d)d.textContent=NV.mg.dodged+"/5 esquivados";
-   if(NV.mg.dodged>=5){nvCloseOverlay();nvTaskComplete("pilot");return;}
-   NV.mg.aTop=-14;NV.mg.aLane=rnd(3);
-   if(a){a.style.transition="none";a.style.top="-14%";a.style.left=(NV.mg.aLane*33.3+11)+"%";void a.getBoundingClientRect();a.style.transition="top .1s linear";}
-  }},60);}
-function nvPilotLane(i){if(!NV.mg)return;NV.mg.lane=i;const s=document.getElementById("nvship");if(s)s.style.left=(i*33.3+11)+"%";}
-/* cables: toca un cable de la izquierda y su color a la derecha */
 function nvTaskCables(){
  const cols=shuffled([["#EF4444","Rojo"],["#3B82F6","Azul"],["#22C55E","Verde"],["#FACC15","Amarillo"]]);
  NV.mg={sel:null,ok:0,right:shuffled(cols.slice())};
@@ -1939,30 +2010,28 @@ function nvCableR(i){
   NV.mg.ok++;NV.mg.sel=null;if(typeof tone==="function")tone(700,.06);
   if(NV.mg.ok>=4){nvCloseOverlay();nvTaskComplete("cables");}
  }else{const m=document.getElementById("nvmsg");if(m)m.textContent="¡Ese color no es! 🙈";sNO();setTimeout(()=>{if(m)m.textContent="";},900);}}
-/* motor: presiona cuando la aguja este en la zona verde (3 veces) */
 function nvTaskMotor(){
  NV.mg={pos:0,dir:1,hits:0};
  nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">⚙️ Arregla el motor</h3>'
  +'<p class="center" style="font-size:.85rem;margin-bottom:10px">¡Toca <b>AHORA</b> cuando la aguja pase por la zona verde! (3 veces)</p>'
  +'<div style="position:relative;height:34px;border:3px solid #1E2A4A;border-radius:12px;background:#FEE2E2;overflow:hidden;margin-bottom:8px">'
- +'<div style="position:absolute;left:38%;width:24%;top:0;bottom:0;background:#BBF7D0"></div>'
+ +'<div style="position:absolute;left:36%;width:28%;top:0;bottom:0;background:#BBF7D0"></div>'
  +'<div id="nvneedle" style="position:absolute;top:0;bottom:0;width:6px;background:#1E2A4A;border-radius:3px;left:0"></div></div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:800" id="nvhits">0/3</p>'
  +'<button class="kbtn green" onclick="nvMotorHit()">⚡ ¡AHORA!</button>'
  +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
  NV.mgTimer=setInterval(()=>{
-  NV.mg.pos+=NV.mg.dir*3.2;
+  NV.mg.pos+=NV.mg.dir*1.9;
   if(NV.mg.pos>=97){NV.mg.pos=97;NV.mg.dir=-1;}
   if(NV.mg.pos<=0){NV.mg.pos=0;NV.mg.dir=1;}
   const n=document.getElementById("nvneedle");if(n)n.style.left=NV.mg.pos+"%";},16);}
 function nvMotorHit(){
  if(!NV.mg)return;
- const inZone=NV.mg.pos>=36&&NV.mg.pos<=64;
+ const inZone=NV.mg.pos>=34&&NV.mg.pos<=66;
  const h=document.getElementById("nvhits");
  if(inZone){NV.mg.hits++;sOK();if(h)h.textContent=NV.mg.hits+"/3";
   if(NV.mg.hits>=3){nvCloseOverlay();nvTaskComplete("motor");}}
  else{sNO();if(h){h.textContent="¡Fuera de la zona! "+NV.mg.hits+"/3";setTimeout(()=>{if(h)h.textContent=NV.mg.hits+"/3";},800);}}}
-/* basura: toca todos los desechos */
 function nvTaskBasura(){
  NV.mg={left:6};
  const items=["🍌","🥤","📦","🍕","🧻","🥫"].map((e,i)=>'<button id="nvT'+i+'" onclick="nvTrash('+i+')" style="font-size:2rem;background:#F1F5F9;border:3px solid #1E2A4A;border-radius:14px;padding:10px;cursor:pointer">'+e+'</button>').join("");
@@ -1975,34 +2044,128 @@ function nvTrash(i){
  b.disabled=true;b.style.opacity=0;b.style.transform="scale(.3)";b.style.transition="all .25s";
  if(typeof tone==="function")tone(500+i*40,.05);
  NV.mg.left--;if(NV.mg.left<=0){setTimeout(()=>{nvCloseOverlay();nvTaskComplete("basura");},250);}}
+function nvTaskScan(){
+ NV.mg={p:0,holding:false};
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🩻 Escáner médico</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Mantén presionado el botón <b>sin soltar</b> hasta terminar el escaneo</p>'
+ +'<div style="position:relative;text-align:center;font-size:3.4rem;padding:8px 0;overflow:hidden">🧍<div id="nvscanline" style="position:absolute;left:20%;right:20%;top:0;height:4px;background:#22D3EE;border-radius:2px;box-shadow:0 0 10px #22D3EE"></div></div>'
+ +'<div style="height:20px;border:3px solid #1E2A4A;border-radius:10px;background:#E2E8F0;overflow:hidden;margin:8px 0"><div id="nvscanbar" style="height:100%;width:0%;background:linear-gradient(90deg,#22D3EE,#3EC97C)"></div></div>'
+ +'<button class="kbtn blue" id="nvholdbtn" style="touch-action:none">🖐️ MANTÉN PRESIONADO</button>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ const b=document.getElementById("nvholdbtn");
+ b.addEventListener("pointerdown",e=>{e.preventDefault();NV.mg.holding=true;});
+ NV.mgUp=()=>{if(NV.mg)NV.mg.holding=false;};
+ window.addEventListener("pointerup",NV.mgUp);
+ NV.mgTimer=setInterval(()=>{
+  if(!NV.mg)return;
+  if(NV.mg.holding)NV.mg.p=Math.min(100,NV.mg.p+1.4);
+  const bar=document.getElementById("nvscanbar");if(bar)bar.style.width=NV.mg.p+"%";
+  const ln=document.getElementById("nvscanline");if(ln)ln.style.top=(NV.mg.p*0.9)+"%";
+  if(NV.mg.p>=100){nvCloseOverlay();nvTaskComplete("scan");}},30);}
+function nvTaskPilot(){
+ NV.mg={lane:1,dodged:0,aLane:rnd(3),aTop:0};
+ const cols=[0,1,2].map(i=>'<button onclick="nvPilotLane('+i+')" style="background:transparent;border:none;position:absolute;top:0;bottom:0;width:33.3%;left:'+(i*33.3)+'%;cursor:pointer"></button>').join("");
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🕹️ Pilota la nave</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">¡Esquiva <b>5 asteroides</b>! Toca el carril al que quieras mover la nave</p>'
+ +'<div id="nvpz" style="position:relative;height:230px;background:linear-gradient(180deg,#0B1026,#1E1B4B);border:3px solid #1E2A4A;border-radius:14px;overflow:hidden">'
+ +'<div id="nvast" style="position:absolute;top:-14%;left:'+(NV.mg.aLane*33.3+11)+'%;font-size:2rem;transition:top .1s linear">☄️</div>'
+ +'<div id="nvship" style="position:absolute;bottom:6px;left:'+(NV.mg.lane*33.3+11)+'%;font-size:2.2rem;transition:left .15s">🚀</div>'
+ +cols+'</div>'
+ +'<p class="center" id="nvdodge" style="font-family:Fredoka;font-weight:800;margin-top:6px">0/5 esquivados</p>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ NV.mgTimer=setInterval(()=>{
+  if(!NV.mg)return;
+  NV.mg.aTop+=3.2;
+  const a=document.getElementById("nvast");if(a)a.style.top=NV.mg.aTop+"%";
+  if(NV.mg.aTop>=78&&NV.mg.aTop<92&&NV.mg.aLane===NV.mg.lane){
+   sNO();NV.mg.aTop=-14;NV.mg.aLane=rnd(3);
+   if(a){a.style.transition="none";a.style.top="-14%";a.style.left=(NV.mg.aLane*33.3+11)+"%";void a.getBoundingClientRect();a.style.transition="top .1s linear";}
+   const d=document.getElementById("nvdodge");if(d)d.textContent="💥 ¡Choque! "+NV.mg.dodged+"/5 esquivados";
+  }else if(NV.mg.aTop>=100){
+   NV.mg.dodged++;if(typeof tone==="function")tone(700,.05);
+   const d=document.getElementById("nvdodge");if(d)d.textContent=NV.mg.dodged+"/5 esquivados";
+   if(NV.mg.dodged>=5){nvCloseOverlay();nvTaskComplete("pilot");return;}
+   NV.mg.aTop=-14;NV.mg.aLane=rnd(3);
+   if(a){a.style.transition="none";a.style.top="-14%";a.style.left=(NV.mg.aLane*33.3+11)+"%";void a.getBoundingClientRect();a.style.transition="top .1s linear";}
+  }},60);}
+function nvPilotLane(i){if(!NV.mg)return;NV.mg.lane=i;const s=document.getElementById("nvship");if(s)s.style.left=(i*33.3+11)+"%";}
+/* limpiar el vidrio: frota con el dedo hasta dejarlo limpio */
+function nvTaskVidrio(){
+ NV.mg={clean:0};
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🪟 Limpia el vidrio</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">¡Frota con el dedo hasta que quede transparente!</p>'
+ +'<div style="position:relative;border:3px solid #1E2A4A;border-radius:14px;overflow:hidden">'
+ +'<div style="height:190px;background:linear-gradient(180deg,#0B1026,#312E81);display:flex;align-items:center;justify-content:center;font-size:2.6rem">🌌✨🪐</div>'
+ +'<canvas id="nvdirt" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas></div>'
+ +'<div style="height:14px;border:2px solid #1E2A4A;border-radius:8px;background:#E2E8F0;overflow:hidden;margin-top:8px"><div id="nvcleanbar" style="height:100%;width:0%;background:#3EC97C"></div></div>'
+ +'<button class="pbtn ghost" style="margin-top:8px" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ const cvd=document.getElementById("nvdirt");
+ const w=cvd.clientWidth||330,h=cvd.clientHeight||190;
+ cvd.width=w;cvd.height=h;
+ const dc=cvd.getContext("2d");
+ dc.fillStyle="#94A3B8";dc.fillRect(0,0,w,h);
+ dc.fillStyle="#64748B";for(let i=0;i<40;i++)dc.fillRect(rnd(w),rnd(h),8+rnd(20),3+rnd(6));
+ dc.globalCompositeOperation="destination-out";
+ let rubbing=false;
+ const rub=e=>{const r=cvd.getBoundingClientRect();const x=(e.clientX-r.left),y=(e.clientY-r.top);
+  dc.beginPath();dc.arc(x,y,17,0,Math.PI*2);dc.fill();
+  NV.mg.clean++;const bar=document.getElementById("nvcleanbar");if(bar)bar.style.width=Math.min(100,NV.mg.clean/1.3)+"%";
+  if(NV.mg.clean>=130){nvCloseOverlay();nvTaskComplete("vidrio");}};
+ cvd.addEventListener("pointerdown",e=>{rubbing=true;rub(e);try{cvd.setPointerCapture(e.pointerId);}catch(_){}} );
+ cvd.addEventListener("pointermove",e=>{if(rubbing)rub(e);});
+ cvd.addEventListener("pointerup",()=>{rubbing=false;});}
+/* apagar el fuego: toca las llamas que aparecen */
+function nvTaskFuego(){
+ NV.mg={out:0,cells:Array(9).fill(0)};
+ const grid=Array(9).fill(0).map((_,i)=>'<button id="nvF'+i+'" onclick="nvFuegoTap('+i+')" style="font-size:2rem;height:64px;background:#0F172A;border:3px solid #1E2A4A;border-radius:14px;cursor:pointer"></button>').join("");
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">🧯 ¡Apaga el fuego!</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Toca las llamas 🔥 apenas aparezcan — apaga <b>8</b></p>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">'+grid+'</div>'
+ +'<p class="center" id="nvfcount" style="font-family:Fredoka;font-weight:800;margin-top:8px">0/8</p>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ NV.mgTimer=setInterval(()=>{
+  if(!NV.mg)return;
+  const empty=NV.mg.cells.map((v,i)=>v?-1:i).filter(i=>i>=0);
+  const lit=NV.mg.cells.filter(Boolean).length;
+  if(lit<3&&empty.length){const i=empty[rnd(empty.length)];NV.mg.cells[i]=1;
+   const b=document.getElementById("nvF"+i);if(b)b.textContent="🔥";}
+ },700);}
+function nvFuegoTap(i){
+ if(!NV.mg||!NV.mg.cells[i])return;
+ NV.mg.cells[i]=0;NV.mg.out++;
+ const b=document.getElementById("nvF"+i);if(b){b.textContent="💧";setTimeout(()=>{if(b.textContent==="💧")b.textContent="";},400);}
+ if(typeof tone==="function")tone(600,.05);
+ const ct=document.getElementById("nvfcount");if(ct)ct.textContent=NV.mg.out+"/8";
+ if(NV.mg.out>=8){nvCloseOverlay();nvTaskComplete("fuego");}}
+/* ---- progreso tripulante ---- */
 function nvTaskComplete(id){
  NV.done[id]=true;NV.tasksDone++;sOK();confetti(10);
  const el=document.getElementById("nvtask");if(el)el.textContent=NV.tasksDone;
- if(NV.tasksDone===2)nvSabotage(0);
- if(NV.tasksDone===4)nvSabotage(1);
- if(NV.tasksDone>=5)setTimeout(nvMeeting,1600);}
+ const total=NV.map.mach.length,sabN=NV.map.sab.length;
+ // sabotajes repartidos: en la nave tras tareas 2 y 4; en la estación tras 2, 4 y 6
+ for(let k=0;k<sabN;k++){if(NV.tasksDone===(k+1)*2)nvSabotage(k);}
+ if(NV.tasksDone>=total)setTimeout(nvMeeting,1600);}
 function nvSabotage(idx){
- if(idx>=NV_SAB.length)return;
- const s=NV_SAB[idx];
+ if(idx>=NV.map.sab.length||NV.evidence.length>idx)return;
+ const s=NV.map.sab[idx];
  const imp=NV.chars[NV.impIdx+1],wit=NV.chars[NV.wit[idx]+1];
- // el impostor corre al lugar del daño (visual)
  imp.path=nvPath(imp.x,imp.y,s.x,s.y);
  NV.alarm=2.2;sNO();
  NV.evidence.push({room:s.room,near:[imp.n,wit.n]});
  const ev=document.getElementById("nvev");if(ev)ev.textContent=NV.evidence.length;
- setTimeout(()=>{toast("🚨 ¡Sabotaje en "+s.room+"! 📸 Las cámaras vieron cerca a "+imp.n+" y "+wit.n,false,3400);},600);}
+ setTimeout(()=>{toast("🚨 ¡Sabotaje en "+s.room+"! 📸 Cámaras: cerca estaban "+imp.n+" y "+wit.n,false,3400);},600);}
 function nvMeeting(){
  NV.meeting=true;NV.over=true;cancelAnimationFrame(NV.raf);
  const bots=NV.chars.slice(1);
- const evHTML=NV.evidence.map(e=>'<p style="margin:6px 0;font-size:.92rem;line-height:1.45">🚨 <b>'+e.room+'</b> dañado — 📸 cerca estaban: <b>'+e.near.join("</b> y <b>")+'</b></p>').join("");
- const cards=bots.map((b,i)=>'<button onclick="nvVote('+i+')" style="background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:18px;padding:10px 6px;box-shadow:0 5px 0 rgba(30,42,74,.5)">'
-  +'<svg viewBox="-16 -28 32 50" style="width:52px;display:block;margin:0 auto"><path d="M-8 -14 Q-8 -22 0 -22 Q8 -22 8 -14 L8 8 Q8 14 3 14 L-3 14 Q-8 14 -8 8 Z" fill="'+b.col+'" stroke="#1E2A4A" stroke-width="2"/><circle cx="-3" cy="-8" r="2" fill="#fff"/><circle cx="3" cy="-8" r="2" fill="#fff"/><circle cx="-3" cy="-8" r="1" fill="#1E2A4A"/><circle cx="3" cy="-8" r="1" fill="#1E2A4A"/><rect x="-7" y="14" width="5" height="4" rx="2" fill="'+b.col+'"/><rect x="2" y="14" width="5" height="4" rx="2" fill="'+b.col+'"/></svg>'
-  +'<div style="font-family:Fredoka;font-weight:800;font-size:.92rem;color:#1E2A4A;margin-top:4px">'+b.n+'</div></button>').join("");
+ const evHTML=NV.evidence.map(e=>'<p style="margin:5px 0;font-size:.9rem;line-height:1.45">🚨 <b>'+e.room+'</b> — 📸 cerca: <b>'+e.near.join("</b> y <b>")+'</b></p>').join("");
+ const cards=bots.map((b,i)=>'<button onclick="nvVote('+i+')" style="background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:16px;padding:8px 4px;box-shadow:0 4px 0 rgba(30,42,74,.5)">'
+  +'<svg viewBox="-16 -30 32 52" style="width:44px;display:block;margin:0 auto"><path d="M-8 -14 Q-8 -22 0 -22 Q8 -22 8 -14 L8 8 Q8 14 3 14 L-3 14 Q-8 14 -8 8 Z" fill="'+b.col+'" stroke="#1E2A4A" stroke-width="2"/><circle cx="-3" cy="-8" r="2" fill="#fff"/><circle cx="3" cy="-8" r="2" fill="#fff"/><circle cx="-3" cy="-8" r="1" fill="#1E2A4A"/><circle cx="3" cy="-8" r="1" fill="#1E2A4A"/><rect x="-7" y="14" width="5" height="4" rx="2" fill="'+b.col+'"/><rect x="2" y="14" width="5" height="4" rx="2" fill="'+b.col+'"/></svg>'
+  +'<div style="font-family:Fredoka;font-weight:800;font-size:.8rem;color:#1E2A4A;margin-top:3px">'+b.n+'</div></button>').join("");
  render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">🚨 ¡Reunión de emergencia!</h2>'
- +'<p class="center" style="font-size:.92rem;margin-bottom:8px">Terminaste tus tareas. Ahora, con las pistas de las cámaras… <b>¿quién es el impostor?</b></p>'
- +'<div class="card" style="background:#FFF7E0;border:3px solid #F59E0B">'+evHTML+'<p style="margin-top:8px;font-size:.85rem;font-family:Fredoka;font-weight:700">💡 El impostor estuvo cerca en LOS DOS sabotajes…</p></div>'
- +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+cards+'</div>');}
+ +'<p class="center" style="font-size:.9rem;margin-bottom:8px">Con las pistas de las cámaras… <b>¿quién es el impostor?</b></p>'
+ +'<div class="card" style="background:#FFF7E0;border:3px solid #F59E0B">'+evHTML+'<p style="margin-top:6px;font-size:.83rem;font-family:Fredoka;font-weight:700">💡 El impostor se repite en TODAS las cámaras…</p></div>'
+ +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">'+cards+'</div>');}
 function nvVote(i){
  const b=NV.chars[i+1];
  if(!confirm("¿Expulsar a "+b.n+" de la nave?"))return;
@@ -2011,12 +2174,12 @@ function nvVote(i){
  if(win){sWIN();confetti(32);
   const p=prof();if(p){p.coins+=12;p.xp+=20;save();}
   render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">🎉</div><h2>¡'+b.n+' era el impostor!</h2>'
-  +'<p style="font-size:1.05rem;margin:8px 0">¡Salvaste la nave, detective espacial! 🛸<br>+12 🪙 · +20 XP</p>'
+  +'<p style="font-size:1.05rem;margin:8px 0">¡Salvaste la '+NV.map.n+'! 🛸 +12 🪙 · +20 XP</p>'
   +'<div style="font-size:1.5rem;margin-bottom:8px">⭐⭐⭐</div>'
   +'<button class="kbtn green" onclick="gameNave()">🔁 Otra partida</button>'
   +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}
  else{sNO();
   render(topbar("exitGame('games')")+'<div class="card endcard"><div class="big">😱</div><h2>¡'+b.n+' era inocente!</h2>'
-  +'<p style="font-size:1.05rem;margin:8px 0">El impostor era <b>'+imp.n+'</b> y se salió con la suya…<br>Pista: mira quién se repite en las DOS cámaras 📸</p>'
+  +'<p style="font-size:1.05rem;margin:8px 0">El impostor era <b>'+imp.n+'</b>…<br>Pista: mira quién se repite en TODAS las cámaras 📸</p>'
   +'<button class="kbtn green" onclick="gameNave()">🔁 Reintentar</button>'
   +'<button class="kbtn white" onclick="exitGame(&quot;games&quot;)">Salir</button></div>');}}
