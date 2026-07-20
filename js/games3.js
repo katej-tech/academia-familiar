@@ -1734,14 +1734,14 @@ const NV_MAPS=[
  {n:"Nave Espacial 🚀",W:360,H:300,start:[180,150],
   walk:[[20,20,90,70],[250,20,90,70],[20,210,90,70],[250,210,90,70],[135,115,90,70],[135,20,90,70],[135,210,90,70],[20,135,320,30],[50,20,30,260],[280,20,30,260],[165,85,30,35],[165,180,30,35]],
   rooms:[{n:"Reactor",x:20,y:20,w:90,h:70},{n:"Navegación",x:250,y:20,w:90,h:70},{n:"Cocina",x:20,y:210,w:90,h:70},{n:"Motores",x:250,y:210,w:90,h:70},{n:"Sala central",x:135,y:115,w:90,h:70},{n:"Laboratorio",x:135,y:20,w:90,h:70},{n:"Cabina",x:135,y:210,w:90,h:70}],
-  mach:[{id:"cables",x:300,y:46},{id:"motor",x:300,y:246},{id:"basura",x:60,y:246},{id:"scan",x:180,y:44},{id:"pilot",x:180,y:248}],
-  sab:[{room:"Reactor",x:60,y:46},{room:"Sala central",x:180,y:142}]},
+  mach:[{id:"cables",x:300,y:46},{id:"motor",x:300,y:246},{id:"basura",x:60,y:246},{id:"scan",x:180,y:44},{id:"pilot",x:180,y:248},{id:"elec",x:85,y:66}],
+  sab:[{room:"Reactor",x:44,y:40},{room:"Sala central",x:180,y:142}]},
  {n:"Estación Lunar 🌙",W:560,H:420,start:[280,210],
   walk:[[30,30,90,80],[235,30,90,80],[440,30,90,80],[30,170,90,80],[235,170,90,80],[440,170,90,80],[30,310,90,80],[235,310,90,80],[440,310,90,80],[30,195,500,30],[60,30,30,360],[265,30,30,360],[470,30,30,360]],
   rooms:[{n:"Reactor",x:30,y:30,w:90,h:80},{n:"Laboratorio",x:235,y:30,w:90,h:80},{n:"Navegación",x:440,y:30,w:90,h:80},{n:"Invernadero",x:30,y:170,w:90,h:80},{n:"Sala central",x:235,y:170,w:90,h:80},{n:"Escudos",x:440,y:170,w:90,h:80},{n:"Cocina",x:30,y:310,w:90,h:80},{n:"Cabina",x:235,y:310,w:90,h:80},{n:"Motores",x:440,y:310,w:90,h:80}],
-  mach:[{id:"cables",x:485,y:60},{id:"motor",x:485,y:346},{id:"basura",x:75,y:346},{id:"scan",x:280,y:58},{id:"pilot",x:280,y:346},{id:"vidrio",x:75,y:206},{id:"fuego",x:485,y:206}],
-  sab:[{room:"Reactor",x:75,y:60},{room:"Sala central",x:280,y:206},{room:"Invernadero",x:75,y:230}]}];
-const NV_TASKINFO={cables:{icon:"🔌",nm:"Conectar cables"},motor:{icon:"⚙️",nm:"Arreglar el motor"},basura:{icon:"🗑️",nm:"Sacar la basura"},scan:{icon:"🩻",nm:"Escanearte"},pilot:{icon:"🕹️",nm:"Pilotar"},vidrio:{icon:"🪟",nm:"Limpiar el vidrio"},fuego:{icon:"🧯",nm:"Apagar el fuego"}};
+  mach:[{id:"cables",x:485,y:60},{id:"motor",x:485,y:346},{id:"basura",x:75,y:346},{id:"scan",x:280,y:58},{id:"pilot",x:280,y:346},{id:"vidrio",x:75,y:206},{id:"fuego",x:485,y:206},{id:"elec",x:100,y:84}],
+  sab:[{room:"Reactor",x:48,y:44},{room:"Sala central",x:280,y:206},{room:"Invernadero",x:75,y:230}]}];
+const NV_TASKINFO={cables:{icon:"🔌",nm:"Conectar cables"},motor:{icon:"⚙️",nm:"Arreglar el motor"},basura:{icon:"🗑️",nm:"Sacar la basura"},scan:{icon:"🩻",nm:"Escanearte"},pilot:{icon:"🕹️",nm:"Pilotar"},vidrio:{icon:"🪟",nm:"Limpiar el vidrio"},fuego:{icon:"🧯",nm:"Apagar el fuego"},elec:{icon:"⚡",nm:"Subir la electricidad"}};
 function nvWalkable(px,py){for(const r of NV.walk){if(px>=r[0]&&px<=r[0]+r[2]&&py>=r[1]&&py<=r[1]+r[3])return true;}return false;}
 function nvCellOpen(cx,cy){return nvWalkable(cx*10+5,cy*10+5);}
 function nvPath(x0,y0,x1,y1){
@@ -1772,23 +1772,21 @@ function gameNave(){setTheme("kid");
  +'<p style="font-family:Fredoka;font-weight:700;margin-bottom:6px">🎩 Tu gorro</p>'
  +'<div style="display:flex;gap:7px;flex-wrap:wrap">'+NV_HATS.map((h,i)=>'<button type="button" id="nvh'+i+'" onclick="nvSelHat(\''+h[0]+'\')" style="border:3px solid '+(h[0]===NV.sel.hat?"#3B82F6":"rgba(30,42,74,.15)")+';background:#fff;border-radius:12px;padding:7px 10px;font-family:Fredoka;font-weight:700;font-size:.85rem;cursor:pointer">'+h[1]+'</button>').join("")+'</div></div>'
  +'<p style="font-family:Fredoka;font-weight:700;margin:8px 2px">🗺️ Mapa</p>'
- +'<button class="kbtn blue" id="nvm0" onclick="nvSelMap(0)" style="border-width:4px">🚀 Nave Espacial <span style="opacity:.8;font-size:.85rem">· 7 salas · 5 tareas</span></button>'
- +'<button class="kbtn white" id="nvm1" onclick="nvSelMap(1)" style="border-width:4px">🌙 Estación Lunar <span style="opacity:.8;font-size:.85rem">· ¡GRANDE! 9 salas · 7 tareas</span></button>'
- +'<p style="font-family:Fredoka;font-weight:700;margin:8px 2px">🎭 Tu rol</p>'
- +'<button class="kbtn green" onclick="nvBegin(\'crew\')">🧑‍🚀 Tripulante <span style="opacity:.8;font-size:.85rem">· haz tareas y descubre al impostor</span></button>'
- +'<button class="kbtn red" onclick="nvBegin(\'imp\')">😈 ¡Ser el IMPOSTOR! <span style="opacity:.8;font-size:.85rem">· sabotea sin que te vean</span></button>'
- +'<button class="kbtn purple" onclick="nvBegin(Math.random()<.5?\'crew\':\'imp\')">🎲 Sorpresa</button>');}
+ +'<button class="kbtn blue" id="nvm0" onclick="nvSelMap(0)" style="border-width:4px">🚀 Nave Espacial <span style="opacity:.8;font-size:.85rem">· 7 salas · 6 tareas</span></button>'
+ +'<button class="kbtn white" id="nvm1" onclick="nvSelMap(1)" style="border-width:4px">🌙 Estación Lunar <span style="opacity:.8;font-size:.85rem">· ¡GRANDE! 9 salas · 8 tareas</span></button>'
+ +'<button class="kbtn green" style="min-height:64px;font-size:1.1rem;margin-top:10px" onclick="nvBegin()">▶️ ¡JUGAR! <span style="opacity:.85;font-size:.85rem">· tu rol será secreto 🎲</span></button>');}
 function nvSelCol(i){NV.sel.col=i;for(let k=0;k<NV_COLS.length;k++){const b=document.getElementById("nvc"+k);if(b)b.style.borderColor=(k===i)?"#1E2A4A":"#fff";}}
 function nvSelHat(h){NV.sel.hat=h;NV_HATS.forEach((x,k)=>{const b=document.getElementById("nvh"+k);if(b)b.style.borderColor=(x[0]===h)?"#3B82F6":"rgba(30,42,74,.15)";});}
 function nvSelMap(i){NV.sel.map=i;const a=document.getElementById("nvm0"),b=document.getElementById("nvm1");
  if(a)a.className="kbtn "+(i===0?"blue":"white");if(b)b.className="kbtn "+(i===1?"blue":"white");}
-function nvBegin(role){
+function nvBegin(){
+ const role=Math.random()<0.35?"imp":"crew"; // aleatorio y secreto, como el juego de verdad
  const p=prof();if(p){p.nv={col:NV.sel.col,hat:NV.sel.hat};save();}
  const sel=NV.sel;const map=NV_MAPS[sel.map];
  const others=shuffled(NV_COLS.map((c,i)=>i).filter(i=>i!==sel.col)).slice(0,7);
  const hats=["nada","antena","gorra","sombrero","mono"];
  NV={sel:sel,map:map,walk:map.walk,role:role,over:false,raf:0,last:0,t:0,alarm:0,alarmAt:null,evidence:[],meeting:false,mgTimer:null,mgUp:null,
-  tasksDone:0,done:{},sabDone:0,strikes:0,
+  tasksDone:0,done:{},sabDone:0,strikes:0,Z:1.3,
   chars:[{n:"Tú",col:NV_COLS[sel.col][1],hat:sel.hat,x:map.start[0],y:map.start[1],path:[],player:1}].concat(
    others.map((ci,i)=>({n:NV_COLS[ci][0],col:NV_COLS[ci][1],hat:hats[(i+1)%hats.length],x:map.start[0]+((i%4)-1.5)*24,y:map.start[1]+(i>3?26:-26),path:[],idle:0.5+Math.random()*2})))};
  if(role==="crew"){
@@ -1796,28 +1794,48 @@ function nvBegin(role){
   const inn=shuffled([0,1,2,3,4,5,6].filter(i=>i!==impIdx));
   NV.wit=inn.slice(0,map.sab.length);
  }
+ nvReveal();}
+/* pantalla secreta de rol (como el juego real) */
+function nvReveal(){
+ const imp=NV.role==="imp";
+ render(topbar("gameNave()")
+ +'<div class="card" style="background:#0B1026;border-color:#0B1026;color:#fff;text-align:center;padding:26px 16px">'
+ +'<p style="font-family:Fredoka;font-weight:700;letter-spacing:.1em;opacity:.7">🤫 SHHH… NO LE DIGAS A NADIE</p>'
+ +'<div style="font-size:4rem;margin:10px 0">'+(imp?"😈":"🧑‍🚀")+'</div>'
+ +'<h2 style="color:'+(imp?"#F87171":"#6EE7B7")+';margin-bottom:8px">Eres '+(imp?"EL IMPOSTOR":"TRIPULANTE")+'</h2>'
+ +'<p style="font-size:.95rem;line-height:1.5;opacity:.9">'+(imp
+   ?"Sabotea las zonas rojas 🎯 cuando nadie te esté mirando.<br>¡Si te ven 2 veces, te expulsan!"
+   :"Haz todas las tareas ✨ de las máquinas.<br>Luego, con las cámaras 📸, vota para expulsar al impostor.")+'</p>'
+ +'</div>'
+ +'<button class="kbtn green" style="min-height:60px" onclick="nvGo()">▶️ ¡Empezar!</button>');}
+function nvGo(){
+ const map=NV.map,role=NV.role;
  render(topbar("gameNave()")
  +'<h2 style="font-size:clamp(1.1rem,5vw,1.35rem);text-align:center;margin-bottom:2px">'+(role==="imp"?"😈 ¡Eres el IMPOSTOR!":"🧑‍🚀 Tripulante")+' · '+map.n+'</h2>'
  +'<div style="display:flex;justify-content:center;gap:14px;font-family:Fredoka;font-weight:800;margin-bottom:6px;font-size:.92rem">'
  +(role==="imp"?'<span>💥 Sabotajes <span id="nvtask">0</span>/'+map.sab.length+'</span><span>👀 Avisos <span id="nvev">0</span>/2</span>'
   :'<span>🧰 Tareas <span id="nvtask">0</span>/'+map.mach.length+'</span><span>🚨 Pistas <span id="nvev">0</span></span>')+'</div>'
- +'<canvas id="nvcv" style="width:100%;max-width:430px;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none;background:#0B1026"></canvas>'
- +'<div id="nvbtn" style="max-width:430px;margin:8px auto 0;min-height:56px"></div>'
+ +'<canvas id="nvcv" style="width:100%;display:block;margin:0 auto;border-radius:14px;border:4px solid var(--kid-ink);touch-action:none;background:#0B1026"></canvas>'
+ +'<div id="nvbtn" style="margin:8px auto 0;min-height:56px"></div>'
  +'<p class="center" style="font-size:.8rem;margin-top:4px">'+(role==="imp"
    ?'👆 Toca para caminar. Ve a las <b>zonas rojas</b> 💥 y sabotea cuando <b>nadie te esté mirando</b>. ¡2 avisos y te expulsan!'
    :'👆 Toca para caminar. Haz las <b>'+map.mach.length+' tareas</b> ✨ y luego vota para expulsar al impostor.')+'</p>');
  const cv=document.getElementById("nvcv");
- const VW=360,VH=300;
+ const VW=360,VH=340; // recuadro más grande y con zoom (los personajes se ven más grandes)
  const dpr=Math.min(2,window.devicePixelRatio||1);
- const cssW=Math.min(430,cv.clientWidth||330);
+ const cssW=cv.clientWidth||360;
  cv.style.height=Math.round(cssW*VH/VW)+"px";
  cv.width=Math.round(VW*dpr*cssW/VW);cv.height=Math.round(VH*dpr*cssW/VW);
  const ctx=cv.getContext("2d");ctx.scale(dpr*cssW/VW,dpr*cssW/VW);
- NV.ctx=ctx;NV.VW=VW;NV.VH=VH;NV.cam={x:0,y:0};
+ // vista con zoom: el mundo visible es VW/Z x VH/Z
+ const vw=VW/NV.Z,vh=VH/NV.Z;
+ const p0=NV.chars[0];
+ NV.ctx=ctx;NV.VW=VW;NV.VH=VH;
+ NV.cam={x:Math.max(0,Math.min(Math.max(0,map.W-vw),p0.x-vw/2)),y:Math.max(0,Math.min(Math.max(0,map.H-vh),p0.y-vh/2))};
  cv.addEventListener("pointerdown",e=>{
   if(NV.meeting||NV.over)return;
   const r=cv.getBoundingClientRect();
-  const x=(e.clientX-r.left)/r.width*VW+NV.cam.x,y=(e.clientY-r.top)/r.height*VH+NV.cam.y;
+  const x=(e.clientX-r.left)/r.width*VW/NV.Z+NV.cam.x,y=(e.clientY-r.top)/r.height*VH/NV.Z+NV.cam.y;
   NV.chars[0].path=nvPath(NV.chars[0].x,NV.chars[0].y,x,y);});
  NV.last=performance.now();
  NV.raf=requestAnimationFrame(nvLoop);}
@@ -1834,13 +1852,24 @@ function nvLoop(now){
  for(let i=1;i<NV.chars.length;i++){const b=NV.chars[i];
   if(b.path&&b.path.length)nvMoveChar(b,46,dt);
   else{b.idle-=dt;
-   if(b.idle<=0){b.idle=1.2+Math.random()*3;
-    const r=NV.walk[rnd(NV.walk.length)];
-    b.path=nvPath(b.x,b.y,r[0]+8+rnd(Math.max(1,r[2]-16)),r[1]+8+rnd(Math.max(1,r[3]-16)));}}}
- // camara sigue al jugador
+   if(b.idle<=0){
+    // 50%: va a "hacer una tarea" a una máquina (y se queda un rato); si no, pasea
+    if(Math.random()<0.5&&NV.map.mach.length){const m=NV.map.mach[rnd(NV.map.mach.length)];
+     b.idle=2.5+Math.random()*2.5;b.path=nvPath(b.x,b.y,m.x+rnd(16)-8,m.y+rnd(16)-8);}
+    else{b.idle=1.2+Math.random()*3;
+     const r=NV.walk[rnd(NV.walk.length)];
+     b.path=nvPath(b.x,b.y,r[0]+8+rnd(Math.max(1,r[2]-16)),r[1]+8+rnd(Math.max(1,r[3]-16)));}}}}
+ // candado: nadie puede salirse de la zona caminable
+ for(const ch of NV.chars){
+  if(nvWalkable(ch.x,ch.y)){ch.lgx=ch.x;ch.lgy=ch.y;}
+  else if(ch.lgx!==undefined){ch.x=ch.lgx;ch.y=ch.lgy;ch.path=[];}}
+ // camara SUAVE que sigue al jugador (con zoom)
  const map=NV.map;
- NV.cam.x=Math.max(0,Math.min(map.W-NV.VW,NV.chars[0].x-NV.VW/2));
- NV.cam.y=Math.max(0,Math.min(map.H-NV.VH,NV.chars[0].y-NV.VH/2));
+ const vw=NV.VW/NV.Z,vh=NV.VH/NV.Z;
+ const tx=Math.max(0,Math.min(Math.max(0,map.W-vw),NV.chars[0].x-vw/2));
+ const ty=Math.max(0,Math.min(Math.max(0,map.H-vh),NV.chars[0].y-vh/2));
+ const k=Math.min(1,dt*5);
+ NV.cam.x+=(tx-NV.cam.x)*k;NV.cam.y+=(ty-NV.cam.y)*k;
  // boton contextual
  const p=NV.chars[0];const bb=document.getElementById("nvbtn");let want="";
  if(NV.role==="crew"){
@@ -1871,7 +1900,7 @@ function nvHatDraw(c,x,y,hat,scale){
 function nvDraw(){
  const c=NV.ctx,VW=NV.VW,VH=NV.VH,map=NV.map;if(!c)return;
  c.fillStyle="#0B1026";c.fillRect(0,0,VW,VH);
- c.save();c.translate(-NV.cam.x,-NV.cam.y);
+ c.save();c.scale(NV.Z||1,NV.Z||1);c.translate(-NV.cam.x,-NV.cam.y);
  // estrellas que titilan
  for(let i=0;i<70;i++){const sx=(i*97)%map.W,sy=(i*53)%map.H;
   if(!nvWalkable(sx,sy)){c.fillStyle="rgba(255,255,255,"+(0.25+0.5*Math.abs(Math.sin(NV.t*1.5+i)))+")";c.fillRect(sx,sy,1.6,1.6);}}
@@ -1989,7 +2018,40 @@ function nvOpenTask(id){
  else if(id==="pilot")nvTaskPilot();
  else if(id==="vidrio")nvTaskVidrio();
  else if(id==="fuego")nvTaskFuego();
+ else if(id==="elec")nvTaskElec();
  else nvTaskBasura();}
+/* electricidad: sube todas las palancas del tablero (se apagan solas si tardas) */
+function nvTaskElec(){
+ NV.mg={up:[0,0,0,0,0]};
+ const sw=NV.mg.up.map((_,i)=>'<button id="nvE'+i+'" onclick="nvElecFlip('+i+')" style="background:#1E293B;border:3px solid #1E2A4A;border-radius:12px;padding:8px 4px;cursor:pointer">'
+  +'<div style="height:56px;position:relative;background:#0F172A;border-radius:8px">'
+  +'<div id="nvEk'+i+'" style="position:absolute;left:6px;right:6px;height:20px;bottom:4px;background:#64748B;border-radius:5px;transition:bottom .15s"></div></div>'
+  +'<div id="nvEl'+i+'" style="font-size:1.1rem;margin-top:3px">⚫</div></button>').join("");
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:6px">⚡ Sube la electricidad</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:10px">Sube <b>las 5 palancas</b> para dar luz a la nave. ¡Ojo: se bajan solas si te demoras!</p>'
+ +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:7px">'+sw+'</div>'
+ +'<p class="center" id="nvEmsg" style="font-family:Fredoka;font-weight:800;margin-top:8px">0/5 encendidas</p>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');
+ NV.mgTimer=setInterval(()=>{
+  if(!NV.mg)return;
+  const on=NV.mg.up.map((v,i)=>v?i:-1).filter(i=>i>=0);
+  if(on.length&&on.length<5&&Math.random()<0.30){ // una se baja sola
+   const i=on[rnd(on.length)];NV.mg.up[i]=0;nvElecPaint(i);nvElecMsg();}
+ },1400);}
+function nvElecPaint(i){
+ const k=document.getElementById("nvEk"+i),l=document.getElementById("nvEl"+i);
+ const on=NV.mg.up[i];
+ if(k){k.style.bottom=on?"32px":"4px";k.style.background=on?"#FDE047":"#64748B";}
+ if(l)l.textContent=on?"💡":"⚫";}
+function nvElecMsg(){
+ const n=NV.mg.up.filter(Boolean).length;
+ const m=document.getElementById("nvEmsg");if(m)m.textContent=n+"/5 encendidas";
+ return n;}
+function nvElecFlip(i){
+ if(!NV.mg||NV.mg.up[i])return;
+ NV.mg.up[i]=1;nvElecPaint(i);
+ if(typeof tone==="function")tone(520+i*70,.06);
+ if(nvElecMsg()>=5){sOK();nvCloseOverlay();nvTaskComplete("elec");}}
 function nvTaskCables(){
  const cols=shuffled([["#EF4444","Rojo"],["#3B82F6","Azul"],["#22C55E","Verde"],["#FACC15","Amarillo"]]);
  NV.mg={sel:null,ok:0,right:shuffled(cols.slice())};
