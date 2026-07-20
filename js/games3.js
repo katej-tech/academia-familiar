@@ -1734,14 +1734,14 @@ const NV_MAPS=[
  {n:"Nave Espacial 🚀",W:360,H:300,start:[180,150],
   walk:[[20,20,90,70],[250,20,90,70],[20,210,90,70],[250,210,90,70],[135,115,90,70],[135,20,90,70],[135,210,90,70],[20,135,320,30],[50,20,30,260],[280,20,30,260],[165,85,30,35],[165,180,30,35]],
   rooms:[{n:"Reactor",x:20,y:20,w:90,h:70},{n:"Navegación",x:250,y:20,w:90,h:70},{n:"Cocina",x:20,y:210,w:90,h:70},{n:"Motores",x:250,y:210,w:90,h:70},{n:"Sala central",x:135,y:115,w:90,h:70},{n:"Laboratorio",x:135,y:20,w:90,h:70},{n:"Cabina",x:135,y:210,w:90,h:70}],
-  mach:[{id:"cables",x:300,y:46},{id:"motor",x:300,y:246},{id:"basura",x:60,y:246},{id:"scan",x:180,y:44},{id:"pilot",x:180,y:248},{id:"elec",x:85,y:66}],
+  mach:[{id:"cables",x:300,y:46},{id:"motor",x:300,y:246},{id:"basura",x:60,y:246},{id:"scan",x:180,y:44},{id:"pilot",x:180,y:248},{id:"elec",x:85,y:66},{id:"acertijo",x:205,y:168},{id:"calculo",x:95,y:222}],
   sab:[{room:"Reactor",x:44,y:40},{room:"Sala central",x:180,y:142}]},
  {n:"Estación Lunar 🌙",W:560,H:420,start:[280,210],
   walk:[[30,30,90,80],[235,30,90,80],[440,30,90,80],[30,170,90,80],[235,170,90,80],[440,170,90,80],[30,310,90,80],[235,310,90,80],[440,310,90,80],[30,195,500,30],[60,30,30,360],[265,30,30,360],[470,30,30,360]],
   rooms:[{n:"Reactor",x:30,y:30,w:90,h:80},{n:"Laboratorio",x:235,y:30,w:90,h:80},{n:"Navegación",x:440,y:30,w:90,h:80},{n:"Invernadero",x:30,y:170,w:90,h:80},{n:"Sala central",x:235,y:170,w:90,h:80},{n:"Escudos",x:440,y:170,w:90,h:80},{n:"Cocina",x:30,y:310,w:90,h:80},{n:"Cabina",x:235,y:310,w:90,h:80},{n:"Motores",x:440,y:310,w:90,h:80}],
-  mach:[{id:"cables",x:485,y:60},{id:"motor",x:485,y:346},{id:"basura",x:75,y:346},{id:"scan",x:280,y:58},{id:"pilot",x:280,y:346},{id:"vidrio",x:75,y:206},{id:"fuego",x:485,y:206},{id:"elec",x:100,y:84}],
+  mach:[{id:"cables",x:485,y:60},{id:"motor",x:485,y:346},{id:"basura",x:75,y:346},{id:"scan",x:280,y:58},{id:"pilot",x:280,y:346},{id:"vidrio",x:75,y:206},{id:"fuego",x:485,y:206},{id:"elec",x:100,y:84},{id:"acertijo",x:310,y:235},{id:"calculo",x:310,y:95}],
   sab:[{room:"Reactor",x:48,y:44},{room:"Sala central",x:280,y:206},{room:"Invernadero",x:75,y:230}]}];
-const NV_TASKINFO={cables:{icon:"🔌",nm:"Conectar cables"},motor:{icon:"⚙️",nm:"Arreglar el motor"},basura:{icon:"🗑️",nm:"Sacar la basura"},scan:{icon:"🩻",nm:"Escanearte"},pilot:{icon:"🕹️",nm:"Pilotar"},vidrio:{icon:"🪟",nm:"Limpiar el vidrio"},fuego:{icon:"🧯",nm:"Apagar el fuego"},elec:{icon:"⚡",nm:"Subir la electricidad"}};
+const NV_TASKINFO={cables:{icon:"🔌",nm:"Conectar cables"},motor:{icon:"⚙️",nm:"Arreglar el motor"},basura:{icon:"🗑️",nm:"Sacar la basura"},scan:{icon:"🩻",nm:"Escanearte"},pilot:{icon:"🕹️",nm:"Pilotar"},vidrio:{icon:"🪟",nm:"Limpiar el vidrio"},fuego:{icon:"🧯",nm:"Apagar el fuego"},elec:{icon:"⚡",nm:"Subir la electricidad"},acertijo:{icon:"🧠",nm:"Descifrar el código"},calculo:{icon:"🔢",nm:"Computadora de cálculo"}};
 function nvWalkable(px,py){for(const r of NV.walk){if(px>=r[0]&&px<=r[0]+r[2]&&py>=r[1]&&py<=r[1]+r[3])return true;}return false;}
 function nvCellOpen(cx,cy){return nvWalkable(cx*10+5,cy*10+5);}
 function nvPath(x0,y0,x1,y1){
@@ -2019,7 +2019,44 @@ function nvOpenTask(id){
  else if(id==="vidrio")nvTaskVidrio();
  else if(id==="fuego")nvTaskFuego();
  else if(id==="elec")nvTaskElec();
+ else if(id==="acertijo"||id==="calculo")nvTaskStudy(id);
  else nvTaskBasura();}
+/* ---- TAREAS DE ESTUDIO dentro de la nave (acertijos y cálculo) ---- */
+function nvStudyQ(kind){
+ if(kind==="calculo"){
+  const age=(prof()&&prof().age)||7;
+  if(typeof duelMate==="function")return duelMate(2,age);
+  return mcq("2 + 3 = ?",5);}
+ const gens=[];
+ if(typeof genRiddle==="function")gens.push(genRiddle);
+ if(typeof genSecuenciaNum==="function")gens.push(genSecuenciaNum);
+ if(typeof genSpatial==="function")gens.push(genSpatial);
+ if(typeof genPoligono==="function")gens.push(genPoligono);
+ if(typeof LOGIC_KID!=="undefined")gens.push(function(){const q=pick(LOGIC_KID);return{q:q.q,pic:q.scene,ops:q.ops.slice(),a:q.a};});
+ if(!gens.length)return mcq("¿Cuántas patas tiene un gato?",4);
+ return gens[rnd(gens.length)]();}
+function nvTaskStudy(id){
+ const q=nvStudyQ(id);
+ if(q.a===-1&&q.fixAns!==undefined)q.a=q.ops.indexOf(q.fixAns);
+ NV.mg={q:q,order:shuffled(q.ops.map(function(o,i){return{o:o,i:i};})),tries:0,id:id};
+ nvOverlay('<h3 style="font-family:Fredoka;text-align:center;margin-bottom:4px">'+(id==="calculo"?"🔢 Computadora de cálculo":"🧠 Descifra el código")+'</h3>'
+ +'<p class="center" style="font-size:.85rem;margin-bottom:8px">Resuelve para desbloquear el panel 🔓</p>'
+ +(q.pic?'<div style="font-size:2.6rem;text-align:center;line-height:1.1">'+q.pic+'</div>':'')
+ +'<div style="font-family:Fredoka;font-weight:800;font-size:1.25rem;text-align:center;margin:10px 0;line-height:1.3">'+esc(q.q)+'</div>'
+ +NV.mg.order.map(function(s,vi){return '<button class="kbtn white" style="margin:7px 0;min-height:56px;font-size:1.15rem" onclick="nvStudyAns('+vi+')">'+esc(s.o)+'</button>';}).join("")
+ +'<p id="nvsmsg" class="center" style="min-height:24px;font-family:Fredoka;font-weight:700"></p>'
+ +'<button class="pbtn ghost" onclick="nvCloseOverlay()">Salir de la tarea</button>');}
+function nvStudyAns(vi){
+ if(!NV.mg)return;
+ const ok=NV.mg.order[vi].i===NV.mg.q.a;
+ if(typeof recordAnswer==="function")recordAnswer(NV.mg.id==="calculo"?"Mate":"Lógica",ok,12);
+ const m=document.getElementById("nvsmsg");
+ if(ok){sOK();if(m)m.innerHTML='<b style="color:#16A34A">✓ ¡Panel desbloqueado!</b>';
+  const id=NV.mg.id;setTimeout(function(){nvCloseOverlay();nvTaskComplete(id);},700);}
+ else{sNO();NV.mg.tries++;
+  if(m)m.innerHTML=NV.mg.tries>=2
+   ?'<b style="color:#D97706">Pista: es <u>'+esc(NV.mg.q.ops[NV.mg.q.a])+'</u></b>'
+   :'<b style="color:#DC2626">¡Casi! Piénsalo otra vez 🤔</b>';}}
 /* electricidad: sube todas las palancas del tablero (se apagan solas si tardas) */
 function nvTaskElec(){
  NV.mg={up:[0,0,0,0,0]};

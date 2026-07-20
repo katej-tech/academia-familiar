@@ -132,6 +132,7 @@ function cuGuide(text){
 function cuClear(){if(CU.ctx)cuGuide(CU.items[CU.i]);}
 function cuNext(){
  if(typeof recordAnswer==="function")recordAnswer("Letras",true,15);
+ if(CU.i%3===2&&typeof artPlus==="function")artPlus(); // cada 3 letras cuenta como una actividad de arte
  sOK();CU.i++;
  if(CU.i>=CU.items.length){confetti(20);toast("¡Terminaste de repasar! ✍️🌟",true,2000);
   if(typeof nodeWin==="function")return setTimeout(()=>nodeWin(3,"Letras"),400);
@@ -240,8 +241,19 @@ function renderColoring(){
   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto">'
    +'<button class="kbtn yellow" onclick="colorClear()" style="min-height:52px">🧽 Limpiar</button>'
    +'<button class="kbtn green" onclick="colorNext()" style="min-height:52px">Otro dibujo →</button>'
-  +'</div>');
+  +'</div>'
+  +'<button class="kbtn purple" style="max-width:360px;margin:10px auto 0" onclick="artFinish(\'screenArt()\')">✅ ¡Terminé mi dibujo! 🎨</button>');
 }
+/* cuenta el dibujo como actividad de arte (llave para desbloquear juegos) */
+function artFinish(back){
+ var pintado=document.querySelectorAll('svg .cr');var n=0;
+ pintado.forEach(function(el){if((el.getAttribute("fill")||"#fff").toLowerCase()!=="#fff")n++;});
+ if(pintado.length&&n<3){if(typeof toast==="function")toast("¡Píntalo un poquito más! 🖍️",false,1800);return;}
+ if(typeof artPlus==="function")artPlus();
+ if(typeof sWIN==="function")sWIN();if(typeof confetti==="function")confetti(18);
+ var p=(typeof prof==="function")?prof():null;if(p){p.coins+=3;p.xp+=6;if(typeof save==="function")save();}
+ if(typeof toast==="function")toast("🎨 ¡Obra terminada! +3 🪙 · llave de arte "+(typeof artCount==="function"?artCount():"")+"/"+(typeof ART_GOAL!=="undefined"?ART_GOAL:2),true,2600);
+ setTimeout(function(){if(back)eval(back);},900);}
 function colorSet(c){CO.color=c;var btns=document.querySelectorAll('[aria-label="color"]');btns.forEach(function(b,i){b.style.borderColor=(COLOR_PALETTE[i]===CO.color)?"#1E2A4A":"#fff";});}
 function colorTap(e){var t=e.target;if(t&&t.classList&&t.classList.contains("cr")){t.setAttribute("fill",CO.color);if(typeof beep==="function")beep([620],.04);}}
 function colorClear(){document.querySelectorAll("svg .cr").forEach(function(el){el.setAttribute("fill","#fff");});}
@@ -301,7 +313,7 @@ function dotsTap(e){
  if(!p)return;
  if(Math.hypot(x-p[0],y-p[1])<32){ // acertó el punto esperado (tolerancia amplia)
   DP.next++;if(typeof beep==="function")beep([500+DP.next*60],.05);
-  if(DP.next>fig.pts.length){DP.done=true;dotsDraw();sWIN();confetti(22);if(typeof recordAnswer==="function")recordAnswer("Secuencias",true,15);toast("¡Lo lograste! "+fig.name,true,1800);}
+  if(DP.next>fig.pts.length){DP.done=true;dotsDraw();sWIN();confetti(22);if(typeof recordAnswer==="function")recordAnswer("Secuencias",true,15);if(typeof artPlus==="function")artPlus();toast("¡Lo lograste! "+fig.name+" 🎨+1",true,1800);}
   else dotsDraw();
  }else{ // tocó otro lado: pista suave
   if(typeof toast==="function")toast("Toca el punto rojo número "+DP.next+" 👆",false,1300);
@@ -389,7 +401,7 @@ function dlGuide(){
 function dlPrev(){if(DL.step>0){DL.step--;dlGuide();}}
 function dlNext(){
  if(DL.step<DL.fig.steps.length-1){DL.step++;dlGuide();beep([560],.05);}
- else{confetti(20);if(typeof recordAnswer==="function")recordAnswer("Ordenar",true,15);toast("¡Terminaste tu dibujo! 🎨🌟",true,2000);}
+ else{confetti(20);if(typeof recordAnswer==="function")recordAnswer("Ordenar",true,15);if(typeof artPlus==="function")artPlus();toast("¡Terminaste tu dibujo! 🎨+1 🌟",true,2000);}
 }
 function dlClear(){if(DL.dctx&&DL.dc)DL.dctx.clearRect(0,0,DL.W+10,DL.W+10);}
 function dlOther(){DL.figIdx=(DL.figIdx+1)%DRAW_FIGS.length;DL.step=0;startDrawLesson();}
@@ -444,7 +456,8 @@ function aiShow(url,what){
   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:340px;margin:0 auto">'
    +'<button class="kbtn yellow" onclick="aiClearPaint()" style="min-height:50px">🧽 Limpiar</button>'
    +'<button class="kbtn green" onclick="gameAiDraw()" style="min-height:50px">✨ Otro dibujo</button>'
-  +'</div>');
+  +'</div>'
+  +'<button class="kbtn purple" style="max-width:340px;margin:10px auto 0" onclick="artFinish(\'screenArt()\')">✅ ¡Terminé mi dibujo! 🎨</button>');
  var img=document.getElementById("aiimg");
  var setup=function(){var cv=document.getElementById("aidraw");if(!cv||!img)return;var w=img.clientWidth||300,h=img.clientHeight||300;var dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);var ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineCap="round";ctx.lineJoin="round";AI.ctx=ctx;AI.cv=cv;AI.w=w;AI.h=h;

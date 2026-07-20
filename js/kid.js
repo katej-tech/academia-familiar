@@ -76,14 +76,45 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
  +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="screenTama()">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
  +missionsHTML()
- +'<div style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:6px">'
- +hubTile("screenCole()","📚","Aprender","Mate, lenguaje, ciencias y la hora","green")
- +hubTile("screenEnglishHub()","🇬🇧","Inglés","Academia A1, voz y cuentos","red")
- +hubTile("screenLeer()","📖","Cuentos y escribir","Lee, escucha y ordena frases","yellow")
- +hubTile("screenGamesPick()","🎮","Jugar","Arcade, impostor, culebra y más","blue")
- +hubTile("screenMyStuff()","🛍️","Mi mundo","Tienda, personaje y premios","purple")
- +((courses().length&&prof()&&(prof().age||0)>=10)?hubTile("screenCourses()","🎓","Cursos","Cursos en video que te asignaron","yellow"):"")
- +'</div>');}
+ +hubApps());}
+/* ===== apps por iconos, como la pantalla de un celular ===== */
+function appIcon(onclick,ic,label,bg,opts){
+ opts=opts||{};
+ const badge=opts.badge?'<span class="badge">'+opts.badge+'</span>':'';
+ return '<button class="app'+(opts.locked?" locked":"")+'" onclick="'+onclick+'">'
+  +'<span class="ic" style="background:'+bg+'">'+ic+badge+'</span>'
+  +'<span class="lb">'+label+'</span></button>';}
+function hubApps(){
+ const d=touchDay();
+ const faltaEst=Math.max(0,DAILY_GOAL-(d.ok||0));
+ const faltaArt=Math.max(0,ART_GOAL-(d.art||0));
+ const abierto=dailyGoalDone();
+ const sec=t=>'<p class="appsec">'+t+'</p>';
+ let html=sec("📚 Aprender");
+ html+='<div class="appgrid">'
+  +appIcon("screenCole()","📚","Aprender","linear-gradient(160deg,#4ADE80,#16A34A)",{badge:faltaEst?faltaEst:0})
+  +appIcon("screenEnglishHub()","🇬🇧","Inglés","linear-gradient(160deg,#FCA5A5,#EF4444)")
+  +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
+  +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
+  +'</div>';
+ html+=sec("🎨 Crear");
+ html+='<div class="appgrid">'
+  +appIcon("screenArt()","🎨","Arte","linear-gradient(160deg,#D8B4FE,#A855F7)",{badge:faltaArt?faltaArt:0})
+  +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
+  +appIcon("gameDots()","🔢","Unir puntos","linear-gradient(160deg,#67E8F9,#06B6D4)")
+  +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
+  +'</div>';
+ html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
+ html+='<div class="appgrid">'
+  +appIcon("screenGamesPick()","🎮","Juegos","linear-gradient(160deg,#A5B4FC,#6366F1)",{locked:!abierto})
+  +appIcon(abierto?"gameNave()":"screenGamesLocked()","🛸","Impostor","linear-gradient(160deg,#94A3B8,#475569)",{locked:!abierto})
+  +appIcon("screenTama()","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)")
+  +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
+  +'</div>';
+ if(courses().length&&prof()&&(prof().age||0)>=10){
+  html+=sec("🎓 Cursos");
+  html+='<div class="appgrid">'+appIcon("screenCourses()","🎓","Cursos","linear-gradient(160deg,#5EEAD4,#0D9488)")+'</div>';}
+ return html;}
 /* ===== Menú de perfil estilo Facebook: clic en el avatar → opciones de cuenta ===== */
 function openProfileMenu(){const p=prof();if(!p)return;closeProfileMenu();
  const teen=(typeof profType==="function"&&profType()==="teen");
@@ -236,19 +267,29 @@ function screenWritingPick(){setTheme("kid");
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
  +'<button class="kbtn white" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
 const DAILY_GOAL=10; /* aciertos del día para desbloquear los juegos */
-function dailyGoalDone(){return touchDay().ok>=DAILY_GOAL;}
+const ART_GOAL=2; // actividades de arte/dibujo necesarias para abrir los juegos
+function artCount(){return touchDay().art||0;}
+function artPlus(n){const d=touchDay();d.art=(d.art||0)+(n||1);save();
+ if(d.art===ART_GOAL&&d.ok>=DAILY_GOAL&&typeof toast==="function")toast("🎉 ¡Desbloqueaste los juegos de hoy!",true,2600);}
+function dailyGoalDone(){const d=touchDay();return d.ok>=DAILY_GOAL&&(d.art||0)>=ART_GOAL;}
 function screenGamesLocked(){setTheme("kid");
  const d=touchDay();const have=Math.min(d.ok,DAILY_GOAL);const pctv=Math.round(have/DAILY_GOAL*100);
+ const arte=Math.min(artCount(),ART_GOAL);const pctA=Math.round(arte/ART_GOAL*100);
+ const okEst=have>=DAILY_GOAL, okArt=arte>=ART_GOAL;
+ const barra=(pct,color)=>'<div style="height:16px;border-radius:12px;background:#E6ECF5;border:3px solid var(--kid-ink);overflow:hidden;margin:8px 0 4px"><div style="height:100%;width:'+pct+'%;background:'+color+';transition:width .4s"></div></div>';
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎮🔒 Juegos bloqueados</h2>'
- +'<div class="card center" style="padding:22px 16px">'
- +'<div style="font-size:3.4rem;margin-bottom:6px">🔒</div>'
- +'<p style="font-size:1.1rem;line-height:1.5">Primero haz tus <b>actividades de hoy</b>.<br>¡Cuando logres <b>'+DAILY_GOAL+' aciertos</b>, se abren todos los juegos!</p>'
- +'<div style="height:18px;border-radius:12px;background:#E6ECF5;border:3px solid var(--kid-ink);overflow:hidden;margin:14px 0 6px"><div style="height:100%;width:'+pctv+'%;background:var(--kid-green);transition:width .4s"></div></div>'
- +'<p style="font-family:Fredoka;font-weight:700">'+have+' / '+DAILY_GOAL+' aciertos ✅</p>'
- +'<button class="kbtn green" style="margin-top:12px" onclick="screenCole()">📚 Ir a aprender</button>'
- +'<button class="kbtn blue" onclick="screenEnglishHub()">🇬🇧 Practicar inglés</button>'
- +'</div>');}
+ +'<div class="card" style="padding:18px 16px">'
+ +'<div class="center" style="font-size:3.2rem;margin-bottom:4px">🔒</div>'
+ +'<p class="center" style="font-size:1.05rem;line-height:1.5;margin-bottom:12px">Para jugar necesitas <b>2 llaves</b> 🔑🔑</p>'
+ +'<p style="font-family:Fredoka;font-weight:700">'+(okEst?"✅":"1️⃣")+' Estudiar</p>'+barra(pctv,"var(--kid-green)")
+ +'<p style="font-size:.92rem">'+have+' / '+DAILY_GOAL+' aciertos</p>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin-top:12px">'+(okArt?"✅":"2️⃣")+' Crear arte 🎨</p>'+barra(pctA,"#A855F7")
+ +'<p style="font-size:.92rem">'+arte+' / '+ART_GOAL+' dibujos (colorear, unir puntos, cursiva, dibujar…)</p>'
+ +'</div>'
+ +(okEst?'':'<button class="kbtn green" onclick="screenCole()">📚 Ir a aprender</button>')
+ +(okArt?'':'<button class="kbtn purple" onclick="screenArt()">🎨 Ir a dibujar</button>')
+ +(okEst?'<button class="kbtn blue" onclick="screenEnglishHub()">🇬🇧 Practicar inglés</button>':''));}
 function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stopGames();
  if(!dailyGoalDone())return screenGamesLocked();
  const sub=t=>'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+t+'</p>';
