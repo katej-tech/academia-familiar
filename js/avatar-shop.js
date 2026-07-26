@@ -145,9 +145,12 @@ function avatarEnsure(cb){const p=prof();
  const k=avState().kind;if(k==="animal"||k==="famoso")return; // emoji, no necesitan descarga
  const key=avatarKey();
  if(p.avatarSvg&&p.avatarKey===key)return;
+ if(avatarEnsure._busy===key)return;           // evita descargas repetidas de lo mismo
+ avatarEnsure._busy=key;
  fetch(key).then(r=>r.text()).then(t=>{
+  avatarEnsure._busy=null;
   if(t&&t.indexOf("<svg")>=0){p.avatarSvg=t;p.avatarKey=key;save();if(cb)cb();}
- }).catch(()=>{});}
+ }).catch(()=>{avatarEnsure._busy=null;});}
 /* escena grande con el fondo comprado bien visible + el personaje encima */
 function avatarScene(px){const a=avState();
  const bg=a.bgId&&shopItem(a.bgId);
@@ -158,19 +161,29 @@ function avatarScene(px){const a=avState();
   +deco+'<div style="position:relative;z-index:1">'+avatarHTML(px)+'</div></div>';}
 function avatarHTML(px){const p=prof();const a=avState();
  const hand=a.handId&&shopItem(a.handId);
- let face;
+ const hat=a.hatId&&shopItem(a.hatId);
+ const gl=a.glassId&&shopItem(a.glassId);
+ let face,svgTieneAccesorios=false;
  if(a.kind==="animal"||a.kind==="famoso"){
   const em=a.kind==="famoso"?(a.famoso||"🦸"):(a.animal||"🦊");
   face='<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.62)+'px;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#EAF2FF">'+em+'</span>';
  }else{
   const ready=p.avatarSvg&&p.avatarKey===avatarKey();
+  // el SVG de DiceBear solo trae gorro/gafas si es persona Y ya está descargado al día
+  svgTieneAccesorios=ready&&a.kind!=="robot";
   const inner=ready
    ?p.avatarSvg.replace("<svg",'<svg style="width:100%;height:100%;display:block" ')
    :'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.5)+'px;background:#EAF2FF;border-radius:18px">'+(a.kind==="robot"?"🤖":"🙂")+'</div>';
   face='<span style="position:absolute;inset:0;border-radius:18px;overflow:hidden;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.6);background:#fff">'+inner+'</span>';
  }
+ // Gorro y gafas SIEMPRE visibles como emoji cuando el SVG no los trae
+ // (animal, famoso, robot, o mientras la imagen aún no se descarga / no hay internet)
+ const capaGorro=(hat&&!svgTieneAccesorios)
+  ?'<span style="position:absolute;left:50%;top:-'+Math.round(px*0.14)+'px;transform:translateX(-50%);font-size:'+Math.round(px*0.42)+'px;line-height:1;z-index:3;filter:drop-shadow(0 2px 0 rgba(30,42,74,.45))">'+hat.e+'</span>':'';
+ const capaGafas=(gl&&!svgTieneAccesorios)
+  ?'<span style="position:absolute;left:50%;top:'+Math.round(px*0.30)+'px;transform:translateX(-50%);font-size:'+Math.round(px*0.34)+'px;line-height:1;z-index:3;filter:drop-shadow(0 1px 0 rgba(30,42,74,.4))">'+gl.e+'</span>':'';
  return '<span style="position:relative;display:inline-block;width:'+px+'px;height:'+px+'px;vertical-align:middle;border-radius:18px;overflow:visible">'
- +face
+ +face+capaGorro+capaGafas
  +(hand?'<span style="position:absolute;right:-'+Math.round(px*0.08)+'px;bottom:-'+Math.round(px*0.05)+'px;font-size:'+Math.round(px*0.34)+'px;line-height:1;z-index:2;filter:drop-shadow(0 2px 0 rgba(30,42,74,.5))">'+hand.e+'</span>':'')
  +'</span>';}
 /* ---- Pantalla MI PERSONAJE ---- */
@@ -265,15 +278,31 @@ function shopBuy(id){const it=shopItem(id),p=prof();
  if(p.coins<it.pr){sNO();toast("Te faltan "+(it.pr-p.coins)+" 🪙 — ¡sigue jugando!",false,1800);return;}
  p.coins-=it.pr;
  if(it.t==="pet"){if(!p.legendaries)p.legendaries=[];p.legendaries.push(id);p.activePet=id;}
- else p.owned.push(id);
- save();sWIN();confetti(24);toast("¡"+it.n+" es tuyo! 🎉",true,1500);
- setTimeout(screenShop,600);}
+ else{p.owned.push(id);
+  // al comprarlo se lo pone solo, para que vea el cambio de una vez
+  const a=avState();
+  if(it.t==="hat")a.hatId=id;
+  else if(it.t==="face")a.glassId=id;
+  else if(it.t==="hand")a.handId=id;
+  else if(it.t==="bg")a.bgId=id;
+  else if(it.t==="famoso"){a.kind="famoso";a.famoso=it.e;}
+ }
+ save();sWIN();confetti(24);toast("¡"+it.n+" es tuyo y ya lo llevas puesto! 🎉",true,1700);
+ screenShop();
+ avatarEnsure(screenShop);}
 function shopPet(id){const p=prof();p.activePet=p.activePet===id?null:id;save();beep([600],.08);screenShop();}
 function avEquipFromShop(id){const it=shopItem(id),a=avState();
+ if(!it)return;
  if(it.t==="famoso"){a.kind="famoso";a.famoso=it.e;save();sOK();toast("¡Ahora eres "+it.n+"! 🎉",true,1300);screenShop();return;}
  if(it.t==="petacc"){petToggle(id);screenShop();return;}
  const key=it.t==="hat"?"hatId":it.t==="face"?"glassId":it.t==="hand"?"handId":"bgId";
- a[key]=id;save();sOK();toast("¡Equipado! 😎",true,1000);avatarEnsure(screenShop);screenShop();}
+ const quitar=a[key]===id;
+ a[key]=quitar?null:id;                        // tocar de nuevo lo quita (igual que en Mi personaje)
+ save();sOK();
+ toast(quitar?("Te quitaste "+it.n):("¡"+it.n+" puesto! 😎"),true,1100);
+ screenShop();                                  // se ve YA con la capa emoji
+ avatarEnsure(screenShop);                      // y se refina cuando llegue el dibujo
+}
 function avSetFamoso(e){const a=avState();a.kind="famoso";a.famoso=e;save();sOK();screenAvatar();}
 /* accesorios de la MASCOTA: se le ponen encima (toggle) */
 function petToggle(id){const p=prof(),it=shopItem(id);
