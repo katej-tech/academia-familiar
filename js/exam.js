@@ -40,8 +40,8 @@ const EXAM_BANK={
  cqk:()=>{const w=pick(EXW_CQK),o=["c","q","k"].filter(x=>x!==w[1]);
   const ops=shuffled([w[1].toUpperCase(),o[0].toUpperCase(),o[1].toUpperCase()]);
   return{q:'¿Con qué letra empieza "'+w[0]+'"? '+w[2],ops,a:ops.indexOf(w[1].toUpperCase()),say:w[0]};},
- restapres:()=>{let a,b;do{a=21+rnd(78);b=6+rnd(a-6);}while((a%10)>=(b%10));return exMcq(a+" − "+b+" = ?",a-b);},
- sumallev:()=>{let a,b;do{a=6+rnd(90);b=6+rnd(90);}while((a%10)+(b%10)<10);return exMcq(a+" + "+b+" = ?",a+b);},
+ restapres:()=>{let a,b;do{a=21+rnd(78);b=6+rnd(a-6);}while((a%10)>=(b%10));const q=exMcq(a+" − "+b+" = ?",a-b);q.op={a:a,b:b,sig:"−"};return q;},
+ sumallev:()=>{let a,b;do{a=6+rnd(90);b=6+rnd(90);}while((a%10)+(b%10)<10);const q=exMcq(a+" + "+b+" = ?",a+b);q.op={a:a,b:b,sig:"+"};return q;},
  piramide:()=>pick([
   {q:"¿Qué alimentos van en la BASE de la pirámide?",ops:["Cereales, pan y arroz 🍞","Dulces 🍬","Carnes 🍖"],a:0},
   {q:"¿Qué va en la PUNTA de la pirámide?",ops:["Dulces y grasas 🍬","Frutas 🍎","Verduras 🥦"],a:0},
@@ -130,6 +130,16 @@ function screenExam(){setTheme("kid");
  +cards);}
 
 /* ---------- una unidad ---------- */
+function exColumnHTML(op){
+ const A=String(op.a),B=String(op.b);
+ const w=Math.max(A.length,B.length);
+ const pad=t=>("&nbsp;".repeat(w-t.length))+t.split("").join("&nbsp;&nbsp;");
+ return '<div class="excol-wrap"><div class="excol">'
+  +'<div class="excol-row">'+pad(A)+'</div>'
+  +'<div class="excol-row"><span class="excol-sig">'+op.sig+'</span>'+pad(B)+'</div>'
+  +'<div class="excol-line"></div>'
+  +'<div class="excol-row excol-q">?</div>'
+  +'</div></div>';}
 let EX={};
 async function startExamUnit(uid){
  setTheme("kid");
@@ -160,14 +170,17 @@ function renderEX(){
  const u=examAllUnits().find(x=>x.id===EX.uid);
  const titulo=EX.sim?"🏁 Simulacro":(u?u.ic+" "+u.nm:"Repaso");
  const largo=it.ops.some(o=>String(o).length>14);
+ const esMate=!!it.op;
  render(topbar("screenExam()")
  +'<div class="progressdots">'+dots(EX.items.length,EX.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+titulo+' · '+(EX.i+1)+'/'+EX.items.length+'</p>'
- +'<div class="bigq center">'+it.q+'</div>'
+ +(esMate?exColumnHTML(it.op):'<div class="bigq center">'+it.q+'</div>')
+ +(esMate&&typeof boardBtn==="function"?boardBtn():'')
  +'<button class="speaker small" onclick="speakES(\''+String(it.say||it.q).replace(/[\\'"]/g,"")+'\')">🔊 Escuchar</button>'
  +'<div class="choices2'+(largo?' wide':'')+'">'+order.map((o,vi)=>'<button class="kbtn white" style="font-size:clamp(1rem,4.4vw,1.28rem)" onclick="ansEX('+vi+')">'+o.o+'</button>').join("")+'</div>');}
 
 function ansEX(vi){
+ if(typeof closeBoard==="function")closeBoard();
  const it=EX.items[EX.i],ok=EX.order[vi].k===it.a;
  recordAnswer("Examen: "+(EX.sim?"simulacro":EX.uid),ok,15);
  if(ok){sOK();confetti(8);EX.ok++;if(it.say)speakES(it.say);toast("¡Correcto! 🎉",true,1000);}
@@ -175,6 +188,7 @@ function ansEX(vi){
  EX.i++;setTimeout(renderEX,ok?1000:2100);}
 
 function endEX(){
+ if(typeof closeBoard==="function")closeBoard();
  const pct=Math.round(EX.ok/EX.items.length*100);
  if(!EX.sim){const e=examState();
   if(!e.units[EX.uid])e.units[EX.uid]={best:0,tries:0};
