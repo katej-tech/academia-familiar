@@ -57,6 +57,16 @@ const app=document.getElementById("app");
 let current={profile:null};
 function prof(){return S.profiles[current.profile];}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+/* string JS segura para meter DENTRO de un onclick="..." (atributo con comillas dobles):
+   escapa para JS (comillas simples, \) Y LUEGO para HTML (" y &, porque el atributo se
+   decodifica como HTML antes que el navegador lo lea como JS) — nunca usar JSON.stringify()
+   ahí: sus comillas dobles rompen el atributo igual que un texto sin escapar. */
+function jsStr(s){
+ const js="'"+String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g,"\\n")+"'";
+ return js.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+/* texto de la IA a menudo trae **negrita** en markdown en vez de <b>; esto lo escapa TODO
+   como texto seguro y solo convierte **...** a <b>...</b> (usar en vez de esc() para texto de IA) */
+function mdBold(s){const e=esc(String(s));return e.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<b>$1</b>");}
 /* limpia etiquetas HTML que a veces devuelve la IA (arregla el bug de <b> visible en lecturas) */
 function stripHTML(s){return String(s).replace(/<[^>]*>/g," ").replace(/\s{2,}/g," ").trim();}
 function keepBold(s){return String(s)

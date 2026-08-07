@@ -86,7 +86,7 @@ function screenLangVocab(){setTheme("adulto");
   +'<p class="mut center" style="margin-bottom:10px">Vocabulario de hoy — toca 🔊 para escuchar</p>'
   +LL.vocab.map(w=>
    '<div class="card langword"><b style="font-size:1.1rem">'+esc(w[0])+'</b> '
-   +'<button class="spk" onclick="speakLang(\''+LL.id+'\','+JSON.stringify(w[0])+')">🔊</button>'
+   +'<button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(w[0])+')">🔊</button>'
    +'<br><span class="mut">'+esc(w[1])+'</span>'
    +'<p style="font-size:.88rem;margin-top:6px"><i>"'+esc(w[2])+'"</i></p>'
    +'<p style="font-size:.82rem;margin-top:4px">💡 '+esc(w[3])+'</p></div>'
@@ -140,12 +140,20 @@ async function startLangConvo(){setTheme("adulto");
  }
  renderLangConvo();}
 function renderLangConvo(){setTheme("adulto");
- const msgs=LL.convo.history.map(h=>'<div class="langmsg '+(h.role==="model"?"npc":"me")+'">'+esc(h.text)+'</div>').join("");
+ const msgs=LL.convo.history.map(h=>'<div class="langmsg '+(h.role==="model"?"npc":"me")+'">'+mdBold(h.text)+'</div>').join("");
  render(topbar(null)
   +'<h2 style="text-align:center">💬 Conversación · '+LANG_SITUATION_LABEL[LL.situation]+'</h2>'
   +'<div class="langchat">'+msgs+'</div>'
   +(LL.convo.mode==="fallback"?renderFallbackConvoOptions():renderLangConvoInput())
-  +'<button class="abtn ghost" style="margin-top:10px" onclick="finishLangConvo()">Terminar conversación → Quiz</button>');}
+  +'<button class="abtn ghost" style="margin-top:10px" onclick="finishLangConvo()">Terminar conversación → Quiz</button>');
+ speakLastLangConvo();}
+/* hace que se sienta como una conversación real: el "nativo" habla en voz alta cada mensaje nuevo */
+function speakLastLangConvo(){
+ const hist=LL.convo.history;const lastIdx=hist.length-1;
+ if(lastIdx<0||hist[lastIdx].role!=="model")return;
+ if(LL.convo.lastSpokenIdx===lastIdx)return;
+ LL.convo.lastSpokenIdx=lastIdx;
+ speakLang(LL.id,hist[lastIdx].text);}
 function renderLangConvoInput(){
  return '<div style="display:flex;gap:8px;margin-top:10px">'
   +'<input type="text" id="langMsgInput" placeholder="Escribe tu respuesta..." style="flex:1">'
@@ -219,8 +227,10 @@ function nextLangQuiz(){
  render(topbar(null)
   +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
   +'<h2 style="text-align:center">📝 Mini quiz '+(LL.quizK+1)+'/'+LL.quiz.length+'</h2>'
-  +'<div class="bigq center">'+esc(it.q)+'</div>'
-  +it.ops.map((o,i)=>'<button class="abtn" onclick="ansLangQuiz('+i+')">'+esc(o)+'</button>').join(""));}
+  +'<div class="bigq center">'+mdBold(it.q)+' <button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(it.q)+')">🔊</button></div>'
+  +it.ops.map((o,i)=>'<div style="display:flex;gap:8px;align-items:center">'
+   +'<button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(o)+')">🔊</button>'
+   +'<button class="abtn" style="flex:1" onclick="ansLangQuiz('+i+')">'+mdBold(o)+'</button></div>').join(""));}
 function ansLangQuiz(i){
  if(LL.quizLock)return;LL.quizLock=true;
  const it=LL.quiz[LL.quizK];const ok=i===it.a;
@@ -231,7 +241,7 @@ function ansLangQuiz(i){
 function screenLangQuizResult(){setTheme("adulto");
  const pct=Math.round(LL.quizOk/LL.quiz.length*100);const passed=pct>=80;
  const errHtml=LL.quizErrors.length?'<div class="card"><h3>Repasemos tus errores</h3>'
-  +LL.quizErrors.map(e=>'<p style="margin-top:10px;line-height:1.5"><b>'+esc(e.q)+'</b><br>❌ Dijiste: '+esc(e.tuResp)+' — ✅ Era: '+esc(e.correcta)+(e.why?'<br><span class="mut">'+esc(e.why)+'</span>':'')+'</p>').join("")+'</div>':'';
+  +LL.quizErrors.map(e=>'<p style="margin-top:10px;line-height:1.5"><b>'+mdBold(e.q)+'</b><br>❌ Dijiste: '+mdBold(e.tuResp)+' — ✅ Era: '+mdBold(e.correcta)+(e.why?'<br><span class="mut">'+mdBold(e.why)+'</span>':'')+'</p>').join("")+'</div>':'';
  render(topbar(null)
   +'<h2 style="text-align:center">'+(passed?"🎉 ¡Aprobaste!":"💪 Casi")+' — '+pct+'%</h2>'
   +'<p class="mut center">Necesitas 80% para avanzar a la siguiente lección.</p>'

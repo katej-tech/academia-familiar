@@ -18,7 +18,7 @@ async function suggestLangVideoSearches(id,lvl){
  try{
   const obj=await geminiJSON('Recomienda 5 videos de YouTube para practicar '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+', variados (noticias cortas, vlogs, entrevistas), apropiados para un adulto que aprende el idioma. Para cada uno da un título descriptivo y una frase de búsqueda exacta para YouTube. Responde SOLO JSON: {"videos":[{"titulo":"...","busqueda":"frase para buscar en youtube"}]} con 5 elementos.');
   const vs=(obj.videos||[]).slice(0,5);
-  box.innerHTML='<div style="margin-top:10px">'+vs.map(v=>'<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(v.busqueda)+'" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;color:inherit;margin-top:8px">🔎 '+esc(v.titulo)+'</a>').join("")+'</div>';
+  box.innerHTML='<div style="margin-top:10px">'+vs.map(v=>'<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(v.busqueda)+'" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;color:inherit;margin-top:8px">🔎 '+mdBold(v.titulo)+'</a>').join("")+'</div>';
  }catch(e){box.innerHTML='<div class="card" style="border-color:#DC2626">'+esc(e.message||"No se pudo, intenta de nuevo")+'</div>';}}
 function screenLangComprehension(id,lvl){setTheme("adulto");
  render(topbar("screenLangVideos('"+id+"',"+lvl+")")
@@ -49,8 +49,10 @@ function nextCQ(){
  render(topbar(null)
   +'<div class="progressdots">'+dots(CQ.items.length,CQ.k)+'</div>'
   +'<h2 style="text-align:center">📝 Comprensión '+(CQ.k+1)+'/'+CQ.items.length+'</h2>'
-  +'<div class="bigq center">'+esc(it.q)+'</div>'
-  +it.ops.map((o,i)=>'<button class="abtn" onclick="ansCQ('+i+')">'+esc(o)+'</button>').join(""));}
+  +'<div class="bigq center">'+mdBold(it.q)+' <button class="spk" onclick="speakLang(\''+CQ.id+'\','+jsStr(it.q)+')">🔊</button></div>'
+  +it.ops.map((o,i)=>'<div style="display:flex;gap:8px;align-items:center">'
+   +'<button class="spk" onclick="speakLang(\''+CQ.id+'\','+jsStr(o)+')">🔊</button>'
+   +'<button class="abtn" style="flex:1" onclick="ansCQ('+i+')">'+mdBold(o)+'</button></div>').join(""));}
 function ansCQ(i){
  if(CQ.lock)return;CQ.lock=true;
  const it=CQ.items[CQ.k];const ok=i===it.a;
