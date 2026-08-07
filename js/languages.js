@@ -85,7 +85,8 @@ async function startLangLesson(id,lvl){setTheme("adulto");
  const st=langState(id);
  const situation=LANG_SITUATIONS[st.lesson%LANG_SITUATIONS.length];
  const vocab=LANG_VOCAB_SEED[id][situation];
- const grammar=LANG_GRAMMAR_SEED[id][lvl];
+ const grammarVariants=LANG_GRAMMAR_SEED[id][lvl];
+ const grammar=grammarVariants[st.lesson%grammarVariants.length];
  const prev=st.history.length?st.history[st.history.length-1]:null;
  LL={id,lvl,situation,vocab,grammar,repaso:buildRepaso(prev),repasoK:0,repasoOk:0};
  screenLangRepaso();}
@@ -108,15 +109,47 @@ function ansLangRepaso(i){
 function screenLangVocab(){setTheme("adulto");
  render(topbar(null)
   +'<h2 style="text-align:center">'+LANG_SITUATION_LABEL[LL.situation]+'</h2>'
-  +'<p class="mut center" style="margin-bottom:10px">Vocabulario de hoy — toca 🔊 para escuchar</p>'
+  +'<p class="mut center" style="margin-bottom:10px">Vocabulario de hoy — 🔊 escuchar · ⭐ guardar en tu baúl si no la conoces</p>'
   +LL.vocab.map(w=>
-   '<div class="card langword"><b style="font-size:1.1rem">'+esc(w[0])+'</b> '
+   '<div class="card langword">'
+   +'<div style="display:flex;align-items:center;gap:8px">'
+   +'<b style="font-size:1.1rem;flex:1">'+esc(w[0])+'</b>'
    +'<button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(w[0])+')">🔊</button>'
-   +'<br><span class="mut">'+esc(w[1])+'</span>'
+   +'<button class="spk" id="vaultbtn_'+esc(w[0]).replace(/[^a-zA-Z0-9]/g,"")+'" onclick="toggleWordVault(\''+LL.id+'\','+jsStr(w[0])+','+jsStr(w[1])+',this)">'+(isInVault(LL.id,w[0])?"⭐":"☆")+'</button>'
+   +'</div>'
+   +'<span class="mut">'+esc(w[1])+'</span>'
    +'<p style="font-size:.88rem;margin-top:6px"><i>"'+esc(w[2])+'"</i></p>'
+   +'<p style="font-size:.82rem;margin-top:2px;color:var(--adult-mut)">→ '+esc(w[4]||"")+'</p>'
    +'<p style="font-size:.82rem;margin-top:4px">💡 '+esc(w[3])+'</p></div>'
   ).join("")
+  +'<button class="abtn ghost" onclick="screenWordVault()">🗃️ Ver mi baúl de palabras</button>'
   +'<button class="abtn green" onclick="screenLangGrammar()">Siguiente →</button>');}
+
+/* ---- baúl de palabras: marcar/guardar palabras que no conoces para repasarlas ---- */
+function wordVaultList(){const p=prof();if(!p.wordVault)p.wordVault=[];return p.wordVault;}
+function isInVault(id,word){return wordVaultList().some(v=>v.lang===id&&v.word===word);}
+function toggleWordVault(id,word,es,btn){
+ const list=wordVaultList();
+ const idx=list.findIndex(v=>v.lang===id&&v.word===word);
+ if(idx>=0){list.splice(idx,1);if(btn)btn.textContent="☆";}
+ else{list.unshift({lang:id,word:word,es:es,ts:Date.now()});if(btn)btn.textContent="⭐";toast("Guardado en tu baúl 🗃️",true,1000);}
+ save();}
+function screenWordVault(){setTheme("adulto");
+ const list=wordVaultList();
+ render(topbar("screenAdultHome()")
+  +'<h2 style="text-align:center">🗃️ Baúl de palabras</h2>'
+  +'<p class="mut center" style="margin-bottom:10px">Palabras que marcaste para repasar</p>'
+  +(list.length?list.map((v,i)=>'<div class="card" style="display:flex;align-items:center;gap:10px">'
+    +'<button class="spk" onclick="speakLang(\''+v.lang+'\','+jsStr(v.word)+')">🔊</button>'
+    +'<span style="flex:1"><b>'+esc(v.word)+'</b> <span class="mut">— '+esc(v.es)+'</span> <span class="mut" style="font-size:.75rem">('+langInfo(v.lang).flag+')</span></span>'
+    +'<button class="spk" onclick="removeFromVault('+i+')">🗑️</button></div>').join("")
+   :'<p class="mut center">Aún no has guardado palabras. Marca las que no conozcas con ⭐ en el vocabulario de cada lección.</p>')
+  +(list.length?'<button class="abtn" onclick="startMemoryFromVault()">🧠 Practicar emparejando</button>':''));}
+function removeFromVault(i){const list=wordVaultList();list.splice(i,1);save();screenWordVault();}
+function startMemoryFromVault(){
+ const list=wordVaultList();
+ if(!list.length)return;
+ startMemoryGame(list.map(v=>[v.word,v.es]),{back:"screenWordVault()"});}
 
 function pronCard(id){
  const items=LANG_PRONUNCIATION[id]||[];

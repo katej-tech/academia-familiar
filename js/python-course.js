@@ -12,6 +12,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función saludo(nombre) para que devuelva el texto 'Hola, ' seguido del nombre recibido.",
   starter:'def saludo(nombre):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:'saludo("Kate")',expected:"Hola, Kate"},{expr:'saludo("Luis")',expected:"Hola, Luis"}],
+  hint:"Usa + para unir el texto 'Hola, ' con el nombre recibido.",
+  solution:'def saludo(nombre):\n    return "Hola, " + nombre\n',
   terms:[["variable","caja con nombre que guarda un valor"],["str","tipo de dato de texto"],["int","tipo de dato numérico entero"],["print()","muestra algo en pantalla"]]},
  {id:"tipos_datos",ic:"🔢",nm:"Tipos de datos",
   concepto:"Los tipos más comunes son int (entero), float (decimal), str (texto) y bool (verdadero/falso). Puedes convertir entre ellos con str(), int(), float().",
@@ -20,6 +22,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función a_texto(numero) que reciba un número y devuelva ese número convertido a texto (str).",
   starter:'def a_texto(numero):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:"a_texto(5)",expected:"5"},{expr:"a_texto(10)",expected:"10"}],
+  hint:"Usa la función str() para convertir el número a texto.",
+  solution:"def a_texto(numero):\n    return str(numero)\n",
   terms:[["int","número entero"],["float","número decimal"],["bool","verdadero o falso"],["str()","convierte a texto"]]},
  {id:"condicionales",ic:"🔀",nm:"Condicionales (if/else)",
   concepto:"if ejecuta código SOLO si una condición es verdadera; else cubre el caso contrario.",
@@ -28,6 +32,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función es_mayor_de_edad(edad) que devuelva True si edad es 18 o más, y False si no.",
   starter:'def es_mayor_de_edad(edad):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:"es_mayor_de_edad(20)",expected:true},{expr:"es_mayor_de_edad(10)",expected:false}],
+  hint:"Usa if edad >= 18: return True, y en else: return False.",
+  solution:"def es_mayor_de_edad(edad):\n    if edad >= 18:\n        return True\n    else:\n        return False\n",
   terms:[["if","ejecuta si la condición es verdadera"],["else","el caso contrario"],[">=","mayor o igual que"],["bool","True o False"]]},
  {id:"bucles",ic:"🔁",nm:"Bucles (for)",
   concepto:"Un bucle for repite código automáticamente para cada elemento de una lista o rango, sin copiar y pegar.",
@@ -36,6 +42,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función suma_lista(numeros) que sume todos los números de la lista usando un bucle for y devuelva el total.",
   starter:'def suma_lista(numeros):\n    total = 0\n    # completa el bucle aquí\n    return total\n',
   tests:[{expr:"suma_lista([1, 2, 3])",expected:6},{expr:"suma_lista([10, 20])",expected:30}],
+  hint:"Dentro del for, suma cada número al total: total = total + n",
+  solution:"def suma_lista(numeros):\n    total = 0\n    for n in numeros:\n        total = total + n\n    return total\n",
   terms:[["for","repite código para cada elemento"],["range()","genera una secuencia de números"],["total","variable acumuladora"],["lista","colección ordenada de valores"]]},
  {id:"funciones",ic:"🧩",nm:"Funciones",
   concepto:"Una función empaqueta código reutilizable con nombre, entradas (parámetros) y una salida (return).",
@@ -44,6 +52,8 @@ const PY_TOPICS=[
   enunciado:"Escribe la función area_triangulo(base, altura) que devuelva el área de un triángulo (base * altura / 2).",
   starter:'def area_triangulo(base, altura):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:"area_triangulo(4, 6)",expected:12},{expr:"area_triangulo(10, 2)",expected:10}],
+  hint:"El área de un triángulo es base * altura / 2.",
+  solution:"def area_triangulo(base, altura):\n    return base * altura / 2\n",
   terms:[["función","bloque de código reutilizable"],["parámetro","dato que recibe la función"],["return","devuelve un resultado"],["def","palabra para crear una función"]]},
  {id:"listas",ic:"📋",nm:"Listas",
   concepto:"Una lista guarda varios valores en orden, accesibles por posición (índice), empezando en 0.",
@@ -52,6 +62,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función primero_y_ultimo(lista) que devuelva una nueva lista con [el primer elemento, el último elemento].",
   starter:'def primero_y_ultimo(lista):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:"primero_y_ultimo([1, 2, 3, 4])",expected:[1,4]},{expr:'primero_y_ultimo(["a", "b", "c"])',expected:["a","c"]}],
+  hint:"Usa lista[0] para el primero y lista[-1] para el último.",
+  solution:"def primero_y_ultimo(lista):\n    return [lista[0], lista[-1]]\n",
   terms:[["lista","colección ordenada de valores"],["índice","posición de un valor en la lista"],["[0]","primer elemento"],["[-1]","último elemento"]]},
  {id:"diccionarios",ic:"📖",nm:"Diccionarios",
   concepto:"Un diccionario guarda pares clave-valor, como una agenda telefónica (nombre → número).",
@@ -60,6 +72,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función obtener_valor(diccionario, clave) que devuelva el valor de esa clave, o 'no encontrado' si la clave no existe (usa .get()).",
   starter:'def obtener_valor(diccionario, clave):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:'obtener_valor({"a": 1, "b": 2}, "a")',expected:1},{expr:'obtener_valor({"a": 1}, "z")',expected:"no encontrado"}],
+  hint:"Usa diccionario.get(clave, 'no encontrado').",
+  solution:'def obtener_valor(diccionario, clave):\n    return diccionario.get(clave, "no encontrado")\n',
   terms:[["diccionario","pares clave-valor"],["clave","nombre para buscar un valor"],[".get()","busca una clave sin dar error si falta"],["{}","forma de crear un diccionario"]]},
  {id:"errores",ic:"🛟",nm:"Manejo de errores (try/except)",
   concepto:"try/except atrapa errores para que el programa no se caiga, y responde con un mensaje controlado en vez de romperse.",
@@ -68,6 +82,8 @@ const PY_TOPICS=[
   enunciado:"Completa la función dividir_seguro(a, b) que devuelva a/b, pero si b es 0 devuelva el texto 'Error: no se puede dividir por cero' usando try/except.",
   starter:'def dividir_seguro(a, b):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:"dividir_seguro(10, 2)",expected:5},{expr:"dividir_seguro(5, 0)",expected:"Error: no se puede dividir por cero"}],
+  hint:"Pon la división dentro de try, y en except devuelve el mensaje de error.",
+  solution:'def dividir_seguro(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        return "Error: no se puede dividir por cero"\n',
   terms:[["try","intenta ejecutar este código"],["except","qué hacer si algo falla"],["error","algo que rompe el programa"],["plan B","idea detrás de try/except"]]},
  {id:"poo",ic:"🏗️",nm:"Programación orientada a objetos",
   concepto:"Una clase es un molde para crear objetos que agrupan datos (atributos) y acciones (métodos).",
@@ -76,6 +92,8 @@ const PY_TOPICS=[
   enunciado:"Completa la clase Mascota para que Mascota('Firulais').saludo() devuelva 'Firulais dice: ¡Hola!'.",
   starter:'class Mascota:\n    def __init__(self, nombre):\n        self.nombre = nombre\n    def saludo(self):\n        # escribe tu código aquí\n        pass\n',
   tests:[{expr:'Mascota("Firulais").saludo()',expected:"Firulais dice: ¡Hola!"},{expr:'Mascota("Kate").saludo()',expected:"Kate dice: ¡Hola!"}],
+  hint:"Usa self.nombre + ' dice: ¡Hola!' dentro de saludo().",
+  solution:'class Mascota:\n    def __init__(self, nombre):\n        self.nombre = nombre\n    def saludo(self):\n        return self.nombre + " dice: ¡Hola!"\n',
   terms:[["clase","molde para crear objetos"],["objeto","una instancia creada de una clase"],["self","el objeto actual dentro de la clase"],["__init__","se ejecuta al crear el objeto"]]},
  {id:"proyecto",ic:"🏆",nm:"Proyecto final: palíndromos",
   concepto:"Un palíndromo es un texto que se lee igual al derecho y al revés (ana, reconocer). Puedes invertir un texto en Python con texto[::-1].",
@@ -84,6 +102,8 @@ const PY_TOPICS=[
   enunciado:"Escribe la función es_palindromo(texto) que devuelva True si el texto es igual al revés (ignora mayúsculas usando .lower()), y False si no.",
   starter:'def es_palindromo(texto):\n    # escribe tu código aquí\n    pass\n',
   tests:[{expr:'es_palindromo("Ana")',expected:true},{expr:'es_palindromo("Hola")',expected:false},{expr:'es_palindromo("Reconocer")',expected:true}],
+  hint:"Usa .lower() para ignorar mayúsculas y compáralo con su versión invertida [::-1].",
+  solution:'def es_palindromo(texto):\n    limpio = texto.lower()\n    return limpio == limpio[::-1]\n',
   terms:[["palíndromo","se lee igual al derecho y al revés"],["[::-1]","invierte un texto o lista"],[".lower()","convierte a minúsculas"],["==","compara si dos valores son iguales"]]}
 ];
 function pyState(){const p=prof();if(!p.py)p.py={};return p.py;}
@@ -159,7 +179,8 @@ async function runPyExercise(){
  box.innerHTML='<div class="card center"><span class="spin">⏳</span> Ejecutando…</div>';
  const t=PY_TOPICS.find(function(x){return x.id===PY.topicId;});
  const res=await runPythonTests(code,t.tests);
- if(!res.ok){box.innerHTML='<div class="card errborder"><b>Hay un error en tu código:</b><br><span style="font-family:monospace;font-size:.85rem">'+esc(res.error)+'</span></div>';return;}
+ const hintBtns='<div style="display:flex;gap:8px;margin-top:10px"><button class="abtn ghost" style="flex:1" onclick="showPyHint()">💡 Ver pista</button><button class="abtn ghost" style="flex:1" onclick="showPySolution()">👀 Ver solución</button></div><div id="pyhintbox"></div>';
+ if(!res.ok){box.innerHTML='<div class="card errborder"><b>Hay un error en tu código:</b><br><span style="font-family:monospace;font-size:.85rem">'+esc(res.error)+'</span></div>'+hintBtns;return;}
  const passed=res.results.filter(Boolean).length,allOk=passed===t.tests.length;
  PY.testsPassed=allOk;
  let aiHtml="";
@@ -172,7 +193,22 @@ async function runPyExercise(){
  }
  box.innerHTML='<div class="card'+(allOk?' okborder':' errborder')+'"><h3>'+(allOk?"✅ ¡Todas las pruebas pasaron!":"💪 "+passed+"/"+t.tests.length+" pruebas pasaron")+'</h3></div>'
   +aiHtml
-  +(allOk?'<button class="abtn green" onclick="finishPyLesson()">Continuar al cierre →</button>':'<p class="mut" style="margin-top:8px">Ajusta tu código e inténtalo de nuevo.</p>');}
+  +(allOk?'<button class="abtn green" onclick="finishPyLesson()">Continuar al cierre →</button>':'<p class="mut" style="margin-top:8px">Ajusta tu código e inténtalo de nuevo, o pide ayuda:</p>'+hintBtns);}
+function showPyHint(){
+ const t=PY_TOPICS.find(function(x){return x.id===PY.topicId;});
+ const box=document.getElementById("pyhintbox");
+ if(box)box.innerHTML='<div class="card"><h3>💡 Pista</h3><p style="margin-top:6px;line-height:1.5">'+esc(t.hint)+'</p></div>';}
+function showPySolution(){
+ const t=PY_TOPICS.find(function(x){return x.id===PY.topicId;});
+ const box=document.getElementById("pyhintbox");
+ if(box)box.innerHTML='<div class="card"><h3>👀 Solución</h3><pre class="pycode">'+esc(t.solution)+'</pre>'
+  +'<button class="abtn" onclick="usePySolution()">📋 Usar esta solución</button></div>';}
+function usePySolution(){
+ const t=PY_TOPICS.find(function(x){return x.id===PY.topicId;});
+ const ta=document.getElementById("pycode");
+ if(ta)ta.value=t.solution;
+ PY.code=t.solution;
+ toast("Solución copiada al editor — toca ▶️ Ejecutar",true,1800);}
 function finishPyLesson(){
  const st=pyTopicState(PY.topicId);st.done=true;
  prof().coins+=15;prof().xp+=20;touchDay().pyDone=true;save();
