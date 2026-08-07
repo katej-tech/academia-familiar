@@ -2,6 +2,7 @@
   --kid-ink:#1E2A4A; --kid-yellow:#FFC93C; --kid-green:#3EC97C; --kid-blue:#3B82F6; --kid-red:#FF6B6B; --kid-purple:#A78BFA;
   --teen-bg:#0F0D1A; --teen-card:#1C1830; --teen-violet:#8B5CF6; --teen-pink:#EC4899; --teen-cyan:#22D3EE; --teen-ink:#F4F1FF; --teen-mut:#9D95BD;
   --par-bg:#F4F6FA; --par-ink:#1F2A44; --par-acc:#0E9488; --par-line:#E2E8F0; --par-mut:#5B6B85;
+  --adult-bg:#EEF1FA; --adult-card:#FFFFFF; --adult-ink:#1E2440; --adult-accent:#4F46E5; --adult-line:#E1E5F2; --adult-mut:#5B6484;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{font-size:clamp(17px,4.4vw,22px)}
@@ -277,3 +278,42 @@ body.teen .progressdots i.on{background:var(--teen-cyan)}
   font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;padding:0 4px}
 .app.locked .ic{filter:grayscale(.75);opacity:.62}
 .appsec{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(30,42,74,.5);font-weight:800;margin:16px 4px 2px;font-family:Fredoka,sans-serif}
+
+/* ================= TEMA ADULTO (v9.64): idiomas, Python, cursos ================= */
+body.adulto{background:linear-gradient(170deg,var(--adult-bg) 0%,#F7F8FD 60%,#FFFFFF 100%);background-attachment:fixed;
+  color:var(--adult-ink);font-family:'Nunito',sans-serif}
+body.adulto .card{background:var(--adult-card);border:1px solid var(--adult-line);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 4px 18px rgba(30,36,64,.06)}
+body.adulto .mut{color:var(--adult-mut)}
+body.adulto .pill{background:#fff;border:1px solid var(--adult-line)}
+body.adulto .back{background:#fff;border:1px solid var(--adult-line)}
+body.adulto .progressdots i{background:#DDE1F0}
+body.adulto .progressdots i.on{background:var(--adult-accent)}
+body.adulto .toast.ok{background:#16A34A;border:none}
+body.adulto .toast.no{background:#DC2626;border:none}
+.abtn{display:block;width:100%;min-height:58px;padding:15px 18px;border-radius:14px;font-weight:700;font-size:1.02rem;
+  background:#fff;color:var(--adult-ink);border:1px solid var(--adult-line);margin-bottom:12px;text-align:center;
+  box-shadow:0 3px 10px rgba(30,36,64,.06);transition:transform .08s,border-color .15s}
+.abtn:active{transform:scale(.98)}
+.abtn.green{background:var(--kid-green);color:#fff;border:none}
+.abtn.ghost{background:transparent;border:1px solid var(--adult-line);box-shadow:none}
+.abtn.locked{opacity:.5}
+textarea{font-family:inherit;font-size:.95rem;width:100%;padding:14px;border-radius:12px;border:2px solid rgba(127,127,127,.35);background:transparent;color:inherit;margin-bottom:12px;resize:vertical}
+/* vocabulario del curso de idiomas */
+.langword{padding:16px}
+.spk{border:none;background:var(--adult-accent);color:#fff;border-radius:999px;width:34px;height:34px;font-size:1rem;vertical-align:middle}
+/* conversación */
+.langchat{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.langmsg{max-width:82%;padding:10px 14px;border-radius:16px;line-height:1.45;font-size:.95rem}
+.langmsg.npc{align-self:flex-start;background:#fff;border:1px solid var(--adult-line);border-bottom-left-radius:4px}
+.langmsg.me{align-self:flex-end;background:var(--adult-accent);color:#fff;border-bottom-right-radius:4px}
+/* juego de memoria genérico */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.mgcard{aspect-ratio:1;border-radius:14px;border:1px solid var(--adult-line);background:#fff;font-size:.82rem;font-weight:700;
+  padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 3px 8px rgba(30,36,64,.08)}
+.mgcard.revealed{background:#EEF1FA;border-color:var(--adult-accent)}
+.mgcard.matched{background:var(--kid-green);color:#fff;border:none}
+/* curso de Python */
+.pycode{background:#1E2440;color:#E8EAFB;padding:14px;border-radius:12px;font-family:monospace;font-size:.85rem;
+  line-height:1.5;overflow-x:auto;white-space:pre;margin-bottom:14px}
+body.adulto .card.okborder{border-color:#16A34A;border-width:2px}
+body.adulto .card.errborder{border-color:#DC2626;border-width:2px}

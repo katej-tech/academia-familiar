@@ -19,20 +19,24 @@ function screenStart(){setTheme("parent");current.profile=null;
  }
  // padre/dueño: limpiar marca de "estudiante" si quedó de una versión anterior
  if(S.role==="child"){S.role="parent";S.childProfile=null;save();}
- const cards=childProfiles().map(p=>{
+ const cards=childProfiles().filter(p=>p.type!=="adulto").map(p=>{
   const sub=p.type==="teen"?"Studio de retos":"Mundo de Aventuras";
   const agetxt=p.age?(" · "+p.age+" años"):"";
   return '<div class="card profilecard" onclick="enterProfile(\''+p.id+'\')"><span class="av">'+(p.emoji||"🙂")+'</span><b style="font-size:1.35rem">'+esc(p.name)+'</b><br><span class="mut">'+sub+agetxt+'</span></div>';
  }).join("");
+ const adultP=childProfiles().find(p=>p.type==="adulto");
+ const adultCard='<div class="card profilecard" onclick="enterAdultProfile()"><span class="av">'+(adultP?(adultP.emoji||"🧑"):"🧑")+'</span><b style="font-size:1.35rem">Mi perfil</b><br><span class="mut">Idiomas · Python · cursos</span></div>';
  render('<div style="margin-top:6vh">'
  +'<h1 class="title center" style="font-size:2rem">🏠 Academia Familiar</h1>'
  +'<p class="center mut" style="margin-bottom:22px;font-size:1.05rem">¿Quién va a jugar hoy?</p>'
  +streakReminderHTML()
  +cards
+ +adultCard
  +'<p class="center" style="margin-top:20px"><button class="pbtn ghost" onclick="screenParentLogin()">👨‍👩‍👧 Panel de padres</button></p>'
  +'<p class="center" style="margin-top:6px"><button class="pbtn ghost" style="font-size:.92rem" onclick="doLogout()">🚪 Cerrar sesión / cambiar de cuenta</button></p></div>');}
 function enterProfile(id){if(!S.profiles[id])return;current.profile=id;touchDay();save();
- if(profType()==="teen")screenTeenHome();else screenKidMap();}
+ if(profType()==="teen")screenTeenHome();else if(profType()==="adulto")screenAdultHome();else screenKidMap();}
+function enterAdultProfile(){enterProfile(getOrCreateAdultProfile());}
 function enterKid(){enterProfile("nino");}
 function enterTeen(){enterProfile("nina");}
 
@@ -218,18 +222,20 @@ function courses(){if(!S.courses)S.courses=JSON.parse(JSON.stringify(DEFAULT_COU
 function openCourse(i){const c=courses()[i];if(!c)return;try{window.open(c.u,"_blank","noopener");}catch(e){location.href=c.u;}}
 function screenCourses(){
  const teen=(typeof profType==="function"&&profType()==="teen");
- setTheme(teen?"teen":"kid");
- const btn=teen?"tbtn":"kbtn white";const back=teen?"screenTeenHome()":"screenKidMap()";
+ const adult=(typeof profType==="function"&&profType()==="adulto");
+ setTheme(adult?"adulto":teen?"teen":"kid");
+ const btn=adult?"abtn":teen?"tbtn":"kbtn white";
+ const back=adult?"screenAdultHome()":teen?"screenTeenHome()":"screenKidMap()";
  const cs=courses();const areas={};
  cs.forEach((c,i)=>{(areas[c.area||"📚 Otros"]=areas[c.area||"📚 Otros"]||[]).push({_i:i,t:c.t});});
  let body="";
  if(!cs.length)body='<div class="card center"><p style="line-height:1.5">Aún no hay cursos.<br>Papá o mamá puede agregarlos en el <b>panel de padres</b>.</p></div>';
  else Object.keys(areas).forEach(a=>{
-  body+='<p style="font-size:1rem;margin:16px 2px 8px;font-weight:700'+(teen?';color:var(--teen-mut);text-transform:uppercase;letter-spacing:.05em;font-size:.82rem':";font-family:Fredoka")+'">'+a+'</p>';
+  body+='<p style="font-size:1rem;margin:16px 2px 8px;font-weight:700'+(adult?';color:var(--adult-mut);text-transform:uppercase;letter-spacing:.05em;font-size:.82rem':teen?';color:var(--teen-mut);text-transform:uppercase;letter-spacing:.05em;font-size:.82rem':";font-family:Fredoka")+'">'+a+'</p>';
   body+=areas[a].map(c=>'<button class="'+btn+'" style="text-align:left;display:flex;align-items:center;gap:10px" onclick="openCourse('+c._i+')"><span style="font-size:1.4rem">🎓</span><span style="flex:1">'+esc(c.t)+'</span><span style="opacity:.5;font-size:1.2rem">↗</span></button>').join("");
  });
- render(topbar(back)+(teen?'<h2 style="font-size:1.5rem;margin:2px 0 8px">🎓 Mis cursos</h2>':subHeader("🎓 Cursos"))
-  +'<p class="'+(teen?"mut":"center")+'" style="margin-bottom:12px;font-size:.9rem'+(teen?"":";text-align:center")+'">Cursos en video para aprender más. Se abren en <b>Udemy</b> (necesitas tu cuenta).</p>'
+ render(topbar(back)+((teen||adult)?'<h2 style="font-size:1.5rem;margin:2px 0 8px">🎓 Mis cursos</h2>':subHeader("🎓 Cursos"))
+  +'<p class="'+((teen||adult)?"mut":"center")+'" style="margin-bottom:12px;font-size:.9rem'+((teen||adult)?"":";text-align:center")+'">Cursos en video para aprender más. Se abren en <b>Udemy</b> (necesitas tu cuenta).</p>'
   +body);
 }
 function openWorld(id){

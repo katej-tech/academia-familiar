@@ -17,6 +17,7 @@ function normalizeProfiles(){
   if(p.type==="kid"){if(!p.critters)p.critters=[];if(!p.worldWins)p.worldWins={};if(!p.mastery)p.mastery={};
    if(!p.signals)p.signals={read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}};
    if(!p.emoji)p.emoji="🦖";}
+  else if(p.type==="adulto"){if(!p.best)p.best={};if(!p.emoji)p.emoji="🧑";}
   else{if(!p.best)p.best={};if(!p.emoji)p.emoji="🎧";}
  }
  if(!S.aiBank)S.aiBank={};
@@ -27,11 +28,17 @@ function profAiBank(){if(!S.aiBank)S.aiBank={};if(!current.profile)return [];if(
 function childProfiles(){return Object.keys(S.profiles).map(id=>Object.assign({id:id},S.profiles[id]));}
 function newProfile(name,age,type){
  const id="p_"+Date.now().toString(36)+Math.floor(Math.random()*1000);
- age=parseInt(age,10)||(type==="teen"?13:7);
+ age=parseInt(age,10)||(type==="teen"?13:(type==="adulto"?30:7));
  if(type==="teen")S.profiles[id]={name:name||"Estrella",alias:"",age:age,type:"teen",emoji:"🎧",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}};
+ else if(type==="adulto")S.profiles[id]={name:name||"Mi perfil",alias:"",age:age,type:"adulto",emoji:"🧑",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}};
  else S.profiles[id]={name:name||"Explorador",alias:"",age:age,type:"kid",emoji:"🦖",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}};
  save();return id;}
 function deleteProfile(id){if(S.profiles[id]&&Object.keys(S.profiles).length>1){delete S.profiles[id];if(S.aiBank)delete S.aiBank[id];save();}}
+/* perfil de adulto: uno solo por familia, se crea la primera vez que se toca "Mi perfil" */
+function getOrCreateAdultProfile(){
+ const found=childProfiles().find(p=>p.type==="adulto");
+ if(found)return found.id;
+ return newProfile(S.ownerName||"Mi perfil",30,"adulto");}
 /* ---- tiempo de uso por niño (segundos activos por día) ---- */
 let _useTimer=null;
 function startUsageTracking(){
@@ -86,6 +93,16 @@ function confetti(n){const ems=["🎉","⭐","🟡","💙","🟢","✨","🎈"];
  document.body.appendChild(e);setTimeout(()=>e.remove(),3000);}}
 function toast(msg,ok,ms){const t=document.createElement("div");t.className="toast "+(ok?"ok":"no");t.innerHTML=msg;
  document.body.appendChild(t);setTimeout(()=>t.remove(),ms||1400);}
+
+/* ============ IDIOMAS (perfil adulto) ============ */
+const LANGS=[
+ {id:"en",name:"Inglés",flag:"🇬🇧",bcp:"en-US"},
+ {id:"de",name:"Alemán",flag:"🇩🇪",bcp:"de-DE"},
+ {id:"pt",name:"Portugués",flag:"🇧🇷",bcp:"pt-BR"},
+ {id:"it",name:"Italiano",flag:"🇮🇹",bcp:"it-IT"}
+];
+const CEFR_LEVELS=["A1","A2","B1","B2","C1","C2"];
+function langInfo(id){return LANGS.find(l=>l.id===id)||LANGS[0];}
 
 /* ============ VOZ (Web Speech API) ============ */
 let VOICES=[];
@@ -177,6 +194,23 @@ function speakESDevice(text,onEnd){
  const v=pickLatinVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang="es-419";
  u.rate=.95;u.pitch=1.02;if(onEnd)u.onend=onEnd;window.speechSynthesis.speak(u);}
 function hasVoice(){return "speechSynthesis"in window;}
+/* voz genérica por idioma (alemán/portugués/italiano del curso de idiomas) — mismo patrón que speakEN/speakES */
+function pickVoiceFor(prefix){
+ const re=new RegExp("^"+prefix,"i");
+ const list=VOICES.filter(x=>re.test(x.lang));
+ return list.find(x=>NATURAL.test(x.name))||list[0]||null;}
+function speakLang(langId,text,onEnd){
+ if(muted()){if(onEnd)onEnd();return;}
+ if(S.geminiKey){geminiTTS(text,onEnd).then(ok=>{if(!ok)speakLangDevice(langId,text,onEnd);});return;}
+ speakLangDevice(langId,text,onEnd);}
+function speakLangDevice(langId,text,onEnd){
+ if(!("speechSynthesis"in window)){toast("🔇 Tu navegador no tiene voz. Prueba en Chrome.",false,2000);if(onEnd)onEnd();return;}
+ stopGemAudio();window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);
+ const v=pickVoiceFor(langId);
+ if(v){u.voice=v;u.lang=v.lang;}else u.lang=langInfo(langId).bcp;
+ u.rate=.85;u.pitch=1.0;if(onEnd)u.onend=onEnd;
+ window.speechSynthesis.speak(u);}
 
 /* ============ MOTOR DE CONTENIDO INFINITO (IA + banco fijo + adaptativo) ============ */
 /* Cada "tema" sabe pedirle a Gemini preguntas nuevas, y tiene un respaldo fijo. */
@@ -387,7 +421,8 @@ function stopGames(){
  try{if(typeof MZ!=="undefined"){MZ.over=true;cancelAnimationFrame(MZ.raf);}}catch(e){}
  try{if(typeof NV!=="undefined"){NV.over=true;cancelAnimationFrame(NV.raf);if(NV.mgTimer)clearInterval(NV.mgTimer);var _no=document.getElementById("nvov");if(_no)_no.remove();}}catch(e){}
  try{if(typeof PL!=="undefined"){PL.over=true;cancelAnimationFrame(PL.raf);}}catch(e){}
- try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}}
+ try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}
+ try{if(typeof MG!=="undefined"&&MG.timer)clearInterval(MG.timer);}catch(e){}}
 /* sale de un juego con confirmación (la flecha de atrás de los juegos) */
 function exitGame(target){
  if(!confirm("¿Salir del juego? Se perderá el avance de este juego."))return;

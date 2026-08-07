@@ -26,6 +26,8 @@ function profileReport(key){
  const extra=(isKid?' · 🌍 '+(p.worldWins?Object.values(p.worldWins).reduce((a,b)=>a+b,0):0)+' rondas · 🎒 '+((p.critters||[]).length)+' criaturas':'')
   +' · 🎚️ Dificultad: '+lvlTxt+' ('+lvl+'/5)'
   +(p.cefr?' · 🇬🇧 Inglés nivel '+CEFR[p.cefr.lvl||0].id:'')
+  +(p.lang&&typeof LANGS!=="undefined"?' · '+LANGS.filter(l=>p.lang[l.id]).map(l=>l.flag+' '+CEFR_LEVELS[p.lang[l.id].lvl]).join(' '):'')
+  +(p.py&&typeof PY_TOPICS!=="undefined"?' · 🐍 Python '+Object.values(p.py).filter(t=>t.done).length+'/'+PY_TOPICS.length:'')
   +' · ⏱️ '+fmt(weekSec)+' esta semana';
  const signals=isKid?signalsBlock(p):"";
  return '<div class="card"><h3>'+(p.emoji||"🙂")+' '+esc(p.name)+(p.age?' <span class="mut" style="font-weight:600">('+p.age+" años)</span>":'')+' <span class="mut" style="font-weight:600">· 🔥 '+p.streak+' días · 🪙 '+p.coins+' · Nv '+level(p.xp)+extra+'</span></h3>'
