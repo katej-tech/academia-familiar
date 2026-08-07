@@ -279,7 +279,45 @@ body.teen .progressdots i.on{background:var(--teen-cyan)}
 .app.locked .ic{filter:grayscale(.75);opacity:.62}
 .appsec{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(30,42,74,.5);font-weight:800;margin:16px 4px 2px;font-family:Fredoka,sans-serif}
 
-/* ================= TEMA ADULTO (v9.64): idiomas, Python, cursos ================= */
+/* ===== MODO EXAMEN (exam.js) ===== */
+.exhero{position:relative;border-radius:28px;padding:22px 20px 20px;margin-bottom:16px;text-align:center;color:#fff;
+ background:linear-gradient(135deg,#7C3AED 0%,#DB2777 55%,#F59E0B 120%);
+ box-shadow:0 12px 30px rgba(124,58,237,.35);overflow:hidden}
+.exhero-t{font-family:'Fredoka';font-weight:700;font-size:clamp(1.35rem,6.5vw,1.8rem);margin-top:10px}
+.exhero-p{font-size:clamp(.92rem,4vw,1.05rem);opacity:.95;margin-top:2px;font-weight:600}
+.exring{position:relative;width:clamp(112px,32vw,140px);height:clamp(112px,32vw,140px);margin:0 auto}
+.exring svg{width:100%;height:100%;display:block}
+.exring circle{transition:stroke-dashoffset 1s cubic-bezier(.34,1.4,.64,1)}
+.exringtxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+ font-family:'Fredoka';font-weight:700;font-size:clamp(1.5rem,7vw,2rem)}
+.excard{background:#fff;border-radius:24px;padding:16px;margin-bottom:16px;border:3px solid #ddd;
+ box-shadow:0 8px 22px rgba(30,42,74,.13)}
+.exhead{font-family:'Fredoka';font-weight:700;font-size:clamp(1.08rem,4.8vw,1.3rem);
+ display:flex;align-items:center;gap:9px;margin-bottom:12px;padding-bottom:9px;border-bottom:2px dashed}
+.exhead span{font-size:1.35em}
+.exu{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#F8FAFC;border:2px solid #E2E8F0;
+ border-radius:16px;padding:13px 14px;margin-bottom:9px;font-family:'Fredoka';font-weight:600;
+ transition:transform .1s;color:var(--kid-ink)}
+.exu:active{transform:scale(.975)}
+.exi{font-size:clamp(1.5rem,7vw,1.9rem);flex-shrink:0;width:1.6em;text-align:center}
+.exn{flex:1;font-size:clamp(.95rem,4.2vw,1.1rem);line-height:1.25}
+.exb{font-size:.78rem;font-weight:700;color:#fff;padding:5px 11px;border-radius:999px;white-space:nowrap}
+.numdisp{background:#fff;border:4px solid var(--kid-ink);border-radius:20px;min-height:74px;margin:14px 0;
+ display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-weight:700;
+ font-size:clamp(2.2rem,11vw,3rem);letter-spacing:.12em;box-shadow:0 6px 0 rgba(30,42,74,.8)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.numpad .key{aspect-ratio:1.35}
+.numpad .key.okk{background:#3EC97C;color:#fff}
+.choices2.wide{grid-template-columns:1fr}
+
+.excol-wrap{text-align:center}
+.excol{background:#FCFBF6;border:4px solid var(--kid-ink);border-radius:20px;padding:18px 26px;margin:6px auto 14px;display:inline-block;min-width:min(72%,260px);box-shadow:0 6px 0 rgba(30,42,74,.8);background-image:linear-gradient(rgba(59,130,246,.13) 1px,transparent 1px);background-size:100% 26px}
+.excol-row{font-family:Fredoka,sans-serif;font-weight:700;text-align:right;font-size:clamp(2rem,10vw,2.8rem);line-height:1.25;position:relative;color:var(--kid-ink)}
+.excol-sig{position:absolute;left:-.1em;color:#EF4444}
+.excol-line{border-bottom:5px solid var(--kid-ink);margin:6px 0 4px;border-radius:3px}
+.excol-q{color:#94A3B8}
+
+/* ================= TEMA ADULTO (v9.67): idiomas, Python, cursos ================= */
 body.adulto{background:linear-gradient(170deg,var(--adult-bg) 0%,#F7F8FD 60%,#FFFFFF 100%);background-attachment:fixed;
   color:var(--adult-ink);font-family:'Nunito',sans-serif}
 body.adulto .card{background:var(--adult-card);border:1px solid var(--adult-line);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 4px 18px rgba(30,36,64,.06)}

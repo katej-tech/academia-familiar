@@ -97,6 +97,7 @@ function hubApps(){
  let html=sec("📚 Aprender");
  html+='<div class="appgrid">'
   +appIcon("screenCole()","📚","Aprender","linear-gradient(160deg,#4ADE80,#16A34A)",{badge:faltaEst?faltaEst:0})
+  +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
   +appIcon("screenEnglishHub()","🇬🇧","Inglés","linear-gradient(160deg,#FCA5A5,#EF4444)")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
