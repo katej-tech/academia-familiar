@@ -355,3 +355,17 @@ textarea{font-family:inherit;font-size:.95rem;width:100%;padding:14px;border-rad
   line-height:1.5;overflow-x:auto;white-space:pre;margin-bottom:14px}
 body.adulto .card.okborder{border-color:#16A34A;border-width:2px}
 body.adulto .card.errborder{border-color:#DC2626;border-width:2px}
+/* mapa/roadmap de niveles y lecciones: reusa .map/.node (arriba, tema niño) con paleta calmada */
+body.adulto .map::before{background:repeating-linear-gradient(180deg,var(--adult-line) 0 18px,transparent 18px 34px)}
+body.adulto .node{background:#fff;border:2px solid var(--adult-line);box-shadow:0 6px 16px rgba(30,36,64,.10);color:var(--adult-ink)}
+body.adulto .node.open{background:var(--adult-accent);color:#fff;border:none}
+body.adulto .node.open:active{box-shadow:0 2px 0 rgba(30,36,64,.4)}
+body.adulto .node.done{background:var(--kid-green);color:#fff;border:none}
+body.adulto .node.locked{background:#E7E9F3;opacity:.75;filter:none}
+body.adulto .node.current::after{content:"SIGUE";background:var(--adult-accent);border-color:#fff}
+/* ejercicio "ordenar la frase" */
+.wordbank{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 16px}
+.wordbank .wtile{padding:10px 16px;border-radius:12px;background:#fff;border:1px solid var(--adult-line);font-weight:700;box-shadow:0 3px 8px rgba(30,36,64,.08)}
+.wordbank .wtile.used{opacity:.25;pointer-events:none}
+.wordslots{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--adult-line);border-radius:14px;margin-bottom:14px}
+.wordslots .wtile{background:var(--adult-accent);color:#fff;border:none}

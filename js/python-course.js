@@ -175,7 +175,7 @@ async function runPyExercise(){
   +(allOk?'<button class="abtn green" onclick="finishPyLesson()">Continuar al cierre →</button>':'<p class="mut" style="margin-top:8px">Ajusta tu código e inténtalo de nuevo.</p>');}
 function finishPyLesson(){
  const st=pyTopicState(PY.topicId);st.done=true;
- prof().coins+=15;prof().xp+=20;save();
+ prof().coins+=15;prof().xp+=20;touchDay().pyDone=true;save();
  setTheme("adulto");
  const idx=PY_TOPICS.findIndex(function(x){return x.id===PY.topicId;});
  const next=PY_TOPICS[idx+1];

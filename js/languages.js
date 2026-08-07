@@ -22,28 +22,53 @@ function screenLangHub(){setTheme("adulto");
   }).join("")
   +(S.geminiKey?'':'<p class="mut" style="margin-top:12px">💡 Con la clave de Gemini activa, la conversación y el quiz se generan libremente. Sin ella, usa un banco fijo curado.</p>'));}
 
+/* camino/roadmap visual reutilizable (mapa de niveles y mapa de lecciones dentro de un nivel).
+   nodes: [{ic,nm,state:"done"|"open"|"locked",current:bool,onclick:"...js..."}] */
+function roadmapHTML(nodes){
+ return '<div class="map">'+nodes.map((n,i)=>{
+  const cls=["node",i%2===0?"left":"right",n.state];
+  if(n.current)cls.push("current");
+  return '<div class="'+cls.join(" ")+'" onclick="'+n.onclick+'">'
+   +'<span class="ic">'+(n.state==="locked"?"🔒":n.ic)+'</span>'
+   +'<span class="nm">'+n.nm+'</span>'
+   +(n.state==="done"?'<span class="stars">⭐</span>':'')+'</div>';
+ }).join("")+'</div>';}
+
 function screenLangLevels(id){setTheme("adulto");
  const info=langInfo(id),st=langState(id);
- const path=CEFR_LEVELS.map((nm,i)=>{
+ const nodes=CEFR_LEVELS.map((nm,i)=>{
   const unlocked=i<=st.lvl,passed=st.passed[i];
-  return '<button class="abtn'+(passed?' green':unlocked?'':' locked')+'" '+(unlocked?'':'style="opacity:.5"')+' onclick="'
-   +(unlocked?"screenLangLevelDetail('"+id+"',"+i+")":"toast('Aprueba el nivel anterior primero 🔒',false,1600)")+'">'
-   +(unlocked?nm:'🔒 '+nm)+(passed?' ✓':'')+'</button>';
- }).join("");
+  return{ic:passed?"✅":info.flag,nm:nm,state:passed?"done":unlocked?"open":"locked",
+   current:unlocked&&!passed&&i===st.lvl,
+   onclick:unlocked?"screenLangLevelDetail('"+id+"',"+i+")":"toast('Aprueba el nivel anterior primero 🔒',false,1600)"};});
  render(topbar("screenLangHub()")
   +'<h2 style="text-align:center">'+info.flag+' '+info.name+'</h2>'
-  +'<p class="mut center" style="margin-bottom:14px">Completa las 6 situaciones de cada nivel (80% en el quiz) para subir</p>'
-  +path);}
+  +'<p class="mut center" style="margin-bottom:6px">Completa las '+LANG_SITUATIONS.length+' lecciones de cada nivel (80% en el quiz) para subir</p>'
+  +roadmapHTML(nodes));}
 
 function screenLangLevelDetail(id,lvl){setTheme("adulto");
  const info=langInfo(id),st=langState(id);
- const situation=LANG_SITUATIONS[st.lesson%LANG_SITUATIONS.length];
+ const pastLevel=lvl<st.lvl; // nivel ya superado: sus lecciones quedan todas marcadas como hechas
+ const nodes=LANG_SITUATIONS.map((sit,i)=>{
+  const label=LANG_SITUATION_LABEL[sit],parts=label.split(" ");
+  const done=pastLevel||i<st.lesson;
+  const isCurrent=!pastLevel&&i===st.lesson;
+  const locked=!pastLevel&&i>st.lesson;
+  let onclick;
+  if(locked)onclick="toast('Completa la lección anterior primero 🔒',false,1600)";
+  else if(done)onclick="toast('✓ Ya completaste esta lección',true,1200)";
+  else onclick="startLangLesson('"+id+"',"+lvl+")";
+  return{ic:parts[0],nm:parts.slice(1).join(" "),state:done?"done":locked?"locked":"open",current:isCurrent,onclick:onclick};});
+ const curSituation=LANG_SITUATIONS[Math.min(st.lesson,LANG_SITUATIONS.length-1)];
  render(topbar("screenLangLevels('"+id+"')")
   +'<h2 style="text-align:center">'+info.flag+' Nivel '+CEFR_LEVELS[lvl]+'</h2>'
-  +'<div class="card center"><p style="font-size:1.05rem">Lección de hoy:</p><h3>'+LANG_SITUATION_LABEL[situation]+'</h3>'
-  +'<p class="mut" style="margin-top:6px">Lección '+(st.lesson+1)+' de '+LANG_SITUATIONS.length+' de este nivel</p></div>'
-  +'<button class="abtn green" onclick="startLangLesson(\''+id+'\','+lvl+')">▶️ Empezar lección</button>'
-  +'<button class="abtn" onclick="screenLangVideos(\''+id+'\','+lvl+')">🎬 Videos y comprensión</button>');}
+  +roadmapHTML(nodes)
+  +'<button class="abtn" onclick="screenLangVideos(\''+id+'\','+lvl+')">🎬 Videos y comprensión</button>'
+  +'<button class="abtn" onclick="startMemoryFromSituation(\''+id+'\',\''+curSituation+'\')">🔤 Practicar emparejando</button>');}
+function startMemoryFromSituation(id,situation){
+ const vocab=LANG_VOCAB_SEED[id]&&LANG_VOCAB_SEED[id][situation];
+ if(!vocab)return;
+ startMemoryGame(vocab.map(w=>[w[0],w[1]]),{back:"screenLangHub()"});}
 
 /* ---- estado de la lección activa ---- */
 let LL={};
@@ -193,28 +218,47 @@ function pickFallbackConvo(i){
  renderLangConvo();}
 function finishLangConvo(){startLangQuiz();}
 
-/* ---- mini quiz (5 preguntas, 80% para avanzar) ---- */
-async function buildLangQuiz(id,lvl,vocab,grammar){
+/* ---- mini quiz (5 preguntas, 80% para avanzar): mezcla opción múltiple + ordenar + dictado ---- */
+async function buildLangQuizMCQ(id,lvl,vocab,grammar){
  const topicKey="lang_"+id+"_"+lvl;
  if(S.geminiKey){
   try{
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-15);
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(q=>'"'+q+'"').join("; ")+'.'):'';
    const vocabTxt=vocab.map(v=>v[0]+" = "+v[1]).join(", ");
-   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 5 preguntas de opción múltiple (3 opciones, 1 correcta) para practicar este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+').'+noRep+' Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación breve en español de por qué es correcta, útil si el estudiante se equivoca"}]} con 5 items.');
+   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 3 preguntas de opción múltiple (3 opciones, 1 correcta) para practicar este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+').'+noRep+' Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación breve en español de por qué es correcta, útil si el estudiante se equivoca"}]} con 3 items.');
    if(obj.items&&obj.items.length){
-    const items=obj.items.map(it=>{const q=stripHTML(it.q);const ops=(it.ops||[]).map(o=>stripHTML(o));const correct=ops[it.a];const sh=shuffled(ops);return{q,ops:sh,a:sh.indexOf(correct),why:stripHTML(it.why||"")};});
+    const items=obj.items.map(it=>{const q=stripHTML(it.q);const ops=(it.ops||[]).map(o=>stripHTML(o));const correct=ops[it.a];const sh=shuffled(ops);return{kind:"mcq",q,ops:sh,a:sh.indexOf(correct),why:stripHTML(it.why||"")};});
     aiRemember(topicKey,items.map(i=>i.q));
     return items;}
   }catch(e){}
  }
  const items=[];
- for(let i=0;i<5;i++){
+ for(let i=0;i<3;i++){
   const w=vocab[i%vocab.length];
   const distractors=pickN(vocab.filter(v=>v!==w).map(v=>v[1]),2);
   const ops=shuffled([w[1],...distractors]);
-  items.push({q:'¿Qué significa "'+w[0]+'"?',ops,a:ops.indexOf(w[1]),why:'"'+w[0]+'" significa "'+w[1]+'". '+(w[3]||"")});}
+  items.push({kind:"mcq",q:'¿Qué significa "'+w[0]+'"?',ops,a:ops.indexOf(w[1]),why:'"'+w[0]+'" significa "'+w[1]+'". '+(w[3]||"")});}
  return items;}
+/* ejercicio de ordenar la frase: usa el ejemplo de uso que ya trae cada palabra del vocabulario */
+function buildOrderItem(vocab){
+ let w=null;
+ for(let tries=0;tries<6;tries++){
+  const cand=pick(vocab);
+  const clean=cand[2].replace(/[.!?¿¡"]/g,"").trim();
+  if(clean.split(/\s+/).length>=3){w=cand;break;}
+ }
+ if(!w)w=vocab[0];
+ const words=w[2].replace(/[.!?¿¡"]/g,"").trim().split(/\s+/);
+ return{kind:"order",words:shuffled(words),correct:words,es:w[1],full:w[2]};}
+/* ejercicio de escucha y escribe (dictado): usa lev() de kid.js con tolerancia por longitud */
+function buildListenItem(vocab){
+ const w=pick(vocab);
+ return{kind:"listen",target:w[0],es:w[1]};}
+async function buildLangQuiz(id,lvl,vocab,grammar){
+ const mcq=await buildLangQuizMCQ(id,lvl,vocab,grammar);
+ const extra=[buildOrderItem(vocab),buildListenItem(vocab)].filter(Boolean);
+ return shuffled([...mcq,...extra]);}
 async function startLangQuiz(){setTheme("adulto");
  render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando el quiz…</h2></div>');
  LL.quiz=await buildLangQuiz(LL.id,LL.lvl,LL.vocab,LL.grammar);
@@ -224,6 +268,8 @@ function nextLangQuiz(){
  const it=LL.quiz[LL.quizK];
  if(!it)return screenLangQuizResult();
  LL.quizLock=false;
+ if(it.kind==="order")return renderLangQuizOrder(it);
+ if(it.kind==="listen")return renderLangQuizListen(it);
  render(topbar(null)
   +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
   +'<h2 style="text-align:center">📝 Mini quiz '+(LL.quizK+1)+'/'+LL.quiz.length+'</h2>'
@@ -237,6 +283,60 @@ function ansLangQuiz(i){
  recordAnswer(langInfo(LL.id).name,ok,12);
  if(ok){LL.quizOk++;sOK();confetti(6);}
  else{sNO();LL.quizErrors.push({q:it.q,tuResp:it.ops[i],correcta:it.ops[it.a],why:it.why||""});}
+ LL.quizK++;setTimeout(nextLangQuiz,900);}
+/* --- ordenar la frase --- */
+function renderLangQuizOrder(it){
+ LL.orderPicked=[];
+ render(topbar(null)
+  +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
+  +'<h2 style="text-align:center">🔀 Ordena la frase</h2>'
+  +'<p class="mut center" style="margin-bottom:6px">'+esc(it.es)+'</p>'
+  +'<button class="abtn ghost" style="display:block;margin:0 auto 10px;width:auto" onclick="speakLang(\''+LL.id+'\','+jsStr(it.full)+')">🔊 Escuchar frase completa</button>'
+  +'<div class="wordslots" id="orderSlots"></div>'
+  +'<div class="wordbank" id="orderBank">'+it.words.map((w,i)=>'<button class="wtile" id="wbtn'+i+'" onclick="pickOrderWord('+i+')">'+esc(w)+'</button>').join("")+'</div>'
+  +'<button class="abtn green" onclick="checkOrderAnswer()">Comprobar</button>');}
+function pickOrderWord(i){
+ if(LL.orderPicked.includes(i))return;
+ LL.orderPicked.push(i);
+ const btn=document.getElementById("wbtn"+i);if(btn)btn.classList.add("used");
+ renderOrderSlots();}
+function unpickOrderWord(i){
+ LL.orderPicked=LL.orderPicked.filter(x=>x!==i);
+ const btn=document.getElementById("wbtn"+i);if(btn)btn.classList.remove("used");
+ renderOrderSlots();}
+function renderOrderSlots(){
+ const it=LL.quiz[LL.quizK];
+ const slots=document.getElementById("orderSlots");if(!slots)return;
+ slots.innerHTML=LL.orderPicked.map(i=>'<button class="wtile" onclick="unpickOrderWord('+i+')">'+esc(it.words[i])+'</button>').join("");}
+function checkOrderAnswer(){
+ if(LL.quizLock)return;LL.quizLock=true;
+ const it=LL.quiz[LL.quizK];
+ const chosen=LL.orderPicked.map(i=>it.words[i]);
+ const ok=chosen.length===it.correct.length&&chosen.every((w,i)=>w===it.correct[i]);
+ recordAnswer(langInfo(LL.id).name,ok,15);
+ if(ok){LL.quizOk++;sOK();confetti(6);}
+ else{sNO();LL.quizErrors.push({q:"Ordenar: "+it.es,tuResp:chosen.join(" ")||"(nada)",correcta:it.correct.join(" "),why:""});}
+ LL.quizK++;setTimeout(nextLangQuiz,900);}
+/* --- escucha y escribe (dictado) --- */
+function renderLangQuizListen(it){
+ render(topbar(null)
+  +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
+  +'<h2 style="text-align:center">🎧 Escucha y escribe</h2>'
+  +'<p class="mut center" style="margin-bottom:10px">Toca para escuchar, luego escribe lo que oyes</p>'
+  +'<button class="abtn" onclick="speakLang(\''+LL.id+'\','+jsStr(it.target)+')">🔊 Reproducir</button>'
+  +'<input type="text" id="listenInput" placeholder="Escribe lo que escuchaste...">'
+  +'<button class="abtn green" onclick="checkListenAnswer()">Comprobar</button>');
+ speakLang(LL.id,it.target);}
+function checkListenAnswer(){
+ if(LL.quizLock)return;LL.quizLock=true;
+ const it=LL.quiz[LL.quizK];
+ const inp=document.getElementById("listenInput");
+ const said=(inp&&inp.value||"").trim();
+ const tol=it.target.length<=6?1:it.target.length<=12?2:3;
+ const ok=said.length>0&&typeof lev==="function"&&lev(said.toLowerCase(),it.target.toLowerCase())<=tol;
+ recordAnswer(langInfo(LL.id).name,ok,15);
+ if(ok){LL.quizOk++;sOK();confetti(6);}
+ else{sNO();LL.quizErrors.push({q:"Dictado ("+it.es+")",tuResp:said||"(nada)",correcta:it.target,why:""});}
  LL.quizK++;setTimeout(nextLangQuiz,900);}
 function screenLangQuizResult(){setTheme("adulto");
  const pct=Math.round(LL.quizOk/LL.quiz.length*100);const passed=pct>=80;
@@ -263,6 +363,7 @@ function finishLangLesson(passed){
   }
   st.totalDone=(st.totalDone||0)+1;
   prof().coins+=15;prof().xp+=20;
+  touchDay().langDone=true;
  }
  save();
  screenLangClosing(passed,advancedLevel);}
