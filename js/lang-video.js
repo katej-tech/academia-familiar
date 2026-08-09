@@ -62,8 +62,9 @@ function ansCQ(i){
 function finishCQ(){
  const pct=Math.round(CQ.ok/CQ.items.length*100);
  prof().coins+=10;prof().xp+=15;save();
+ const isListening=CQ.mode==="listening";
  render(topbar("screenLangHub()")
   +'<div class="card center"><div style="font-size:3rem">'+(pct>=70?"🌟":"📚")+'</div><h2>Comprensión: '+pct+'%</h2>'
   +'<p style="margin-top:10px">Práctica complementaria — no afecta tu avance de nivel del curso.</p></div>'
-  +'<button class="abtn green" onclick="screenLangVideos(\''+CQ.id+'\','+CQ.lvl+')">Otro video</button>'
+  +'<button class="abtn green" onclick="'+(isListening?"screenLangListening('"+CQ.id+"',"+CQ.lvl+")":"screenLangVideos('"+CQ.id+"',"+CQ.lvl+")")+'">'+(isListening?"Otro listening":"Otro video")+'</button>'
   +'<button class="abtn ghost" onclick="screenLangHub()">Volver a idiomas</button>');}

@@ -44,7 +44,46 @@ function screenLangLevels(id){setTheme("adulto");
  render(topbar("screenLangHub()")
   +'<h2 style="text-align:center">'+info.flag+' '+info.name+'</h2>'
   +'<p class="mut center" style="margin-bottom:6px">Completa las '+LANG_SITUATIONS.length+' lecciones de cada nivel (80% en el quiz) para subir</p>'
+  +'<button class="abtn ghost" onclick="screenLangBook(\''+id+'\')">📖 Ver como libro</button>'
   +roadmapHTML(nodes));}
+
+/* ---- vista de libro: índice navegable para hojear lo ya aprendido, de solo lectura ---- */
+function bookLessonDone(st,lvl,i){
+ if(lvl<st.lvl)return true;
+ if(lvl>st.lvl)return false;
+ if(st.passed[lvl])return true;
+ return i<st.lesson;}
+function screenLangBook(id){setTheme("adulto");
+ const info=langInfo(id),st=langState(id);
+ let html="";
+ CEFR_LEVELS.forEach(function(lvlName,lvl){
+  html+='<p class="mut" style="margin:14px 4px 4px;font-weight:700;text-transform:uppercase;font-size:.78rem">Nivel '+lvlName+(st.passed[lvl]?' ✓':'')+'</p>';
+  LANG_SITUATIONS.forEach(function(sit,i){
+   const done=bookLessonDone(st,lvl,i);
+   const label=LANG_SITUATION_LABEL[sit];
+   if(done)html+='<button class="abtn" style="text-align:left" onclick="screenLangBookLesson(\''+id+'\','+lvl+','+i+')">'+label+' <span class="mut" style="float:right">✅</span></button>';
+   else html+='<button class="abtn locked" style="text-align:left;opacity:.5" onclick="toast(\'Todavía no llegas a esta lección 🔒\',false,1500)">'+label+' <span class="mut" style="float:right">🔒</span></button>';
+  });});
+ render(topbar("screenLangLevels('"+id+"')")
+  +'<h2 style="text-align:center">📖 '+info.flag+' '+info.name+' — Libro del curso</h2>'
+  +'<p class="mut center" style="margin-bottom:10px">Hojea lo que ya aprendiste</p>'
+  +html);}
+function screenLangBookLesson(id,lvl,i){setTheme("adulto");
+ const situation=LANG_SITUATIONS[i];
+ const vocab=LANG_VOCAB_SEED[id][situation];
+ const variants=LANG_GRAMMAR_SEED[id][lvl];
+ const grammar=variants[i%variants.length];
+ render(topbar("screenLangBook('"+id+"')")
+  +'<h2 style="text-align:center">'+LANG_SITUATION_LABEL[situation]+'</h2>'
+  +'<p class="mut center" style="margin-bottom:10px">Nivel '+CEFR_LEVELS[lvl]+' · repaso de lo aprendido</p>'
+  +vocab.map(function(w){
+   return '<div class="card langword"><b style="font-size:1.05rem">'+esc(w[0])+'</b> '
+    +'<button class="spk" onclick="speakLang(\''+id+'\','+jsStr(w[0])+')">🔊</button>'
+    +'<br><span class="mut">'+esc(w[1])+'</span>'
+    +'<p style="font-size:.85rem;margin-top:4px"><i>"'+esc(w[2])+'"</i> → '+esc(w[4]||"")+'</p></div>';}).join("")
+  +'<div class="card"><h3>'+esc(grammar.rule)+'</h3><p style="margin-top:6px;line-height:1.5">'+esc(grammar.explicacion)+'</p>'
+  +(grammar.ejemplo?'<p style="margin-top:8px"><b>Ejemplo:</b> '+esc(grammar.ejemplo.t)+' → '+esc(grammar.ejemplo.es)+'</p>':'')+'</div>'
+  +'<button class="abtn ghost" onclick="screenLangBook(\''+id+'\')">← Volver al índice</button>');}
 
 function screenLangLevelDetail(id,lvl){setTheme("adulto");
  const info=langInfo(id),st=langState(id);
@@ -69,6 +108,7 @@ function screenLangLevelDetail(id,lvl){setTheme("adulto");
   +'<h2 style="text-align:center">'+info.flag+' Nivel '+CEFR_LEVELS[lvl]+'</h2>'
   +roadmapHTML(nodes)
   +'<button class="abtn" onclick="screenLangVideos(\''+id+'\','+lvl+')">🎬 Videos y comprensión</button>'
+  +'<button class="abtn" onclick="screenLangListening(\''+id+'\','+lvl+')">🎧 Listening estilo Cambridge</button>'
   +'<button class="abtn" onclick="startMemoryFromSituation(\''+id+'\',\''+curSituation+'\')">🔤 Practicar emparejando</button>');}
 function startMemoryFromSituation(id,situation){
  const vocab=LANG_VOCAB_SEED[id]&&LANG_VOCAB_SEED[id][situation];
@@ -174,7 +214,67 @@ function screenLangGrammar(){setTheme("adulto");
     +'<br>'+esc(g.ejemplo.t)+'<br><span class="mut">→ '+esc(g.ejemplo.es)+'</span></div>':'')
   +'</div>'
   +pronCard(LL.id)
-  +'<button class="abtn green" onclick="startLangConvo()">Practicar en conversación →</button>');}
+  +'<button class="abtn green" onclick="screenLangWorksheet()">Ir a la hoja de ejercicios →</button>');}
+
+/* ---- hoja de ejercicios: completar el espacio en blanco, respuesta escrita (no opción múltiple) ----
+   Práctica intermedia entre la teoría y la conversación libre, como un cuaderno de ejercicios real.
+   No bloquea el avance (igual que Videos y comprensión) — siempre se puede continuar. */
+async function buildWorksheet(id,lvl,vocab,grammar){
+ /* con clave, la IA genera la hoja COMPLETA (varía cada vez, más rica) — el banco curado
+    de abajo solo entra si no hay clave o si la IA falla, para que nunca se quede sin hoja. */
+ if(S.geminiKey){
+  try{
+   const vocabTxt=vocab.map(function(v){return v[0]+" = "+v[1];}).join(", ");
+   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' para un adulto hispanohablante. Crea 5 ejercicios de completar el espacio en blanco (una frase en '+langInfo(id).name+' con "____" donde falta UNA palabra) que practiquen este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+'). Varía qué palabra falta en cada frase. Responde SOLO JSON: {"items":[{"prompt":"frase con ____","answer":"palabra que falta","hint":"pista corta en español"}]} con 5 items.');
+   if(obj.items&&obj.items.length>=3){
+    const items=obj.items.filter(function(it){return it.prompt&&it.answer;}).map(function(it){return{prompt:stripHTML(it.prompt),answer:stripHTML(it.answer),hint:stripHTML(it.hint||"")};});
+    return shuffled(items);
+   }
+  }catch(e){}
+ }
+ const items=[];
+ shuffled(vocab).slice(0,3).forEach(function(w){
+  const re=new RegExp(w[0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i");
+  if(re.test(w[2]))items.push({prompt:w[2].replace(re,"____"),answer:w[0],hint:w[1]});
+  else items.push({prompt:'¿Cómo se dice "'+w[1]+'"?',answer:w[0],hint:w[2]});
+ });
+ if(grammar.ejemplo){
+  const words=grammar.ejemplo.t.replace(/[.!?¿¡"]/g,"").trim().split(/\s+/);
+  if(words.length>=2){
+   const idx=words.length>3?Math.floor(words.length/2):words.length-1;
+   const answer=words[idx];const blanked=words.slice();blanked[idx]="____";
+   items.push({prompt:blanked.join(" "),answer:answer,hint:grammar.ejemplo.es});
+  }
+ }
+ return shuffled(items);}
+function screenLangWorksheet(){setTheme("adulto");
+ render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando tu hoja de ejercicios…</h2></div>');
+ buildWorksheet(LL.id,LL.lvl,LL.vocab,LL.grammar).then(function(items){LL.worksheet=items;renderLangWorksheet();});}
+function renderLangWorksheet(){setTheme("adulto");
+ render(topbar(null)
+  +'<h2 style="text-align:center">✍️ Hoja de ejercicios</h2>'
+  +'<p class="mut center" style="margin-bottom:10px">Completa el espacio en blanco. Es práctica — no afecta tu avance.</p>'
+  +LL.worksheet.map(function(it,i){
+   return '<div class="card"><p style="line-height:1.5">'+esc(it.prompt)+'</p>'
+    +'<input type="text" id="wsInput'+i+'" placeholder="Tu respuesta...">'
+    +'<p class="mut" style="font-size:.8rem">💡 '+esc(it.hint)+'</p>'
+    +'<div id="wsResult'+i+'"></div></div>';
+  }).join("")
+  +'<button class="abtn green" onclick="checkWorksheet()">Corregir</button>'
+  +'<button class="abtn ghost" onclick="startLangConvo()">Continuar a la conversación →</button>');}
+function checkWorksheet(){
+ let ok=0;
+ LL.worksheet.forEach(function(it,i){
+  const inp=document.getElementById("wsInput"+i);
+  const said=(inp&&inp.value||"").trim();
+  const tol=it.answer.length<=6?1:it.answer.length<=12?2:3;
+  const correct=said.length>0&&typeof lev==="function"&&lev(said.toLowerCase(),it.answer.toLowerCase())<=tol;
+  if(correct)ok++;
+  const box=document.getElementById("wsResult"+i);
+  if(box)box.innerHTML=correct?'<p style="color:#16A34A;font-weight:700;margin-top:4px">✅ ¡Correcto!</p>':'<p style="color:#DC2626;font-weight:700;margin-top:4px">❌ Era: '+esc(it.answer)+'</p>';});
+ recordAnswer(langInfo(LL.id).name+" hoja",ok>=LL.worksheet.length*0.6,20);
+ if(ok===LL.worksheet.length){sWIN();confetti(20);}else sOK();
+ toast(ok+"/"+LL.worksheet.length+" correctas",true,1800);}
 
 /* ---- conversación: IA libre si hay clave, diálogo fijo si no ----
    Diseño "academia profesional": el mensaje del nativo va SIEMPRE 100% en el idioma meta
