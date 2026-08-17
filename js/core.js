@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="5.0.0";
+const APP_VERSION="9.72.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
