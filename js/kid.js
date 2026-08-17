@@ -218,8 +218,21 @@ const DEFAULT_COURSES=[
  {t:"Matemáticas exprés",u:"https://www.udemy.com/course/matematicas-expres/",area:"🔢 Matemáticas"},
  {t:"Excel de principiante a avanzado",u:"https://www.udemy.com/course/megacurso-completo-de-excel-de-principiante-a-avanzado/",area:"💻 Herramientas"},
  {t:"CapCut (editar video)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=4479466",area:"💻 Herramientas"},
- {t:"Canva (diseño)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=4685584",area:"💻 Herramientas"}];
-function courses(){if(!S.courses)S.courses=JSON.parse(JSON.stringify(DEFAULT_COURSES));return S.courses;}
+ {t:"Canva (diseño)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=4685584",area:"💻 Herramientas"},
+ /* cursos de alemán de Katerine — el nombre es genérico porque el course_id no revela el
+    título real; ella puede quitarlos y volver a agregarlos con el nombre real si quiere. */
+ {t:"Curso de Alemán (Udemy #6972133)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=6972133",area:"🇩🇪 Alemán"},
+ {t:"Curso de Alemán (Udemy #3884068)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=3884068",area:"🇩🇪 Alemán"},
+ {t:"Curso de Alemán (Udemy #3000180)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=3000180",area:"🇩🇪 Alemán"},
+ {t:"Curso de Alemán (Udemy #7110631)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=7110631",area:"🇩🇪 Alemán"},
+ {t:"Curso de Alemán (Udemy #3532904)",u:"https://www.udemy.com/course-dashboard-redirect/?course_id=3532904",area:"🇩🇪 Alemán"}];
+/* siembra los cursos por defecto la primera vez, y además fusiona cualquier default NUEVO
+   (como los de alemán) hacia perfiles que ya tenían S.courses de antes, sin duplicar. */
+function courses(){
+ if(!S.courses){S.courses=JSON.parse(JSON.stringify(DEFAULT_COURSES));return S.courses;}
+ const urls=S.courses.map(function(c){return c.u;});
+ DEFAULT_COURSES.forEach(function(dc){if(urls.indexOf(dc.u)<0)S.courses.push(JSON.parse(JSON.stringify(dc)));});
+ return S.courses;}
 function openCourse(i){const c=courses()[i];if(!c)return;try{window.open(c.u,"_blank","noopener");}catch(e){location.href=c.u;}}
 function screenCourses(){
  const teen=(typeof profType==="function"&&profType()==="teen");

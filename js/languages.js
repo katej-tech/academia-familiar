@@ -109,7 +109,23 @@ function screenLangLevelDetail(id,lvl){setTheme("adulto");
   +roadmapHTML(nodes)
   +'<button class="abtn" onclick="screenLangVideos(\''+id+'\','+lvl+')">🎬 Videos y comprensión</button>'
   +'<button class="abtn" onclick="screenLangListening(\''+id+'\','+lvl+')">🎧 Listening estilo Cambridge</button>'
-  +'<button class="abtn" onclick="startMemoryFromSituation(\''+id+'\',\''+curSituation+'\')">🔤 Practicar emparejando</button>');}
+  +'<button class="abtn" onclick="screenLangReading(\''+id+'\','+lvl+')">📖 Lecturas</button>'
+  +'<button class="abtn" onclick="startMemoryFromSituation(\''+id+'\',\''+curSituation+'\')">🔤 Practicar emparejando</button>'
+  +langCoursesHTML(id));}
+/* cursos de Udemy ya asignados (courses(), definido en kid.js) que apliquen a este idioma —
+   coincidencia floja por nombre dentro de c.area, sin inventar contenido ni URLs. */
+function langCourses(id){
+ if(typeof courses!=="function")return [];
+ const name=langInfo(id).name.toLowerCase();
+ const list=courses();
+ const out=[];
+ list.forEach(function(c,i){if(c.area&&c.area.toLowerCase().indexOf(name)>=0)out.push({t:c.t,_i:i});});
+ return out;}
+function langCoursesHTML(id){
+ const list=langCourses(id);
+ if(!list.length)return '<div class="card"><h3>🎓 Cursos de Udemy</h3><p class="mut" style="margin-top:6px;font-size:.85rem">No tienes ningún curso asignado a '+esc(langInfo(id).name)+' todavía. Agrégalo desde el Panel de padres → Cursos externos, con área "'+esc(langInfo(id).name)+'".</p></div>';
+ return '<div class="card"><h3>🎓 Tus cursos de Udemy</h3>'
+  +list.map(function(c){return '<button class="abtn" style="text-align:left;margin-top:8px" onclick="openCourse('+c._i+')">▶️ '+esc(c.t)+'</button>';}).join("")+'</div>';}
 function startMemoryFromSituation(id,situation){
  const vocab=LANG_VOCAB_SEED[id]&&LANG_VOCAB_SEED[id][situation];
  if(!vocab)return;
@@ -261,7 +277,7 @@ function renderLangWorksheet(){setTheme("adulto");
     +'<div id="wsResult'+i+'"></div></div>';
   }).join("")
   +'<button class="abtn green" onclick="checkWorksheet()">Corregir</button>'
-  +'<button class="abtn ghost" onclick="startLangConvo()">Continuar a la conversación →</button>');}
+  +'<button class="abtn ghost" onclick="screenLangSceneIntro()">Continuar a la conversación →</button>');}
 function checkWorksheet(){
  let ok=0;
  LL.worksheet.forEach(function(it,i){
@@ -293,13 +309,24 @@ function buildFallbackConvoScript(id,situation){
   {npc:ph.goodbye,es:pes.goodbye,opts:[]}
  ];}
 function convoVocabPool(){return LL.vocab.map(v=>v[0]+" ("+v[1]+")").join(", ");}
+/* pantalla de escena: se muestra ANTES del chat para que el contexto quede claro desde el
+   inicio ("ir entendiendo el contexto" en vez de una conversación libre sin rumbo). */
+function screenLangSceneIntro(){setTheme("adulto");
+ const scene=LANG_SCENE_INTRO[LL.situation]||"";
+ render(topbar(null)
+  +'<h2 style="text-align:center">🎬 La escena</h2>'
+  +'<div class="card center"><div style="font-size:2.4rem">'+LANG_SITUATION_LABEL[LL.situation].split(" ")[0]+'</div>'
+  +'<p style="line-height:1.6;margin-top:8px">'+esc(scene)+'</p></div>'
+  +'<button class="abtn green" onclick="startLangConvo()">Empezar diálogo →</button>');}
 async function startLangConvo(){setTheme("adulto");
- LL.convo={history:[],mode:S.geminiKey?"ai":"fallback",fallbackIdx:0,revealed:{}};
+ LL.convo={history:[],mode:S.geminiKey?"ai":"fallback",fallbackIdx:0,revealed:{},suggestions:[]};
  if(LL.convo.mode==="ai"){
   render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando la conversación…</h2></div>');
   try{
-   const obj=await geminiJSON('Eres un hablante nativo de '+langInfo(LL.id).name+' en una situación de "'+LANG_SITUATION_LABEL[LL.situation]+'" con un estudiante hispanohablante de nivel '+CEFR_LEVELS[LL.lvl]+'. Escribe tu mensaje SOLO en '+langInfo(LL.id).name+', nunca mezcles español dentro del mismo mensaje. Usa SOLO este vocabulario que el estudiante ya conoce: '+convoVocabPool()+', más palabras universales muy básicas (hola, sí, no, gracias) — NO introduzcas vocabulario nuevo fuera de esta lista. Empieza con un saludo breve y UNA pregunta simple relacionada con la situación. Responde SOLO JSON: {"msg":"tu mensaje en '+langInfo(LL.id).name+'","es":"su traducción al español"}');
+   const scene=LANG_SCENE_INTRO[LL.situation]||"";
+   const obj=await geminiJSON('Eres un hablante nativo de '+langInfo(LL.id).name+' en esta escena con un estudiante hispanohablante de nivel '+CEFR_LEVELS[LL.lvl]+': "'+scene+'". Sigue la escena paso a paso, NO te desvíes a temas fuera de ella. Escribe tu mensaje SOLO en '+langInfo(LL.id).name+', nunca mezcles español dentro del mismo mensaje. Usa SOLO este vocabulario que el estudiante ya conoce: '+convoVocabPool()+', más palabras universales muy básicas (hola, sí, no, gracias) — NO introduzcas vocabulario nuevo fuera de esta lista. Empieza con un saludo breve y UNA pregunta simple relacionada con la escena. Responde SOLO JSON: {"msg":"tu mensaje en '+langInfo(LL.id).name+'","es":"su traducción al español","suggestions":["opción de respuesta corta 1 en '+langInfo(LL.id).name+'","opción de respuesta corta 2"]}');
    LL.convo.history.push({role:"model",text:obj.msg||LANG_PHRASES[LL.id].greet,es:obj.es||LANG_PHRASES_ES.greet});
+   LL.convo.suggestions=(obj.suggestions||[]).slice(0,2).map(function(s){return stripHTML(s);});
   }catch(e){LL.convo.mode="fallback";}
  }
  if(LL.convo.mode==="fallback"){
@@ -339,11 +366,17 @@ function speakLastLangConvo(){
  LL.convo.lastSpokenIdx=lastIdx;
  speakLang(LL.id,hist[lastIdx].text);}
 function renderLangConvoInput(){
- return '<div style="display:flex;gap:8px;margin-top:10px">'
+ const sug=LL.convo.suggestions||[];
+ return (sug.length?'<div class="langsuggest">'+sug.map(function(s){return '<button onclick="pickSuggestion('+jsStr(s)+')">💬 '+esc(s)+'</button>';}).join("")+'</div>':'')
+  +'<div style="display:flex;gap:8px;margin-top:10px">'
   +'<input type="text" id="langMsgInput" placeholder="Escribe tu respuesta..." style="flex:1">'
   +(typeof micAvailable==="function"&&micAvailable()?'<button class="abtn" style="width:auto" onclick="langMicInput()">🎤</button>':'')
   +'<button class="abtn" style="width:auto" onclick="sendLangMsg()">Enviar</button></div>'
-  +(typeof micAvailable==="function"&&micAvailable()?'<p class="mut center" style="font-size:.78rem;margin-top:4px">🎤 toca y habla — se envía solo al reconocer tu voz</p>':'');}
+  +(typeof micAvailable==="function"&&micAvailable()?'<p class="mut center" style="font-size:.78rem;margin-top:4px">🎤 toca y habla — se envía solo al reconocer tu voz — o toca una sugerencia 💬</p>':'');}
+function pickSuggestion(text){
+ const inp=document.getElementById("langMsgInput");
+ if(inp)inp.value=text;
+ sendLangMsg();}
 function renderFallbackConvoOptions(){
  const step=LL.convo.script[LL.convo.fallbackIdx];
  if(!step||!step.opts||!step.opts.length)return '<p class="mut center" style="margin-top:10px">Fin del diálogo.</p>';
@@ -364,10 +397,12 @@ async function sendLangMsg(){
  if(inp)inp.value="";
  try{
   const hist=LL.convo.history.map(h=>(h.role==="model"?"Tú (nativo): ":"Estudiante: ")+h.text).join("\n");
-  const obj=await geminiJSON('Continúas como hablante nativo de '+langInfo(LL.id).name+' en una conversación de "'+LANG_SITUATION_LABEL[LL.situation]+'" con un estudiante nivel '+CEFR_LEVELS[LL.lvl]+'. Escribe tu mensaje SOLO en '+langInfo(LL.id).name+', nunca mezcles español dentro del mismo mensaje. Usa SOLO este vocabulario conocido: '+convoVocabPool()+', más palabras universales muy básicas — NO introduzcas vocabulario nuevo fuera de esta lista. Historial:\n'+hist+'\nResponde con tu siguiente mensaje (incluye una pregunta si tiene sentido). Si el estudiante cometió un error notable, indícalo en el campo "correccion" (en español, una frase corta) — deja "correccion" vacío si no hubo error. Responde SOLO JSON: {"msg":"tu mensaje en '+langInfo(LL.id).name+'","es":"su traducción al español","correccion":"..."}');
+  const scene=LANG_SCENE_INTRO[LL.situation]||"";
+  const obj=await geminiJSON('Continúas como hablante nativo de '+langInfo(LL.id).name+' en esta escena con un estudiante nivel '+CEFR_LEVELS[LL.lvl]+': "'+scene+'". Sigue la escena paso a paso, NO te desvíes a temas fuera de ella. Escribe tu mensaje SOLO en '+langInfo(LL.id).name+', nunca mezcles español dentro del mismo mensaje. Usa SOLO este vocabulario conocido: '+convoVocabPool()+', más palabras universales muy básicas — NO introduzcas vocabulario nuevo fuera de esta lista. Historial:\n'+hist+'\nResponde con tu siguiente mensaje (incluye una pregunta si tiene sentido y avanza la escena hacia su objetivo). Si el estudiante cometió un error notable, indícalo en el campo "correccion" (en español, una frase corta) — deja "correccion" vacío si no hubo error. Responde SOLO JSON: {"msg":"tu mensaje en '+langInfo(LL.id).name+'","es":"su traducción al español","correccion":"...","suggestions":["opción de respuesta corta 1 en '+langInfo(LL.id).name+'","opción de respuesta corta 2"]}');
   LL.convo.history.push({role:"model",text:obj.msg||"...",es:obj.es||""});
+  LL.convo.suggestions=(obj.suggestions||[]).slice(0,2).map(function(s){return stripHTML(s);});
   if(obj.correccion)toast("💡 "+obj.correccion,true,3200);
- }catch(e){LL.convo.history.push({role:"model",text:"(sin conexión, sigamos) "+LANG_PHRASES[LL.id].canYouRepeat,es:"(sin conexión, sigamos) "+LANG_PHRASES_ES.canYouRepeat});}
+ }catch(e){LL.convo.history.push({role:"model",text:"(sin conexión, sigamos) "+LANG_PHRASES[LL.id].canYouRepeat,es:"(sin conexión, sigamos) "+LANG_PHRASES_ES.canYouRepeat});LL.convo.suggestions=[];}
  renderLangConvo();}
 function pickFallbackConvo(i){
  const step=LL.convo.script[LL.convo.fallbackIdx];if(!step)return;
@@ -387,7 +422,7 @@ async function buildLangQuizMCQ(id,lvl,vocab,grammar){
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-15);
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(q=>'"'+q+'"').join("; ")+'.'):'';
    const vocabTxt=vocab.map(v=>v[0]+" = "+v[1]).join(", ");
-   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 3 preguntas de opción múltiple (3 opciones, 1 correcta) para practicar este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+').'+noRep+' Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación breve en español de por qué es correcta, útil si el estudiante se equivoca"}]} con 3 items.');
+   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 3 preguntas de opción múltiple (3 opciones, 1 correcta) para practicar este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+').'+noRep+' Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación en español SIMPLE Y CLARA (2-3 frases cortas, sin jerga gramatical difícil) de por qué es correcta, para alguien que se acaba de equivocar"}]} con 3 items.');
    if(obj.items&&obj.items.length){
     const items=obj.items.map(it=>{const q=stripHTML(it.q);const ops=(it.ops||[]).map(o=>stripHTML(o));const correct=ops[it.a];const sh=shuffled(ops);return{kind:"mcq",q,ops:sh,a:sh.indexOf(correct),why:stripHTML(it.why||"")};});
     aiRemember(topicKey,items.map(i=>i.q));
@@ -439,7 +474,7 @@ async function buildLangExamQuiz(id,lvl){
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(function(q){return '"'+q+'"';}).join("; ")+'.'):'';
    const sample=shuffled(allVocab).slice(0,14).map(function(v){return v[0]+" = "+v[1];}).join(", ");
    const grammarSummary=LANG_GRAMMAR_SEED[id][lvl].map(function(g){return g.rule;}).join("; ");
-   const obj=await geminiJSON('Eres examinador de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' para un adulto hispanohablante. Crea 6 preguntas de opción múltiple (3 opciones, 1 correcta) que evalúen este vocabulario del nivel completo: '+sample+'; y estas reglas gramaticales: '+grammarSummary+'.'+noRep+' Es un EXAMEN FINAL, un poco más exigente que la práctica normal. Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación breve"}]} con 6 items.');
+   const obj=await geminiJSON('Eres examinador de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' para un adulto hispanohablante. Crea 6 preguntas de opción múltiple (3 opciones, 1 correcta) que evalúen este vocabulario del nivel completo: '+sample+'; y estas reglas gramaticales: '+grammarSummary+'.'+noRep+' Es un EXAMEN FINAL, un poco más exigente que la práctica normal. Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación en español SIMPLE Y CLARA (2-3 frases, sin jerga difícil) de por qué es correcta"}]} con 6 items.');
    if(obj.items&&obj.items.length){
     mcq=obj.items.map(function(it){const q=stripHTML(it.q);const ops=(it.ops||[]).map(function(o){return stripHTML(o);});const correct=ops[it.a];const sh=shuffled(ops);return{kind:"mcq",q:q,ops:sh,a:sh.indexOf(correct),why:stripHTML(it.why||"")};});
     aiRemember(topicKey,mcq.map(function(i){return i.q;}));
@@ -479,6 +514,7 @@ function screenLangExamResult(passed,pct,errHtml){
   +errHtml
   +(passed?('<div class="card center"><div style="font-size:2.4rem">🎉</div><h3>¡Subiste a nivel '+CEFR_LEVELS[newLvl]+'!</h3></div>'):'')
   +'<button class="abtn green" onclick="'+(passed?"screenLangLevels('"+LL.id+"')":"screenLangLevelDetail('"+LL.id+"',"+LL.lvl+")")+'">'+(passed?"Ver niveles →":"Volver a practicar")+'</button>');}
+function quizContextLabel(){return LL.isExam?"🏆 Examen final":(LANG_SITUATION_LABEL[LL.situation]||"");}
 function nextLangQuiz(){
  const it=LL.quiz[LL.quizK];
  if(!it)return screenLangQuizResult();
@@ -487,7 +523,7 @@ function nextLangQuiz(){
  if(it.kind==="listen")return renderLangQuizListen(it);
  render(topbar(null)
   +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
-  +'<h2 style="text-align:center">📝 Mini quiz '+(LL.quizK+1)+'/'+LL.quiz.length+'</h2>'
+  +'<h2 style="text-align:center">📝 Mini quiz · '+quizContextLabel()+' '+(LL.quizK+1)+'/'+LL.quiz.length+'</h2>'
   +'<div class="bigq center">'+mdBold(it.q)+' <button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(it.q)+')">🔊</button></div>'
   +it.ops.map((o,i)=>'<div style="display:flex;gap:8px;align-items:center">'
    +'<button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(o)+')">🔊</button>'
@@ -504,7 +540,7 @@ function renderLangQuizOrder(it){
  LL.orderPicked=[];
  render(topbar(null)
   +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
-  +'<h2 style="text-align:center">🔀 Ordena la frase</h2>'
+  +'<h2 style="text-align:center">🔀 Ordena la frase · '+quizContextLabel()+'</h2>'
   +'<p class="mut center" style="margin-bottom:6px">'+esc(it.es)+'</p>'
   +'<button class="abtn ghost" style="display:block;margin:0 auto 10px;width:auto" onclick="speakLang(\''+LL.id+'\','+jsStr(it.full)+')">🔊 Escuchar frase completa</button>'
   +'<div class="wordslots" id="orderSlots"></div>'
@@ -530,13 +566,13 @@ function checkOrderAnswer(){
  const ok=chosen.length===it.correct.length&&chosen.every((w,i)=>w===it.correct[i]);
  recordAnswer(langInfo(LL.id).name,ok,15);
  if(ok){LL.quizOk++;sOK();confetti(6);}
- else{sNO();LL.quizErrors.push({q:"Ordenar: "+it.es,tuResp:chosen.join(" ")||"(nada)",correcta:it.correct.join(" "),why:""});}
+ else{sNO();LL.quizErrors.push({q:"Ordenar: "+it.es,tuResp:chosen.join(" ")||"(nada)",correcta:it.correct.join(" "),why:"La frase completa es: \""+it.full+"\" → "+it.es});}
  LL.quizK++;setTimeout(nextLangQuiz,900);}
 /* --- escucha y escribe (dictado) --- */
 function renderLangQuizListen(it){
  render(topbar(null)
   +'<div class="progressdots">'+dots(LL.quiz.length,LL.quizK)+'</div>'
-  +'<h2 style="text-align:center">🎧 Escucha y escribe</h2>'
+  +'<h2 style="text-align:center">🎧 Escucha y escribe · '+quizContextLabel()+'</h2>'
   +'<p class="mut center" style="margin-bottom:10px">Toca para escuchar, luego escribe lo que oyes</p>'
   +'<button class="abtn" onclick="speakLang(\''+LL.id+'\','+jsStr(it.target)+')">🔊 Reproducir</button>'
   +'<input type="text" id="listenInput" placeholder="Escribe lo que escuchaste...">'
@@ -551,7 +587,7 @@ function checkListenAnswer(){
  const ok=said.length>0&&typeof lev==="function"&&lev(said.toLowerCase(),it.target.toLowerCase())<=tol;
  recordAnswer(langInfo(LL.id).name,ok,15);
  if(ok){LL.quizOk++;sOK();confetti(6);}
- else{sNO();LL.quizErrors.push({q:"Dictado ("+it.es+")",tuResp:said||"(nada)",correcta:it.target,why:""});}
+ else{sNO();LL.quizErrors.push({q:"Dictado ("+it.es+")",tuResp:said||"(nada)",correcta:it.target,why:"Vuelve a escuchar con 🔊 y fíjate en el sonido de cada parte de la palabra."});}
  LL.quizK++;setTimeout(nextLangQuiz,900);}
 function screenLangQuizResult(){setTheme("adulto");
  const pct=Math.round(LL.quizOk/LL.quiz.length*100);const passed=pct>=80;

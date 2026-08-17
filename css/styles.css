@@ -350,11 +350,18 @@ textarea{font-family:inherit;font-size:.95rem;width:100%;padding:14px;border-rad
   padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 3px 8px rgba(30,36,64,.08)}
 .mgcard.revealed{background:#EEF1FA;border-color:var(--adult-accent)}
 .mgcard.matched{background:var(--kid-green);color:#fff;border:none}
+@keyframes mgpop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.mgcard.revealed,.mgcard.matched{animation:mgpop .3s ease}
 /* curso de Python */
 .pycode{background:#1E2440;color:#E8EAFB;padding:14px;border-radius:12px;font-family:monospace;font-size:.85rem;
   line-height:1.5;overflow-x:auto;white-space:pre;margin-bottom:14px}
 body.adulto .card.okborder{border-color:#16A34A;border-width:2px}
 body.adulto .card.errborder{border-color:#DC2626;border-width:2px}
+body.adulto .word{border-bottom:2px dashed var(--adult-accent)}
+body.adulto .word:active{background:rgba(79,70,229,.15)}
+/* respuestas sugeridas de la conversación (chips tocables) */
+.langsuggest{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.langsuggest button{padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--adult-line);font-size:.88rem;box-shadow:0 2px 6px rgba(30,36,64,.08)}
 /* mapa/roadmap de niveles y lecciones: reusa .map/.node (arriba, tema niño) con paleta calmada */
 body.adulto .map::before{background:repeating-linear-gradient(180deg,var(--adult-line) 0 18px,transparent 18px 34px)}
 body.adulto .node{background:#fff;border:2px solid var(--adult-line);box-shadow:0 6px 16px rgba(30,36,64,.10);color:var(--adult-ink)}

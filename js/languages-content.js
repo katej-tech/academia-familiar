@@ -276,6 +276,21 @@ const LANG_VOCAB_SEED={
  }
 };
 
+/* escena de apertura de la conversación — en español, una por situación, reutilizable por los
+   4 idiomas. Se muestra ANTES del chat para que el contexto quede claro desde el inicio. */
+const LANG_SCENE_INTRO={
+ saludos:"Acabas de encontrarte con alguien. Tu objetivo: saludar, preguntar cómo está y presentarte.",
+ compras:"Estás en una tienda y quieres comprar algo. Tu objetivo: preguntar el precio y pedir un descuento.",
+ trabajo:"Estás en la oficina hablando con un colega. Tu objetivo: hablar de una reunión y de tu horario.",
+ comida:"Estás en un restaurante. Tu objetivo: pedir comida y bebida, y pedir la cuenta al final.",
+ viajes:"Estás en un aeropuerto o un hotel. Tu objetivo: preguntar dónde queda algo y cuánto tiempo toma llegar.",
+ emergencias:"Algo salió mal y necesitas ayuda urgente. Tu objetivo: pedir ayuda con claridad y explicar qué pasó.",
+ familia:"Le estás presentando tu familia a alguien. Tu objetivo: hablar de tus familiares y cómo son.",
+ salud:"Estás en una cita médica o en la farmacia. Tu objetivo: describir cómo te sientes y pedir ayuda.",
+ tecnologia:"Tienes un problema con un aparato y necesitas ayuda técnica. Tu objetivo: explicar el problema y pedir una solución.",
+ clima:"Estás hablando del clima con alguien. Tu objetivo: describir cómo está el tiempo y qué necesitas por eso."
+};
+
 /* IMPORTANTE: solo agregar situaciones nuevas AL FINAL. El progreso guardado (p.lang[id].lesson)
    es un índice sobre este arreglo — insertar o reordenar cambiaría el significado de progreso ya
    guardado de usuarios reales. */
