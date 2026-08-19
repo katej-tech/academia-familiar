@@ -1,10 +1,11 @@
 "use strict";
 /* ============ CURSO DE IDIOMAS (perfil adulto) — CEFR A1→C2 ============ */
-/* Estructura fija por lección: repaso → vocabulario → gramática → conversación → quiz (80% para avanzar) → cierre.
-   Vocabulario/gramática/pronunciación SIEMPRE vienen del banco curado (js/languages-content.js) — así la
-   lección nunca inventa gramática incorrecta. La IA (si hay clave) enriquece lo que más se beneficia de
-   variedad: el repaso, el quiz y sobre todo la conversación libre. Sin clave, todo sigue funcionando con
-   bancos fijos y un diálogo de opción múltiple. */
+/* Estructura fija por lección: repaso → vocabulario → gramática → lectura → hoja de ejercicios →
+   escena+diálogo → quiz (80% para avanzar) → cierre.
+   Con clave de Gemini, TODO el contenido variable (vocabulario, gramática, lectura, hoja, diálogo,
+   quiz) se genera de nuevo cada vez que se repite una situación — el banco curado de
+   js/languages-content.js es el respaldo real si no hay clave o si la IA falla, nunca la fuente
+   principal. Así la lección se siente distinta cada vez, no memorizada. */
 function langState(id){
  const p=prof();if(!p.lang)p.lang={};
  if(!p.lang[id])p.lang[id]={lvl:0,lesson:0,passed:[false,false,false,false,false,false],history:[],totalDone:0};
@@ -141,13 +142,50 @@ function buildRepaso(prevEntry){
   const ops=shuffled([w[1],...distractors]);
   return{q:'Repaso: ¿qué significa "'+w[0]+'"?',ops,a:ops.indexOf(w[1])};});}
 
+/* vocabulario IA-primero: misma forma [target,es,ejemplo,tip,ejemplo_es] que ya usa
+   LANG_VOCAB_SEED, para que memoria/quiz/hoja/lectura/baúl sigan funcionando sin tocarlos.
+   Sin clave o si la IA falla/devuelve algo inválido, cae al banco curado tal cual. */
+async function buildLangVocab(id,lvl,situation){
+ const bank=LANG_VOCAB_SEED[id][situation];
+ if(S.geminiKey){
+  try{
+   const topicKey="lang_vocab_"+id+"_"+situation;
+   const seen=aiSeenList(topicKey);const avoid=seen.slice(-20);
+   const noRep=avoid.length?(' No repitas estas palabras ya usadas antes: '+avoid.join(", ")+'.'):'';
+   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 6 a 8 palabras o frases nuevas de vocabulario útil sobre "'+LANG_SITUATION_LABEL[situation]+'".'+noRep+' Para cada una da: la palabra/frase en '+langInfo(id).name+', su traducción al español, una frase de ejemplo natural en '+langInfo(id).name+' que la use, un tip corto en español para recordarla (comparación con el español, sonido parecido, o truco mnemotécnico), y la traducción de esa frase de ejemplo. Responde SOLO JSON: {"items":[{"target":"...","es":"...","ejemplo":"...","tip":"...","ejemplo_es":"..."}]} con 6 a 8 items.');
+   if(obj.items&&obj.items.length){
+    const items=obj.items.filter(function(it){return it.target&&it.es&&it.ejemplo;})
+     .map(function(it){return[stripHTML(it.target),stripHTML(it.es),stripHTML(it.ejemplo),stripHTML(it.tip||""),stripHTML(it.ejemplo_es||"")];});
+    if(items.length>=4){aiRemember(topicKey,items.map(function(w){return w[0];}));return items;}
+   }
+  }catch(e){}
+ }
+ return bank;}
+/* gramática IA-primera: misma forma {rule,explicacion,compara,ejemplo:{t,es}} que ya usa LANG_GRAMMAR_SEED. */
+async function buildLangGrammar(id,lvl,situation){
+ const variants=LANG_GRAMMAR_SEED[id][lvl];
+ const bank=variants[Math.floor(Math.random()*variants.length)];
+ if(S.geminiKey){
+  try{
+   const topicKey="lang_gram_"+id+"_"+lvl;
+   const seen=aiSeenList(topicKey);const avoid=seen.slice(-10);
+   const noRep=avoid.length?(' No repitas estas reglas ya explicadas antes: '+avoid.join("; ")+'.'):'';
+   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Explica UNA regla gramatical de ese nivel, relevante para el tema "'+LANG_SITUATION_LABEL[situation]+'" si aplica.'+noRep+' Responde SOLO JSON: {"rule":"nombre corto de la regla","explicacion":"explicación clara en español, 2 a 3 frases","compara":"cómo se compara con el español (qué es distinto o parecido)","ejemplo":{"t":"frase de ejemplo en '+langInfo(id).name+'","es":"su traducción"}}');
+   if(obj.rule&&obj.explicacion&&obj.ejemplo&&obj.ejemplo.t){
+    const g={rule:stripHTML(obj.rule),explicacion:stripHTML(obj.explicacion),compara:stripHTML(obj.compara||""),ejemplo:{t:stripHTML(obj.ejemplo.t),es:stripHTML(obj.ejemplo.es||"")}};
+    aiRemember(topicKey,[g.rule]);
+    return g;
+   }
+  }catch(e){}
+ }
+ return bank;}
+
 async function startLangLesson(id,lvl){setTheme("adulto");
  render(topbar("screenLangLevelDetail('"+id+"',"+lvl+")")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando tu lección…</h2></div>');
  const st=langState(id);
  const situation=LANG_SITUATIONS[st.lesson%LANG_SITUATIONS.length];
- const vocab=LANG_VOCAB_SEED[id][situation];
- const grammarVariants=LANG_GRAMMAR_SEED[id][lvl];
- const grammar=grammarVariants[st.lesson%grammarVariants.length];
+ const vocab=await buildLangVocab(id,lvl,situation);
+ const grammar=await buildLangGrammar(id,lvl,situation);
  const prev=st.history.length?st.history[st.history.length-1]:null;
  LL={id,lvl,situation,vocab,grammar,repaso:buildRepaso(prev),repasoK:0,repasoOk:0};
  screenLangRepaso();}
@@ -230,7 +268,34 @@ function screenLangGrammar(){setTheme("adulto");
     +'<br>'+esc(g.ejemplo.t)+'<br><span class="mut">→ '+esc(g.ejemplo.es)+'</span></div>':'')
   +'</div>'
   +pronCard(LL.id)
-  +'<button class="abtn green" onclick="screenLangWorksheet()">Ir a la hoja de ejercicios →</button>');}
+  +'<button class="abtn green" onclick="screenLangLessonReading()">Ir a la lectura →</button>');}
+
+/* ---- lectura integrada: parte obligatoria de la lección (no un botón aparte), con el
+   vocabulario de HOY. Reutiliza buildLangStory() de js/lang-reading.js — mismo generador que
+   el botón suelto "📖 Lecturas" del detalle de nivel — pero guarda el resultado en LL (estado
+   de la lección activa), no en RD (estado de lectura libre), para no pisarlo. */
+async function screenLangLessonReading(){setTheme("adulto");
+ render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">📖</div><h2 style="margin-top:10px">Preparando tu lectura…</h2></div>');
+ LL.story=await buildLangStory(LL.id,LL.lvl,LL.situation);
+ renderLangLessonReading();}
+function renderLangLessonReading(){setTheme("adulto");
+ const c=LL.story;
+ const html=c.text.split(/(\s+)/).map(function(tok){
+  const clean=tok.toLowerCase().replace(/[.,!?¿¡";:()]/g,"").trim();
+  if(clean&&c.words&&c.words[clean])return '<span class="word" onclick="tapLangLessonWord(\''+clean.replace(/'/g,"\\'")+'\')">'+esc(tok)+'</span>';
+  return esc(tok);}).join("");
+ render(topbar(null)
+  +'<h2 style="text-align:center">📖 '+esc(c.title)+'</h2>'
+  +'<p class="mut center" style="margin-bottom:8px">Un texto corto con el vocabulario de hoy — toca las palabras subrayadas 👆</p>'
+  +'<button class="abtn" onclick="speakLang(\''+LL.id+'\','+jsStr(c.text)+')">🔊 Escuchar todo</button>'
+  +'<div class="card" style="line-height:2">'+html+'</div>'
+  +'<div id="langwordbox"></div>'
+  +'<button class="abtn green" onclick="screenLangWorksheet()">Siguiente → Hoja de ejercicios</button>');}
+function tapLangLessonWord(w){
+ const c=LL.story;
+ speakLang(LL.id,w);
+ const box=document.getElementById("langwordbox");
+ if(box)box.innerHTML='<div class="card" style="border-color:var(--adult-accent);border-width:2px;text-align:center"><b style="color:var(--adult-accent);font-size:1.2rem">'+esc(w)+'</b> = <span style="font-size:1.1rem">'+esc((c.words&&c.words[w])||"?")+'</span></div>';}
 
 /* ---- hoja de ejercicios: completar el espacio en blanco, respuesta escrita (no opción múltiple) ----
    Práctica intermedia entre la teoría y la conversación libre, como un cuaderno de ejercicios real.
@@ -292,12 +357,13 @@ function checkWorksheet(){
  if(ok===LL.worksheet.length){sWIN();confetti(20);}else sOK();
  toast(ok+"/"+LL.worksheet.length+" correctas",true,1800);}
 
-/* ---- conversación: IA libre si hay clave, diálogo fijo si no ----
-   Diseño "academia profesional": el mensaje del nativo va SIEMPRE 100% en el idioma meta
-   (nunca mezclado con español a mitad de frase — eso se sentía raro); la traducción se
-   muestra aparte, bajo demanda ("Ver traducción"). El prompt se acota al vocabulario ya
-   visto en la lección (+ conectores básicos) para que la IA no pregunte cosas que el
-   estudiante todavía no aprendió. Cada burbuja del nativo se puede guardar al baúl. */
+/* ---- diálogo guiado de opción múltiple: NO es chat libre (nada de escribir mensajes ni
+   micrófono — pedido explícito de Katerine, "no quiero formato de chat libre"). Con clave,
+   la IA genera un diálogo COMPLETO de 5 turnos de una sola vez (varía cada vez que se repite
+   la situación); cada turno trae 3 opciones de respuesta, una correcta y dos distractores con
+   una explicación corta de por qué no calzan — misma pedagogía "opción + por qué" que ya
+   funciona bien en el quiz. Sin clave, se usa el guion fijo curado de siempre, adaptado a la
+   misma forma de turnos (sus opciones cuentan todas como válidas, igual que antes). */
 function buildFallbackConvoScript(id,situation){
  const ph=LANG_PHRASES[id],pes=LANG_PHRASES_ES,vocab=LANG_VOCAB_SEED[id][situation];
  const w0=vocab[0],w1=pick(vocab);
@@ -309,7 +375,23 @@ function buildFallbackConvoScript(id,situation){
   {npc:ph.goodbye,es:pes.goodbye,opts:[]}
  ];}
 function convoVocabPool(){return LL.vocab.map(v=>v[0]+" ("+v[1]+")").join(", ");}
-/* pantalla de escena: se muestra ANTES del chat para que el contexto quede claro desde el
+async function buildLangDialogue(id,lvl,situation){
+ if(S.geminiKey){
+  try{
+   const topicKey="lang_dlg_"+id+"_"+situation;
+   const seen=aiSeenList(topicKey);const avoid=seen.slice(-8);
+   const noRep=avoid.length?(' No repitas estos diálogos ya usados antes: '+avoid.join(" | ")+'.'):'';
+   const scene=LANG_SCENE_INTRO[situation]||"";
+   const obj=await geminiJSON('Eres un hablante nativo de '+langInfo(id).name+' en esta escena con un estudiante hispanohablante nivel '+CEFR_LEVELS[lvl]+': "'+scene+'".'+noRep+' Crea un diálogo guiado de 5 turnos que avance la escena paso a paso hacia su objetivo. Cada una de TUS líneas va 100% en '+langInfo(id).name+' (nunca mezclada con español), usando SOLO este vocabulario que el estudiante ya conoce: '+convoVocabPool()+', más palabras universales muy básicas (hola, sí, no, gracias). Para cada turno (excepto el último, que es una despedida sin opciones) da 3 opciones de respuesta para el estudiante: UNA natural y correcta en este contexto, y DOS que un principiante podría elegir por error pero no calzan bien aquí (gramática rara, tono equivocado, o no responde lo que se preguntó) — para cada opción incorrecta explica en español, en una frase corta y simple, por qué no es la mejor aquí. Responde SOLO JSON: {"turns":[{"npc":"tu línea","es":"su traducción","options":[{"text":"opción en '+langInfo(id).name+'","es":"su traducción","correct":true,"why":""},{"text":"...","es":"...","correct":false,"why":"por qué no calza aquí"}]}]} con exactamente 5 turnos, el último con "options":[].');
+   const turns=(obj.turns||[]).filter(function(t){return t.npc&&Array.isArray(t.options);})
+    .map(function(t){return{npc:stripHTML(t.npc),es:stripHTML(t.es||""),
+     options:shuffled((t.options||[]).map(function(o){return{text:stripHTML(o.text||""),es:stripHTML(o.es||""),correct:!!o.correct,why:stripHTML(o.why||"")};}).filter(function(o){return o.text;}))};});
+   if(turns.length>=3){aiRemember(topicKey,[turns[0].npc]);return turns;}
+  }catch(e){}
+ }
+ return buildFallbackConvoScript(id,situation).map(function(step){
+  return{npc:step.npc,es:step.es,options:step.opts.map(function(o){return{text:o.text,es:o.es,correct:true,why:""};})};});}
+/* pantalla de escena: se muestra ANTES del diálogo para que el contexto quede claro desde el
    inicio ("ir entendiendo el contexto" en vez de una conversación libre sin rumbo). */
 function screenLangSceneIntro(){setTheme("adulto");
  const scene=LANG_SCENE_INTRO[LL.situation]||"";
@@ -319,20 +401,9 @@ function screenLangSceneIntro(){setTheme("adulto");
   +'<p style="line-height:1.6;margin-top:8px">'+esc(scene)+'</p></div>'
   +'<button class="abtn green" onclick="startLangConvo()">Empezar diálogo →</button>');}
 async function startLangConvo(){setTheme("adulto");
- LL.convo={history:[],mode:S.geminiKey?"ai":"fallback",fallbackIdx:0,revealed:{},suggestions:[]};
- if(LL.convo.mode==="ai"){
-  render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando la conversación…</h2></div>');
-  try{
-   const scene=LANG_SCENE_INTRO[LL.situation]||"";
-   const obj=await geminiJSON('Eres un hablante nativo de '+langInfo(LL.id).name+' en esta escena con un estudiante hispanohablante de nivel '+CEFR_LEVELS[LL.lvl]+': "'+scene+'". Sigue la escena paso a paso, NO te desvíes a temas fuera de ella. Escribe tu mensaje SOLO en '+langInfo(LL.id).name+', nunca mezcles español dentro del mismo mensaje. Usa SOLO este vocabulario que el estudiante ya conoce: '+convoVocabPool()+', más palabras universales muy básicas (hola, sí, no, gracias) — NO introduzcas vocabulario nuevo fuera de esta lista. Empieza con un saludo breve y UNA pregunta simple relacionada con la escena. Responde SOLO JSON: {"msg":"tu mensaje en '+langInfo(LL.id).name+'","es":"su traducción al español","suggestions":["opción de respuesta corta 1 en '+langInfo(LL.id).name+'","opción de respuesta corta 2"]}');
-   LL.convo.history.push({role:"model",text:obj.msg||LANG_PHRASES[LL.id].greet,es:obj.es||LANG_PHRASES_ES.greet});
-   LL.convo.suggestions=(obj.suggestions||[]).slice(0,2).map(function(s){return stripHTML(s);});
-  }catch(e){LL.convo.mode="fallback";}
- }
- if(LL.convo.mode==="fallback"){
-  LL.convo.script=buildFallbackConvoScript(LL.id,LL.situation);
-  LL.convo.history.push({role:"model",text:LL.convo.script[0].npc,es:LL.convo.script[0].es});
- }
+ render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando el diálogo…</h2></div>');
+ const turns=await buildLangDialogue(LL.id,LL.lvl,LL.situation);
+ LL.convo={turns:turns,idx:0,history:[{role:"model",text:turns[0].npc,es:turns[0].es}],revealed:{}};
  renderLangConvo();}
 function renderLangConvo(){setTheme("adulto");
  if(!LL.convo.revealed)LL.convo.revealed={};
@@ -345,11 +416,11 @@ function renderLangConvo(){setTheme("adulto");
    +'</div>';
  }).join("");
  render(topbar(null)
-  +'<h2 style="text-align:center">💬 Conversación · '+LANG_SITUATION_LABEL[LL.situation]+'</h2>'
-  +'<p class="mut center" style="margin-bottom:6px;font-size:.82rem">👁️ ver traducción · ⭐ guardar en tu baúl</p>'
+  +'<h2 style="text-align:center">💬 Diálogo · '+LANG_SITUATION_LABEL[LL.situation]+'</h2>'
+  +'<p class="mut center" style="margin-bottom:6px;font-size:.82rem">Elige cómo responder — 👁️ ver traducción · ⭐ guardar en tu baúl</p>'
   +'<div class="langchat">'+msgs+'</div>'
-  +(LL.convo.mode==="fallback"?renderFallbackConvoOptions():renderLangConvoInput())
-  +'<button class="abtn ghost" style="margin-top:10px" onclick="finishLangConvo()">Terminar conversación → Quiz</button>');
+  +renderLangConvoOptions()
+  +'<button class="abtn ghost" style="margin-top:10px" onclick="finishLangConvo()">Terminar diálogo → Quiz</button>');
  speakLastLangConvo();}
 function toggleTranslation(i){
  if(!LL.convo.revealed)LL.convo.revealed={};
@@ -358,58 +429,29 @@ function toggleTranslation(i){
 function saveConvoToVault(i){
  const h=LL.convo.history[i];if(!h)return;
  toggleWordVault(LL.id,h.text,h.es||"(sin traducción)");}
-/* hace que se sienta como una conversación real: el "nativo" habla en voz alta cada mensaje nuevo */
+/* hace que se sienta como una conversación real: el "nativo" habla en voz alta cada línea nueva */
 function speakLastLangConvo(){
  const hist=LL.convo.history;const lastIdx=hist.length-1;
  if(lastIdx<0||hist[lastIdx].role!=="model")return;
  if(LL.convo.lastSpokenIdx===lastIdx)return;
  LL.convo.lastSpokenIdx=lastIdx;
  speakLang(LL.id,hist[lastIdx].text);}
-function renderLangConvoInput(){
- const sug=LL.convo.suggestions||[];
- return (sug.length?'<div class="langsuggest">'+sug.map(function(s){return '<button onclick="pickSuggestion('+jsStr(s)+')">💬 '+esc(s)+'</button>';}).join("")+'</div>':'')
-  +'<div style="display:flex;gap:8px;margin-top:10px">'
-  +'<input type="text" id="langMsgInput" placeholder="Escribe tu respuesta..." style="flex:1">'
-  +(typeof micAvailable==="function"&&micAvailable()?'<button class="abtn" style="width:auto" onclick="langMicInput()">🎤</button>':'')
-  +'<button class="abtn" style="width:auto" onclick="sendLangMsg()">Enviar</button></div>'
-  +(typeof micAvailable==="function"&&micAvailable()?'<p class="mut center" style="font-size:.78rem;margin-top:4px">🎤 toca y habla — se envía solo al reconocer tu voz — o toca una sugerencia 💬</p>':'');}
-function pickSuggestion(text){
- const inp=document.getElementById("langMsgInput");
- if(inp)inp.value=text;
- sendLangMsg();}
-function renderFallbackConvoOptions(){
- const step=LL.convo.script[LL.convo.fallbackIdx];
- if(!step||!step.opts||!step.opts.length)return '<p class="mut center" style="margin-top:10px">Fin del diálogo.</p>';
- return step.opts.map((o,i)=>'<button class="abtn" onclick="pickFallbackConvo('+i+')">'+esc(o.text)+(o.es?'<br><span class="mut" style="font-size:.78rem">'+esc(o.es)+'</span>':'')+'</button>').join("");}
-function langMicInput(){
- if(!micAvailable())return toast("🎤 No disponible en este navegador",false,1500);
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- const rec=new SR();rec.lang=langInfo(LL.id).bcp;rec.maxAlternatives=1;rec.interimResults=false;rec.continuous=false;
- const inp=document.getElementById("langMsgInput");if(inp)inp.value="🎤 Escuchando…";
- rec.onresult=function(e){const t=e.results[0][0].transcript;if(inp)inp.value=t;sendLangMsg();};
- rec.onerror=function(){if(inp)inp.value="";};
- try{rec.start();}catch(e){}}
-async function sendLangMsg(){
- const inp=document.getElementById("langMsgInput");const text=(inp&&inp.value||"").trim();
- if(!text||text==="🎤 Escuchando…")return;
- LL.convo.history.push({role:"user",text});
- const box=document.querySelector(".langchat");if(box)box.innerHTML+='<div class="langmsg me">'+esc(text)+'</div><div class="langmsg npc">⏳…</div>';
- if(inp)inp.value="";
- try{
-  const hist=LL.convo.history.map(h=>(h.role==="model"?"Tú (nativo): ":"Estudiante: ")+h.text).join("\n");
-  const scene=LANG_SCENE_INTRO[LL.situation]||"";
-  const obj=await geminiJSON('Continúas como hablante nativo de '+langInfo(LL.id).name+' en esta escena con un estudiante nivel '+CEFR_LEVELS[LL.lvl]+': "'+scene+'". Sigue la escena paso a paso, NO te desvíes a temas fuera de ella. Escribe tu mensaje SOLO en '+langInfo(LL.id).name+', nunca mezcles español dentro del mismo mensaje. Usa SOLO este vocabulario conocido: '+convoVocabPool()+', más palabras universales muy básicas — NO introduzcas vocabulario nuevo fuera de esta lista. Historial:\n'+hist+'\nResponde con tu siguiente mensaje (incluye una pregunta si tiene sentido y avanza la escena hacia su objetivo). Si el estudiante cometió un error notable, indícalo en el campo "correccion" (en español, una frase corta) — deja "correccion" vacío si no hubo error. Responde SOLO JSON: {"msg":"tu mensaje en '+langInfo(LL.id).name+'","es":"su traducción al español","correccion":"...","suggestions":["opción de respuesta corta 1 en '+langInfo(LL.id).name+'","opción de respuesta corta 2"]}');
-  LL.convo.history.push({role:"model",text:obj.msg||"...",es:obj.es||""});
-  LL.convo.suggestions=(obj.suggestions||[]).slice(0,2).map(function(s){return stripHTML(s);});
-  if(obj.correccion)toast("💡 "+obj.correccion,true,3200);
- }catch(e){LL.convo.history.push({role:"model",text:"(sin conexión, sigamos) "+LANG_PHRASES[LL.id].canYouRepeat,es:"(sin conexión, sigamos) "+LANG_PHRASES_ES.canYouRepeat});LL.convo.suggestions=[];}
- renderLangConvo();}
-function pickFallbackConvo(i){
- const step=LL.convo.script[LL.convo.fallbackIdx];if(!step)return;
- const opt=step.opts[i];if(!opt)return;
+function renderLangConvoOptions(){
+ const turn=LL.convo.turns[LL.convo.idx];
+ if(!turn||!turn.options||!turn.options.length)return '<p class="mut center" style="margin-top:10px">Fin del diálogo.</p>';
+ return '<div id="convoFeedback"></div>'
+  +turn.options.map(function(o,i){return '<button class="abtn" onclick="pickConvoOption('+i+')">'+esc(o.text)+(o.es?'<br><span class="mut" style="font-size:.78rem">'+esc(o.es)+'</span>':'')+'</button>';}).join("");}
+function pickConvoOption(i){
+ const turn=LL.convo.turns[LL.convo.idx];const opt=turn&&turn.options[i];if(!opt)return;
+ if(!opt.correct){
+  sNO();
+  const box=document.getElementById("convoFeedback");
+  if(box)box.innerHTML='<p style="color:#DC2626;font-weight:700;margin:6px 0;line-height:1.4">❌ '+esc(opt.why||"Prueba con otra opción.")+'</p>';
+  return;}
+ sOK();
  LL.convo.history.push({role:"user",text:opt.text});
- LL.convo.fallbackIdx++;
- const next=LL.convo.script[LL.convo.fallbackIdx];
+ LL.convo.idx++;
+ const next=LL.convo.turns[LL.convo.idx];
  if(next)LL.convo.history.push({role:"model",text:next.npc,es:next.es});
  renderLangConvo();}
 function finishLangConvo(){startLangQuiz();}
@@ -605,6 +647,7 @@ function finishLangLesson(passed){
  const st=langState(LL.id);
  st.history.push({situation:LL.situation,vocab:LL.vocab,grammar:LL.grammar});
  if(st.history.length>5)st.history.shift();
+ st.attempts=(st.attempts||0)+1; // sube SIEMPRE, apruebe o no — así el mensaje de cierre no se queda pegado si repite la lección
  if(passed){
   if(st.lesson<LANG_SITUATIONS.length)st.lesson++;
   st.totalDone=(st.totalDone||0)+1;
@@ -613,8 +656,9 @@ function finishLangLesson(passed){
  }
  save();
  screenLangClosing(passed);}
-/* tarea de cierre variada — antes era un solo texto fijo siempre igual; ahora rota y
-   menciona las palabras reales de la lección para que sea concreta, no genérica */
+/* tarea de cierre variada — rota por st.attempts (cada intento, apruebe o no), no por
+   st.totalDone (solo subía al aprobar, por eso se quedaba pegada en el mismo texto si se
+   repetía la lección sin llegar al 80%) */
 function buildTareaText(st){
  const words=LL.vocab.slice(0,3).map(w=>"'"+w[0]+"'").join(", ");
  const templates=[
@@ -625,7 +669,7 @@ function buildTareaText(st){
   "Tarea de 5 minutos: cierra los ojos y repite "+words+" de memoria, sin mirar.",
   "Tarea de 5 minutos: describe tu día usando al menos una de estas palabras: "+words+"."
  ];
- return templates[(st.totalDone||0)%templates.length];}
+ return templates[(st.attempts||0)%templates.length];}
 function screenLangClosing(passed){setTheme("adulto");
  const st=langState(LL.id);
  const examUnlocked=st.lesson>=LANG_SITUATIONS.length;
