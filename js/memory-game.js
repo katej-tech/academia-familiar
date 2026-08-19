@@ -44,7 +44,7 @@ function flipMG(i){
   const a=MG.flipped[0],b=MG.flipped[1];
   const same=MG.cards[a].pairIdx===MG.cards[b].pairIdx;
   setTimeout(function(){
-   if(same){MG.cards[a].matched=true;MG.cards[b].matched=true;MG.matches++;sOK();confetti(4);}
+   if(same){MG.cards[a].matched=true;MG.cards[b].matched=true;MG.matches++;sOK();} // sin confetti aquí: por cada match se sentía saturado/feo; la animación mgpop + el confetti final (finishMemoryGame) ya celebran
    else{MG.cards[a].revealed=false;MG.cards[b].revealed=false;sNO();}
    MG.flipped=[];MG.lock=false;
    if(MG.matches===MG.cards.length/2)return finishMemoryGame();

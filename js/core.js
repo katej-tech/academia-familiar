@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="9.75.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="9.76.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -165,7 +165,7 @@ function geminiTTS(text,onEnd){
    }
    try{window.speechSynthesis.cancel();}catch(e){}
    stopGemAudio();
-   const src=ctx.createBufferSource();src.buffer=buf;src.connect(ctx.destination);
+   const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=.85;src.connect(ctx.destination);
    GEM_TTS_SRC=src;if(onEnd)src.onended=onEnd;src.start();
    return true;
   }catch(e){return false;}

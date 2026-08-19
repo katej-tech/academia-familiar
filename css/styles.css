@@ -346,8 +346,8 @@ textarea{font-family:inherit;font-size:.95rem;width:100%;padding:14px;border-rad
 .langmsg.me{align-self:flex-end;background:var(--adult-accent);color:#fff;border-bottom-right-radius:4px}
 /* juego de memoria genérico */
 .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
-.mgcard{aspect-ratio:1;border-radius:14px;border:1px solid var(--adult-line);background:#fff;font-size:.82rem;font-weight:700;
-  padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 3px 8px rgba(30,36,64,.08)}
+.mgcard{aspect-ratio:1;border-radius:14px;border:1px solid var(--adult-line);background:#fff;font-size:.78rem;font-weight:700;line-height:1.15;
+  padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;overflow-wrap:break-word;box-shadow:0 3px 8px rgba(30,36,64,.08)}
 .mgcard.revealed{background:#EEF1FA;border-color:var(--adult-accent)}
 .mgcard.matched{background:var(--kid-green);color:#fff;border:none}
 @keyframes mgpop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}

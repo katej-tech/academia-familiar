@@ -97,7 +97,7 @@ function screenLangLevelDetail(id,lvl){setTheme("adulto");
   const locked=!levelPassed&&i>st.lesson;
   let onclick;
   if(locked)onclick="toast('Completa la lección anterior primero 🔒',false,1600)";
-  else if(done)onclick="toast('✓ Ya completaste esta lección',true,1200)";
+  else if(done)onclick="startLangLesson('"+id+"',"+lvl+","+i+")"; // ya completada: repasarla no cuenta progreso de nuevo
   else onclick="startLangLesson('"+id+"',"+lvl+")";
   return{ic:parts[0],nm:parts.slice(1).join(" "),state:done?"done":locked?"locked":"open",current:isCurrent,onclick:onclick};});
  const examReady=!levelPassed&&st.lesson>=LANG_SITUATIONS.length;
@@ -180,14 +180,19 @@ async function buildLangGrammar(id,lvl,situation){
  }
  return bank;}
 
-async function startLangLesson(id,lvl){setTheme("adulto");
+/* reviewIdx: si viene definido, repite una lección YA completada para repasar (sin tocar
+   progreso/monedas/racha) en vez de la lección actual. Pedido explícito: "no me deja repetir
+   lecciones y si quiero repasar". */
+async function startLangLesson(id,lvl,reviewIdx){setTheme("adulto");
  render(topbar("screenLangLevelDetail('"+id+"',"+lvl+")")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando tu lección…</h2></div>');
  const st=langState(id);
- const situation=LANG_SITUATIONS[st.lesson%LANG_SITUATIONS.length];
- const vocab=await buildLangVocab(id,lvl,situation);
- const grammar=await buildLangGrammar(id,lvl,situation);
+ const review=reviewIdx!=null;
+ const situation=LANG_SITUATIONS[review?reviewIdx:st.lesson%LANG_SITUATIONS.length];
+ /* vocabulario y gramática se piden EN PARALELO (antes eran dos llamadas seguidas a la IA
+    una tras otra) — reportó que idiomas "demora mucho en cargar", esto corta ese tiempo a la mitad. */
+ const [vocab,grammar]=await Promise.all([buildLangVocab(id,lvl,situation),buildLangGrammar(id,lvl,situation)]);
  const prev=st.history.length?st.history[st.history.length-1]:null;
- LL={id,lvl,situation,vocab,grammar,repaso:buildRepaso(prev),repasoK:0,repasoOk:0};
+ LL={id,lvl,situation,vocab,grammar,review:review,repaso:review?[]:buildRepaso(prev),repasoK:0,repasoOk:0};
  screenLangRepaso();}
 
 function screenLangRepaso(){setTheme("adulto");
@@ -290,12 +295,18 @@ function renderLangLessonReading(){setTheme("adulto");
   +'<button class="abtn" onclick="speakLang(\''+LL.id+'\','+jsStr(c.text)+')">🔊 Escuchar todo</button>'
   +'<div class="card" style="line-height:2">'+html+'</div>'
   +'<div id="langwordbox"></div>'
+  +(c.text_es?'<button class="abtn ghost" onclick="toggleLessonFullTranslation()">👁️ Ver traducción completa</button><div id="lessonFullTransBox"></div>':'')
   +'<button class="abtn green" onclick="screenLangWorksheet()">Siguiente → Hoja de ejercicios</button>');}
+function toggleLessonFullTranslation(){
+ const c=LL.story;const box=document.getElementById("lessonFullTransBox");if(!box)return;
+ box.innerHTML=box.innerHTML?'':'<div class="card" style="margin-top:8px;line-height:1.6"><i>'+esc(c.text_es)+'</i></div>';}
 function tapLangLessonWord(w){
  const c=LL.story;
  speakLang(LL.id,w);
+ const es=(c.words&&c.words[w])||"?";
  const box=document.getElementById("langwordbox");
- if(box)box.innerHTML='<div class="card" style="border-color:var(--adult-accent);border-width:2px;text-align:center"><b style="color:var(--adult-accent);font-size:1.2rem">'+esc(w)+'</b> = <span style="font-size:1.1rem">'+esc((c.words&&c.words[w])||"?")+'</span></div>';}
+ if(box)box.innerHTML='<div class="card" style="border-color:var(--adult-accent);border-width:2px;text-align:center"><b style="color:var(--adult-accent);font-size:1.2rem">'+esc(w)+'</b> = <span style="font-size:1.1rem">'+esc(es)+'</span> '
+  +'<button class="spk" onclick="toggleWordVault(\''+LL.id+'\','+jsStr(w)+','+jsStr(es)+',this)">'+(isInVault(LL.id,w)?"⭐":"☆")+'</button></div>';}
 
 /* ---- hoja de ejercicios: completar el espacio en blanco, respuesta escrita (no opción múltiple) ----
    Práctica intermedia entre la teoría y la conversación libre, como un cuaderno de ejercicios real.
@@ -645,6 +656,7 @@ function screenLangQuizResult(){setTheme("adulto");
 /* ---- cierre ---- */
 function finishLangLesson(passed){
  const st=langState(LL.id);
+ if(LL.review){screenLangClosing(passed);return;} // repaso de una lección ya hecha: no toca progreso/monedas/racha
  st.history.push({situation:LL.situation,vocab:LL.vocab,grammar:LL.grammar});
  if(st.history.length>5)st.history.shift();
  st.attempts=(st.attempts||0)+1; // sube SIEMPRE, apruebe o no — así el mensaje de cierre no se queda pegado si repite la lección
@@ -676,12 +688,16 @@ function screenLangClosing(passed){setTheme("adulto");
  const nextSituation=examUnlocked?"🏆 ¡el examen final del nivel!":LANG_SITUATION_LABEL[LANG_SITUATIONS[st.lesson]];
  const resumen="Hoy practicaste "+LANG_SITUATION_LABEL[LL.situation]+" en "+langInfo(LL.id).name+": "+LL.vocab.length+" palabras nuevas y la regla \""+LL.grammar.rule+"\".";
  const tarea=buildTareaText(st);
+ let estado;
+ if(LL.review)estado="🔁 Repaso — no cuenta para tu progreso, repítela las veces que quieras.";
+ else if(passed)estado="✅ Lección "+(st.totalDone||0)+" completada — "+(examUnlocked?nextSituation:"Tema de mañana: "+nextSituation);
+ else estado="Repite esta lección cuando quieras — ¡tú puedes! 💪";
  render(topbar("screenLangHub()")
   +'<div class="card center">'
-  +'<div style="font-size:3rem">'+(passed?"🎉":"📚")+'</div>'
+  +'<div style="font-size:3rem">'+(LL.review?"🔁":passed?"🎉":"📚")+'</div>'
   +'<p style="line-height:1.6;margin-top:10px">'+esc(resumen)+'</p>'
   +'<p style="line-height:1.6;margin-top:10px">'+esc(tarea)+'</p>'
-  +'<p style="margin-top:14px;font-weight:700">'+(passed?('✅ Lección '+(st.totalDone||0)+' completada — '+(examUnlocked?nextSituation:'Tema de mañana: '+nextSituation)):'Repite esta lección cuando quieras — ¡tú puedes! 💪')+'</p>'
+  +'<p style="margin-top:14px;font-weight:700">'+estado+'</p>'
   +'</div>'
   +'<button class="abtn" onclick="startLangComic()">🎨 Ver historieta de esta lección</button>'
   +'<button class="abtn" onclick="startMemoryFromLesson()">🧠 Jugar memoria con este vocabulario</button>'
