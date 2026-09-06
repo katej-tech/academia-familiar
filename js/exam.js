@@ -8,16 +8,21 @@
 const EXAM_SUBJECTS=[
  {id:"leng",nm:"Lenguaje",ic:"✏️",color:"#EC4899",units:[
   {id:"bv",nm:"Uso de la B y la V",ic:"🅱"},{id:"scz",nm:"Uso de S, C y Z",ic:"🇸"},
-  {id:"cqk",nm:"Uso de C, Q y K",ic:"🇰"},{id:"dictado",nm:"Dictado de palabras",ic:"🎧"}]},
+  {id:"cqk",nm:"Uso de C, Q y K",ic:"🇰"},{id:"dictado",nm:"Dictado de palabras",ic:"🎧"},
+  {id:"comprension",nm:"Comprensión lectora",ic:"📖"},{id:"diminutivo",nm:"Diminutivos y aumentativos",ic:"🔍"},
+  {id:"articulos",nm:"Artículos: el, la, los, las",ic:"📰"}]},
  {id:"mate",nm:"Matemática",ic:"🔢",color:"#F59E0B",units:[
   {id:"restapres",nm:"Restas prestando",ic:"➖"},{id:"sumallev",nm:"Sumas llevando",ic:"➕"},
-  {id:"dictnum",nm:"Dictado de números",ic:"🔊"}]},
+  {id:"dictnum",nm:"Dictado de números",ic:"🔊"},{id:"numletras",nm:"Números en letras",ic:"🔤"},
+  {id:"abaco",nm:"El ábaco",ic:"🧮"}]},
  {id:"nat",nm:"Naturales",ic:"❤️",color:"#22C55E",units:[
   {id:"piramide",nm:"Pirámide alimenticia",ic:"🍎"},{id:"niveles",nm:"Niveles de la pirámide",ic:"🍞"},
-  {id:"sistemas",nm:"Sistemas del cuerpo",ic:"🫀"}]},
+  {id:"sistemas",nm:"Sistemas del cuerpo",ic:"🫀"},{id:"estaciones",nm:"Estaciones del año",ic:"🍂"},
+  {id:"clima",nm:"El clima y sus factores",ic:"☀️"}]},
  {id:"soc",nm:"Sociales",ic:"🌍",color:"#3B82F6",units:[
   {id:"tierra",nm:"La Tierra",ic:"🌎"},{id:"capas",nm:"Capas de la Tierra",ic:"🧅"},
-  {id:"movs",nm:"Movimientos de la Tierra",ic:"🔄"}]}];
+  {id:"movs",nm:"Movimientos de la Tierra",ic:"🔄"},{id:"viviendas",nm:"Tipos de vivienda",ic:"🏠"},
+  {id:"simbolos",nm:"Símbolos patrios",ic:"🎌"},{id:"identidad",nm:"Mi identidad",ic:"🪪"}]}];
 
 const EXW_BV=[["bebé","b","👶"],["vaca","v","🐮"],["barco","b","⛵"],["ventana","v","🪟"],["boca","b","👄"],["vela","v","🕯️"],["burro","b","🫏"],["vestido","v","👗"],["bandera","b","🚩"],["viento","v","💨"],["botella","b","🍾"],["violín","v","🎻"]];
 const EXW_SCZ=[["casa","c","🏠"],["zapato","z","👟"],["sopa","s","🍲"],["cielo","c","☁️"],["zorro","z","🦊"],["sol","s","☀️"],["cebolla","c","🧅"],["zanahoria","z","🥕"],["silla","s","🪑"],["cine","c","🎬"],["semilla","s","🌱"],["cepillo","c","🪥"]];
@@ -85,20 +90,107 @@ const EXAM_BANK={
   {q:"¿Cómo se llama el giro alrededor del Sol?",ops:["Traslación 🌍","Rotación","Órbita lunar"],a:0},
   {q:"¿Qué produce la TRASLACIÓN?",ops:["Las estaciones del año 🍂","El día y la noche","Los truenos"],a:0},
   {q:"¿Cuánto dura una rotación?",ops:["Un día (24 horas)","Un año","Un mes"],a:0},
-  {q:"¿Cuánto dura una traslación?",ops:["Un año (365 días)","Un día","Una semana"],a:0}])};
+  {q:"¿Cuánto dura una traslación?",ops:["Un año (365 días)","Un día","Una semana"],a:0}]),
+ /* números en letras y ábaco: se generan localmente (nunca por IA) porque necesitan una
+    estructura exacta —numEs() ya existe en content-exam.js para el motor de práctica diaria,
+    aquí se reutiliza tal cual en vez de duplicar la conversión número→palabra. */
+ numletras:()=>{
+  const n=10+rnd(90);const correct=numEs(n);
+  const set=new Set([correct]);
+  while(set.size<3){let m=Math.max(10,n+(1+rnd(8))*(Math.random()<.5?-1:1));if(m>99)m=99;set.add(numEs(m));}
+  const ops=shuffled([...set]);
+  return{q:"¿Cómo se escribe el número <b>"+n+"</b> en letras?",ops,a:ops.indexOf(correct),say:String(n)};},
+ abaco:()=>{
+  const dec=1+rnd(9),uni=rnd(10),n=dec*10+uni;
+  const visual='<div style="display:flex;justify-content:center;gap:22px;margin:8px 0 4px">'
+   +'<div><div style="font-size:.8rem;font-weight:700">Decenas</div><div style="font-size:1.5rem;line-height:1.3">'+"🔵".repeat(dec)+'</div></div>'
+   +'<div><div style="font-size:.8rem;font-weight:700">Unidades</div><div style="font-size:1.5rem;line-height:1.3">'+(uni?"🟢".repeat(uni):"—")+'</div></div></div>';
+  return exMcq(visual+"¿Qué número representa el ábaco?",n,String(n));},
+ diminutivo:()=>pick([
+  {q:"¿Cuál es el DIMINUTIVO de 'perro'?",ops:["Perrito","Perrazo","Perro"],a:0},
+  {q:"¿Cuál es el AUMENTATIVO de 'perro'?",ops:["Perrazo","Perrito","Perro"],a:0},
+  {q:"¿Cuál es el diminutivo de 'casa'?",ops:["Casita","Casona","Casa"],a:0},
+  {q:"¿Cuál es el aumentativo de 'casa'?",ops:["Casona","Casita","Casa"],a:0},
+  {q:"¿Cuál es el diminutivo de 'mesa'?",ops:["Mesita","Mesota","Mesa"],a:0},
+  {q:"¿Cuál es el aumentativo de 'zapato'?",ops:["Zapatón","Zapatito","Zapato"],a:0},
+  {q:"El diminutivo hace que algo suene…",ops:["Más pequeño 🤏","Más grande","Igual"],a:0},
+  {q:"El aumentativo hace que algo suene…",ops:["Más grande 📏","Más pequeño","Igual"],a:0},
+  {q:"¿Cuál es el diminutivo de 'flor'?",ops:["Florecita","Florzota","Flor"],a:0},
+  {q:"¿Cuál es el aumentativo de 'gato'?",ops:["Gatote","Gatito","Gato"],a:0}]),
+ articulos:()=>pick([
+  {q:"¿Qué artículo va con 'mesa'? ___ mesa",ops:["La","El","Los"],a:0},
+  {q:"¿Qué artículo va con 'perro'? ___ perro",ops:["El","La","Las"],a:0},
+  {q:"¿Qué artículo va con 'niños'? ___ niños",ops:["Los","La","El"],a:0},
+  {q:"¿Qué artículo va con 'flores'? ___ flores",ops:["Las","El","Los"],a:0},
+  {q:"¿Qué artículo va con 'sol'? ___ sol",ops:["El","La","Las"],a:0},
+  {q:"¿Qué artículo va con 'luna'? ___ luna",ops:["La","El","Los"],a:0},
+  {q:"'El' y 'los' se usan con palabras…",ops:["Masculinas 👦","Femeninas","Cualquiera"],a:0},
+  {q:"'La' y 'las' se usan con palabras…",ops:["Femeninas 👧","Masculinas","Cualquiera"],a:0},
+  {q:"¿Qué artículo va con 'casas'? ___ casas",ops:["Las","Los","El"],a:0},
+  {q:"¿Qué artículo va con 'libro'? ___ libro",ops:["El","La","Las"],a:0}]),
+ viviendas:()=>pick([
+  {q:"Una vivienda con varios pisos donde vive más de una familia es un…",ops:["Edificio de apartamentos 🏢","Choza","Barco"],a:0},
+  {q:"Una casa hecha de paja, madera o barro en el campo es una…",ops:["Choza o cabaña 🏚️","Torre","Fábrica"],a:0},
+  {q:"¿Para qué sirve una vivienda?",ops:["Para protegernos y descansar 🏠","Para jugar solamente","Para nada"],a:0},
+  {q:"Una vivienda flotante sobre el agua es una…",ops:["Casa flotante o barco 🛶","Cueva","Carpa"],a:0},
+  {q:"Una vivienda pequeña y móvil para acampar es una…",ops:["Carpa ⛺","Edificio","Castillo"],a:0},
+  {q:"En la ciudad es común vivir en…",ops:["Apartamentos 🏢","Cuevas","Barcos"],a:0},
+  {q:"En el campo es común vivir en…",ops:["Casas de finca 🏡","Rascacielos","Submarinos"],a:0},
+  {q:"Las viviendas nos protegen del…",ops:["Frío, la lluvia y el sol ☔","Aburrimiento","Hambre"],a:0}]),
+ simbolos:()=>pick([
+  {q:"¿Cuál de estos ES un símbolo patrio?",ops:["La bandera 🏳️","Un balón","Una silla"],a:0},
+  {q:"La canción que representa a un país es el…",ops:["Himno nacional 🎵","Cuento","Chiste"],a:0},
+  {q:"El dibujo oficial que representa a un país (con figuras y colores) es el…",ops:["Escudo 🛡️","Mapa","Reloj"],a:0},
+  {q:"Los símbolos patrios representan…",ops:["La identidad de un país 🇨🇴","Un solo equipo","Un solo colegio"],a:0},
+  {q:"¿Cómo debemos comportarnos cuando suena el himno nacional?",ops:["Con respeto, de pie","Corriendo","Gritando"],a:0},
+  {q:"La bandera de un país normalmente tiene…",ops:["Colores y forma propios 🎨","Siempre los mismos colores que otro país","Ningún color"],a:0},
+  {q:"¿Quiénes usan los símbolos patrios con orgullo?",ops:["Los ciudadanos de ese país 🙌","Solo los niños","Nadie"],a:0}]),
+ identidad:()=>pick([
+  {q:"El documento que dice tu nombre y cuándo naciste es tu…",ops:["Registro civil o cédula 🪪","Cuaderno","Lonchera"],a:0},
+  {q:"Tu nombre y tus apellidos forman…",ops:["Tu identidad 🙋","Tu comida favorita","Tu juguete"],a:0},
+  {q:"Cada persona es…",ops:["Única y diferente 🌟","Igual a todas las demás","Un número"],a:0},
+  {q:"¿Quiénes forman tu familia?",ops:["Las personas que te cuidan y te quieren 👨‍👩‍👧","Tus juguetes","Tus vecinos siempre"],a:0},
+  {q:"Debemos tratar a las personas diferentes a nosotros con…",ops:["Respeto 🤝","Burlas","Indiferencia"],a:0},
+  {q:"¿Qué NO debes compartir con desconocidos por seguridad?",ops:["Tu dirección y datos personales 🔒","Tu color favorito","Nada de esto importa"],a:0},
+  {q:"Todos los niños tienen derecho a…",ops:["Educación, salud y cariño 💛","Nada especial","Solo jugar"],a:0}]),
+ estaciones:()=>pick([
+  {q:"¿Cuántas estaciones tiene el año?",ops:["Cuatro","Dos","Seis"],a:0},
+  {q:"¿Cuál es la estación más fría?",ops:["Invierno ❄️","Verano","Primavera"],a:0},
+  {q:"¿Cuál es la estación más calurosa?",ops:["Verano ☀️","Invierno","Otoño"],a:0},
+  {q:"¿En qué estación caen las hojas de los árboles?",ops:["Otoño 🍂","Verano","Invierno"],a:0},
+  {q:"¿En qué estación florecen las plantas?",ops:["Primavera 🌸","Invierno","Otoño"],a:0},
+  {q:"Las estaciones del año las produce…",ops:["El movimiento de traslación de la Tierra 🌍","La Luna","El viento"],a:0},
+  {q:"En invierno la ropa que usamos es…",ops:["Abrigada 🧥","De baño","Ninguna"],a:0}]),
+ clima:()=>pick([
+  {q:"¿Qué es el clima?",ops:["Cómo está el tiempo en un lugar (sol, lluvia, viento) ⛅","Un tipo de animal","Un juego"],a:0},
+  {q:"¿Qué instrumento mide la temperatura?",ops:["El termómetro 🌡️","La regla","La balanza"],a:0},
+  {q:"El Sol nos da…",ops:["Luz y calor ☀️","Frío","Oscuridad"],a:0},
+  {q:"¿Qué factor del clima nos moja?",ops:["La lluvia 🌧️","El viento","El sol"],a:0},
+  {q:"¿Qué factor del clima mueve las hojas y las cometas?",ops:["El viento 💨","La lluvia","La temperatura"],a:0},
+  {q:"Un lugar muy caliente y seco tiene clima…",ops:["Cálido/desértico 🏜️","Frío","Lluvioso"],a:0},
+  {q:"Un lugar muy frío con nieve tiene clima…",ops:["Frío/polar ❄️","Cálido","Templado"],a:0}])};
 
 const EXAM_PROMPTS={
  bv:"ortografía del uso de la B y la V con palabras simples y comunes",
  scz:"ortografía del uso de la S, C y Z en palabras simples",
  cqk:"ortografía del uso de C, Q y K (ca-que-qui-co-cu, ka) en palabras simples",
- restapres:"restas de dos cifras que requieren PRESTAR, resultado positivo",
- sumallev:"sumas de dos cifras que requieren LLEVAR una decena",
  piramide:"la pirámide alimenticia: qué es, para qué sirve y qué alimentos van en cada parte",
  niveles:"los niveles de la pirámide alimenticia: base cereales, luego frutas y verduras, luego lácteos y carnes, punta grasas y dulces",
  sistemas:"los sistemas del cuerpo humano (digestivo, respiratorio, circulatorio, nervioso, óseo y muscular) de forma muy sencilla",
  tierra:"el planeta Tierra: forma, agua, Sol, Luna y atmósfera",
  capas:"las capas de la Tierra: corteza, manto y núcleo",
- movs:"los movimientos de la Tierra: rotación (día y noche) y traslación (estaciones y el año)"};
+ movs:"los movimientos de la Tierra: rotación (día y noche) y traslación (estaciones y el año)",
+ diminutivo:"diminutivos y aumentativos de sustantivos simples (perrito/perrazo) para un niño de 7 años",
+ articulos:"los artículos el, la, los, las con sustantivos simples y comunes",
+ viviendas:"tipos de vivienda (casa, apartamento, choza, casa flotante, carpa) y para qué sirven",
+ simbolos:"los símbolos patrios de un país (bandera, escudo, himno) de forma general, sin datos de un país específico",
+ identidad:"la identidad personal: nombre, familia, derechos de los niños, respeto a las diferencias, sin pedir datos reales del niño",
+ estaciones:"las cuatro estaciones del año (primavera, verano, otoño, invierno) y sus características",
+ clima:"el clima y sus factores (sol, viento, lluvia, temperatura) de forma muy sencilla"};
+/* restapres/sumallev necesitan el desglose exacto {a,b,sig} para dibujar la pizarra de columnas
+   (exColumnHTML) — la IA no puede garantizar esa estructura, así que SIEMPRE usan EXAM_BANK
+   (nunca geminiJSON), igual que numletras/abaco (no tienen prompt arriba, por lo mismo). */
+const EXAM_NEEDS_OP=["restapres","sumallev"];
 
 /* ---------- estado ---------- */
 function examState(){const p=prof();if(!p)return{units:{},goal:{}};
@@ -145,9 +237,10 @@ async function startExamUnit(uid){
  setTheme("kid");
  if(uid==="dictado")return examDictWords();
  if(uid==="dictnum")return examDictNums();
+ if(uid==="comprension")return examComprension();
  render(topbar("screenExam()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando el repaso…</h2></div>');
  let items=[];
- if(S.geminiKey&&EXAM_PROMPTS[uid]&&typeof geminiJSON==="function"){
+ if(S.geminiKey&&EXAM_PROMPTS[uid]&&EXAM_NEEDS_OP.indexOf(uid)<0&&typeof geminiJSON==="function"){
   try{const o=await geminiJSON('Eres profesor de primero de primaria. Crea 8 preguntas de opción múltiple sobre '+EXAM_PROMPTS[uid]+'. 3 opciones cada una, una sola correcta, lenguaje muy sencillo para un niño de 7 años. SOLO JSON: {"items":[{"q":"pregunta","ops":["correcta","mala","mala"],"a":0}]}');
    if(o&&o.items&&o.items.length)items=o.items.map(it=>{const c=it.ops[it.a],ops=shuffled(it.ops);return{q:it.q,ops,a:ops.indexOf(c)};});
   }catch(e){}}
@@ -157,7 +250,7 @@ async function startExamUnit(uid){
 
 /* ---------- simulacro ---------- */
 function startExamSim(){setTheme("kid");
- const us=examAllUnits().filter(u=>u.id!=="dictado"&&u.id!=="dictnum");
+ const us=examAllUnits().filter(u=>u.id!=="dictado"&&u.id!=="dictnum"&&u.id!=="comprension");
  let items=[];
  shuffled(us).slice(0,6).forEach(u=>{if(EXAM_BANK[u.id]){items.push(EXAM_BANK[u.id]());items.push(EXAM_BANK[u.id]());}});
  items=shuffled(items).slice(0,12);
@@ -174,10 +267,50 @@ function renderEX(){
  render(topbar("screenExam()")
  +'<div class="progressdots">'+dots(EX.items.length,EX.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+titulo+' · '+(EX.i+1)+'/'+EX.items.length+'</p>'
+ +(EX.passage?'<div class="card" style="line-height:1.6;margin-bottom:8px">'+esc(EX.passage)+'<br><button class="speaker small" style="margin-top:8px" onclick="speakES('+jsStr(EX.passage)+')">🔊 Escuchar el texto</button></div>':'')
  +(esMate?exColumnHTML(it.op):'<div class="bigq center">'+it.q+'</div>')
  +(esMate&&typeof boardBtn==="function"?boardBtn():'')
  +'<button class="speaker small" onclick="speakES(\''+String(it.say||it.q).replace(/[\\'"]/g,"")+'\')">🔊 Escuchar</button>'
  +'<div class="choices2'+(largo?' wide':'')+'">'+order.map((o,vi)=>'<button class="kbtn white" style="font-size:clamp(1rem,4.4vw,1.28rem)" onclick="ansEX('+vi+')">'+o.o+'</button>').join("")+'</div>');}
+
+/* ---------- comprensión lectora: un texto corto + varias preguntas sobre ÉL ----------
+   Único caso donde el "banco" no es una función que da UNA pregunta suelta, sino un texto
+   con su propio set de preguntas — se guarda el texto en EX.passage y renderEX() lo muestra
+   arriba de cada pregunta mientras dura esta unidad. */
+const EXAM_READING_BANK=[
+ {text:"Ana tiene un perro pequeño llamado Toby. Todas las mañanas, Ana le da agua y comida a Toby. Después, salen a caminar por el parque. A Toby le encanta correr detrás de la pelota.",
+  qs:[{q:"¿Cómo se llama el perro de Ana?",ops:["Toby","Ana","Max"],a:0},
+   {q:"¿Qué le da Ana a Toby en las mañanas?",ops:["Agua y comida","Solo agua","Un juguete"],a:0},
+   {q:"¿A dónde salen a caminar?",ops:["Al parque","A la escuela","Al mercado"],a:0},
+   {q:"¿Qué le encanta hacer a Toby?",ops:["Correr detrás de la pelota","Dormir todo el día","Subir árboles"],a:0}]},
+ {text:"Hoy es el cumpleaños de Sofía. Su mamá preparó un pastel de chocolate. Sus amigos llegaron con globos de colores. Todos cantaron 'Feliz cumpleaños' y Sofía sopló las velitas.",
+  qs:[{q:"¿De quién es el cumpleaños?",ops:["De Sofía","De su mamá","De un amigo"],a:0},
+   {q:"¿De qué sabor era el pastel?",ops:["Chocolate","Vainilla","Fresa"],a:0},
+   {q:"¿Qué trajeron los amigos?",ops:["Globos de colores","Libros","Zapatos"],a:0},
+   {q:"¿Qué hizo Sofía al final?",ops:["Sopló las velitas","Se durmió","Lloró"],a:0}]},
+ {text:"En la granja de don Pedro viven muchos animales. Las vacas dan leche fresca cada mañana. Las gallinas ponen huevos en el gallinero. Los caballos corren libres por el campo verde.",
+  qs:[{q:"¿De quién es la granja?",ops:["De don Pedro","De Sofía","De Toby"],a:0},
+   {q:"¿Qué dan las vacas?",ops:["Leche fresca","Huevos","Lana"],a:0},
+   {q:"¿Dónde ponen huevos las gallinas?",ops:["En el gallinero","En el río","En el árbol"],a:0},
+   {q:"¿Qué hacen los caballos?",ops:["Corren libres por el campo","Vuelan","Nadan"],a:0}]}];
+async function buildComprensionSet(){
+ if(S.geminiKey&&typeof geminiJSON==="function"){
+  try{
+   const o=await geminiJSON('Eres profesor de primero de primaria. Escribe un texto corto (40 a 60 palabras) en español, sencillo, sobre una situación cotidiana para un niño de 7 años (sin personajes de marcas registradas). Luego crea 4 preguntas de comprensión lectora sobre ese texto, opción múltiple con 3 opciones cada una, una sola correcta. SOLO JSON: {"text":"el texto","items":[{"q":"pregunta","ops":["correcta","mala","mala"],"a":0}]}');
+   if(o&&o.text&&o.items&&o.items.length){
+    const items=o.items.map(function(it){const c=it.ops[it.a],ops=shuffled(it.ops);return{q:it.q,ops:ops,a:ops.indexOf(c)};});
+    return{text:o.text,items:items};
+   }
+  }catch(e){}
+ }
+ const p=pick(EXAM_READING_BANK);
+ return{text:p.text,items:p.qs.map(function(it){return{q:it.q,ops:it.ops.slice(),a:it.a};})};}
+function examComprension(){
+ setTheme("kid");
+ render(topbar("screenExam()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando la lectura…</h2></div>');
+ buildComprensionSet().then(function(data){
+  EX={uid:"comprension",items:data.items,i:0,ok:0,sim:false,passage:data.text};
+  renderEX();});}
 
 function ansEX(vi){
  if(typeof closeBoard==="function")closeBoard();
