@@ -77,6 +77,15 @@ body.kid .card{background:rgba(255,255,255,.92);border:2px solid rgba(30,42,74,.
 .mem .b{background:#fff;transform:rotateY(180deg)}
 .mem.ok .b{background:var(--kid-green);color:#fff}
 
+/* juego de contar monedas (arrastrar) */
+.gmcounter{border:4px dashed var(--kid-ink);border-radius:18px;padding:12px;margin-bottom:14px;text-align:center;font-family:'Fredoka';font-weight:600;background:#F4F7FF}
+.gmgrid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px}
+.gmcoin{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-family:'Fredoka';font-weight:700;font-size:1.05rem;box-shadow:0 5px 0 rgba(30,42,74,.35);
+  border:3px solid rgba(255,255,255,.6);cursor:grab;touch-action:none;user-select:none}
+.gmcoin.placed{cursor:pointer;box-shadow:0 3px 0 rgba(30,42,74,.35)}
+.gmghost{position:fixed;z-index:999;pointer-events:none;box-shadow:0 8px 18px rgba(30,42,74,.4);opacity:.92}
+
 
 
 /* Robot */

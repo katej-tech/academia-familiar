@@ -329,6 +329,7 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +sub("🔢 Números y lógica")
  +'<button class="kbtn white" onclick="gameWordProblems()">🧩 Problemas matemáticos</button>'
  +'<button class="kbtn green" onclick="gameColumnAdd()">➕ Sumas en columna</button>'
+ +(typeof screenMoneyDiff==="function"?'<button class="kbtn yellow" onclick="screenMoneyDiff()">🪙 Contar monedas <span style="opacity:.8;font-size:.82rem">· arrastra al mostrador</span></button>':'')
  +'<button class="kbtn green" onclick="gameSymbols()">🐊 Coloca el signo (&gt; &lt; =)</button>'
  +'<button class="kbtn blue" onclick="gameGateRun()">🔢 Carrera de números (hazte más grande)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
@@ -352,9 +353,19 @@ function screenMemoryPick(){setTheme("kid");
  +'<p class="center" style="margin-bottom:14px">Encuentra las parejas que se relacionan</p>'
  +Object.keys(MEMORY_SETS).map((k,i)=>{const s=MEMORY_SETS[k];
    const colors=["yellow","blue","green","red","purple","white","yellow"];
-   return '<button class="kbtn '+colors[i%colors.length]+'" style="text-align:left;display:flex;align-items:center;gap:12px" onclick="gameMemory(\''+k+'\')">'
+   return '<button class="kbtn '+colors[i%colors.length]+'" style="text-align:left;display:flex;align-items:center;gap:12px" onclick="'+(s.hasDifficulty?"screenMemoryDiff('"+k+"')":"gameMemory('"+k+"')")+'">'
     +'<span style="font-size:2rem">'+s.ic+'</span><span style="flex:1"><span>'+s.nm+'</span><br><span style="font-size:.78rem;opacity:.8;font-weight:500">'+s.desc+'</span></span></button>';
   }).join(""));}
+/* selector fácil/medio/difícil para sets que lo piden (ej. operaciones matemáticas) —
+   los demás sets no lo necesitan y entran directo a gameMemory() como siempre. */
+function screenMemoryDiff(kind){setTheme("kid");
+ const s=MEMORY_SETS[kind];
+ render(topbar("screenMemoryPick()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">'+s.ic+' '+s.nm+'</h2>'
+ +'<p class="center" style="margin-bottom:14px">Elige la dificultad</p>'
+ +'<button class="kbtn green" onclick="gameMemory(\''+kind+'\',\'facil\')">🟢 Fácil</button>'
+ +'<button class="kbtn yellow" onclick="gameMemory(\''+kind+'\',\'medio\')">🟡 Medio</button>'
+ +'<button class="kbtn red" onclick="gameMemory(\''+kind+'\',\'dificil\')">🔴 Difícil</button>');}
 function tapNode(id){if(typeof id==="string")openWorld(id);}
 async function aiStoryKid(genero){
  setTheme("kid");
@@ -490,15 +501,23 @@ function popBalloon(el,ok){
 
 /* ============ JUEGO: MEMORIA ============ */
 let MM={};
-function gameMemory(kind){setTheme("kid");
+function gameMemory(kind,diff){setTheme("kid");
  const set=MEMORY_SETS[kind]||MEMORY_SETS.meses;
- const pares=set.pairs();
+ const pares=set.pairs(diff);
  const cards=shuffled(pares.flatMap((p,i)=>[{id:i,txt:p[0]},{id:i,txt:p[1]}]));
- MM={cards,first:null,lock:false,found:0,tries:0,kind,set,total:pares.length};
+ if(MM.timer)clearInterval(MM.timer);
+ const recKey=set.hasDifficulty?"kidmem_"+kind+"_"+(diff||"facil"):null;
+ MM={cards,first:null,lock:false,found:0,tries:0,kind,set,total:pares.length,seconds:0,recKey,timer:null};
+ if(recKey)MM.timer=setInterval(function(){MM.seconds++;updateMMTimer();},1000);
+ const p=prof();const best=recKey?(p.memoryBest||{})[recKey]:null;
  render(topbar("screenMemoryPick()")
  +'<h2 style="font-size:1.4rem;margin-bottom:4px">'+set.ic+' ¡Encuentra las parejas!</h2>'
- +'<p style="margin-bottom:14px;font-size:1.05rem">'+set.desc+'</p>'
+ +'<p style="margin-bottom:6px;font-size:1.05rem">'+set.desc+'</p>'
+ +(recKey?'<p class="center" id="mmtimer" style="margin-bottom:10px;font-weight:700">⏱️ 0s'+(best?' · Tu récord: '+best+'s':'')+'</p>':'<div style="height:14px"></div>')
  +'<div class="memgrid">'+cards.map((c,k)=>'<div class="mem" id="mm'+k+'" onclick="flipMem('+k+')"><div class="in"><div class="f">❓</div><div class="b">'+esc(c.txt)+'</div></div></div>').join("")+'</div>');}
+function updateMMTimer(){const el=document.getElementById("mmtimer");if(!el)return;
+ const p=prof();const best=MM.recKey?(p.memoryBest||{})[MM.recKey]:null;
+ el.textContent="⏱️ "+MM.seconds+"s"+(best?" · Tu récord: "+best+"s":"");}
 function flipMem(k){
  if(MM.lock)return;const el=document.getElementById("mm"+k);
  if(el.classList.contains("flip"))return;
@@ -511,7 +530,15 @@ function flipMem(k){
  if(a.id===b.id){MM.found++;sOK();el.classList.add("ok");elA.classList.add("ok");
   recordAnswer(MM.set.subj,true,6);
   MM.first=null;MM.lock=false;
-  if(MM.found===MM.total){const st=MM.tries<=MM.total+2?3:MM.tries<=MM.total+5?2:1;setTimeout(()=>nodeWin(st,"Memoria"),700);}}
+  if(MM.found===MM.total){
+   if(MM.timer)clearInterval(MM.timer);
+   const st=MM.tries<=MM.total+2?3:MM.tries<=MM.total+5?2:1;
+   if(MM.recKey){const p=prof();if(!p.memoryBest)p.memoryBest={};
+    const prevBest=p.memoryBest[MM.recKey];
+    if(!prevBest||MM.seconds<prevBest){p.memoryBest[MM.recKey]=MM.seconds;save();
+     toast("🏆 ¡Nuevo récord! "+MM.seconds+"s",true,1800);}
+    else toast("⏱️ "+MM.seconds+"s (tu récord: "+prevBest+"s)",true,1800);}
+   setTimeout(()=>nodeWin(st,"Memoria"),700);}}
  else{sNO();recordAnswer(MM.set.subj,false,6);
   setTimeout(()=>{el.classList.remove("flip");elA.classList.remove("flip");MM.first=null;MM.lock=false;},900);}}
 

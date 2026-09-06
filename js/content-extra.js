@@ -132,4 +132,30 @@ const MEMORY_SETS={
  opuestos:{nm:"Opuestos",ic:"↔️",desc:"Cada cosa con su contrario",subj:"Lógica",
   pairs:()=>shuffled([["Arriba ⬆️","Abajo ⬇️"],["Grande 🐘","Pequeño 🐜"],["Día ☀️","Noche 🌙"],["Frío ❄️","Calor 🔥"],["Feliz 😀","Triste 😢"],["Rápido 🐆","Lento 🐢"],["Lleno 🥛","Vacío 🥃"],["Abierto 🔓","Cerrado 🔒"]]).slice(0,6)},
  emociones:{nm:"Emociones en inglés",ic:"😀",desc:"Emoción en inglés + su carita",subj:"Inglés",
-  pairs:()=>shuffled([["happy","😀"],["sad","😢"],["angry","😡"],["scared","😱"],["tired","🥱"],["surprised","😮"]]).slice(0,6)}};
+  pairs:()=>shuffled([["happy","😀"],["sad","😢"],["angry","😡"],["scared","😱"],["tired","🥱"],["surprised","😮"]]).slice(0,6)},
+ /* hasDifficulty:true -> screenMemoryPick() muestra selector fácil/medio/difícil antes de
+    entrar (ver js/kid.js). Las respuestas nunca se repiten dentro de una partida: si dos
+    operaciones distintas dieran el mismo resultado, se verían dos tarjetas iguales en pantalla
+    aunque el juego las empareje por índice interno — confuso para el niño, se evita a propósito. */
+ operaciones:{nm:"Operaciones matemáticas",ic:"🧮",desc:"Une la cuenta con su resultado",subj:"Mate",hasDifficulty:true,
+  pairs:(diff)=>{
+   const n=diff==="dificil"?8:diff==="medio"?6:4;
+   const out=[],used=new Set();
+   let tries=0;
+   while(out.length<n&&tries<200){
+    tries++;
+    let a,b,sig,ans;
+    if(diff==="dificil"){
+     const kind=rnd(3);
+     if(kind===0){a=5+rnd(46);b=5+rnd(46);sig="+";ans=a+b;}
+     else if(kind===1){a=10+rnd(40);b=1+rnd(a-1);sig="−";ans=a-b;}
+     else{a=2+rnd(9);b=2+rnd(6);sig="×";ans=a*b;}
+    }else if(diff==="medio"){
+     if(rnd(2)===0){a=2+rnd(18);b=2+rnd(18);sig="+";ans=a+b;}
+     else{a=5+rnd(15);b=1+rnd(a-1);sig="−";ans=a-b;}
+    }else{a=1+rnd(8);b=1+rnd(9-a);sig="+";ans=a+b;}
+    if(used.has(String(ans)))continue;
+    used.add(String(ans));
+    out.push([a+" "+sig+" "+b,String(ans)]);
+   }
+   return out;}}};
