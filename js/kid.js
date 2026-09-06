@@ -106,6 +106,7 @@ function hubApps(){
  html+='<div class="appgrid">'
   +appIcon("screenArt()","🎨","Arte","linear-gradient(160deg,#D8B4FE,#A855F7)",{badge:faltaArt?faltaArt:0})
   +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
+  +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
   +'</div>';
  html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
