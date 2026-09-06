@@ -213,21 +213,54 @@ function ansLangRepaso(i){
 function screenLangVocab(){setTheme("adulto");
  render(topbar(null)
   +'<h2 style="text-align:center">'+LANG_SITUATION_LABEL[LL.situation]+'</h2>'
-  +'<p class="mut center" style="margin-bottom:10px">Vocabulario de hoy — 🔊 escuchar · ⭐ guardar en tu baúl si no la conoces</p>'
-  +LL.vocab.map(w=>
+  +'<p class="mut center" style="margin-bottom:10px">Vocabulario de hoy — 🔊 escuchar · 🎤 practicar tu pronunciación · ⭐ guardar en tu baúl si no la conoces</p>'
+  +LL.vocab.map((w,i)=>
    '<div class="card langword">'
    +'<div style="display:flex;align-items:center;gap:8px">'
    +'<b style="font-size:1.1rem;flex:1">'+esc(w[0])+'</b>'
    +'<button class="spk" onclick="speakLang(\''+LL.id+'\','+jsStr(w[0])+')">🔊</button>'
+   +(typeof micAvailable==="function"&&micAvailable()?'<button class="spk" onclick="practicePron(\''+LL.id+'\','+jsStr(w[0])+',\'pronbox'+i+'\')">🎤</button>':'')
    +'<button class="spk" id="vaultbtn_'+esc(w[0]).replace(/[^a-zA-Z0-9]/g,"")+'" onclick="toggleWordVault(\''+LL.id+'\','+jsStr(w[0])+','+jsStr(w[1])+',this)">'+(isInVault(LL.id,w[0])?"⭐":"☆")+'</button>'
    +'</div>'
    +'<span class="mut">'+esc(w[1])+'</span>'
    +'<p style="font-size:.88rem;margin-top:6px"><i>"'+esc(w[2])+'"</i></p>'
    +'<p style="font-size:.82rem;margin-top:2px;color:var(--adult-mut)">→ '+esc(w[4]||"")+'</p>'
-   +'<p style="font-size:.82rem;margin-top:4px">💡 '+esc(w[3])+'</p></div>'
+   +'<p style="font-size:.82rem;margin-top:4px">💡 '+esc(w[3])+'</p>'
+   +'<div id="pronbox'+i+'"></div></div>'
   ).join("")
   +'<button class="abtn ghost" onclick="screenWordVault()">🗃️ Ver mi baúl de palabras</button>'
   +'<button class="abtn green" onclick="screenLangGrammar()">Siguiente →</button>');}
+
+/* ---- práctica de pronunciación: el micrófono transcribe lo que dijiste y se compara contra
+   el texto objetivo (distancia de Levenshtein, misma función lev() que ya usa el dictado).
+   OJO: esto NO es análisis fonético real (como Fluently/ELSA, que sí evalúan el sonido) —
+   es una aproximación honesta: si el reconocedor de voz del idioma meta no logra entender lo
+   que dijiste, normalmente es porque la pronunciación se aleja bastante del sonido esperado.
+   Funciona mejor para diferencias claras que para matices finos de acento. */
+function pronScore(said,target){
+ const s=(said||"").toLowerCase().trim(),t=(target||"").toLowerCase().trim();
+ if(!s||typeof lev!=="function")return 0;
+ const dist=lev(s,t),maxLen=Math.max(s.length,t.length)||1;
+ return Math.max(0,Math.round((1-dist/maxLen)*100));}
+function pronLabel(score){
+ if(score>=85)return{emoji:"🌟",txt:"¡Excelente pronunciación!"};
+ if(score>=60)return{emoji:"👍",txt:"Bien, se entiende — sigue practicando"};
+ return{emoji:"🔁",txt:"Inténtalo de nuevo, escucha primero con 🔊"};}
+function practicePron(id,target,boxId){
+ if(!micAvailable())return toast("🎤 No disponible en este navegador",false,1500);
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const rec=new SR();rec.lang=langInfo(id).bcp;rec.maxAlternatives=1;rec.interimResults=false;rec.continuous=false;
+ const box=document.getElementById(boxId);
+ if(box)box.innerHTML='<p class="mut" style="margin-top:6px">🎤 Escuchando…</p>';
+ rec.onresult=function(e){
+  const said=e.results[0][0].transcript;
+  const score=pronScore(said,target);
+  const lbl=pronLabel(score);
+  if(score>=60)sOK();else sNO();
+  const b=document.getElementById(boxId);
+  if(b)b.innerHTML='<p style="margin-top:6px">'+lbl.emoji+' '+esc(lbl.txt)+'<br><span class="mut" style="font-size:.78rem">Se entendió: "'+esc(said)+'"</span></p>';};
+ rec.onerror=function(){const b=document.getElementById(boxId);if(b)b.innerHTML='<p class="mut" style="margin-top:6px">No se pudo escuchar, intenta de nuevo.</p>';};
+ try{rec.start();}catch(e){}}
 
 /* ---- baúl de palabras: marcar/guardar palabras que no conoces para repasarlas ---- */
 function wordVaultList(){const p=prof();if(!p.wordVault)p.wordVault=[];return p.wordVault;}
@@ -430,9 +463,9 @@ function renderLangConvo(){setTheme("adulto");
   +'<h2 style="text-align:center">💬 Diálogo · '+LANG_SITUATION_LABEL[LL.situation]+'</h2>'
   +'<p class="mut center" style="margin-bottom:6px;font-size:.82rem">Elige cómo responder — 👁️ ver traducción · ⭐ guardar en tu baúl</p>'
   +'<div class="langchat">'+msgs+'</div>'
-  +renderLangConvoOptions()
+  +(LL.convo.pendingPractice?renderConvoPracticeStep():renderLangConvoOptions())
   +'<button class="abtn ghost" style="margin-top:10px" onclick="finishLangConvo()">Terminar diálogo → Quiz</button>');
- speakLastLangConvo();}
+ if(!LL.convo.pendingPractice)speakLastLangConvo();}
 function toggleTranslation(i){
  if(!LL.convo.revealed)LL.convo.revealed={};
  LL.convo.revealed[i]=!LL.convo.revealed[i];
@@ -452,6 +485,23 @@ function renderLangConvoOptions(){
  if(!turn||!turn.options||!turn.options.length)return '<p class="mut center" style="margin-top:10px">Fin del diálogo.</p>';
  return '<div id="convoFeedback"></div>'
   +turn.options.map(function(o,i){return '<button class="abtn" onclick="pickConvoOption('+i+')">'+esc(o.text)+(o.es?'<br><span class="mut" style="font-size:.78rem">'+esc(o.es)+'</span>':'')+'</button>';}).join("");}
+/* tras acertar, antes de pasar al siguiente turno: la pide en voz alta y da retroalimentación
+   de pronunciación (practicePron/pronScore, arriba) — pedido explícito: "interacción como en
+   Fluently aprovechando la IA". No bloquea el avance (el botón Continuar siempre funciona,
+   se haya practicado o no) y solo aparece si el navegador tiene micrófono. */
+function renderConvoPracticeStep(){
+ return '<div class="card center" style="margin-top:8px">'
+  +'<p style="font-weight:700">🎤 Ahora dilo tú en voz alta</p>'
+  +'<p class="mut" style="margin:4px 0 8px">"'+esc(LL.convo.pendingPractice)+'"</p>'
+  +'<button class="abtn" onclick="practicePron(\''+LL.id+'\','+jsStr(LL.convo.pendingPractice)+',\'convoPronBox\')">🎤 Practicar pronunciación</button>'
+  +'<div id="convoPronBox"></div>'
+  +'<button class="abtn green" style="margin-top:10px" onclick="continueConvoAfterPractice()">Continuar →</button>'
+  +'</div>';}
+function continueConvoAfterPractice(){
+ LL.convo.pendingPractice=null;
+ const next=LL.convo.turns[LL.convo.idx];
+ if(next)LL.convo.history.push({role:"model",text:next.npc,es:next.es});
+ renderLangConvo();}
 function pickConvoOption(i){
  const turn=LL.convo.turns[LL.convo.idx];const opt=turn&&turn.options[i];if(!opt)return;
  if(!opt.correct){
@@ -462,6 +512,8 @@ function pickConvoOption(i){
  sOK();
  LL.convo.history.push({role:"user",text:opt.text});
  LL.convo.idx++;
+ LL.convo.pendingPractice=(typeof micAvailable==="function"&&micAvailable())?opt.text:null;
+ if(LL.convo.pendingPractice)return renderLangConvo();
  const next=LL.convo.turns[LL.convo.idx];
  if(next)LL.convo.history.push({role:"model",text:next.npc,es:next.es});
  renderLangConvo();}
