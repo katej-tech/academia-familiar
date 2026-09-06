@@ -106,13 +106,13 @@ function hubApps(){
  html+='<div class="appgrid">'
   +appIcon("screenArt()","🎨","Arte","linear-gradient(160deg,#D8B4FE,#A855F7)",{badge:faltaArt?faltaArt:0})
   +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
-  +appIcon("gameDots()","🔢","Unir puntos","linear-gradient(160deg,#67E8F9,#06B6D4)")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
   +'</div>';
  html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
  html+='<div class="appgrid">'
   +appIcon("screenGamesPick()","🎮","Juegos","linear-gradient(160deg,#A5B4FC,#6366F1)",{locked:!abierto})
   +appIcon("screenTama()","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)")
+  +(typeof screenWorkshop==="function"?appIcon("screenWorkshop()","🧩","Taller","linear-gradient(160deg,#86EFAC,#16A34A)"):"")
   +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
   +'</div>';
  if(courses().length&&prof()&&(prof().age||0)>=10){
@@ -413,9 +413,11 @@ function nodeWin(stars,subject){
  p.coins+=stars*5;p.xp+=stars*10;touchDay().games++;save();
  sWIN();confetti(34);
  const got=stars>=2?maybeCritter():null;
+ const unlocked=maybeWorkshopUnlock();
  const gotMsg=got?(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️"):"";
  const gotSub=got?(got.isNew?"Una nueva criatura para tu colección 🎒":got.evolved?"Mira su nueva forma en tu colección 🎒":"Recaptúrala para que evolucione"):"";
  const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center;cursor:pointer" onclick="screenCritters()"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+got.e+'</div><b style="font-size:1.2rem">'+gotMsg+'</b><p>'+gotSub+'</p><p style="margin-top:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca para ver tu colección 🎒</p></div>':'';
+ const workshopHTML=unlocked?'<div class="card" style="background:linear-gradient(180deg,#DCFCE7,#BBF7D0);margin-top:14px;text-align:center;cursor:pointer" onclick="screenWorkshop()"><div style="font-size:clamp(3rem,15vw,4rem)">'+unlocked.piece+'</div><b style="font-size:1.1rem">¡Nueva pieza para tu taller! 🛠️</b><p style="margin-top:8px;font-family:Fredoka;font-weight:700;color:var(--kid-green)">👉 Toca para ir al taller</p></div>':'';
  if(got)setTimeout(()=>confetti(30),400);
  render(topbar("screenKidMap()")
  +'<div class="card endcard"><div class="big">'+(stars===3?"🏆":stars===2?"🌟":"⭐")+'</div>'
@@ -424,7 +426,7 @@ function nodeWin(stars,subject){
  +'<p style="font-size:1.15rem;margin-bottom:16px">Ganaste <b>+'+(stars*5)+' 🪙</b></p>'
  +'<button class="kbtn green" onclick="replayWorld()">Seguir jugando 🔁</button>'
  +'<button class="kbtn white" onclick="screenKidMap()">Ir a los mundos 🌍</button></div>'
- +critterHTML);}
+ +critterHTML+workshopHTML);}
 function replayWorld(){
  if(typeof curNode==="string"){const w=KID_WORLDS.find(x=>x.id===curNode);
   if(w&&!w.special)return playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});
@@ -881,7 +883,64 @@ function screenCritters(){setTheme("kid");
  +'<div class="card"><b style="font-size:1.1rem">Criaturas: '+uniqueCritters()+'/'+CRITTERS.length+'</b>'
  +'<p style="font-size:.85rem;margin:4px 0 0">Si capturas una repetida, sube de nivel ❤️ — en el nivel 3 <b>evoluciona</b> y en el 5 llega a su forma final ✨</p>'
  +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">'+grid+'</div></div>'
+ +'<button class="kbtn purple" onclick="screenWorkshop()">🛠️ Taller: arma tu propia criatura</button>'
  +'<button class="kbtn green" onclick="screenKidMap()">← Volver al mapa</button>');}
+
+/* ============ TALLER DE CRIATURAS (arma tu propia mezcla, piezas que se desbloquean jugando) ============
+   A diferencia de maybeCritter() (al azar, ~35% por victoria), acá el desbloqueo es GARANTIZADO
+   cada 3 victorias — para que siempre haya algo nuevo por conseguir aunque la suerte de las
+   criaturas no acompañe, y para que la colección nunca se sienta "terminada del todo". */
+const WORKSHOP_PARTS={
+ cabeza:["🤖","🐲","🦁","👽","🐱","🦊","🎃","👾","🐸","🦉"],
+ cuerpo:["🧱","⚙️","🛡️","🚀","🎸","🏰","🧊","🔩","🌟","🍄"],
+ extra:["🎩","👓","🦺","🧣","⚡","❤️","🎀","🔥","🌈","👑"]};
+const WORKSHOP_CATS=["cabeza","cuerpo","extra"];
+function workshopUnlocked(cat){const p=prof();if(!p.workshopUnlocked)p.workshopUnlocked={};return p.workshopUnlocked[cat]||2;}
+function maybeWorkshopUnlock(){
+ const p=prof();
+ p.workshopWins=(p.workshopWins||0)+1;
+ if(p.workshopWins%3!==0){save();return null;}
+ if(!p.workshopUnlocked)p.workshopUnlocked={};
+ const turn=Math.floor(p.workshopWins/3-1)%WORKSHOP_CATS.length;
+ const cat=WORKSHOP_CATS[turn];
+ const cur=p.workshopUnlocked[cat]||2;
+ if(cur>=WORKSHOP_PARTS[cat].length){save();return null;} // esa categoría ya está completa
+ p.workshopUnlocked[cat]=cur+1;save();
+ return{cat:cat,piece:WORKSHOP_PARTS[cat][cur]};}
+function workshopSel(){const p=prof();
+ if(!p.workshopSel)p.workshopSel={cabeza:WORKSHOP_PARTS.cabeza[0],cuerpo:WORKSHOP_PARTS.cuerpo[0],extra:WORKSHOP_PARTS.extra[0],color:COLOR_PALETTE[0]};
+ return p.workshopSel;}
+function screenWorkshop(){setTheme("kid");
+ const sel=workshopSel();
+ const catBlock=function(cat,label){
+  const n=workshopUnlocked(cat);
+  const opts=WORKSHOP_PARTS[cat].map(function(e,i){
+   const locked=i>=n;
+   return '<button class="wkpiece'+(sel[cat]===e?" sel":"")+'" '+(locked?'disabled style="opacity:.35"':'onclick="wkPick(\''+cat+'\','+jsStr(e)+')"')+'>'+(locked?"🔒":e)+'</button>';
+  }).join("");
+  return '<p style="font-family:Fredoka;font-weight:700;margin:12px 2px 6px">'+label+' <span class="mut" style="font-size:.78rem;font-weight:500">('+n+'/'+WORKSHOP_PARTS[cat].length+' desbloqueadas)</span></p><div class="wkgrid">'+opts+'</div>';};
+ const colorOpts=COLOR_PALETTE.map(function(c){return '<button class="wkcolor'+(sel.color===c?" sel":"")+'" style="background:'+c+'" onclick="wkPickColor(\''+c+'\')"></button>';}).join("");
+ const creations=prof().workshopCreations||[];
+ const gallery=creations.map(function(cr,i){
+  return '<div class="wkcard" style="background:'+cr.color+'"><button class="spk" style="position:absolute;top:4px;right:4px;transform:scale(.7)" onclick="wkDelete('+i+')">🗑️</button><div style="font-size:2.2rem">'+cr.cabeza+'</div><div style="font-size:1.6rem">'+cr.cuerpo+' '+cr.extra+'</div></div>';
+ }).join("");
+ render(topbar("screenCritters()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🛠️ Taller de criaturas</h2>'
+ +'<p class="center" style="margin-bottom:10px">Combina piezas y arma tu propia criatura — no tienen que combinar, ¡mientras más loca, más divertida! 😄</p>'
+ +'<div class="card center"><div class="wkpreview" style="background:'+sel.color+'"><div style="font-size:3rem">'+sel.cabeza+'</div><div style="font-size:2.2rem">'+sel.cuerpo+' '+sel.extra+'</div></div></div>'
+ +catBlock("cabeza","🗣️ Cabeza")
+ +catBlock("cuerpo","🧱 Cuerpo")
+ +catBlock("extra","✨ Extra")
+ +'<p style="font-family:Fredoka;font-weight:700;margin:12px 2px 6px">🎨 Color</p><div class="wkgrid">'+colorOpts+'</div>'
+ +'<button class="kbtn green" style="margin-top:14px" onclick="wkSave()">💾 Guardar mi criatura</button>'
+ +(gallery?'<p style="font-family:Fredoka;font-weight:700;margin:18px 2px 8px">🎒 Mis creaciones</p><div class="wkgallery">'+gallery+'</div>':'')
+ +'<button class="kbtn white" style="margin-top:14px" onclick="screenCritters()">← Volver a mi colección</button>');}
+function wkPick(cat,val){workshopSel()[cat]=val;save();screenWorkshop();}
+function wkPickColor(c){workshopSel().color=c;save();screenWorkshop();}
+function wkSave(){const p=prof();if(!p.workshopCreations)p.workshopCreations=[];
+ p.workshopCreations.push(Object.assign({},workshopSel()));save();
+ sOK();confetti(12);toast("¡Guardada en tu galería! 🎉",true,1500);screenWorkshop();}
+function wkDelete(i){const p=prof();p.workshopCreations.splice(i,1);save();screenWorkshop();}
 
 /* ============ MOTOR DE RETO ADAPTATIVO UNIVERSAL ============ */
 /* Toma uno o varios temas, pide retos (IA o fallback) y los juega con audio si es inglés. */

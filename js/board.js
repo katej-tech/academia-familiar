@@ -17,7 +17,6 @@ function screenArt(){setTheme("kid");
   +'<p class="center" style="margin-bottom:14px">Elige una actividad de dibujo</p>'
   +'<button class="kbtn yellow" onclick="gameAiDraw()">✨ Dibuja con IA</button>'
   +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
-  +'<button class="kbtn blue" onclick="gameDots()">🔢 Une los puntos</button>'
   +'<button class="kbtn green" onclick="gameDrawLesson()">🎨 Cómo dibujar (paso a paso)</button>'
   +'<button class="kbtn red" onclick="gameCursive()">✍️ Letra cursiva</button>'
   +'<button class="kbtn white" onclick="openBoard()">✏️ Pizarra (dibujo libre)</button>');
@@ -227,7 +226,24 @@ const COLOR_PICS=[
   +'<ellipse class="cr" cx="100" cy="134" rx="34" ry="20" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
   +'<circle class="cr" cx="152" cy="84" r="28" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
   +'<polygon class="cr" points="70,80 82,58 94,80" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/><polygon class="cr" points="96,78 108,54 120,78" fill="#fff" stroke="#1E2A4A" stroke-width="2.5"/>'
-  +'<circle cx="160" cy="78" r="5" fill="#1E2A4A"/>'}
+  +'<circle cx="160" cy="78" r="5" fill="#1E2A4A"/>'},
+ {name:"✈️ Avión",inner:
+  '<ellipse class="cr" cx="95" cy="100" rx="72" ry="15" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<ellipse class="cr" cx="88" cy="100" rx="17" ry="46" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<polygon class="cr" points="155,100 186,84 186,116" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<circle class="cr" cx="55" cy="97" r="8" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+ {name:"🏴 Bandera",inner:
+  '<rect class="cr" x="38" y="28" width="7" height="152" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="45" y="34" width="112" height="26" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="45" y="60" width="112" height="26" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'
+  +'<rect class="cr" x="45" y="86" width="112" height="26" fill="#fff" stroke="#1E2A4A" stroke-width="3"/>'},
+ {name:"🧩 Personaje de bloques",inner:
+  '<rect class="cr" x="70" y="26" width="60" height="50" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="55" y="82" width="90" height="70" rx="8" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="28" y="88" width="22" height="56" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="150" y="88" width="22" height="56" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="65" y="156" width="30" height="36" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'
+  +'<rect class="cr" x="105" y="156" width="30" height="36" rx="6" fill="#fff" stroke="#1E2A4A" stroke-width="4"/>'}
 ];
 function gameColoring(){setTheme("kid");if(!CO)CO={color:"#FF6B6B",picIdx:0};CO.color="#FF6B6B";renderColoring();}
 function renderColoring(){
@@ -258,68 +274,6 @@ function colorSet(c){CO.color=c;var btns=document.querySelectorAll('[aria-label=
 function colorTap(e){var t=e.target;if(t&&t.classList&&t.classList.contains("cr")){t.setAttribute("fill",CO.color);if(typeof beep==="function")beep([620],.04);}}
 function colorClear(){document.querySelectorAll("svg .cr").forEach(function(el){el.setAttribute("fill","#fff");});}
 function colorNext(){CO.picIdx=(CO.picIdx+1)%COLOR_PICS.length;renderColoring();}
-
-/* ============ UNE LOS PUNTOS (toca 1,2,3… y se arma la figura) ============ */
-let DP={figIdx:0};
-const DOT_FIGS=[
- {name:"⭐ Estrella",fill:"#FFC93C",pts:[[100,22],[146,163],[26,76],[174,76],[54,163]]},
- {name:"🏠 Casa",fill:"#FF9F1C",pts:[[42,182],[42,92],[100,42],[158,92],[158,182]]},
- {name:"🐟 Pez",fill:"#3B82F6",pts:[[40,100],[105,62],[150,80],[186,54],[186,146],[150,120],[105,138]]},
- {name:"🚀 Cohete",fill:"#FF6B6B",pts:[[100,24],[128,74],[128,150],[152,182],[128,155],[72,155],[48,182],[72,150],[72,74]]},
- {name:"🚂 Tren",fill:"#3EC97C",pts:[[34,150],[34,98],[60,98],[60,68],[106,68],[106,98],[172,98],[172,150]],wheels:[[64,150,16],[142,150,16]]},
- {name:"🚗 Carro",fill:"#A78BFA",pts:[[28,150],[28,120],[54,120],[78,88],[122,88],[146,120],[172,120],[172,150]],wheels:[[60,150,17],[142,150,17]]}
-];
-function gameDots(){setTheme("kid");if(!DP)DP={};if(DP.figIdx==null)DP.figIdx=0;startDots();}
-function startDots(){
- var fig=DOT_FIGS[DP.figIdx%DOT_FIGS.length];
- render(topbar("screenMyStuff()")
-  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🔢 Une los puntos</h2>'
-  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">'+fig.name+' — toca los puntos en orden: 1, 2, 3…</p>'
-  +'<div class="card" style="padding:10px"><canvas id="dpcanvas" onclick="dotsTap(event)" style="width:100%;max-width:360px;display:block;margin:0 auto;background:#FCFBF6;border-radius:12px;touch-action:manipulation"></canvas></div>'
-  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto">'
-   +'<button class="kbtn yellow" onclick="startDots()" style="min-height:52px">🔄 Reiniciar</button>'
-   +'<button class="kbtn green" onclick="dotsNext()" style="min-height:52px">Otra figura →</button>'
-  +'</div>');
- var cv=document.getElementById("dpcanvas");
- var cssW=Math.min(360,cv.clientWidth||320);var dpr=Math.min(2,window.devicePixelRatio||1);
- cv.style.height=cssW+"px";cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssW*dpr);
- var ctx=cv.getContext("2d");ctx.scale(dpr*cssW/200,dpr*cssW/200);ctx.lineCap="round";ctx.lineJoin="round";
- DP.ctx=ctx;DP.cv=cv;DP.S=cssW;DP.fig=fig;DP.next=1;DP.done=false;
- dotsDraw();
-}
-function dotsDraw(){
- var c=DP.ctx,fig=DP.fig;if(!c)return;
- c.clearRect(0,0,200,200);
- // líneas ya trazadas
- c.strokeStyle="#3B82F6";c.lineWidth=4;
- for(var i=1;i<DP.next&&i<fig.pts.length;i++){c.beginPath();c.moveTo(fig.pts[i-1][0],fig.pts[i-1][1]);c.lineTo(fig.pts[i][0],fig.pts[i][1]);c.stroke();}
- if(DP.done){ // cerrar y rellenar
-  c.beginPath();c.moveTo(fig.pts[0][0],fig.pts[0][1]);for(var k=1;k<fig.pts.length;k++)c.lineTo(fig.pts[k][0],fig.pts[k][1]);c.closePath();
-  c.fillStyle=fig.fill;c.globalAlpha=.85;c.fill();c.globalAlpha=1;c.stroke();
-  if(fig.wheels)fig.wheels.forEach(function(w){c.beginPath();c.arc(w[0],w[1],w[2],0,Math.PI*2);c.fillStyle="#1E2A4A";c.fill();c.fillStyle="#8A94A6";c.beginPath();c.arc(w[0],w[1],w[2]*0.5,0,Math.PI*2);c.fill();});
- }
- // puntos
- for(var j=0;j<fig.pts.length;j++){var p=fig.pts[j];var n=j+1;var isNext=(n===DP.next);var doneP=(n<DP.next);
-  if(isNext&&!DP.done){c.beginPath();c.arc(p[0],p[1],18,0,Math.PI*2);c.fillStyle="rgba(255,107,107,.22)";c.fill();} // halo del siguiente
-  c.beginPath();c.arc(p[0],p[1],isNext?13:10,0,Math.PI*2);
-  c.fillStyle=doneP?"#3EC97C":(isNext?"#FF6B6B":"#fff");c.fill();c.lineWidth=2.5;c.strokeStyle="#1E2A4A";c.stroke();
-  c.fillStyle=doneP?"#fff":(isNext?"#fff":"#1E2A4A");c.font="800 "+(isNext?13:11)+"px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(n,p[0],p[1]+0.5);
- }
-}
-function dotsTap(e){
- if(DP.done)return;var cv=DP.cv;if(!cv)return;
- var r=cv.getBoundingClientRect();var x=(e.clientX-r.left)/r.width*200,y=(e.clientY-r.top)/r.height*200;
- var fig=DP.fig,exp=DP.next-1;var p=fig.pts[exp];
- if(!p)return;
- if(Math.hypot(x-p[0],y-p[1])<32){ // acertó el punto esperado (tolerancia amplia)
-  DP.next++;if(typeof beep==="function")beep([500+DP.next*60],.05);
-  if(DP.next>fig.pts.length){DP.done=true;dotsDraw();sWIN();confetti(22);if(typeof recordAnswer==="function")recordAnswer("Secuencias",true,15);if(typeof artPlus==="function")artPlus();toast("¡Lo lograste! "+fig.name+" 🎨+1",true,1800);}
-  else dotsDraw();
- }else{ // tocó otro lado: pista suave
-  if(typeof toast==="function")toast("Toca el punto rojo número "+DP.next+" 👆",false,1300);
- }
-}
-function dotsNext(){DP.figIdx=(DP.figIdx+1)%DOT_FIGS.length;startDots();}
 
 /* ============ CLASES DE DIBUJO PASO A PASO (copia la parte azul) ============ */
 let DL={figIdx:0,step:0};
