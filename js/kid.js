@@ -56,7 +56,7 @@ const KID_WORLDS=[
  {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",cat:"leer",special:"writing",desc:"Ordena frases y letras"},
  {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",cat:"pensar",topics:["logica","secuencias","ordinales","izqder","acertijos"],desc:"Acertijos, adivinanzas y patrones"},
  {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",cat:"pensar",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
- {id:"juegos",ic:"🎮",nm:"Todos los juegos",color:"blue",cat:"jugar",special:"games",desc:"Robot, arcade, impostor y más"}];
+ {id:"juegos",ic:"🎮",nm:"Todos los juegos",color:"blue",cat:"jugar",special:"games",desc:"Trivias, arcade, letras y más"}];
 const KID_CATS=[["cole","📚 Aprende para el cole"],["en","🇬🇧 Inglés"],["leer","📖 Leer y escribir"],["pensar","🧩 Pensar"],["jugar","🎮 Jugar"]];
 let curNode=null;
 function worldBtn(w,p){
@@ -112,7 +112,6 @@ function hubApps(){
  html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
  html+='<div class="appgrid">'
   +appIcon("screenGamesPick()","🎮","Juegos","linear-gradient(160deg,#A5B4FC,#6366F1)",{locked:!abierto})
-  +appIcon(abierto?"gameNave()":"screenGamesLocked()","🛸","Impostor","linear-gradient(160deg,#94A3B8,#475569)",{locked:!abierto})
   +appIcon("screenTama()","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)")
   +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
   +'</div>';
@@ -333,9 +332,6 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +'<button class="kbtn green" onclick="gameSymbols()">🐊 Coloca el signo (&gt; &lt; =)</button>'
  +'<button class="kbtn blue" onclick="gameGateRun()">🔢 Carrera de números (hazte más grande)</button>'
  +'<button class="kbtn yellow" onclick="gameMathCross()">🔢 Crucigrama matemático</button>'
- +'<button class="kbtn purple" onclick="gameImpostor()">🚀 ¿Quién es el impostor?</button>'
- +'<button class="kbtn red" onclick="gameNave()">🛸 Nave impostora <span style="opacity:.8;font-size:.82rem">· camina, haz tareas y vota</span></button>'
- +'<button class="kbtn white" onclick="gameDetective()">🕵️ Detective del impostor <span style="opacity:.8;font-size:.82rem">· misiones y pistas</span></button>'
  +'<button class="kbtn red" onclick="gameSlide()">🧩 Rompecabezas deslizante</button>'
  +sub("🇬🇧 Inglés")
  +'<button class="kbtn blue" onclick="gameHangman(\'en\')">⛄ Salva al muñeco (inglés)</button>'
@@ -343,10 +339,8 @@ function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stop
  +sub("🕹️ Arcade (pura diversión)")
  +'<button class="kbtn green" onclick="gamePenalty()">⚽ Penales matemáticos</button>'
  +'<button class="kbtn yellow" onclick="gameMaze()">🟡 Laberinto glotón <span style="opacity:.8;font-size:.82rem">· come los puntos</span></button>'
- +'<button class="kbtn blue" onclick="gamePlatform()">⛰️ Mundo Saltarín <span style="opacity:.8;font-size:.82rem">· elige personaje y mundo</span></button>'
  +'<button class="kbtn red" onclick="gameBalloons(\'mix1\')">🎈 Revienta globos</button>'
- +'<button class="kbtn blue" onclick="gameRace()">🏎️ Carrera izquierda y derecha</button>'
- +'<button class="kbtn purple" onclick="gameDoodle()">🦘 Saltarín</button>');}
+ +'<button class="kbtn blue" onclick="gameRace()">🏎️ Carrera izquierda y derecha</button>');}
 function screenMemoryPick(){setTheme("kid");
  render(topbar("screenGamesPick()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🃏 Memoria</h2>'

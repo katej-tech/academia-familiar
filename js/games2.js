@@ -193,45 +193,6 @@ function mpFinish(){
  +'<button class="kbtn white" onclick="screenGamesPick()">Volver a los juegos</button></div>'
  +critterHTML);}
 
-/* ---- EL IMPOSTOR (encuentra al que dice mentiras) ---- */
-const IM_FACTS=[
- ["2 + 2 = 4","2 + 2 = 5"],["5 + 5 = 10","5 + 5 = 12"],["10 − 5 = 5","10 − 5 = 7"],["3 + 3 = 6","3 + 3 = 8"],
- ["Los peces viven en el agua","Los peces vuelan por el cielo"],["El sol sale de día","El sol sale solo de noche"],
- ["Los perros ladran","Los perros maúllan"],["El hielo es frío","El hielo es caliente"],
- ["La semana tiene 7 días","La semana tiene 2 días"],["5 es mayor que 3","3 es mayor que 5"],
- ["Las plantas necesitan agua","Las plantas comen dulces"],["La luna se ve de noche","La luna es de queso"],
- ["Las vacas dan leche","Las vacas ponen huevos"],["El fuego quema","El fuego es de hielo"],
- ["Caminamos con los pies","Caminamos con las orejas"],["Los pájaros tienen alas","Los pájaros tienen 4 patas"]];
-const IM_COLORS=[["#FF6B6B","Rojo"],["#3B82F6","Azul"],["#3EC97C","Verde"],["#FFC93C","Amarillo"]];
-let IM={};
-function gameImpostor(){setTheme("kid");
- IM={round:0,ok:0,total:5,usados:new Set()};nextIM();}
-function nextIM(){
- if(IM.round>=IM.total)return nodeWin(starsFor(IM.ok,IM.total),"Lógica");
- let facts=shuffled(IM_FACTS.filter((f,i)=>!IM.usados.has(i)));
- if(facts.length<4){IM.usados=new Set();facts=shuffled(IM_FACTS);}
- const four=facts.slice(0,4);four.forEach(f=>IM.usados.add(IM_FACTS.indexOf(f)));
- const impostorIdx=rnd(4);
- IM.crew=shuffled(IM_COLORS).map((c,i)=>({color:c[0],nm:c[1],txt:i===impostorIdx?four[i][1]:four[i][0],imp:i===impostorIdx}));
- IM.done=false;renderIM();}
-function renderIM(){
- const cards=IM.crew.map((c,i)=>
-  '<button onclick="tapIM('+i+')" style="width:100%;text-align:left;display:flex;align-items:center;gap:14px;background:#FFFEF8;border:4px solid var(--kid-ink);border-radius:20px;box-shadow:0 6px 0 rgba(30,42,74,.8);padding:12px 14px;margin-bottom:12px">'
-  +'<span style="width:54px;height:54px;flex:none;border-radius:50% 50% 42% 42%;border:4px solid var(--kid-ink);background:'+c.color+';position:relative"><span style="position:absolute;top:10px;left:8px;width:30px;height:16px;border-radius:8px;background:#BFE8FF;border:3px solid var(--kid-ink)"></span></span>'
-  +'<span style="font-family:Fredoka;font-weight:600;font-size:clamp(1rem,4.4vw,1.2rem)">'+esc(c.txt)+'</span></button>').join("");
- render(topbar("exitGame('games')")
- +'<div class="progressdots">'+dots(IM.total,IM.round)+'</div>'
- +'<h2 style="font-size:clamp(1.15rem,5vw,1.4rem);text-align:center;margin-bottom:2px">🚀 ¿Quién es el impostor?</h2>'
- +'<p class="center" style="font-size:.95rem;margin-bottom:10px">Tres dicen la verdad… ¡uno MIENTE! Tócalo</p>'
- +cards);}
-function tapIM(i){
- if(IM.done)return;IM.done=true;
- const c=IM.crew[i];
- recordAnswer("Lógica",c.imp,15);
- if(c.imp){IM.ok++;sOK();confetti(14);toast("🚀 ¡"+c.nm+" era el IMPOSTOR! Expulsado",true,1500);}
- else{sNO();const real=IM.crew.find(x=>x.imp);toast("¡"+c.nm+" decía la verdad! El impostor era "+real.nm,false,1900);}
- IM.round++;setTimeout(nextIM,1900);}
-
 /* ---- CRUCIGRAMA (con pistas de emoji) ---- */
 const CW_PUZZLES=[
  {size:8,words:[

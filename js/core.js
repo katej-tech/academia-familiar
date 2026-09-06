@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="9.80.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="9.81.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -424,13 +424,10 @@ function stopGames(){
  try{if(typeof QZ!=="undefined")clearInterval(QZ.tick);}catch(e){}
  try{if(typeof SN!=="undefined"){clearInterval(SN.timer);SN.started=false;}}catch(e){}
  try{if(typeof BL!=="undefined"){clearTimeout(BL.timer);BL.done=true;}}catch(e){}
- try{if(typeof DJ!=="undefined")DJ.run=false;}catch(e){}
  try{if(typeof SI!=="undefined")SI.lock=true;}catch(e){}
  try{if(typeof OB!=="undefined")OB.done=true;}catch(e){}
  try{if(typeof PN!=="undefined"&&PN.tick)clearInterval(PN.tick);}catch(e){}
  try{if(typeof MZ!=="undefined"){MZ.over=true;cancelAnimationFrame(MZ.raf);}}catch(e){}
- try{if(typeof NV!=="undefined"){NV.over=true;cancelAnimationFrame(NV.raf);if(NV.mgTimer)clearInterval(NV.mgTimer);var _no=document.getElementById("nvov");if(_no)_no.remove();}}catch(e){}
- try{if(typeof PL!=="undefined"){PL.over=true;cancelAnimationFrame(PL.raf);}}catch(e){}
  try{if(typeof MM!=="undefined"&&MM.timer)clearInterval(MM.timer);}catch(e){}
  try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}
  try{if(typeof MG!=="undefined"&&MG.timer)clearInterval(MG.timer);}catch(e){}}
