@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="9.78.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="9.79.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -236,15 +236,15 @@ const KID_TOPICS={
  multi:{name:"Inicio multiplicación",emoji:"✖️",prompt:"multiplicaciones muy fáciles (tablas del 2, 3 y 5, factores hasta 5) explicadas como grupos, para niño de 7 años",
    fallback:()=>{const tablas=diffMax([[2],[2,5],[2,3,5],[2,3,4,5],[2,3,4,5,6,10]]);const t=pick(tablas),n=1+rnd(diffMax([3,4,5,5,9]));return mcq(t+" × "+n+" = ?",t*n,t+" grupos de "+n);}},
  ordinales:{name:"Ordinales",emoji:"🥇",prompt:"preguntas de números ordinales (primero a décimo) con ejemplos de carreras o filas, para niño de 6-7 años",
-   fallback:()=>pick([mcq("Si llegas después del 1°, ¿en qué lugar vas?","2°",null,["2°","3°","1°"]),mcq("El que gana la carrera llega…","1°",null,["1°","3°","5°"]),mcq("Después del 3° viene el…","4°",null,["4°","2°","5°"])])},
+   fallback:()=>pick([mcq("Si llegas después del 1°, ¿en qué lugar vas?","2°",null,["2°","3°","1°","4°"]),mcq("El que gana la carrera llega…","1°",null,["1°","3°","5°","2°"]),mcq("Después del 3° viene el…","4°",null,["4°","2°","5°","6°"])])},
  izqder:{name:"Ubicación",emoji:"↔️",prompt:"preguntas sobre izquierda/derecha, arriba/abajo y sobre/debajo de objetos, con animalitos y emojis, para niño de 6 años",
    fallback:()=>genSpatial()},
  mayorMenor:{name:"Mayor y menor",emoji:"🐊",prompt:"comparar números con mayor que (>), menor que (<) e igual (=), números hasta 100, explicado como el cocodrilo que se come al más grande, para niño de 6-7 años",
    fallback:()=>genCompare()},
  diasES:{name:"Días (español)",emoji:"📅",prompt:"preguntas sobre los días de la semana en español (orden, antes/después) para niño de 6-7 años",
-   fallback:()=>pick([mcq("¿Qué día viene después del lunes?","Martes",null,["Martes","Domingo","Viernes"]),mcq("¿Qué día va antes del sábado?","Viernes",null,["Viernes","Domingo","Lunes"]),mcq("¿Cuántos días tiene la semana?","7",null,["7","5","10"])])},
+   fallback:()=>pick([mcq("¿Qué día viene después del lunes?","Martes",null,["Martes","Domingo","Viernes","Jueves"]),mcq("¿Qué día va antes del sábado?","Viernes",null,["Viernes","Domingo","Lunes","Martes"]),mcq("¿Cuántos días tiene la semana?","7",null,["7","5","10","30"])])},
  mesesES:{name:"Meses (español)",emoji:"🗓️",prompt:"preguntas sobre los meses del año en español (orden, cuál va antes/después) para niño de 7 años",
-   fallback:()=>pick([mcq("¿Qué mes viene después de enero?","Febrero",null,["Febrero","Marzo","Diciembre"]),mcq("¿Con qué mes empieza el año?","Enero",null,["Enero","Diciembre","Junio"]),mcq("¿Cuántos meses tiene el año?","12",null,["12","10","7"])])},
+   fallback:()=>pick([mcq("¿Qué mes viene después de enero?","Febrero",null,["Febrero","Marzo","Diciembre","Abril"]),mcq("¿Con qué mes empieza el año?","Enero",null,["Enero","Diciembre","Junio","Marzo"]),mcq("¿Cuántos meses tiene el año?","12",null,["12","10","7","24"])])},
  logica:{name:"Lógica",emoji:"🧩",prompt:"acertijos de lógica simple (cuál no pertenece, el más grande, secuencias cortas) con emojis, para niño de 6-7 años",
    fallback:()=>{const q=pick(LOGIC_KID);return{q:q.q,pic:q.scene,ops:q.ops.slice(),a:q.a};}},
  acertijos:{name:"Acertijos",emoji:"🕵️",prompt:"adivinanzas infantiles clásicas en español, cortas, con rima y respuesta de objeto o animal cotidiano, para niño de 6-7 años",
@@ -321,7 +321,7 @@ const KID_TOPICS={
 function mcq(q,ans,hint,fixedOps){
  let ops;
  if(fixedOps)ops=fixedOps.slice();
- else{const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(5))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}ops=[...set].map(String);}
+ else{const set=new Set([ans]);while(set.size<4){const d=ans+(1+rnd(5))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}ops=[...set].map(String);}
  ops=shuffled(ops);return{q,ops,a:ops.indexOf(String(ans)),hint};}
 function enMCQ(pool){const w=pick(pool);return{q:'¿Qué significa "'+w[0]+'"?',ops:shuffled([w[1],...pickN(["perro","casa","sol","agua","rojo","mano","mesa","cinco","gato","leche"].filter(x=>x!==w[1]),2)]),a:-1,word:w[0],pic:w[2]||"🔊",es:w[1],en:true,fixAns:w[1]};}
 function pickN(arr,n){return shuffled(arr).slice(0,n);}
@@ -351,7 +351,7 @@ async function buildChallenges(topicKey,n){
    const avoid=seen.slice(-18);
    const variedad=["la vida diaria","animales","comida","juguetes","deportes","la familia","la naturaleza","la escuela"][Math.floor(Math.random()*8)];
    const noRepetir=avoid.length?(' MUY IMPORTANTE: NO repitas ni parafrasees estas preguntas que ya se usaron: '+avoid.map(q=>'"'+q+'"').join("; ")+'. Inventa preguntas DISTINTAS y frescas.'):'';
-   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple NUEVAS y variadas sobre: '+topic.prompt+'. Usa contextos variados (por ejemplo: '+variedad+') para que cada vez sean diferentes. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 3 opciones y una sola correcta. Lenguaje español sencillo y frases cortas.'+noRepetir+' Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
+   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple NUEVAS y variadas sobre: '+topic.prompt+'. Usa contextos variados (por ejemplo: '+variedad+') para que cada vez sean diferentes. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 4 opciones y una sola correcta. Lenguaje español sencillo y frases cortas.'+noRepetir+' Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
    if(obj.items&&obj.items.length){
     let items=obj.items.map(it=>{
      const q=stripHTML(it.q);

@@ -426,7 +426,7 @@ async function buildLangDialogue(id,lvl,situation){
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-8);
    const noRep=avoid.length?(' No repitas estos diálogos ya usados antes: '+avoid.join(" | ")+'.'):'';
    const scene=LANG_SCENE_INTRO[situation]||"";
-   const obj=await geminiJSON('Eres un hablante nativo de '+langInfo(id).name+' en esta escena con un estudiante hispanohablante nivel '+CEFR_LEVELS[lvl]+': "'+scene+'".'+noRep+' Crea un diálogo guiado de 5 turnos que avance la escena paso a paso hacia su objetivo. Cada una de TUS líneas va 100% en '+langInfo(id).name+' (nunca mezclada con español), usando SOLO este vocabulario que el estudiante ya conoce: '+convoVocabPool()+', más palabras universales muy básicas (hola, sí, no, gracias). Para cada turno (excepto el último, que es una despedida sin opciones) da 3 opciones de respuesta para el estudiante: UNA natural y correcta en este contexto, y DOS que un principiante podría elegir por error pero no calzan bien aquí (gramática rara, tono equivocado, o no responde lo que se preguntó) — para cada opción incorrecta explica en español, en una frase corta y simple, por qué no es la mejor aquí. Responde SOLO JSON: {"turns":[{"npc":"tu línea","es":"su traducción","options":[{"text":"opción en '+langInfo(id).name+'","es":"su traducción","correct":true,"why":""},{"text":"...","es":"...","correct":false,"why":"por qué no calza aquí"}]}]} con exactamente 5 turnos, el último con "options":[].');
+   const obj=await geminiJSON('Eres un hablante nativo de '+langInfo(id).name+' en esta escena con un estudiante hispanohablante nivel '+CEFR_LEVELS[lvl]+': "'+scene+'".'+noRep+' Crea un diálogo guiado de 5 turnos que avance la escena paso a paso hacia su objetivo. Cada una de TUS líneas va 100% en '+langInfo(id).name+' (nunca mezclada con español), usando SOLO este vocabulario que el estudiante ya conoce: '+convoVocabPool()+', más palabras universales muy básicas (hola, sí, no, gracias). Para cada turno (excepto el último, que es una despedida sin opciones) da 4 opciones de respuesta para el estudiante: UNA natural y correcta en este contexto, y TRES que un principiante podría elegir por error pero no calzan bien aquí (gramática rara, tono equivocado, o no responde lo que se preguntó) — para cada opción incorrecta explica en español, en una frase corta y simple, por qué no es la mejor aquí. Responde SOLO JSON: {"turns":[{"npc":"tu línea","es":"su traducción","options":[{"text":"opción en '+langInfo(id).name+'","es":"su traducción","correct":true,"why":""},{"text":"...","es":"...","correct":false,"why":"por qué no calza aquí"}]}]} con exactamente 5 turnos, el último con "options":[].');
    const turns=(obj.turns||[]).filter(function(t){return t.npc&&Array.isArray(t.options);})
     .map(function(t){return{npc:stripHTML(t.npc),es:stripHTML(t.es||""),
      options:shuffled((t.options||[]).map(function(o){return{text:stripHTML(o.text||""),es:stripHTML(o.es||""),correct:!!o.correct,why:stripHTML(o.why||"")};}).filter(function(o){return o.text;}))};});
@@ -527,7 +527,7 @@ async function buildLangQuizMCQ(id,lvl,vocab,grammar){
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-15);
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(q=>'"'+q+'"').join("; ")+'.'):'';
    const vocabTxt=vocab.map(v=>v[0]+" = "+v[1]).join(", ");
-   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 3 preguntas de opción múltiple (3 opciones, 1 correcta) para practicar este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+').'+noRep+' Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación en español SIMPLE Y CLARA (2-3 frases cortas, sin jerga gramatical difícil) de por qué es correcta, para alguien que se acaba de equivocar"}]} con 3 items.');
+   const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Crea 3 preguntas de opción múltiple (4 opciones, 1 correcta) para practicar este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+').'+noRep+' Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala","mala"],"a":0,"why":"explicación en español SIMPLE Y CLARA (2-3 frases cortas, sin jerga gramatical difícil) de por qué es correcta, para alguien que se acaba de equivocar"}]} con 3 items.');
    if(obj.items&&obj.items.length){
     const items=obj.items.map(it=>{const q=stripHTML(it.q);const ops=(it.ops||[]).map(o=>stripHTML(o));const correct=ops[it.a];const sh=shuffled(ops);return{kind:"mcq",q,ops:sh,a:sh.indexOf(correct),why:stripHTML(it.why||"")};});
     aiRemember(topicKey,items.map(i=>i.q));
@@ -537,7 +537,7 @@ async function buildLangQuizMCQ(id,lvl,vocab,grammar){
  const items=[];
  for(let i=0;i<3;i++){
   const w=vocab[i%vocab.length];
-  const distractors=pickN(vocab.filter(v=>v!==w).map(v=>v[1]),2);
+  const distractors=pickN(vocab.filter(v=>v!==w).map(v=>v[1]),3);
   const ops=shuffled([w[1],...distractors]);
   items.push({kind:"mcq",q:'¿Qué significa "'+w[0]+'"?',ops,a:ops.indexOf(w[1]),why:'"'+w[0]+'" significa "'+w[1]+'". '+(w[3]||"")});}
  return items;}
@@ -579,7 +579,7 @@ async function buildLangExamQuiz(id,lvl){
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(function(q){return '"'+q+'"';}).join("; ")+'.'):'';
    const sample=shuffled(allVocab).slice(0,14).map(function(v){return v[0]+" = "+v[1];}).join(", ");
    const grammarSummary=LANG_GRAMMAR_SEED[id][lvl].map(function(g){return g.rule;}).join("; ");
-   const obj=await geminiJSON('Eres examinador de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' para un adulto hispanohablante. Crea 6 preguntas de opción múltiple (3 opciones, 1 correcta) que evalúen este vocabulario del nivel completo: '+sample+'; y estas reglas gramaticales: '+grammarSummary+'.'+noRep+' Es un EXAMEN FINAL, un poco más exigente que la práctica normal. Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0,"why":"explicación en español SIMPLE Y CLARA (2-3 frases, sin jerga difícil) de por qué es correcta"}]} con 6 items.');
+   const obj=await geminiJSON('Eres examinador de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' para un adulto hispanohablante. Crea 6 preguntas de opción múltiple (4 opciones, 1 correcta) que evalúen este vocabulario del nivel completo: '+sample+'; y estas reglas gramaticales: '+grammarSummary+'.'+noRep+' Es un EXAMEN FINAL, un poco más exigente que la práctica normal. Responde SOLO JSON: {"items":[{"q":"...","ops":["correcta","mala","mala","mala"],"a":0,"why":"explicación en español SIMPLE Y CLARA (2-3 frases, sin jerga difícil) de por qué es correcta"}]} con 6 items.');
    if(obj.items&&obj.items.length){
     mcq=obj.items.map(function(it){const q=stripHTML(it.q);const ops=(it.ops||[]).map(function(o){return stripHTML(o);});const correct=ops[it.a];const sh=shuffled(ops);return{kind:"mcq",q:q,ops:sh,a:sh.indexOf(correct),why:stripHTML(it.why||"")};});
     aiRemember(topicKey,mcq.map(function(i){return i.q;}));
@@ -590,7 +590,7 @@ async function buildLangExamQuiz(id,lvl){
   const pool=shuffled(allVocab);
   for(let i=0;i<6;i++){
    const w=pool[i%pool.length];
-   const distractors=pickN(allVocab.filter(function(v){return v!==w;}).map(function(v){return v[1];}),2);
+   const distractors=pickN(allVocab.filter(function(v){return v!==w;}).map(function(v){return v[1];}),3);
    const ops=shuffled([w[1]].concat(distractors));
    mcq.push({kind:"mcq",q:'¿Qué significa "'+w[0]+'"?',ops:ops,a:ops.indexOf(w[1]),why:'"'+w[0]+'" significa "'+w[1]+'". '+(w[3]||"")});
   }

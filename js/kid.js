@@ -521,7 +521,7 @@ function gameMathVisual(){setTheme("kid");MV={round:0,ok:0,total:6};nextMV();}
 function nextMV(){
  if(MV.round>=MV.total)return nodeWin(starsFor(MV.ok,MV.total),"Mate");
  const Q=genSumImg();MV.cur=Q;
- const set=new Set([Q.ans]);while(set.size<3){const d=Q.ans+1+rnd(3)*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ const set=new Set([Q.ans]);while(set.size<4){const d=Q.ans+1+rnd(3)*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
  const ops=shuffled([...set]);
  render(topbar("screenKidMap()")
  +'<div class="progressdots">'+dots(MV.total,MV.round)+'</div>'

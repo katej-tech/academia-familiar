@@ -46,7 +46,7 @@ function obbyQuestion(){
  const resta=Math.random()<.5;let a,b,ans;
  if(resta){a=5+rnd(15);b=1+rnd(a-1);ans=a-b;OB.q=a+" − "+b;}
  else{a=1+rnd(12);b=1+rnd(12);ans=a+b;OB.q=a+" + "+b;}
- const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ const set=new Set([ans]);while(set.size<4){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
  const ops=shuffled([...set]).map(String);
  return{q:(a+(resta?" − ":" + ")+b)+" = ?",ops,a:ops.indexOf(String(ans))};}
 function nextObby(){
@@ -829,7 +829,7 @@ function nextCA(){
  if(CA.round>=CA.total)return nodeWin(starsFor(CA.ok,CA.total),"Sumas");
  const M=(typeof diffMax==="function")?diffMax([12,20,35,55,80]):30;
  const a=5+rnd(M),b=5+rnd(M),ans=a+b;
- const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(5))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ const set=new Set([ans]);while(set.size<4){const d=ans+(1+rnd(5))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
  const ops=shuffled([...set]).map(String);CA.a=ops.indexOf(String(ans));CA.ans=ans;
  const col='<div style="display:inline-grid;grid-template-columns:auto auto;gap:2px 14px;font-family:Fredoka;font-weight:800;font-size:clamp(2.6rem,14vw,3.8rem);text-align:right;line-height:1.1;color:var(--kid-ink)">'
   +'<div></div><div>'+a+'</div>'
@@ -1001,7 +1001,7 @@ async function ktStart(theme){
   render(topbar("gameKidTrivia()")+'<div class="card center" style="padding:22px"><div style="font-size:2.4rem" class="spin">⏳</div><p style="margin-top:8px">La IA está creando preguntas de <b>'+KTRIVIA[theme].nm+'</b>…</p></div>');
   try{
    var seen=aiSeenList("kt_"+theme).slice(-18);
-   var obj=await geminiJSON('Crea 6 preguntas de trivia MUY FÁCILES y divertidas para un niño de 6 a 8 años, en español sencillo y alegre, sobre el tema "'+KTRIVIA[theme].nm+'". Cada pregunta con 3 opciones y una sola correcta. Preguntas cortas y claras. NO repitas estas: '+(seen.join(" | ")||"(ninguna)")+'. Responde SOLO JSON: {"qs":[{"q":"...","ops":["..","..",".."],"a":0}]} con exactamente 6 preguntas.');
+   var obj=await geminiJSON('Crea 6 preguntas de trivia MUY FÁCILES y divertidas para un niño de 6 a 8 años, en español sencillo y alegre, sobre el tema "'+KTRIVIA[theme].nm+'". Cada pregunta con 4 opciones y una sola correcta. Preguntas cortas y claras. NO repitas estas: '+(seen.join(" | ")||"(ninguna)")+'. Responde SOLO JSON: {"qs":[{"q":"...","ops":["..","..","..",".."],"a":0}]} con exactamente 6 preguntas.');
    var qs=(obj.qs||[]).filter(function(q){return q&&q.q&&q.ops&&q.ops.length>=2&&typeof q.a==="number"&&q.a>=0&&q.a<q.ops.length;});
    if(qs.length>=3){aiRemember("kt_"+theme,qs.map(function(q){return q.q;}));KT.qs=qs.slice(0,6).map(function(q){return {q:q.q,ops:q.ops.slice(),a:q.a};});return ktRender();}
   }catch(e){/* si falla la IA, usamos el banco sin molestar al niño */}
@@ -1084,7 +1084,7 @@ function pnQ(diff,lvl){
   else if(r===1){b=2+rnd(5+Math.min(lvl,4));ans=2+rnd(7+lvl);a=b*ans;txt=a+" ÷ "+b;}
   else{a=100+lvl*80+rnd(300);b=90+rnd(200+lvl*60);ans=a+b;txt=a+" + "+b;}}
  const set=new Set([ans]);
- while(set.size<3){const d=ans+(1+rnd(Math.max(4,Math.round(ans*0.2))))*(Math.random()<.5?-1:1);if(d>=0&&d!==ans)set.add(d);}
+ while(set.size<4){const d=ans+(1+rnd(Math.max(4,Math.round(ans*0.2))))*(Math.random()<.5?-1:1);if(d>=0&&d!==ans)set.add(d);}
  const ops=shuffled([...set]);
  return{txt,ans,ops,a:ops.indexOf(ans)};}
 function pnCrowd(){

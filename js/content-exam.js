@@ -74,7 +74,7 @@ function genNumPalabra(){
  const n=10+rnd(80);
  const correct=numEs(n);
  const set=new Set([correct]);
- while(set.size<3){let m=Math.max(10,n+(1+rnd(8))*(Math.random()<.5?-1:1));if(m>99)m=99;set.add(numEs(m));}
+ while(set.size<4){let m=Math.max(10,n+(1+rnd(8))*(Math.random()<.5?-1:1));if(m>99)m=99;set.add(numEs(m));}
  const ops=shuffled([...set]);
  return{q:'¿Cómo se lee el número '+n+'?',ops,a:ops.indexOf(correct)};
 }
@@ -109,7 +109,7 @@ function genSecuenciaNum(){
  const seq=[start,start+step,start+2*step,start+3*step];
  const ans=start+4*step;
  const set=new Set([ans]);
- while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0&&d!==ans)set.add(d);}
+ while(set.size<4){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0&&d!==ans)set.add(d);}
  const ops=shuffled([...set]).map(String);
  return{q:"¿Qué número sigue?  "+seq.join(", ")+", ___",ops,a:ops.indexOf(String(ans))};
 }
@@ -152,12 +152,12 @@ function genSistema(){const x=pick(SISTEMAS_QS);return{q:x.q,ops:x.ops.slice(),a
 function genPalabraNum(){
  const n=10+rnd(80);const correct=String(n);
  const set=new Set([n]);
- while(set.size<3){let m=Math.max(10,n+(1+rnd(8))*(Math.random()<.5?-1:1));if(m>99)m=99;set.add(m);}
+ while(set.size<4){let m=Math.max(10,n+(1+rnd(8))*(Math.random()<.5?-1:1));if(m>99)m=99;set.add(m);}
  const ops=shuffled([...set]).map(String);
  return{q:'¿Qué número es "'+numEs(n)+'"?',ops,a:ops.indexOf(correct)};}
 
 /* problemas matemáticos con contexto (segundo grado) — con técnica/pista */
-function opsFor(ans){const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}const ops=shuffled([...set]).map(String);return{ops,a:ops.indexOf(String(ans))};}
+function opsFor(ans){const set=new Set([ans]);while(set.size<4){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}const ops=shuffled([...set]).map(String);return{ops,a:ops.indexOf(String(ans))};}
 const PROB_NAMES=["Ana","Pedro","Lucía","Mateo","Sara","Tomás","Valentina","Samuel","Isabela","Nico"];
 function pn(){return pick(PROB_NAMES);}
 function genProblema2(){
@@ -309,7 +309,7 @@ function genBarrasQ(){
  if(tipo===0){q="Mira el diagrama: ¿quién tiene MÁS "+t[1]+"?";ansTxt=names[vals.indexOf(Math.max.apply(null,vals))];opsArr=names.slice();}
  else if(tipo===1){q="Mira el diagrama: ¿quién tiene MENOS "+t[1]+"?";ansTxt=names[vals.indexOf(Math.min.apply(null,vals))];opsArr=names.slice();}
  else{const who=rnd(3);q="Según el diagrama, ¿cuántos "+t[1]+" tiene "+names[who]+"?";ansTxt=String(vals[who]);
-  const set=new Set([ansTxt]);while(set.size<3){const d=vals[who]+(1+rnd(3))*(Math.random()<.5?-1:1);if(d>0)set.add(String(d));}opsArr=[...set];}
+  const set=new Set([ansTxt]);while(set.size<4){const d=vals[who]+(1+rnd(3))*(Math.random()<.5?-1:1);if(d>0)set.add(String(d));}opsArr=[...set];}
  const ops=shuffled(opsArr);
  return{q,ops,a:ops.indexOf(ansTxt),pic};}
 const ALIM_QS=[

@@ -42,13 +42,13 @@ function genCompare(){
   return{q:a+" __ "+b+"   ¿Qué signo va? (el 🐊 se come al más grande)",ops,a:ops.indexOf(sym)};
  }
  if(kind===1){ // cuál es mayor
-  const set=new Set();while(set.size<3)set.add(1+rnd(99));
+  const set=new Set();while(set.size<4)set.add(1+rnd(99));
   const nums=[...set];const max=Math.max(...nums);
   const ops=shuffled(nums.map(String));
   return{q:"¿Cuál número es MAYOR?",ops,a:ops.indexOf(String(max))};
  }
  if(kind===2){ // cuál es menor
-  const set=new Set();while(set.size<3)set.add(1+rnd(99));
+  const set=new Set();while(set.size<4)set.add(1+rnd(99));
   const nums=[...set];const min=Math.min(...nums);
   const ops=shuffled(nums.map(String));
   return{q:"¿Cuál número es MENOR?",ops,a:ops.indexOf(String(min))};

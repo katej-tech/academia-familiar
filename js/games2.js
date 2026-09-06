@@ -341,7 +341,7 @@ function tapMN(i){
  let a,b,ans;
  if(resta){a=5+rnd(15);b=1+rnd(a-1);ans=a-b;MN.q={q:a+" − "+b+" = ?"};}
  else{a=1+rnd(10);b=1+rnd(10);ans=a+b;MN.q={q:a+" + "+b+" = ?"};}
- const set=new Set([ans]);while(set.size<3){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
+ const set=new Set([ans]);while(set.size<4){const d=ans+(1+rnd(4))*(Math.random()<.5?-1:1);if(d>=0)set.add(d);}
  MN.q.opsV=shuffled([...set]);MN.q.ops=MN.q.opsV.map(String);MN.q.ans=ans;
  beep([440],.07);renderMN();}
 function ansMN(k){

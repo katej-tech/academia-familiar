@@ -36,7 +36,7 @@ async function genLangComprehension(id,lvl){
  render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando la comprensión…</h2></div>');
  try{
   const base=t?('esta transcripción: "'+t.slice(0,3000)+'"'):('un video típico sobre: '+topic);
-  const obj=await geminiJSON('Crea 5 preguntas de comprensión auditiva/lectora de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' sobre '+base+'. Opción múltiple, 3 opciones, 1 sola correcta; preguntas en español, citas en el idioma meta si aplica. Responde SOLO JSON: {"items":[{"q":"...","ops":["...","...","..."],"a":0}]} con 5 items.');
+  const obj=await geminiJSON('Crea 5 preguntas de comprensión auditiva/lectora de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' sobre '+base+'. Opción múltiple, 4 opciones, 1 sola correcta; preguntas en español, citas en el idioma meta si aplica. Responde SOLO JSON: {"items":[{"q":"...","ops":["...","...","...","..."],"a":0}]} con 5 items.');
   const items=(obj.items||[]).map(it=>{const ops=(it.ops||[]).map(o=>stripHTML(o));const correct=ops[it.a];const sh=shuffled(ops);return{q:stripHTML(it.q),ops:sh,a:sh.indexOf(correct)};});
   if(!items.length)throw new Error("vacío");
   CQ={id,lvl,items,k:0,ok:0};nextCQ();
