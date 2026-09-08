@@ -107,6 +107,7 @@ function hubApps(){
  html+='<div class="appgrid">'
   +appIcon("screenArt()","🎨","Arte","linear-gradient(160deg,#D8B4FE,#A855F7)",{badge:faltaArt?faltaArt:0})
   +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
+  +(typeof screenColor3D==="function"?appIcon("screenColor3D()","🖍️✨","Colorear 3D","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
   +'</div>';
@@ -600,6 +601,51 @@ function enNumCheckDN(){
  if(ok){sOK();confetti(12);toast("¡"+ENN.n+"! Correcto 🎉",true,1400);ENN.ok++;}
  else{sNO();toast("Era el "+ENN.n+" ("+enNumWord(ENN.n)+")",false,2200);}
  ENN.r++;setTimeout(enNumNext,ok?1500:2300);}
+
+/* ============ COLOREAR EN 3D (pinta por partes un modelo que gira, no un dibujo plano) ============
+   Pedido explícito, repetido: "colorear debería ser en 3D también, como lo de los aviones".
+   No reemplaza gameColoring() (13 dibujos SVG, ya funciona bien) — es una segunda opción.
+   Las plantillas/render viven en js/color3d.js (módulo ES); acá solo la navegación y la paleta. */
+let C3D={};
+function screenColor3D(){setTheme("kid");
+ const tpls=window.COLOR3D_TEMPLATES||[];
+ const grid=tpls.map(function(t){return '<button class="wkpiece" style="font-size:2.2rem;height:74px" onclick="gameColor3D(\''+t.id+'\')">'+t.name+'</button>';}).join("");
+ render(topbar("screenArt()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🖍️✨ Colorear en 3D</h2>'
+ +'<p class="center" style="margin-bottom:10px">Elige un modelo, tócalo para elegir una pieza y píntala 🎨</p>'
+ +'<div class="wkgrid" style="grid-template-columns:repeat(2,1fr)">'+grid+'</div>'
+ +'<button class="kbtn white" style="margin-top:14px" onclick="screenArt()">← Volver</button>');}
+function gameColor3D(id){setTheme("kid");
+ C3D={id:id,sel:null,painted:0};
+ const tpl=(window.COLOR3D_TEMPLATES||[]).find(function(t){return t.id===id;});
+ const pal=COLOR_PALETTE.map(function(c){return '<button type="button" onclick="pickColor3D(\''+c+'\')" style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;background:'+c+';box-shadow:0 3px 8px rgba(30,42,74,.2);cursor:pointer"></button>';}).join("");
+ render(topbar("screenColor3D()")
+ +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">'+(tpl?tpl.name:"")+'</h2>'
+ +'<p class="center" id="c3dSelInfo" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca una pieza del modelo</p>'
+ +'<div class="card center"><div id="color3dCanvas" style="width:100%;height:240px;border-radius:16px;overflow:hidden"></div></div>'
+ +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0">'+pal+'</div>'
+ +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto">'
+  +'<button class="kbtn yellow" onclick="color3DResetBtn()" style="min-height:52px">🧽 Reiniciar</button>'
+  +'<button class="kbtn purple" onclick="screenColor3D()" style="min-height:52px">🔁 Otro modelo</button>'
+ +'</div>'
+ +'<button class="kbtn green" style="max-width:360px;margin:10px auto 0" onclick="color3DFinish()">✅ ¡Terminé de pintarlo! 🎉</button>');
+ if(typeof render3DColorTemplate==="function")render3DColorTemplate("color3dCanvas",id,onColor3DPartSelected);}
+function onColor3DPartSelected(partId){C3D.sel=partId;
+ const info=document.getElementById("c3dSelInfo");
+ if(info)info.textContent=partId?"🎯 Pieza elegida: "+partId+" — toca un color":"👉 Toca una pieza del modelo";}
+function pickColor3D(c){
+ if(!C3D.sel){toast("Primero toca una pieza del modelo 👆",false,1500);return;}
+ if(typeof color3DSetColor==="function")color3DSetColor(c);
+ beep([620],.04);C3D.painted=(C3D.painted||0)+1;}
+function color3DResetBtn(){if(typeof color3DReset==="function")color3DReset();C3D.painted=0;}
+function color3DFinish(){
+ if((C3D.painted||0)<2){toast("¡Pinta un poco más! 🖍️",false,1800);return;}
+ sWIN();confetti(18);
+ const p=prof();p.coins+=3;p.xp+=6;
+ if(typeof artPlus==="function")artPlus();
+ save();
+ toast("🎨 ¡Obra en 3D terminada! +3 🪙",true,2200);
+ setTimeout(screenArt,1200);}
 
 /* ============ PROBLEMAS HABLADOS ============ */
 let PR={};

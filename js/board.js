@@ -17,6 +17,7 @@ function screenArt(){setTheme("kid");
   +'<p class="center" style="margin-bottom:14px">Elige una actividad de dibujo</p>'
   +'<button class="kbtn yellow" onclick="gameAiDraw()">✨ Dibuja con IA</button>'
   +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
+  +(typeof screenColor3D==="function"?'<button class="kbtn blue" onclick="screenColor3D()">🖍️✨ Colorear en 3D</button>':'')
   +'<button class="kbtn green" onclick="gameDrawLesson()">🎨 Cómo dibujar (paso a paso)</button>'
   +(typeof gamePaperPlane==="function"?'<button class="kbtn blue" onclick="gamePaperPlane()">✈️ Avión de papel (dóblalo y lánzalo)</button>':'')
   +'<button class="kbtn red" onclick="gameCursive()">✍️ Letra cursiva</button>'

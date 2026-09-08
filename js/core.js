@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="9.88.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="9.89.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -468,6 +468,7 @@ function stopGames(){
  try{if(typeof MM!=="undefined"&&MM.timer)clearInterval(MM.timer);}catch(e){}
  try{if(typeof paDispose==="function")paDispose();}catch(e){} // avión de papel (Three.js): libera geometrías/renderer del módulo
  try{if(typeof dispose3D==="function")dispose3D();}catch(e){} // taller/colección de criaturas (Three.js): libera geometrías/renderer del módulo
+ try{if(typeof dispose3DColor==="function")dispose3DColor();}catch(e){} // colorear en 3D (Three.js): libera geometrías/renderer del módulo
  try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}
  try{if(typeof MG!=="undefined"&&MG.timer)clearInterval(MG.timer);}catch(e){}}
 /* sale de un juego con confirmación (la flecha de atrás de los juegos) */
