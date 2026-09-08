@@ -49,7 +49,7 @@ function screenTama(){setTheme("kid");if(typeof stopGames==="function")stopGames
   +'<div id="tamastage" class="card" style="position:relative;text-align:center;padding:18px 14px;overflow:hidden;background:linear-gradient(180deg,#EAF6FF,#D6ECFF)">'
    +'<div style="font-size:.95rem;font-family:Fredoka;font-weight:700;min-height:1.4em;margin-bottom:6px">'+m.f+' '+esc(m.msg)+'</div>'
    +'<div style="position:relative;display:inline-block">'
-    +'<div id="tamapet" class="'+(sleeping?'petsleep':'petidle')+'" style="font-size:clamp(5rem,30vw,8rem);line-height:1;'+(sleeping?'filter:grayscale(.3);opacity:.85':'')+'">'+t.sp+'</div>'
+    +(typeof render3DPet==="function"?'<div id="tamapet3d" style="width:min(60vw,190px);height:min(60vw,190px)"></div>':'<div id="tamapet" class="'+(sleeping?'petsleep':'petidle')+'" style="font-size:clamp(5rem,30vw,8rem);line-height:1;'+(sleeping?'filter:grayscale(.3);opacity:.85':'')+'">'+t.sp+'</div>')
     +(t.acc?'<div style="position:absolute;top:-8%;left:50%;transform:translateX(-50%);font-size:clamp(1.8rem,11vw,3rem);pointer-events:none">'+t.acc+'</div>':'')
    +'</div>'
    +(sleeping?'<div class="zzz" style="position:absolute;top:20%;left:58%">💤</div>':'')
@@ -68,6 +68,10 @@ function screenTama(){setTheme("kid");if(typeof stopGames==="function")stopGames
   +'</div>'
   +petAccBar()
   +'<p class="center mut" style="margin-top:12px;font-size:.8rem">Sus necesidades bajan con el tiempo. ¡Vuelve cada día a cuidarlo! 💞</p>');
+ if(typeof render3DPet==="function"){
+  const si=TAMA_STARTERS.findIndex(function(s){return s[0]===t.sp;});
+  render3DPet("tamapet3d",si<0?0:si,sleeping);
+ }
  if(TAMA_ATE){tamaEatAnim(TAMA_ATE);TAMA_ATE=null;}
 }
 function petAccBar(){
@@ -84,7 +88,8 @@ function tamaEatAnim(food){
  if(stage){const f=document.createElement("div");f.className="foodfly";f.textContent=food;
   f.style.cssText="position:absolute;left:50%;top:40%;transform:translateX(-50%);font-size:2.4rem";stage.appendChild(f);
   setTimeout(()=>{if(f.parentNode)f.remove();},700);}
- if(pet){pet.classList.remove("petidle");pet.classList.add("peteat");setTimeout(()=>{if(pet){pet.classList.remove("peteat");pet.classList.add("petidle");}},800);}
+ if(typeof pet3DPulse==="function")pet3DPulse("eat");
+ else if(pet){pet.classList.remove("petidle");pet.classList.add("peteat");setTimeout(()=>{if(pet){pet.classList.remove("peteat");pet.classList.add("petidle");}},800);}
 }
 
 /* ---- adopción ---- */
@@ -130,7 +135,8 @@ function tamaFeed(i){
 function tamaBath(){
  const t=tamaState();if(!t||t.sleeping)return;
  const stage=document.getElementById("tamastage"),pet=document.getElementById("tamapet");
- if(pet){pet.classList.remove("petidle");pet.classList.add("pethappy");}
+ if(typeof pet3DPulse==="function")pet3DPulse("happy");
+ else if(pet){pet.classList.remove("petidle");pet.classList.add("pethappy");}
  if(stage){const soaps=["🫧","🧼","💧","✨","🫧"];
   for(let i=0;i<14;i++){const b=document.createElement("div");b.className="bubble";b.textContent=pick(soaps);
    b.style.left=(8+rnd(80))+"%";b.style.bottom="12px";b.style.fontSize=(1.1+Math.random()).toFixed(2)+"rem";
