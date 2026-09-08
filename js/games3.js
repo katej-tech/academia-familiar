@@ -496,7 +496,23 @@ function gameBody(){setTheme("kid");
   +'<p class="center" style="margin-bottom:14px">¿Qué quieres practicar?</p>'
   +'<button class="kbtn red" onclick="bodyStart(\'partes\')">🧍 Señala las partes del cuerpo</button>'
   +'<button class="kbtn green" onclick="bodyStart(\'sistemas\')">🫀 Órganos y sistemas</button>'
+  +(typeof screenBody3D==="function"?'<button class="kbtn blue" onclick="screenBody3D()">🔎 Explorar el cuerpo en 3D</button>':'')
   +'<button class="kbtn yellow" onclick="playTopics(\'El cuerpo\',[\'cuerpo_partes\',\'sistemas\',\'cuerpo_es\'],{perTopic:4,topicsPerSession:2,total:8})">❓ Preguntas del cuerpo</button>');
+}
+/* ---- explorar libre en 3D (sin puntaje): toca un órgano y aprende su sistema ---- */
+function screenBody3D(){setTheme("kid");
+ render(topbar("gameBody()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🔎 Explora el cuerpo en 3D</h2>'
+  +'<p class="center" id="body3dInfo" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca un órgano para aprender</p>'
+  +'<div class="card center"><div id="body3dCanvas" style="width:100%;height:300px;border-radius:16px;overflow:hidden"></div></div>'
+  +'<button class="kbtn white" style="margin-top:14px" onclick="gameBody()">← Volver</button>');
+ if(typeof render3DBody==="function")render3DBody("body3dCanvas",onBody3DOrganSelected);}
+function onBody3DOrganSelected(organId){
+ const info=document.getElementById("body3dInfo");if(!info)return;
+ const o=BODY_ORGANS.find(function(x){return x.id===organId;});
+ if(!o){info.textContent="👉 Toca un órgano para aprender";return;}
+ info.innerHTML="🎯 "+o.e+" <b>"+o.nm+"</b> — sistema "+o.sys;
+ speakES(o.nm+", sistema "+o.sys);
 }
 function bodyStart(mode){
  BD={mode,round:0,ok:0};
