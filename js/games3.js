@@ -574,7 +574,55 @@ function screenSocial(){setTheme("kid");
   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🌎 Sociales y trivias</h2>'
   +'<p class="center" style="margin-bottom:14px">Elige una actividad</p>'
   +'<button class="kbtn blue" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="gameFlags()"><span style="font-size:2rem">🏴</span> <span style="flex:1">Adivina la bandera</span></button>'
+  +(typeof screenFlagPick==="function"?'<button class="kbtn red" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="screenFlagPick()"><span style="font-size:2rem">🖌️</span> <span style="flex:1">Dibuja una bandera</span></button>':'')
   +'<button class="kbtn green" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="playTopics(\'Sociales\',[\'geografia\',\'sociales\',\'cultura\',\'informatica\'],{perTopic:4,topicsPerSession:2,total:8})"><span style="font-size:2rem">🧠</span> <span style="flex:1">Trivias: geografía, sociales y cultura</span></button>');
+}
+/* ---- dibuja una bandera libremente, luego se ve ondeando en 3D con tu dibujo ---- */
+function screenFlagPick(){setTheme("kid");
+ const grid=BANDERAS.map(function(b){return '<button onclick="gameFlagDraw(\''+b[0]+'\',\''+b[1].replace(/'/g,"\\'")+'\')" style="border:3px solid var(--kid-ink);border-radius:14px;background:#fff;padding:8px;box-shadow:0 4px 0 rgba(30,42,74,.5)">'+flagImg(b[0],70)+'<div style="font-size:.75rem;font-family:Fredoka;font-weight:700;margin-top:4px">'+b[1]+'</div></button>';}).join("");
+ render(topbar("screenSocial()")
+  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🖌️ Dibuja una bandera</h2>'
+  +'<p class="center" style="margin-bottom:12px">Elige un país para copiar su bandera</p>'
+  +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+grid+'</div>');}
+let FD={};
+function gameFlagDraw(code,name){setTheme("kid");
+ FD={code:code,name:name};
+ render(topbar("screenFlagPick()")
+  +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:2px">🖌️ Bandera de '+esc(name)+'</h2>'
+  +'<div class="center" style="margin-bottom:8px">'+flagImg(code,110)+'<p class="mut" style="font-size:.8rem;margin-top:2px">Cópiala en el cuadro de abajo</p></div>'
+  +'<div style="position:relative;width:100%;max-width:420px;margin:0 auto"><canvas id="fdcanvas" style="width:100%;aspect-ratio:3/2;display:block;border:2px solid rgba(30,42,74,.15);border-radius:14px;box-shadow:0 8px 20px rgba(30,42,74,.1);touch-action:none;background:#fff"></canvas></div>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0">'+COLOR_PALETTE.map(function(c){return '<button type="button" onclick="fdColor(\''+c+'\')" style="width:34px;height:34px;border-radius:50%;border:3px solid #fff;background:'+c+';box-shadow:0 3px 8px rgba(30,42,74,.2)"></button>';}).join("")+'</div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:0 auto">'
+   +'<button class="kbtn yellow" onclick="fdClear()" style="min-height:52px">🧽 Limpiar</button>'
+   +'<button class="kbtn white" onclick="screenFlagPick()" style="min-height:52px">🔁 Otro país</button>'
+  +'</div>'
+  +'<button class="kbtn green" style="max-width:420px;margin:10px auto 0" onclick="fdFinish()">🎏 ¡Listo! Verla ondear en 3D</button>');
+ const cv=document.getElementById("fdcanvas");
+ const rect=cv.getBoundingClientRect();const dpr=Math.min(2,window.devicePixelRatio||1);
+ cv.width=Math.round(rect.width*dpr);cv.height=Math.round(rect.height*dpr);
+ const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineCap="round";ctx.lineJoin="round";
+ ctx.fillStyle="#fff";ctx.fillRect(0,0,rect.width,rect.height);
+ FD.ctx=ctx;FD.cv=cv;FD.color="#EF4444";FD.drawing=false;FD.W=rect.width;FD.H=rect.height;
+ const pos=function(e){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+ cv.addEventListener("pointerdown",function(e){FD.drawing=true;const p=pos(e);ctx.strokeStyle=FD.color;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(p.x,p.y);try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+ cv.addEventListener("pointermove",function(e){if(!FD.drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);});
+ const stop=function(){FD.drawing=false;};
+ cv.addEventListener("pointerup",stop);cv.addEventListener("pointercancel",stop);cv.addEventListener("pointerleave",stop);
+}
+function fdColor(c){FD.color=c;}
+function fdClear(){if(FD.ctx){FD.ctx.fillStyle="#fff";FD.ctx.fillRect(0,0,FD.W+10,FD.H+10);}}
+function fdFinish(){
+ if(!FD.cv)return;
+ let dataURL;try{dataURL=FD.cv.toDataURL("image/png");}catch(e){return;}
+ sWIN();confetti(16);
+ const p=prof();p.coins+=3;p.xp+=6;if(typeof artPlus==="function")artPlus();save();
+ render(topbar("screenFlagPick()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🎏 ¡Tu bandera de '+esc(FD.name)+'!</h2>'
+  +'<p class="center" style="margin-bottom:8px">+3 🪙</p>'
+  +'<div class="card center"><div id="flag3dCanvas" style="width:100%;height:240px;border-radius:16px;overflow:hidden"></div></div>'
+  +'<button class="kbtn white" style="margin-top:14px" onclick="screenFlagPick()">🔁 Dibujar otra</button>'
+  +'<button class="kbtn green" style="margin-top:10px" onclick="screenSocial()">← Volver</button>');
+ if(typeof render3DWavingFlag==="function")render3DWavingFlag("flag3dCanvas",dataURL);
 }
 let FL={};
 function gameFlags(){setTheme("kid");FL={round:0,total:8,ok:0};nextFlag();}
