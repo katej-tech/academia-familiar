@@ -839,6 +839,7 @@ const CRITTERS=[
  {id:"leon2",name:"Melena",forms:["🐱","🦁","👑🦁"],r:2},{id:"dragon3",name:"Inferno",forms:["🥚","🐲","🌋🐉"],r:2},
  {id:"unicornio2",name:"Brillo",forms:["🐴","🦄","🌈🦄"],r:2},{id:"fenix2",name:"Renacer",forms:["🔥","🐤","🔥🦅"],r:2},
  {id:"pegaso",name:"Viento",forms:["🐴","🕊️🐴","☁️🐴"],r:2},{id:"hidra",name:"Hidra",forms:["🐍","🐲","🌊🐉"],r:2}];
+window.CRITTERS=CRITTERS; // el módulo js/creature3d.js (Three.js) necesita leerlo — const no se comparte con módulos ES, hay que colgarlo en window a propósito
 function critters(){const p=prof();if(!p.critters)p.critters=[];return p.critters;}
 function critterCount(id){return critters().filter(x=>x===id).length;}
 function uniqueCritters(){return new Set(critters()).size;}
@@ -876,7 +877,7 @@ function screenCritters(){setTheme("kid");
   const has=n>0;
   const lvl=Math.min(n,5);
   const dots=has?"❤️".repeat(lvl)+"🤍".repeat(5-lvl):"";
-  return '<div style="text-align:center;padding:10px;border-radius:18px;border:4px solid var(--kid-ink);background:'+(has?(n>=5?"linear-gradient(180deg,#FFF3C4,#FFE08A)":"#FFF"):"#D7DCE6")+';box-shadow:0 5px 0 rgba(30,42,74,.7)">'
+  return '<div style="text-align:center;padding:10px;border-radius:18px;border:4px solid var(--kid-ink);background:'+(has?(n>=5?"linear-gradient(180deg,#FFF3C4,#FFE08A)":"#FFF"):"#D7DCE6")+';box-shadow:0 5px 0 rgba(30,42,74,.7)'+(has?';cursor:pointer':'')+'"'+(has?' onclick="screenCritterDetail(\''+c.id+'\')"':'')+'>'
    +'<div style="font-size:clamp(2.2rem,10vw,3rem);filter:'+(has?"none":"grayscale(1) opacity(.4)")+'">'+(has?critterForm(c,n):"❓")+'</div>'
    +'<div style="font-family:Fredoka;font-weight:700;font-size:.8rem">'+(has?c.name:"???")+'</div>'
    +(has?'<div style="font-size:.55rem;letter-spacing:-1px">'+dots+'</div>':'')
@@ -891,6 +892,24 @@ function screenCritters(){setTheme("kid");
  +'<button class="kbtn purple" onclick="screenWorkshop()">🛠️ Taller: arma tu propia criatura</button>'
  +'<button class="kbtn green" onclick="screenKidMap()">← Volver al mapa</button>');}
 
+/* vista de detalle en 3D de una criatura ya capturada — se abre al tocarla en la
+   cuadrícula; un solo canvas WebGL a la vez (por eso la cuadrícula sigue en emoji). */
+function screenCritterDetail(id){setTheme("kid");
+ const c=CRITTERS.find(function(x){return x.id===id;});if(!c)return screenCritters();
+ const n=critterCount(id);
+ const lvl=Math.min(n,5);
+ const dots="❤️".repeat(lvl)+"🤍".repeat(5-lvl);
+ const estado=n>=5?"✨ Forma final":n>=3?"🌟 Evolucionó":"Recién capturada";
+ render(topbar("screenCritters()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">'+c.name+'</h2>'
+ +'<div class="card center"><div id="critDetail3d" style="width:100%;height:240px;border-radius:16px;overflow:hidden"></div>'
+ +'<b style="font-size:1.1rem;margin-top:8px;display:block">'+c.name+'</b>'
+ +'<p style="font-size:.85rem">'+estado+'</p>'
+ +'<div style="font-size:1rem;letter-spacing:-1px;margin-top:4px">'+dots+'</div>'
+ +'<p class="mut" style="font-size:.8rem;margin-top:4px">Capturada '+n+' '+(n===1?"vez":"veces")+'</p></div>'
+ +'<button class="kbtn white" style="margin-top:14px" onclick="screenCritters()">← Volver a mi colección</button>');
+ if(typeof render3DCritter==="function")render3DCritter("critDetail3d",id,n);}
+
 /* ============ TALLER DE CRIATURAS (arma tu propia mezcla, piezas que se desbloquean jugando) ============
    A diferencia de maybeCritter() (al azar, ~35% por victoria), acá el desbloqueo es GARANTIZADO
    cada 3 victorias — para que siempre haya algo nuevo por conseguir aunque la suerte de las
@@ -899,6 +918,7 @@ const WORKSHOP_PARTS={
  cabeza:["🤖","🐲","🦁","👽","🐱","🦊","🎃","👾","🐸","🦉"],
  cuerpo:["🧱","⚙️","🛡️","🚀","🎸","🏰","🧊","🔩","🌟","🍄"],
  extra:["🎩","👓","🦺","🧣","⚡","❤️","🎀","🔥","🌈","👑"]};
+window.WORKSHOP_PARTS=WORKSHOP_PARTS; // mismo motivo: js/creature3d.js (módulo) lo necesita en window
 const WORKSHOP_CATS=["cabeza","cuerpo","extra"];
 function workshopUnlocked(cat){const p=prof();if(!p.workshopUnlocked)p.workshopUnlocked={};return p.workshopUnlocked[cat]||2;}
 function maybeWorkshopUnlock(){
@@ -927,23 +947,27 @@ function screenWorkshop(){setTheme("kid");
  const colorOpts=COLOR_PALETTE.map(function(c){return '<button class="wkcolor'+(sel.color===c?" sel":"")+'" style="background:'+c+'" onclick="wkPickColor(\''+c+'\')"></button>';}).join("");
  const creations=prof().workshopCreations||[];
  const gallery=creations.map(function(cr,i){
-  return '<div class="wkcard" style="background:'+cr.color+'"><button class="spk" style="position:absolute;top:4px;right:4px;transform:scale(.7)" onclick="wkDelete('+i+')">🗑️</button><div style="font-size:2.2rem">'+cr.cabeza+'</div><div style="font-size:1.6rem">'+cr.cuerpo+' '+cr.extra+'</div></div>';
+  const body=cr.img?'<img src="'+cr.img+'" style="width:100%;height:100%;object-fit:contain">':'<div style="font-size:2.2rem">'+cr.cabeza+'</div><div style="font-size:1.6rem">'+cr.cuerpo+' '+cr.extra+'</div>';
+  return '<div class="wkcard" style="background:'+cr.color+'"><button class="spk" style="position:absolute;top:4px;right:4px;transform:scale(.7)" onclick="wkDelete('+i+')">🗑️</button>'+body+'</div>';
  }).join("");
  render(topbar("screenCritters()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🛠️ Taller de criaturas</h2>'
  +'<p class="center" style="margin-bottom:10px">Combina piezas y arma tu propia criatura — no tienen que combinar, ¡mientras más loca, más divertida! 😄</p>'
- +'<div class="card center"><div class="wkpreview" style="background:'+sel.color+'"><div style="font-size:3rem">'+sel.cabeza+'</div><div style="font-size:2.2rem">'+sel.cuerpo+' '+sel.extra+'</div></div></div>'
+ +'<div class="card center"><div id="wkPreview3d" style="width:100%;height:220px;border-radius:16px;overflow:hidden"></div></div>'
  +catBlock("cabeza","🗣️ Cabeza")
  +catBlock("cuerpo","🧱 Cuerpo")
  +catBlock("extra","✨ Extra")
  +'<p style="font-family:Fredoka;font-weight:700;margin:12px 2px 6px">🎨 Color</p><div class="wkgrid">'+colorOpts+'</div>'
  +'<button class="kbtn green" style="margin-top:14px" onclick="wkSave()">💾 Guardar mi criatura</button>'
  +(gallery?'<p style="font-family:Fredoka;font-weight:700;margin:18px 2px 8px">🎒 Mis creaciones</p><div class="wkgallery">'+gallery+'</div>':'')
- +'<button class="kbtn white" style="margin-top:14px" onclick="screenCritters()">← Volver a mi colección</button>');}
+ +'<button class="kbtn white" style="margin-top:14px" onclick="screenCritters()">← Volver a mi colección</button>');
+ if(typeof render3DCreaturePreview==="function")render3DCreaturePreview("wkPreview3d",sel);}
 function wkPick(cat,val){workshopSel()[cat]=val;save();screenWorkshop();}
 function wkPickColor(c){workshopSel().color=c;save();screenWorkshop();}
 function wkSave(){const p=prof();if(!p.workshopCreations)p.workshopCreations=[];
- p.workshopCreations.push(Object.assign({},workshopSel()));save();
+ const creation=Object.assign({},workshopSel());
+ try{if(typeof snapshot3DCreature==="function")creation.img=snapshot3DCreature(creation);}catch(e){}
+ p.workshopCreations.push(creation);save();
  sOK();confetti(12);toast("¡Guardada en tu galería! 🎉",true,1500);screenWorkshop();}
 function wkDelete(i){const p=prof();p.workshopCreations.splice(i,1);save();screenWorkshop();}
 
