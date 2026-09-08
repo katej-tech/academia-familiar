@@ -47,6 +47,7 @@ const KID_WORLDS=[
  {id:"lenguaje",ic:"📚",nm:"Lenguaje",color:"red",cat:"cole",topics:["sustantivos","silabas","ortografia","narracion"],desc:"Sustantivos, sílabas, ortografía y cuentos"},
  {id:"ciencias",ic:"🌎",nm:"Ciencias",color:"green",cat:"cole",topics:["ciclo_agua","cuerpo_es","cuerpo_partes","sistemas","natura","alimentos","tierra"],desc:"El cuerpo, los alimentos, la Tierra y el espacio"},
  {id:"cuerpo",ic:"🫀",nm:"El cuerpo humano",color:"red",cat:"cole",special:"body",topics:["cuerpo_partes","sistemas","cuerpo_es"],desc:"Señala las partes y aprende los sistemas"},
+ {id:"planetario",ic:"🪐",nm:"Planetario",color:"blue",cat:"cole",special:"planetario",topics:["tierra"],desc:"Explora el sistema solar en 3D"},
  {id:"sociales",ic:"🌎",nm:"Sociales y trivias",color:"blue",cat:"cole",special:"social",topics:["geografia","sociales","cultura","informatica"],desc:"Banderas, geografía, sociales y cultura"},
  {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",cat:"cole",topics:["tiempo","diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
  {id:"reloj",ic:"🕐",nm:"Aprende la hora",color:"yellow",cat:"cole",special:"clock",desc:"Lee el reloj: en punto y y media"},
@@ -263,6 +264,7 @@ function openWorld(id){
  if(w.special==="games")return screenGamesPick();
  if(w.special==="clock")return gameClock();
  if(w.special==="body")return gameBody();
+ if(w.special==="planetario")return screenPlanetario();
  if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos
  playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
@@ -1099,6 +1101,25 @@ function screenDailyPath(){setTheme("kid");
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">🗺️ Tu camino</h2>'
  +'<p class="center" style="margin-bottom:10px">Cada día mezcla varias materias — completa un día y rescata una criatura</p>'
  +roadmapHTML(nodes));}
+/* ============ PLANETARIO EN 3D (sistema solar explorable) ============
+   Pedido explícito: "tipo planetario también le gusta lo de los planetas y eso". Datos y
+   render 3D viven en js/planet3d.js (módulo ES) — acá solo la pantalla y el panel de info. */
+function screenPlanetario(){setTheme("kid");
+ render(topbar("screenCole()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🪐 Planetario</h2>'
+  +'<p class="center" id="planetInfo" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;color:#FBBF24;min-height:2.4em">👉 Toca el Sol o un planeta para aprender</p>'
+  +'<div class="card center" style="padding:0;overflow:hidden"><div id="planet3dCanvas" style="width:100%;height:320px"></div></div>'
+  +'<button class="kbtn white" style="margin-top:14px" onclick="screenCole()">← Volver</button>');
+ if(typeof render3DPlanets==="function")render3DPlanets("planet3dCanvas",onPlanetSelected);}
+function onPlanetSelected(id){
+ const info=document.getElementById("planetInfo");if(!info)return;
+ if(!id){info.textContent="👉 Toca el Sol o un planeta para aprender";return;}
+ if(id==="sol"){info.innerHTML="☀️ <b>El Sol</b> — "+SUN_FACT;speakES("El Sol. "+SUN_FACT);return;}
+ const p=(window.PLANETS||[]).find(function(x){return x.id===id;});
+ if(!p)return;
+ info.innerHTML="🪐 <b>"+p.nm+"</b> — "+p.fact;
+ speakES(p.nm+". "+p.fact);}
+
 /* ============ PERSONAJE GUÍA + ACERTIJO (antes de empezar el día) ============
    Pedido explícito: "personajes caricatura en 3D" + "tipo Pokémon, hablar con personajes,
    resolver acertijos". Un personaje 3D distinto (según el día, para que se sienta variado)
