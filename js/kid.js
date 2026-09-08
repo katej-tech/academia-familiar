@@ -155,6 +155,7 @@ function screenEnglishHub(){setTheme("kid");const p=prof();
   +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑</span></span></button>'
   +'<button class="kbtn green" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenLevelsEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">📈</span><span style="flex:1"><span>Inglés por niveles A1→B2</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Aprueba exámenes y sube de nivel</span></span></button>'
   +'<button class="kbtn yellow" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenTutorEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎧</span><span style="flex:1"><span>Tutor de inglés (habla)</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">El profe dice y tú repites 🎤</span></span></button>'
+  +(typeof gameEnNumDictation==="function"?'<button class="kbtn blue" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="gameEnNumDictation()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🔢</span><span style="flex:1"><span>Dictado de números</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Escucha el número en inglés y escríbelo 🎧</span></span></button>':"")
   +ws.map(w=>worldBtn(w,p)).join(""));}
 function screenLeer(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="leer");
@@ -562,6 +563,43 @@ function ansMV(v){const ok=v===MV.cur.ans;recordAnswer("Mate",ok,12);
  else{sNO();toast("Cuenta de nuevo: eran "+MV.cur.ans,false,1500);}
  MV.round++;setTimeout(nextMV,ok?900:1500);}
 function dots(total,cur){return Array.from({length:total},(x,i)=>'<i class="'+(i<cur?"on":"")+'"></i>').join("");}
+
+/* ============ DICTADO DE NÚMEROS EN INGLÉS (escribe el dígito, no elijas entre opciones) ============
+   Pedido explícito: "el dictado debería ser capaz de escribir el número" — el modo de números en
+   inglés (arriba, en_numbers) solo era opción múltiple. Este modo nuevo se ESCUCHA y se ESCRIBE el
+   dígito (como examDictNums() en modo Examen, pero en inglés) — reusa el mismo nivel/racha de
+   enNumLevel()/enNumBump() para que ambos modos avancen juntos, nunca desincronizados. */
+let ENN={};
+function enNumRandomValue(lvl){
+ if(lvl===1)return 1+rnd(10);
+ if(lvl===2)return 11+rnd(10);
+ if(lvl===3)return (2+rnd(8))*10;
+ let n;do{n=21+rnd(79);}while(n%10===0);return n;}
+function gameEnNumDictation(){setTheme("kid");ENN={r:0,ok:0,total:6};enNumNext();}
+function enNumNext(){
+ if(ENN.r>=ENN.total)return nodeWin(starsFor(ENN.ok,ENN.total),"Dictado de números (inglés) 🔢🎧");
+ ENN.n=enNumRandomValue(typeof enNumLevel==="function"?enNumLevel():1);ENN.typed="";enNumRenderDN();}
+function enNumRenderDN(){
+ render(topbar("screenEnglishHub()")
+ +'<div class="progressdots">'+dots(ENN.total,ENN.r)+'</div>'
+ +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:4px">🔢🎧 Dictado de números (inglés)</h2>'
+ +'<p class="center" style="margin-bottom:10px">Escucha el número en inglés y escríbelo con números</p>'
+ +'<button class="speaker" onclick="speakEN('+jsStr(enNumWord(ENN.n))+')"><span class="ic">🔊</span> Escuchar otra vez</button>'
+ +'<div class="numdisp">'+(ENN.typed||"&nbsp;")+'</div>'
+ +'<div class="numpad">'+[1,2,3,4,5,6,7,8,9].map(d=>'<button class="key" onclick="enNumTapDN(\''+d+'\')">'+d+'</button>').join("")
+ +'<button class="key" onclick="ENN.typed=ENN.typed.slice(0,-1);enNumRenderDN()">⌫</button>'
+ +'<button class="key" onclick="enNumTapDN(\'0\')">0</button>'
+ +'<button class="key okk" onclick="enNumCheckDN()">✓</button></div>');
+ setTimeout(function(){speakEN(enNumWord(ENN.n));},450);}
+function enNumTapDN(d){if(ENN.typed.length<3){ENN.typed+=d;beep([560],.05);enNumRenderDN();}}
+function enNumCheckDN(){
+ if(!ENN.typed)return;
+ const ok=parseInt(ENN.typed,10)===ENN.n;
+ recordAnswer("Inglés: dictado de números",ok,20);
+ if(typeof enNumBump==="function")enNumBump(ok);
+ if(ok){sOK();confetti(12);toast("¡"+ENN.n+"! Correcto 🎉",true,1400);ENN.ok++;}
+ else{sNO();toast("Era el "+ENN.n+" ("+enNumWord(ENN.n)+")",false,2200);}
+ ENN.r++;setTimeout(enNumNext,ok?1500:2300);}
 
 /* ============ PROBLEMAS HABLADOS ============ */
 let PR={};
