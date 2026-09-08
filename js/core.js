@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="9.85.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="9.86.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -308,8 +308,8 @@ const KID_TOPICS={
    fallback:()=>enMCQ(EN_VOCAB.body)},
  en_house:{name:"La casa (EN)",emoji:"🏠",en:true,prompt:"partes de la casa en inglés básicas (door, window, bed, table, chair, kitchen, bathroom) para niño de 7 años",
    fallback:()=>enMCQ([["door","puerta","🚪"],["window","ventana","🪟"],["bed","cama","🛏️"],["table","mesa","🪑"],["chair","silla","🪑"],["kitchen","cocina","🍳"]])},
- en_numbers:{name:"Números (EN)",emoji:"🔢",en:true,prompt:"números en inglés del 1 al 10 para niño de 6 años",
-   fallback:()=>enMCQ(EN_VOCAB.numbers)},
+ en_numbers:{name:"Números (EN)",emoji:"🔢",en:true,prompt:()=>enNumPromptText(),
+   fallback:()=>enNumChallenge()},
  en_vowels:{name:"Vocales (EN)",emoji:"🔤",en:true,prompt:"las vocales en inglés (a-e-i-o-u) y su sonido, con palabras de ejemplo simples, para niño de 7 años",
    fallback:()=>pick([enMCQ([["apple","manzana","🍎"]]),enMCQ([["egg","huevo","🥚"]]),enMCQ([["orange","naranja","🍊"]])])},
  en_days:{name:"Días (EN)",emoji:"📆",en:true,prompt:"días de la semana en inglés (Monday-Sunday) para niño de 7 años principiante",
@@ -325,6 +325,42 @@ function mcq(q,ans,hint,fixedOps){
  ops=shuffled(ops);return{q,ops,a:ops.indexOf(String(ans)),hint};}
 function enMCQ(pool){const w=pick(pool);return{q:'¿Qué significa "'+w[0]+'"?',ops:shuffled([w[1],...pickN(["perro","casa","sol","agua","rojo","mano","mesa","cinco","gato","leche"].filter(x=>x!==w[1]),2)]),a:-1,word:w[0],pic:w[2]||"🔊",es:w[1],en:true,fixAns:w[1]};}
 function pickN(arr,n){return shuffled(arr).slice(0,n);}
+/* ---- progresión de números en inglés: reportó que preguntaba números que el niño ni conoce
+   ("77 en inglés" cuando solo sabe hasta el 10) — antes el banco fijo ni siquiera llegaba a
+   diez, y el prompt de IA solo "sugería" 1-10 sin garantizarlo. Ahora el rango sube solo con
+   racha de aciertos EN ESTE TEMA (nunca baja de golpe por un solo error), y tanto el banco fijo
+   como el prompt de IA quedan estrictamente acotados al nivel actual. */
+function enNumLevel(){const p=prof();return p.enNumLevel||1;}
+function enNumBump(ok){
+ const p=prof();if(!p.enNumLevel)p.enNumLevel=1;
+ if(ok){
+  p.enNumStreak=(p.enNumStreak||0)+1;
+  if(p.enNumStreak>=5&&p.enNumLevel<4){p.enNumLevel++;p.enNumStreak=0;save();return true;}
+ }else p.enNumStreak=0;
+ save();return false;}
+function enNumWord(n){
+ const ones=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+ const tens=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+ if(n<20)return ones[n];
+ const t=Math.floor(n/10),r=n%10;
+ return tens[t]+(r?"-"+ones[r]:"");}
+function enNumPromptText(){
+ const lvl=enNumLevel();
+ const rango=lvl===1?"del 1 al 10 (NUNCA un número mayor a 10)":lvl===2?"del 11 al 20 (NUNCA menor a 11 ni mayor a 20)":lvl===3?"de las decenas exactas 20, 30, 40, 50, 60, 70, 80 o 90 (NUNCA otro número que no sea una decena exacta)":"de dos cifras entre 21 y 99 (evita repetir el mismo número)";
+ return "números en inglés "+rango+" para un niño de 6-7 años que recién está aprendiendo — es MUY IMPORTANTE respetar ese rango exacto, no uses números fuera de él";}
+function enNumPool(lvl){
+ if(lvl===1)return EN_VOCAB.numbers;
+ if(lvl===2){const out=[];for(let n=11;n<=20;n++)out.push([enNumWord(n),numEs(n)]);return out;}
+ if(lvl===3){const out=[];for(let n=20;n<=90;n+=10)out.push([enNumWord(n),numEs(n)]);return out;}
+ const out=[];const used=new Set();
+ while(out.length<8){const n=21+rnd(79);if(n%10===0||used.has(n))continue;used.add(n);out.push([enNumWord(n),numEs(n)]);}
+ return out;}
+function enNumChallenge(){
+ const pool=enNumPool(enNumLevel());
+ const w=pick(pool);
+ const distractors=pickN(pool.filter(x=>x!==w).map(x=>x[1]),Math.min(2,pool.length-1));
+ const ops=shuffled([w[1],...distractors]);
+ return{q:'¿Qué significa "'+w[0]+'"?',ops,a:ops.indexOf(w[1]),word:w[0],en:true};}
 
 /* dominio adaptativo: registra desempeño por tema y decide cuál sale */
 function topicMastery(){const p=prof();if(!p.mastery)p.mastery={};return p.mastery;}
@@ -345,13 +381,14 @@ function aiSeenList(topicKey){if(!S.aiSeen)S.aiSeen={};if(!S.aiSeen[topicKey])S.
 function aiRemember(topicKey,texts){const l=aiSeenList(topicKey);texts.forEach(t=>{const k=String(t).toLowerCase().trim();if(k&&!l.includes(k))l.push(k);});while(l.length>40)l.shift();save();}
 async function buildChallenges(topicKey,n){
  const topic=KID_TOPICS[topicKey];
+ const promptText=typeof topic.prompt==="function"?topic.prompt():topic.prompt;
  if(S.geminiKey&&!topic.noAI){
   try{
    const seen=aiSeenList(topicKey);
    const avoid=seen.slice(-18);
    const variedad=["la vida diaria","animales","comida","juguetes","deportes","la familia","la naturaleza","la escuela"][Math.floor(Math.random()*8)];
    const noRepetir=avoid.length?(' MUY IMPORTANTE: NO repitas ni parafrasees estas preguntas que ya se usaron: '+avoid.map(q=>'"'+q+'"').join("; ")+'. Inventa preguntas DISTINTAS y frescas.'):'';
-   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple NUEVAS y variadas sobre: '+topic.prompt+'. Usa contextos variados (por ejemplo: '+variedad+') para que cada vez sean diferentes. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 4 opciones y una sola correcta. Lenguaje español sencillo y frases cortas.'+noRepetir+' Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
+   const obj=await geminiJSON('Eres un tutor de primaria. Crea '+n+' preguntas de opción múltiple NUEVAS y variadas sobre: '+promptText+'. Usa contextos variados (por ejemplo: '+variedad+') para que cada vez sean diferentes. Ajusta la dificultad al nivel '+adlvl()+' de 5 (1 muy fácil, 5 reto) según cómo va el niño. Cada una con 4 opciones y una sola correcta. Lenguaje español sencillo y frases cortas.'+noRepetir+' Responde SOLO JSON válido sin markdown: {"items":[{"q":"pregunta","ops":["correcta","incorrecta","incorrecta","incorrecta"],"a":0}]} . El índice "a" indica cuál opción es correcta.');
    if(obj.items&&obj.items.length){
     let items=obj.items.map(it=>{
      const q=stripHTML(it.q);

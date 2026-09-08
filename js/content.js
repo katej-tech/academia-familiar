@@ -10,7 +10,7 @@ const EN_VOCAB={
  food:[["apple","manzana","🍎"],["banana","banano","🍌"],["milk","leche","🥛"],["bread","pan","🍞"],["egg","huevo","🥚"],["water","agua","💧"],["cake","torta","🍰"],["rice","arroz","🍚"]],
  family:[["mom","mamá","👩"],["dad","papá","👨"],["baby","bebé","👶"],["sister","hermana","👧"],["brother","hermano","👦"],["grandma","abuela","👵"],["grandpa","abuelo","👴"]],
  body:[["hand","mano","✋"],["eye","ojo","👁️"],["nose","nariz","👃"],["mouth","boca","👄"],["foot","pie","🦶"],["ear","oreja","👂"],["hair","cabello","💇"]],
- numbers:[["one","uno","1️⃣"],["two","dos","2️⃣"],["three","tres","3️⃣"],["four","cuatro","4️⃣"],["five","cinco","5️⃣"],["six","seis","6️⃣"],["seven","siete","7️⃣"],["eight","ocho","8️⃣"]]
+ numbers:[["one","uno","1️⃣"],["two","dos","2️⃣"],["three","tres","3️⃣"],["four","cuatro","4️⃣"],["five","cinco","5️⃣"],["six","seis","6️⃣"],["seven","siete","7️⃣"],["eight","ocho","8️⃣"],["nine","nueve","9️⃣"],["ten","diez","🔟"]]
 };
 const EN_CATS=[["animals","Animales","🐶"],["colors","Colores","🎨"],["food","Comida","🍎"],["family","Familia","👨‍👩‍👧"],["body","El cuerpo","🧍"],["numbers","Números","🔢"]];
 const EN_PHRASES=[["Hello!","¡Hola!"],["Good morning","Buenos días"],["Thank you","Gracias"],["How are you?","¿Cómo estás?"],["I am happy","Estoy feliz"],["What is your name?","¿Cómo te llamas?"],["My name is...","Me llamo..."],["See you later","Hasta luego"],["I like it","Me gusta"],["Yes, please","Sí, por favor"]];

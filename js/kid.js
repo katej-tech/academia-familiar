@@ -1046,6 +1046,10 @@ function ansCH(vi){
  const subj=(KID_TOPICS[it._topic]&&KID_TOPICS[it._topic].en)?"Inglés":(KID_TOPICS[it._topic]?KID_TOPICS[it._topic].name:CH.label);
  recordAnswer(subj,ok,it.word?12:15);
  if(it._topic)recordTopic(it._topic,ok);
+ if(it._topic==="en_numbers"&&typeof enNumBump==="function"){
+  const leveled=enNumBump(ok);
+  if(leveled)setTimeout(function(){toast("🎉 ¡Subiste de nivel en números en inglés! 🔢",true,2400);},1300);
+ }
  if(ok){sOK();confetti(8);if(it.word)speakEN(it.word.replace(/'/g,""));toast("¡Correcto! 🎉",true,1000);CH.ok++;}
  else{sNO();CH.wrongTopics[it._topic]=(CH.wrongTopics[it._topic]||0)+1;
   toast("Era: "+it.ops[it.a]+(it.tip?"  💡 "+it.tip:""),false,it.tip?3000:1800);}
