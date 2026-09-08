@@ -79,6 +79,7 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.2rem,5.5vw,1.5rem)">¡Hola, '+esc(p.name)+'!</h1>'
  +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
  +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="screenTama()">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
+ +(typeof dailyPathCardHTML==="function"?dailyPathCardHTML():"")
  +missionsHTML()
  +hubApps());}
 /* ===== apps por iconos, como la pantalla de un celular ===== */
@@ -408,14 +409,15 @@ function aiKeyRefresh(){
   if(ok)toast("✓ ¡Clave actualizada! Prueba de nuevo la IA 🎉",true,2500);
   else toast("No se pudo: "+msg,false,3200);
  });}
-function nodeWin(stars,subject){
+function nodeWin(stars,subject,opts){
+ opts=opts||{};
  const p=prof();
  if(typeof curNode==="string")bumpWorld(curNode);
  p.coins+=stars*5;p.xp+=stars*10;touchDay().games++;save();
  sWIN();confetti(34);
- const got=stars>=2?maybeCritter():null;
+ const got=opts.forceCritter?maybeCritter(true):(stars>=2?maybeCritter():null);
  const unlocked=maybeWorkshopUnlock();
- const gotMsg=got?(got.isNew?"¡Capturaste a "+got.name+"!":got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️"):"";
+ const gotMsg=got?(got.isNew?(opts.rescue?"¡Rescataste a "+got.name+"! 🗺️":"¡Capturaste a "+got.name+"!"):got.evolved?"¡"+got.name+" EVOLUCIONÓ! 🌟":"¡"+got.name+" subió a nivel "+got.count+"! ❤️"):"";
  const gotSub=got?(got.isNew?"Una nueva criatura para tu colección 🎒":got.evolved?"Mira su nueva forma en tu colección 🎒":"Recaptúrala para que evolucione"):"";
  const critterHTML=got?'<div class="card" style="background:linear-gradient(180deg,#FFF3C4,#FFE08A);margin-top:14px;text-align:center;cursor:pointer" onclick="screenCritters()"><div style="font-size:clamp(3.5rem,18vw,5rem)">'+got.e+'</div><b style="font-size:1.2rem">'+gotMsg+'</b><p>'+gotSub+'</p><p style="margin-top:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca para ver tu colección 🎒</p></div>':'';
  const workshopHTML=unlocked?'<div class="card" style="background:linear-gradient(180deg,#DCFCE7,#BBF7D0);margin-top:14px;text-align:center;cursor:pointer" onclick="screenWorkshop()"><div style="font-size:clamp(3rem,15vw,4rem)">'+unlocked.piece+'</div><b style="font-size:1.1rem">¡Nueva pieza para tu taller! 🛠️</b><p style="margin-top:8px;font-family:Fredoka;font-weight:700;color:var(--kid-green)">👉 Toca para ir al taller</p></div>':'';
@@ -841,11 +843,13 @@ function critters(){const p=prof();if(!p.critters)p.critters=[];return p.critter
 function critterCount(id){return critters().filter(x=>x===id).length;}
 function uniqueCritters(){return new Set(critters()).size;}
 function critterForm(c,count){return c.forms[count>=5?2:count>=3?1:0];}
-function maybeCritter(){
- // aparece seguido pero no siempre (~1 de cada 3), y NUNCA más de 4 victorias sin premio
+function maybeCritter(force){
+ // aparece seguido pero no siempre (~1 de cada 3), y NUNCA más de 4 victorias sin premio.
+ // force=true (ej. al completar un día del camino/mapa) se salta ese sorteo — el "rescate"
+ // de cada nivel debe ser garantizado, no otra tirada de suerte más.
  const p=prof();
  p.sinceCritter=(p.sinceCritter||0)+1;
- if(Math.random()>=0.35&&p.sinceCritter<4){save();return null;}
+ if(!force&&Math.random()>=0.35&&p.sinceCritter<4){save();return null;}
  p.sinceCritter=0;
  const owned=critters();
  const news=CRITTERS.filter(c=>!owned.includes(c.id));
@@ -943,6 +947,57 @@ function wkSave(){const p=prof();if(!p.workshopCreations)p.workshopCreations=[];
  sOK();confetti(12);toast("¡Guardada en tu galería! 🎉",true,1500);screenWorkshop();}
 function wkDelete(i){const p=prof();p.workshopCreations.splice(i,1);save();screenWorkshop();}
 
+/* ============ CAMINO DIARIO (mapa tipo Mario, mezcla materias, rescata criaturas) ============
+   Pedido explícito: hoy el niño entra a cualquier mundo sin estructura por tema ni por día.
+   Este es el camino PRINCIPAL desde la portada (dailyPathCardHTML() en screenKidMap), pero NO
+   reemplaza el acceso libre a los mundos — sigue existiendo tal cual como práctica secundaria.
+   El avance de "día" no está amarrado al calendario real (si el niño quiere hacer varios días
+   seguidos porque está motivado, puede) — la racha diaria que ya existe sigue siendo la señal
+   de "vino hoy". Reusa roadmapHTML() (js/languages.js) para el mapa visual y el MISMO motor de
+   preguntas (CH/renderCH/ansCH/finishCH) que ya usa playTopics() — solo cambia quién arma la
+   lista de temas antes de entrar (varios mundos a la vez, no uno solo). */
+function dailyPathState(){const p=prof();if(!p.dailyPath)p.dailyPath={day:1};return p.dailyPath;}
+function dailyPathCardHTML(){
+ const st=dailyPathState();
+ return '<div class="card" style="background:linear-gradient(160deg,#93C5FD,#3B82F6);color:#fff;cursor:pointer;margin-top:10px;padding:14px" onclick="screenDailyPath()">'
+  +'<div style="display:flex;align-items:center;gap:12px">'
+  +'<span style="font-size:2.4rem">🗺️</span>'
+  +'<span style="flex:1"><b style="font-size:1.15rem">Tu camino — Día '+st.day+'</b><br><span style="font-size:.85rem;opacity:.9">Mezcla materias y rescata criaturas</span></span>'
+  +'<span style="font-size:1.4rem;opacity:.85">›</span></div></div>';}
+async function buildDailyQueue(){
+ const pool=[];
+ KID_WORLDS.forEach(function(w){if(!w.special&&w.topics&&w.topics.length)pool.push.apply(pool,w.topics);});
+ const chosen=weakestTopics(pool,5);
+ let items=[];
+ for(const tk of chosen){
+  const part=await buildChallenges(tk,2);
+  part.forEach(function(it){it._topic=tk;});
+  items=items.concat(part);
+ }
+ return shuffled(items).slice(0,10);}
+function screenDailyPath(){setTheme("kid");
+ const st=dailyPathState();
+ const SHOWN=Math.max(10,st.day+2);
+ const nodes=[];
+ for(let d=1;d<=SHOWN;d++){
+  const done=d<st.day,current=d===st.day,locked=d>st.day;
+  let onclick;
+  if(locked)onclick="toast('Completa el día anterior primero 🔒',false,1600)";
+  else if(done)onclick="toast('✓ Ya completaste este día',true,1200)";
+  else onclick="startDailyPath()";
+  nodes.push({ic:done?"✅":"🗺️",nm:"Día "+d,state:done?"done":locked?"locked":"open",current:current,onclick:onclick});
+ }
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">🗺️ Tu camino</h2>'
+ +'<p class="center" style="margin-bottom:10px">Cada día mezcla varias materias — completa un día y rescata una criatura</p>'
+ +roadmapHTML(nodes));}
+async function startDailyPath(){setTheme("kid");
+ render(topbar("screenDailyPath()")+'<div class="card center" style="padding:40px"><div style="font-size:3rem" class="spin">⏳</div><h2 style="margin-top:10px">Preparando tu día…</h2></div>');
+ const items=await buildDailyQueue();
+ if(!items.length){toast("No se pudo cargar. Intenta de nuevo.",false,2000);return screenDailyPath();}
+ CH={label:"🗺️ Tu camino",items,i:0,ok:0,wrongTopics:{},fromDailyPath:true};
+ renderCH();}
+
 /* ============ MOTOR DE RETO ADAPTATIVO UNIVERSAL ============ */
 /* Toma uno o varios temas, pide retos (IA o fallback) y los juega con audio si es inglés. */
 let CH={};
@@ -1004,6 +1059,10 @@ async function finishCH(){
   const extra=await buildChallenges(worst[0],2);extra.forEach(it=>it._topic=worst[0]);
   CH.items=CH.items.concat(extra);
   return setTimeout(renderCH,2200);
+ }
+ if(CH.fromDailyPath){
+  const st=dailyPathState();st.day=(st.day||1)+1;save();
+  return nodeWin(starsFor(CH.ok,CH.items.length),CH.label,{forceCritter:true,rescue:true});
  }
  nodeWin(starsFor(CH.ok,CH.items.length),CH.label);}
 
