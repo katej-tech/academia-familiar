@@ -1092,13 +1092,60 @@ function screenDailyPath(){setTheme("kid");
   let onclick;
   if(locked)onclick="toast('Completa el día anterior primero 🔒',false,1600)";
   else if(done)onclick="toast('✓ Ya completaste este día',true,1200)";
-  else onclick="startDailyPath()";
+  else onclick=(typeof screenDailyGuide==="function"?"screenDailyGuide()":"startDailyPath()");
   nodes.push({ic:done?"✅":"🗺️",nm:"Día "+d,state:done?"done":locked?"locked":"open",current:current,onclick:onclick});
  }
  render(topbar("screenKidMap()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">🗺️ Tu camino</h2>'
  +'<p class="center" style="margin-bottom:10px">Cada día mezcla varias materias — completa un día y rescata una criatura</p>'
  +roadmapHTML(nodes));}
+/* ============ PERSONAJE GUÍA + ACERTIJO (antes de empezar el día) ============
+   Pedido explícito: "personajes caricatura en 3D" + "tipo Pokémon, hablar con personajes,
+   resolver acertijos". Un personaje 3D distinto (según el día, para que se sienta variado)
+   saluda y plantea un acertijo corto — responder bien o mal SIEMPRE deja continuar, es solo
+   sabor de aventura, no una traba. Render 3D vive en js/guide3d.js (módulo ES). */
+const DAILY_RIDDLES=[
+ {q:"Blanca por dentro, verde por fuera. Si quieres saber qué soy, espera.",ops:["La pera","La manzana","La banana"],a:0},
+ {q:"Oro parece, plata no es. El que no lo adivine, bien tonto es.",ops:["El plátano","El sol","Una moneda"],a:0},
+ {q:"Blanco por fuera, amarillo por dentro. Primero muy suave, después muy duro.",ops:["El huevo","La nube","El algodón"],a:0},
+ {q:"Vuelo sin alas, silbo sin boca, y no me ves ni me tocas.",ops:["El viento","Un pájaro","Un fantasma"],a:0},
+ {q:"Tengo hojas y no soy árbol, tengo lomo y no soy animal, te cuento historias sin hablar.",ops:["El libro","El periódico","La computadora"],a:0},
+ {q:"Blanca soy, en la oscuridad doy luz sin ser el sol, y poco a poco me voy.",ops:["La vela","La linterna","El foco"],a:0},
+ {q:"Tengo manos y no saludo, tengo números y no cuento cuentos, y me miras para saber la hora.",ops:["El reloj","El calendario","El celular"],a:0},
+ {q:"Voy contigo a todas partes, de noche desaparezco, de día te acompaño sin decir ni una palabra.",ops:["La sombra","El perro","El reflejo"],a:0},
+ {q:"Tengo siete colores y aparezco después de la lluvia, sin ser pintura ni bandera.",ops:["El arcoíris","Un pincel","Una bandera"],a:0},
+ {q:"De noche brillo sin ser el sol, cambio de forma cada mes, y en el cielo tengo mi lugar.",ops:["La luna","Una estrella","Un cometa"],a:0},
+ {q:"Vuelo de flor en flor, hago miel dulce y dorada, y si me molestas, pico con mi aguijón.",ops:["La abeja","La mariposa","La hormiga"],a:0},
+ {q:"Cuando llueve me abro, cuando sale el sol me cierro, y te protejo del agua.",ops:["El paraguas","El impermeable","La sombrilla de playa"],a:0}
+];
+const GUIDE_NAMES=["Robo","Búho Sabio","Mago Lumo","Astro"];
+let DG={};
+function screenDailyGuide(){setTheme("kid");
+ const st=dailyPathState();
+ const gi=(st.day-1)%GUIDE_NAMES.length;
+ const rd=pick(DAILY_RIDDLES);
+ const ops=shuffled(rd.ops.map(function(o,i){return{t:o,ok:i===rd.a};}));
+ DG={answered:false};
+ render(topbar("screenDailyPath()")
+  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">👋 '+GUIDE_NAMES[gi]+'</h2>'
+  +'<div class="card center"><div id="guide3dCanvas" style="width:100%;height:200px;border-radius:16px;overflow:hidden"></div></div>'
+  +'<div class="card"><p style="font-family:Fredoka;font-weight:700;text-align:center;margin-bottom:8px">🧩 Antes de empezar, resuelve mi acertijo:</p>'
+  +'<p class="center" style="line-height:1.5;margin-bottom:12px">'+rd.q+'</p>'
+  +ops.map(function(o,i){return '<button class="kbtn white" style="margin-bottom:8px" onclick="dgAnswer('+i+')">'+o.t+'</button>';}).join("")
+  +'</div>'
+  +'<p class="center" id="dgFeedback" style="min-height:1.4em;font-family:Fredoka;font-weight:700"></p>'
+  +'<button class="kbtn green" id="dgGo" style="display:none" onclick="startDailyPath()">▶️ ¡Vamos a explorar!</button>');
+ DG.ops=ops;
+ if(typeof render3DGuide==="function")render3DGuide("guide3dCanvas",gi);
+ setTimeout(function(){speakES(rd.q);},400);}
+function dgAnswer(i){
+ if(DG.answered)return;DG.answered=true;
+ const ok=DG.ops[i].ok;
+ if(ok){sOK();confetti(10);}else sNO();
+ const fb=document.getElementById("dgFeedback");
+ if(fb)fb.textContent=ok?"¡Correcto! 🎉":"Buen intento — ¡la próxima lo lograrás! 💪";
+ const go=document.getElementById("dgGo");if(go)go.style.display="block";
+}
 async function startDailyPath(){setTheme("kid");
  render(topbar("screenDailyPath()")+'<div class="card center" style="padding:40px"><div style="font-size:3rem" class="spin">⏳</div><h2 style="margin-top:10px">Preparando tu día…</h2></div>');
  const items=await buildDailyQueue();
