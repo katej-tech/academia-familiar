@@ -4,30 +4,141 @@
    cuidado (screenTama(), #tamapet) se vuelve 3D — el mini-juego de atrapar golosinas (js/pet.js
    tgLoop/#tgpet) sigue en emoji a propósito: es un juego rápido de toques repetidos, un canvas
    WebGL de por medio ahí no aporta y sí puede pesarle a una tablet real. El emoji-badge pasivo
-   de nivel (petStage() en kid.js, arriba de screenKidMap/screenCritters) tampoco se toca: es
-   una decoración chica que se pinta en CADA cambio de pantalla, un canvas 3D ahí sería
-   desperdiciar WebGL en algo que ni es la mascota que se cuida de verdad. */
+   de nivel (petStage() en kid.js, arriba de screenKidMap/screenCritters) tampoco se toca.
+
+   v2 (feedback real: "no parece un gato, parece un cacahuate"): la v1 pegaba dos esferas
+   (cuerpo y cabeza) casi sin superponerse — eso dibuja literalmente un cacahuate/figura-8.
+   Se rediseñó para que la cabeza se hunda BIEN adentro del cuerpo (silueta continua, sin
+   "cintura"), y se agregó hocico+nariz+cachetes+cola por especie — sin eso ninguna forma
+   con esferas lee como animal, por bonitos que sean los colores. */
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js";
 
-/* mismo orden que TAMA_STARTERS en js/pet.js — cuerpo+cabeza con formas nativas de Three.js
-   (sin modelos de Blender) + orejas/extras simples para que cada uno se sienta distinto. */
+/* mismo orden que TAMA_STARTERS en js/pet.js */
 const PET_MODELS=[
- {body:"sphere",color:"#F97316",ear:"#FDBA74"},
- {body:"sphere",color:"#A16207",ear:"#78350F",droopEars:true},
- {body:"sphere",color:"#FBCFE8",ear:"#F9A8D4",longEars:true},
- {body:"sphere",color:"#FDE68A",ear:"#FCD34D"},
- {body:"cone",color:"#F97316",ear:"#1E293B"},
- {body:"cylinder",color:"#22C55E",ear:"#16A34A",wings:true},
- {body:"cylinder",color:"#1E293B",ear:"#FBBF24",belly:"#F8FAFC"},
- {body:"dodecahedron",color:"#65A30D",ear:"#365314",shell:"#4D7C0F"},
- {body:"sphere",color:"#F3E8FF",ear:"#C4B5FD",horn:true},
- {body:"sphere",color:"#92400E",ear:"#78350F"}
+ {nm:"gatito",color:"#F4A65B",snout:"#FFE9D2",ear:"#FBC28C",ears:"round",tail:"conecurl",whiskers:true},
+ {nm:"perrito",color:"#B9834A",snout:"#F2DCB8",ear:"#8A5A2B",ears:"droop",tail:"conecurl"},
+ {nm:"conejo",color:"#F6D7E8",snout:"#FFFFFF",ear:"#F5A9CB",ears:"long",tail:"pompom"},
+ {nm:"hamster",color:"#F2CD7E",snout:"#FFF3D6",ear:"#E4B255",ears:"tiny",tail:"stub",cheeks:true},
+ {nm:"zorrito",color:"#EF823E",snout:"#FFFFFF",ear:"#20262E",ears:"round",tail:"fox",whiskers:true},
+ {nm:"dragon",color:"#3FBF6A",snout:"#CDEFD9",ear:"#2E9E52",ears:"round",tail:"long",wings:true},
+ {nm:"pinguino",color:"#26313F",snout:"#F59E42",ear:"#26313F",ears:"none",tail:"stub",belly:"#F8FAFC",beak:true,flippers:true},
+ {nm:"tortuga",color:"#6FA33C",snout:"#CFE7AE",ear:"#4E7A2A",ears:"none",tail:"stub",shell:"#3F6B22",neck:true},
+ {nm:"unicornio",color:"#F4EEFC",snout:"#FFFFFF",ear:"#C9A9F2",ears:"round",tail:"flow",horn:true,mane:"#F2A6D6"},
+ {nm:"osito",color:"#9A6B3C",snout:"#E7C79A",ear:"#7A4F27",ears:"round",tail:"stub"}
 ];
-function bodyGeo(kind){
- if(kind==="cone")return new THREE.ConeGeometry(.5,.9,20);
- if(kind==="cylinder")return new THREE.CylinderGeometry(.42,.5,.9,20);
- if(kind==="dodecahedron")return new THREE.DodecahedronGeometry(.5);
- return new THREE.SphereGeometry(.5,20,16);}
+
+function mat(color,opts){return new THREE.MeshStandardMaterial(Object.assign({color:color,roughness:.55},opts||{}));}
+
+function buildPet(g,def){
+ const bodyMat=mat(def.color);
+ /* cuerpo: ovoide sentado, achatado en la base — NO una esfera perfecta, así ya lee
+    "cuerpo de peluche" antes de agregarle nada más */
+ const body=new THREE.Mesh(new THREE.SphereGeometry(.5,20,16),bodyMat);
+ body.scale.set(.5,.42,.46);body.position.set(0,-.16,0);g.add(body);
+
+ /* cabeza: se hunde bien adentro del cuerpo (superposición profunda a propósito) para que
+    la silueta combinada quede redonda y continua, sin "cintura" de cacahuate */
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.34,20,16),bodyMat);
+ head.position.set(0,.26,.08);g.add(head);
+
+ /* hocico: ovoide clarito al frente de la cabeza — esto es lo que más ayuda a que se
+    lea como cara de animal y no como una bola lisa */
+ const snoutMat=mat(def.snout||"#FFFFFF",{roughness:.6});
+ const snout=new THREE.Mesh(new THREE.SphereGeometry(.155,16,12),snoutMat);
+ snout.scale.set(1,.72,.92);snout.position.set(0,.16,.34);g.add(snout);
+ const nose=new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),mat("#3A2A22",{roughness:.4}));
+ nose.position.set(0,.2,.47);g.add(nose);
+
+ if(def.cheeks){
+  [-1,1].forEach(function(s){
+   const cheek=new THREE.Mesh(new THREE.SphereGeometry(.1,12,10),snoutMat);
+   cheek.position.set(s*.26,.15,.28);g.add(cheek);});
+ }
+
+ /* ojos: sobre el hocico, mirando al frente */
+ [-1,1].forEach(function(s){
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(.052,10,8),mat("#1E2A4A",{roughness:.3}));
+  eye.position.set(s*.2,.33,.29);g.add(eye);
+  const shine=new THREE.Mesh(new THREE.SphereGeometry(.016,6,6),mat("#FFFFFF",{roughness:.1}));
+  shine.position.set(s*.2+.014,.345,.32);g.add(shine);
+ });
+
+ /* orejas */
+ if(def.ears!=="none"){
+  const earMat=mat(def.ear,{roughness:.6});
+  [-1,1].forEach(function(s){
+   let ear;
+   if(def.ears==="long"){ear=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,.4,10),earMat);ear.position.set(s*.16,.62,.06);ear.rotation.z=s*.12;}
+   else if(def.ears==="droop"){ear=new THREE.Mesh(new THREE.ConeGeometry(.1,.24,10),earMat);ear.position.set(s*.28,.32,.08);ear.rotation.z=s*1.3;}
+   else if(def.ears==="tiny"){ear=new THREE.Mesh(new THREE.SphereGeometry(.08,10,8),earMat);ear.position.set(s*.24,.5,.06);}
+   else{ear=new THREE.Mesh(new THREE.ConeGeometry(.13,.22,10),earMat);ear.position.set(s*.2,.5,.02);ear.rotation.z=s*.25;}
+   g.add(ear);
+  });
+ }
+
+ /* bigotes (gato/zorro): les da mucho carácter y son baratos de dibujar */
+ if(def.whiskers){
+  const wMat=mat("#FFFFFF",{roughness:.8});
+  [-1,1].forEach(function(s){
+   [0,1,2].forEach(function(i){
+    const w=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.24,4),wMat);
+    w.position.set(s*.22,.18-i*.03,.36);
+    w.rotation.z=Math.PI/2+s*.15;w.rotation.y=s*(.3+i*.12);
+    g.add(w);
+   });
+  });
+ }
+
+ /* cola: la diferencia más grande entre "bola con orejas" y "animal" */
+ const tailMat=mat(def.ear||def.color,{roughness:.6});
+ if(def.tail==="conecurl"){
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.09,.42,10),tailMat);
+  tail.position.set(0,.02,-.42);tail.rotation.x=-1.0;g.add(tail);
+ }else if(def.tail==="pompom"){
+  const tail=new THREE.Mesh(new THREE.SphereGeometry(.11,12,10),mat(def.snout||def.color));
+  tail.position.set(0,-.1,-.46);g.add(tail);
+ }else if(def.tail==="fox"){
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.16,.62,12),tailMat);
+  tail.position.set(0,.02,-.5);tail.rotation.x=-1.15;g.add(tail);
+  const tip=new THREE.Mesh(new THREE.SphereGeometry(.09,10,8),mat(def.snout||"#FFFFFF"));
+  tip.position.set(0,.28,-.78);g.add(tip);
+ }else if(def.tail==="long"){
+  const tail=new THREE.Mesh(new THREE.CylinderGeometry(.1,.04,.75,10),tailMat);
+  tail.position.set(0,-.02,-.58);tail.rotation.x=-1.15;g.add(tail);
+ }else if(def.tail==="flow"){
+  [0,1,2].forEach(function(i){
+   const strand=new THREE.Mesh(new THREE.ConeGeometry(.05,.5-i*.06,8),mat(def.mane||def.ear));
+   strand.position.set((i-1)*.07,.06,-.4);strand.rotation.x=-1.05+(i-1)*.15;g.add(strand);
+  });
+ }else if(def.tail==="stub"){
+  const tail=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),tailMat);
+  tail.position.set(0,-.06,-.44);g.add(tail);
+ }
+
+ if(def.wings){
+  [-1,1].forEach(function(s){
+   const wing=new THREE.Mesh(new THREE.ConeGeometry(.26,.46,4),mat(def.ear,{roughness:.5}));
+   wing.position.set(s*.5,.1,-.05);wing.rotation.z=s*1.15;wing.rotation.y=.3;g.add(wing);});}
+ if(def.horn){
+  const horn=new THREE.Mesh(new THREE.ConeGeometry(.055,.3,10),mat("#FBBF24",{roughness:.3,metalness:.4}));
+  horn.position.set(0,.62,.16);horn.rotation.x=-.35;g.add(horn);}
+ if(def.shell){
+  const shell=new THREE.Mesh(new THREE.SphereGeometry(.44,16,12,0,Math.PI*2,0,Math.PI/1.7),mat(def.shell,{roughness:.65}));
+  shell.position.set(0,.02,-.06);shell.scale.set(1.05,.8,1.05);g.add(shell);}
+ if(def.neck){
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.1,.14,.16,10),mat(def.color));
+  neck.position.set(0,.08,.28);neck.rotation.x=.5;g.add(neck);}
+ if(def.belly){
+  const belly=new THREE.Mesh(new THREE.SphereGeometry(.28,14,10),mat(def.belly,{roughness:.6}));
+  belly.position.set(0,-.14,.24);belly.scale.set(.72,.9,.5);g.add(belly);}
+ if(def.beak){
+  const beak=new THREE.Mesh(new THREE.ConeGeometry(.09,.2,10),mat(def.snout,{roughness:.4}));
+  beak.rotation.x=Math.PI/2;beak.position.set(0,.2,.4);g.add(beak);}
+ if(def.flippers){
+  [-1,1].forEach(function(s){
+   const fl=new THREE.Mesh(new THREE.ConeGeometry(.09,.4,8),mat(def.color));
+   fl.position.set(s*.42,-.1,0);fl.rotation.z=s*1.3;g.add(fl);});}
+}
 
 let LIVE=null;
 function dispose3DPet(){
@@ -50,39 +161,14 @@ function render3DPet(containerId,idx,sleeping){
  renderer.setSize(w,h);
  el.innerHTML="";el.appendChild(renderer.domElement);
  const scene=new THREE.Scene();
- const camera=new THREE.PerspectiveCamera(38,w/h,.1,50);
- camera.position.set(0,.15,3.1);camera.lookAt(0,.1,0);
- scene.add(new THREE.AmbientLight(0xffffff,1.4));
- const dir=new THREE.DirectionalLight(0xffffff,1.3);dir.position.set(3,5,4);scene.add(dir);
+ const camera=new THREE.PerspectiveCamera(34,w/h,.1,50);
+ camera.position.set(0,.2,2.7);camera.lookAt(0,.08,0);
+ scene.add(new THREE.AmbientLight(0xffffff,1.5));
+ const dir=new THREE.DirectionalLight(0xffffff,1.2);dir.position.set(3,5,4);scene.add(dir);
+ const fill=new THREE.DirectionalLight(0xffffff,.5);fill.position.set(-3,2,2);scene.add(fill);
+
  const group=new THREE.Group();
- const bodyMat=new THREE.MeshStandardMaterial({color:def.color,roughness:.55});
- const body=new THREE.Mesh(bodyGeo(def.body),bodyMat);body.scale.setScalar(.85);group.add(body);
- const headMat=new THREE.MeshStandardMaterial({color:def.color,roughness:.55});
- const head=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),headMat);head.position.set(0,.62,.08);group.add(head);
- const earMat=new THREE.MeshStandardMaterial({color:def.ear,roughness:.6});
- const earGeo=def.longEars?new THREE.CylinderGeometry(.07,.1,.45,10):new THREE.ConeGeometry(.14,.24,10);
- [-1,1].forEach(function(s){
-  const ear=new THREE.Mesh(earGeo,earMat);
-  ear.position.set(s*.28,def.longEars?1.05:.9,0);
-  if(def.droopEars)ear.rotation.z=s*.9; else if(def.longEars)ear.rotation.z=s*.15;
-  group.add(ear);});
- [-1,1].forEach(function(s){
-  const eye=new THREE.Mesh(new THREE.SphereGeometry(.06,10,8),new THREE.MeshStandardMaterial({color:"#1E2A4A"}));
-  eye.position.set(s*.15,.66,.36);group.add(eye);});
- if(def.wings){
-  [-1,1].forEach(function(s){
-   const wing=new THREE.Mesh(new THREE.ConeGeometry(.3,.5,4),new THREE.MeshStandardMaterial({color:def.ear,roughness:.5}));
-   wing.position.set(s*.55,.2,-.1);wing.rotation.z=s*1.15;wing.rotation.y=.3;
-   group.add(wing);});}
- if(def.horn){
-  const horn=new THREE.Mesh(new THREE.ConeGeometry(.06,.32,10),new THREE.MeshStandardMaterial({color:"#FBBF24",roughness:.3,metalness:.3}));
-  horn.position.set(0,1.02,.1);horn.rotation.x=-.2;group.add(horn);}
- if(def.shell){
-  const shell=new THREE.Mesh(new THREE.SphereGeometry(.5,16,12,0,Math.PI*2,0,Math.PI/1.7),new THREE.MeshStandardMaterial({color:def.shell,roughness:.6}));
-  shell.position.set(0,.1,-.05);shell.scale.set(1.05,.75,1.05);group.add(shell);}
- if(def.belly){
-  const belly=new THREE.Mesh(new THREE.SphereGeometry(.3,14,10),new THREE.MeshStandardMaterial({color:def.belly,roughness:.6}));
-  belly.position.set(0,-.05,.28);belly.scale.set(.75,1,.55);group.add(belly);}
+ buildPet(group,def);
  scene.add(group);
  if(sleeping){group.rotation.z=Math.PI/2.3;group.position.y=-.15;}
  LIVE={renderer:renderer,scene:scene,camera:camera,group:group,raf:null,t:0,pulse:null,sleeping:!!sleeping};
