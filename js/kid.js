@@ -110,6 +110,7 @@ function hubApps(){
   +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
   +(typeof screenColor3D==="function"?appIcon("screenColor3D()","🖍️✨","Colorear 3D","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
+  +(typeof screenBricks==="function"?appIcon("screenBricks()","🧱","Bloques","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
   +'</div>';
  html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
