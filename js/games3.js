@@ -499,21 +499,57 @@ function gameBody(){setTheme("kid");
   +(typeof screenBody3D==="function"?'<button class="kbtn blue" onclick="screenBody3D()">🔎 Explorar el cuerpo en 3D</button>':'')
   +'<button class="kbtn yellow" onclick="playTopics(\'El cuerpo\',[\'cuerpo_partes\',\'sistemas\',\'cuerpo_es\'],{perTopic:4,topicsPerSession:2,total:8})">❓ Preguntas del cuerpo</button>');
 }
-/* ---- explorar libre en 3D (sin puntaje): toca un órgano y aprende su sistema ---- */
-function screenBody3D(){setTheme("kid");
+/* ---- explorar el cuerpo en 3D por SISTEMAS (body3d.js): cambia de sistema, toca órganos, ponte a prueba ---- */
+const BODY_ASK={craneo:"protege el cerebro como un casco",columna:"es una fila de huesitos que te deja doblarte",costillas:"forman una jaula que protege el corazón y los pulmones",pelvis:"es el hueso de la cadera",brazos:"tienen el húmero, el radio y el cúbito",piernas:"tienen el fémur, el hueso más largo del cuerpo",
+ corazon:"bombea la sangre por todo el cuerpo",arterias:"llevan la sangre con oxígeno desde el corazón (las rojas)",venas:"traen la sangre de vuelta al corazón (las azules)",nariz:"es por donde entra el aire",traquea:"es el tubo que lleva el aire a los pulmones",pulmones:"es donde el oxígeno pasa a la sangre",diafragma:"es el músculo que te ayuda a respirar",
+ esofago:"lleva la comida de la boca al estómago",estomago:"mezcla la comida con jugos que la deshacen",higado:"limpia la sangre y ayuda a digerir las grasas",delgado:"es donde los nutrientes pasan a la sangre",grueso:"absorbe el agua que sobra y forma los desechos",cerebro:"piensa y manda órdenes a todo el cuerpo",medula:"es la autopista de mensajes dentro de la columna",nervios:"son los cables que llevan mensajes por el cuerpo"};
+let BX={sys:"digestivo",quiz:null};
+function screenBody3D(sysId){setTheme("kid");
+ BX={sys:sysId||BX.sys||"digestivo",quiz:null};
+ const S=window.BODY_SYS||[];
+ const tabs=S.map(function(s){return '<button id="bxt_'+s.id+'" onclick="bodySys(\''+s.id+'\')" style="border:3px solid var(--kid-ink);border-radius:14px;background:#fff;padding:6px 4px;font-family:Fredoka;font-weight:700;font-size:.72rem;flex:1;min-width:0"><div style="font-size:1.4rem">'+s.e+'</div>'+s.nm+'</button>';}).join("");
  render(topbar("gameBody()")
-  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🔎 Explora el cuerpo en 3D</h2>'
-  +'<p class="center" id="body3dInfo" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca un órgano para aprender</p>'
-  +'<div class="card center"><div id="body3dCanvas" style="width:100%;height:300px;border-radius:16px;overflow:hidden"></div></div>'
-  +'<button class="kbtn white" style="margin-top:14px" onclick="gameBody()">← Volver</button>');
- if(typeof render3DBody==="function")render3DBody("body3dCanvas",onBody3DOrganSelected);}
-function onBody3DOrganSelected(organId){
+  +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:6px">🔎 Explora tu cuerpo</h2>'
+  +'<div style="display:flex;gap:5px;margin-bottom:8px">'+tabs+'</div>'
+  +'<div class="card center" style="padding:6px"><div id="body3dCanvas" style="width:100%;height:min(112vw,400px);border-radius:14px;overflow:hidden"></div></div>'
+  +'<p class="center mut" style="font-size:.8rem;margin:2px 0 6px">Toca un órgano para conocerlo · arrastra para girar el cuerpo</p>'
+  +'<div class="card" id="body3dInfo" style="min-height:4.5em"></div>'
+  +'<button class="kbtn green" onclick="bodyQuizStart()">🎯 Ponme a prueba en este sistema</button>'
+  +'<button class="kbtn white" onclick="gameBody()">← Volver</button>');
+ if(typeof render3DBody==="function")render3DBody("body3dCanvas",BX.sys,onBody3DSelected);
+ bodyTabStyle();}
+function bodyTabStyle(){(window.BODY_SYS||[]).forEach(function(s){const b=document.getElementById("bxt_"+s.id);if(b)b.style.background=(s.id===BX.sys)?"#FDE68A":"#fff";});}
+function bodySys(id){BX.sys=id;BX.quiz=null;bodyTabStyle();if(typeof body3DSetSystem==="function")body3DSetSystem(id);}
+function onBody3DSelected(partId,sysId){
  const info=document.getElementById("body3dInfo");if(!info)return;
- const o=BODY_ORGANS.find(function(x){return x.id===organId;});
- if(!o){info.textContent="👉 Toca un órgano para aprender";return;}
- info.innerHTML="🎯 "+o.e+" <b>"+o.nm+"</b> — sistema "+o.sys;
- speakES(o.nm+", sistema "+o.sys);
-}
+ if(BX.quiz&&partId)return bodyQuizTap(partId);
+ const sys=(window.BODY_SYS||[]).find(function(s){return s.id===(sysId||BX.sys);});
+ if(!partId){if(sys)info.innerHTML='<b>'+sys.e+' Sistema '+sys.nm.toLowerCase()+'</b><p style="margin:6px 0 0;line-height:1.5">'+sys.desc+'</p><p class="mut" style="font-size:.85rem;margin-top:6px">Partes: '+sys.parts.map(function(p){return p.nm.toLowerCase();}).join(", ")+'.</p>';return;}
+ const pt=sys&&sys.parts.find(function(p){return p.id===partId;});if(!pt)return;
+ info.innerHTML='<b>'+pt.e+' '+pt.nm+'</b><p style="margin:6px 0 0;line-height:1.5">'+pt.tx+'</p>';
+ speakES(pt.nm+". "+pt.tx);}
+function bodyQuizStart(){
+ const sys=(window.BODY_SYS||[]).find(function(s){return s.id===BX.sys;});if(!sys)return;
+ BX.quiz={q:shuffled(sys.parts.map(function(p){return p.id;})).slice(0,5),i:0,ok:0,err:0};
+ if(typeof body3DHighlight==="function")body3DHighlight(null);
+ bodyQuizAsk();}
+function bodyQuizAsk(){
+ const id=BX.quiz.q[BX.quiz.i];const info=document.getElementById("body3dInfo");
+ const line="Toca la parte del cuerpo que "+BODY_ASK[id]+".";
+ if(info)info.innerHTML='<b>🎯 Pregunta '+(BX.quiz.i+1)+' de '+BX.quiz.q.length+'</b><p style="margin:6px 0 0;font-size:1.05rem;line-height:1.5">'+line+'</p>';
+ speakES(line);}
+function bodyQuizTap(partId){
+ const Q=BX.quiz;const target=Q.q[Q.i];const sys=(window.BODY_SYS||[]).find(function(s){return s.id===BX.sys;});
+ const tp=sys.parts.find(function(p){return p.id===target;});
+ if(partId===target){
+  sOK();Q.ok++;recordAnswer("Cuerpo",true,12);Q.i++;
+  if(Q.i>=Q.q.length){const gain=2+Math.max(0,Q.q.length-Q.err);const p=prof();p.coins+=gain;p.xp+=8;save();confetti(20);sWIN();BX.quiz=null;
+   const info=document.getElementById("body3dInfo");if(info)info.innerHTML='<b>🏆 ¡Terminaste! '+(Q.err?"Errores: "+Q.err:"¡Sin ningún error!")+'</b><p style="margin:6px 0 0">+'+gain+' 🪙 · Prueba con otro sistema.</p>';return;}
+  toast("¡Sí, "+tp.nm.toLowerCase()+"! ✅",true,900);setTimeout(bodyQuizAsk,900);
+ }else{
+  sNO();Q.err++;recordAnswer("Cuerpo",false,12);
+  const other=sys.parts.find(function(p){return p.id===partId;});
+  toast("Esa es "+(other?other.nm.toLowerCase():"otra parte")+". ¡Sigue buscando!",false,1600);}}
 function bodyStart(mode){
  BD={mode,round:0,ok:0};
  BD.total=mode==="partes"?7:5;

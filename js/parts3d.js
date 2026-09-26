@@ -8,7 +8,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.m
 
 const OUTL=new THREE.MeshBasicMaterial({color:"#1E2A4A",side:THREE.BackSide});
 function mat(c,o){return new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.55},o||{}));}
-function out(m,t){const o=new THREE.Mesh(m.geometry,OUTL);o.scale.setScalar(1+(t||.05));m.add(o);}
+function out(m,t){const o=new THREE.Mesh(m.geometry,OUTL);o.scale.setScalar(1+(t||.05));o.userData.isOutline=true;m.add(o);}
 /* mk: crea malla, la posiciona y (opcional) le pone contorno */
 function mk(g,geo,color,p,s,r,opt){
  opt=opt||{};const m=new THREE.Mesh(geo,mat(color,opt.m));
