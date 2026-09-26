@@ -647,19 +647,44 @@ function gameFlagDraw(code,name){setTheme("kid");
 }
 function fdColor(c){FD.color=c;}
 function fdClear(){if(FD.ctx){FD.ctx.fillStyle="#fff";FD.ctx.fillRect(0,0,FD.W+10,FD.H+10);}}
+/* compara tu dibujo con la bandera real (si hay internet): promedio de distancia de color por celda */
+function fdScore(cv,code,cb){
+ const im=new Image();im.crossOrigin="anonymous";
+ im.onload=function(){
+  try{
+   const W=32,H=21,mk=function(src){const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");x.drawImage(src,0,0,W,H);return x.getImageData(0,0,W,H).data;};
+   const a=mk(cv),b=mk(im);let sum=0;
+   for(let i=0;i<a.length;i+=4){const dr=a[i]-b[i],dg=a[i+1]-b[i+1],db=a[i+2]-b[i+2];sum+=Math.sqrt(dr*dr+dg*dg+db*db)/441.7;}
+   const avg=sum/(W*H);cb(Math.max(0,Math.min(1,(0.62-avg)/0.5)));
+  }catch(e){cb(null);}};
+ im.onerror=function(){cb(null);};
+ im.src="https://flagcdn.com/w320/"+code+".png";}
 function fdFinish(){
  if(!FD.cv)return;
  let dataURL;try{dataURL=FD.cv.toDataURL("image/png");}catch(e){return;}
- sWIN();confetti(16);
- const p=prof();p.coins+=3;p.xp+=6;if(typeof artPlus==="function")artPlus();save();
+ const refURL="https://flagcdn.com/w320/"+FD.code+".png";
  render(topbar("screenFlagPick()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🎏 ¡Tu bandera de '+esc(FD.name)+'!</h2>'
-  +'<p class="center" style="margin-bottom:8px">+3 🪙</p>'
-  +'<div class="card center"><div id="flag3dCanvas" style="width:100%;height:240px;border-radius:16px;overflow:hidden"></div></div>'
-  +'<button class="kbtn white" style="margin-top:14px" onclick="screenFlagPick()">🔁 Dibujar otra</button>'
-  +'<button class="kbtn green" style="margin-top:10px" onclick="screenSocial()">← Volver</button>');
- if(typeof render3DWavingFlag==="function")render3DWavingFlag("flag3dCanvas",dataURL);
+  +'<p class="center" id="fdRes" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;min-height:2.6em">Comparando con la bandera real…</p>'
+  +'<div class="card center" style="padding:0;overflow:hidden"><div id="flag3dCanvas" style="width:100%;height:290px"></div></div>'
+  +'<button class="kbtn white" style="margin-top:14px" onclick="gameFlagDraw('+jsStr(FD.code)+','+jsStr(FD.name)+')">✏️ Intentarlo otra vez</button>'
+  +'<button class="kbtn white" style="margin-top:8px" onclick="screenFlagPick()">🔁 Otro país</button>'
+  +'<button class="kbtn green" style="margin-top:8px" onclick="screenSocial()">← Volver</button>');
+ const cv=FD.cv,code=FD.code,name=FD.name;
+ if(typeof render3DWavingFlags==="function")render3DWavingFlags("flag3dCanvas",dataURL,refURL,["Tu bandera","La real"]);
+ fdScore(cv,code,function(sc){
+  const el=document.getElementById("fdRes");if(!el)return;
+  const p=prof();
+  if(sc===null){p.coins+=3;p.xp+=6;if(typeof artPlus==="function")artPlus();save();sWIN();confetti(14);el.innerHTML="¡Qué bonita! +3 🪙 <span class='mut' style='font-size:.8rem;font-weight:500'>(sin internet no puedo compararla)</span>";return;}
+  const pct=Math.round(sc*100),stars=pct>=70?3:pct>=40?2:1,gain=2+stars;
+  if(pct<8){el.innerHTML="Casi no dibujaste nada 🖍️ ¡Toca «Intentarlo otra vez» y copia la bandera de la derecha!";sNO();return;}
+  p.coins+=gain;p.xp+=4+stars*2;if(typeof artPlus==="function")artPlus();
+  p.flagBest=p.flagBest||{};if(pct>(p.flagBest[code]||0))p.flagBest[code]=pct;save();
+  sWIN();confetti(8+stars*6);recordAnswer("Banderas",pct>=40,12);
+  el.innerHTML="Se parece un <b>"+pct+"%</b> a la de "+esc(name)+" "+"⭐".repeat(stars)+" +"+gain+" 🪙"+(pct<70?"<br><span style='font-size:.85rem;font-weight:500'>Mira la real (a la derecha) y fíjate en sus colores y franjas 👀</span>":"<br><span style='font-size:.85rem;font-weight:500'>¡Casi idéntica! 🎉</span>");
+  speakES(pct>=70?"¡Casi idéntica!":"Se parece un "+pct+" por ciento");});
 }
+
 let FL={};
 function gameFlags(){setTheme("kid");FL={round:0,total:8,ok:0};nextFlag();}
 function nextFlag(){
