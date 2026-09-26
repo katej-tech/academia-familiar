@@ -623,7 +623,7 @@ function gameColor3D(id){setTheme("kid");
  const pal=COLOR_PALETTE.map(function(c){return '<button type="button" onclick="pickColor3D(\''+c+'\')" style="width:38px;height:38px;border-radius:50%;border:3px solid #fff;background:'+c+';box-shadow:0 3px 8px rgba(30,42,74,.2);cursor:pointer"></button>';}).join("");
  render(topbar("screenColor3D()")
  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">'+(tpl?tpl.name:"")+'</h2>'
- +'<p class="center" id="c3dSelInfo" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca una pieza del modelo</p>'
+ +'<p class="center" id="c3dSelInfo" style="margin-bottom:8px;font-family:Fredoka;font-weight:700;color:var(--kid-blue)">👉 Toca una pieza · arrastra para girar</p>'
  +'<div class="card center"><div id="color3dCanvas" style="width:100%;height:240px;border-radius:16px;overflow:hidden"></div></div>'
  +'<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0">'+pal+'</div>'
  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:0 auto">'
@@ -632,9 +632,9 @@ function gameColor3D(id){setTheme("kid");
  +'</div>'
  +'<button class="kbtn green" style="max-width:360px;margin:10px auto 0" onclick="color3DFinish()">✅ ¡Terminé de pintarlo! 🎉</button>');
  if(typeof render3DColorTemplate==="function")render3DColorTemplate("color3dCanvas",id,onColor3DPartSelected);}
-function onColor3DPartSelected(partId){C3D.sel=partId;
+function onColor3DPartSelected(partId,label){C3D.sel=partId;
  const info=document.getElementById("c3dSelInfo");
- if(info)info.textContent=partId?"🎯 Pieza elegida: "+partId+" — toca un color":"👉 Toca una pieza del modelo";}
+ if(info)info.textContent=partId?"🎯 Pintas: "+(label||partId)+" — elige un color":"👉 Toca una pieza · arrastra para girar";}
 function pickColor3D(c){
  if(!C3D.sel){toast("Primero toca una pieza del modelo 👆",false,1500);return;}
  if(typeof color3DSetColor==="function")color3DSetColor(c);
@@ -1019,7 +1019,7 @@ function maybeWorkshopUnlock(){
  p.workshopUnlocked[cat]=cur+1;save();
  return{cat:cat,piece:WORKSHOP_PARTS[cat][cur]};}
 function workshopSel(){const p=prof();
- if(!p.workshopSel)p.workshopSel={cabeza:WORKSHOP_PARTS.cabeza[0],cuerpo:WORKSHOP_PARTS.cuerpo[0],extra:WORKSHOP_PARTS.extra[0],color:COLOR_PALETTE[0]};
+ if(!p.workshopSel)p.workshopSel={cabeza:WORKSHOP_PARTS.cabeza[0],cuerpo:WORKSHOP_PARTS.cuerpo[0],extra:WORKSHOP_PARTS.extra[0],color:null};
  return p.workshopSel;}
 function screenWorkshop(){setTheme("kid");
  const sel=workshopSel();
@@ -1030,11 +1030,13 @@ function screenWorkshop(){setTheme("kid");
    return '<button class="wkpiece'+(sel[cat]===e?" sel":"")+'" '+(locked?'disabled style="opacity:.35"':'onclick="wkPick(\''+cat+'\','+jsStr(e)+')"')+'>'+(locked?"🔒":e)+'</button>';
   }).join("");
   return '<p style="font-family:Fredoka;font-weight:700;margin:12px 2px 6px">'+label+' <span class="mut" style="font-size:.78rem;font-weight:500">('+n+'/'+WORKSHOP_PARTS[cat].length+' desbloqueadas)</span></p><div class="wkgrid">'+opts+'</div>';};
- const colorOpts=COLOR_PALETTE.map(function(c){return '<button class="wkcolor'+(sel.color===c?" sel":"")+'" style="background:'+c+'" onclick="wkPickColor(\''+c+'\')"></button>';}).join("");
+ const colorOpts='<button class="wkcolor'+(!sel.color?" sel":"")+'" style="background:#fff;font-size:1rem" onclick="wkPickColor(\'\')">🚫</button>'+COLOR_PALETTE.map(function(c){return '<button class="wkcolor'+(sel.color===c?" sel":"")+'" style="background:'+c+'" onclick="wkPickColor(\''+c+'\')"></button>';}).join("");
  const creations=prof().workshopCreations||[];
+ /* miniaturas viejas (v1, formas sueltas) se regeneran una sola vez con el diseño nuevo */
+ if(typeof snapshot3DCreature==="function"){let ch=false;creations.forEach(function(cr){if(cr.v!==2){try{cr.img=snapshot3DCreature(cr);cr.v=2;ch=true;}catch(e){}}});if(ch)save();}
  const gallery=creations.map(function(cr,i){
   const body=cr.img?'<img src="'+cr.img+'" style="width:100%;height:100%;object-fit:contain">':'<div style="font-size:2.2rem">'+cr.cabeza+'</div><div style="font-size:1.6rem">'+cr.cuerpo+' '+cr.extra+'</div>';
-  return '<div class="wkcard" style="background:'+cr.color+'"><button class="spk" style="position:absolute;top:4px;right:4px;transform:scale(.7)" onclick="wkDelete('+i+')">🗑️</button>'+body+'</div>';
+  return '<div class="wkcard" style="background:'+(cr.color||'#EAF6FF')+'"><button class="spk" style="position:absolute;top:4px;right:4px;transform:scale(.7)" onclick="wkDelete('+i+')">🗑️</button>'+body+'</div>';
  }).join("");
  render(topbar("screenCritters()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🛠️ Taller de criaturas</h2>'
@@ -1043,16 +1045,16 @@ function screenWorkshop(){setTheme("kid");
  +catBlock("cabeza","🗣️ Cabeza")
  +catBlock("cuerpo","🧱 Cuerpo")
  +catBlock("extra","✨ Extra")
- +'<p style="font-family:Fredoka;font-weight:700;margin:12px 2px 6px">🎨 Color</p><div class="wkgrid">'+colorOpts+'</div>'
+ +'<p style="font-family:Fredoka;font-weight:700;margin:12px 2px 6px">🎨 Tinte <span class="mut" style="font-size:.78rem;font-weight:500">(le da un toque de color a tu criatura)</span></p><div class="wkgrid">'+colorOpts+'</div>'
  +'<button class="kbtn green" style="margin-top:14px" onclick="wkSave()">💾 Guardar mi criatura</button>'
  +(gallery?'<p style="font-family:Fredoka;font-weight:700;margin:18px 2px 8px">🎒 Mis creaciones</p><div class="wkgallery">'+gallery+'</div>':'')
  +'<button class="kbtn white" style="margin-top:14px" onclick="screenCritters()">← Volver a mi colección</button>');
  if(typeof render3DCreaturePreview==="function")render3DCreaturePreview("wkPreview3d",sel);}
 function wkPick(cat,val){workshopSel()[cat]=val;save();screenWorkshop();}
-function wkPickColor(c){workshopSel().color=c;save();screenWorkshop();}
+function wkPickColor(c){workshopSel().color=c||null;save();screenWorkshop();}
 function wkSave(){const p=prof();if(!p.workshopCreations)p.workshopCreations=[];
  const creation=Object.assign({},workshopSel());
- try{if(typeof snapshot3DCreature==="function")creation.img=snapshot3DCreature(creation);}catch(e){}
+ try{if(typeof snapshot3DCreature==="function"){creation.img=snapshot3DCreature(creation);creation.v=2;}}catch(e){}
  p.workshopCreations.push(creation);save();
  sOK();confetti(12);toast("¡Guardada en tu galería! 🎉",true,1500);screenWorkshop();}
 function wkDelete(i){const p=prof();p.workshopCreations.splice(i,1);save();screenWorkshop();}
