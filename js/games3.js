@@ -100,7 +100,7 @@ function clockSVG(h,m,px){
 }
 function timeWords(h,m){const L=h===1?"La ":"Las ";return m===0?(L+h+" en punto"):m===30?(L+h+" y media"):m===15?(L+h+" y cuarto"):(L+h+" y "+m);}
 let CL={};
-function gameClock(){setTheme("kid");CL={round:0,ok:0,total:6};nextClock();}
+function gameClock(){if(typeof screenClockLab==="function")return screenClockLab();setTheme("kid");CL={round:0,ok:0,total:6};nextClock();}
 function nextClock(){
  if(CL.round>=CL.total)return nodeWin(starsFor(CL.ok,CL.total),"El tiempo");
  const h=1+rnd(12),m=pick([0,0,0,30,30,15]); // sobre todo en punto y media
