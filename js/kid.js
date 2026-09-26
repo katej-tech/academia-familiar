@@ -119,6 +119,7 @@ function hubApps(){
   +appIcon("screenTama()","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)")
   +(typeof screenWorkshop==="function"?appIcon("screenWorkshop()","🧩","Taller","linear-gradient(160deg,#86EFAC,#16A34A)"):"")
   +(typeof screenRobot==="function"?appIcon("screenRobot()","🤖","Programa","linear-gradient(160deg,#A5F3FC,#0891B2)"):"")
+  +(typeof screenEco==="function"?appIcon("screenEco()","🌍","Mi planeta","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
   +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
   +'</div>';
  if(courses().length&&prof()&&(prof().age||0)>=10){

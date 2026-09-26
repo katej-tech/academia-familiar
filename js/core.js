@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.4.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.5.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -473,6 +473,7 @@ function stopGames(){
  try{if(typeof dispose3DBody==="function")dispose3DBody();}catch(e){} // cuerpo humano en 3D (Three.js): libera geometrías/renderer del módulo
  try{if(typeof dispose3DGuide==="function")dispose3DGuide();}catch(e){} // personaje guía en 3D (Three.js): libera geometrías/renderer del módulo
  try{if(typeof dispose3DFlag==="function")dispose3DFlag();}catch(e){} // bandera ondeando en 3D (Three.js): libera geometrías/renderer del módulo
+ try{if(typeof disposeEcoPlanet==="function")disposeEcoPlanet();}catch(e){} // cuida el planeta (Three.js)
  try{if(typeof disposeBricks==="function")disposeBricks();}catch(e){} // constructor de bloques (Three.js)
  try{if(typeof dispose3DPlanets==="function")dispose3DPlanets();}catch(e){} // planetario en 3D (Three.js): libera geometrías/renderer del módulo
  try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}
