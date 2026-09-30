@@ -59,6 +59,7 @@ const KID_WORLDS=[
  {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",cat:"pensar",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
  {id:"cerebro",ic:"🧠",nm:"Cerebro en forma",color:"purple",cat:"pensar",special:"brain",desc:"Memoria y concentración: secuencias, números e intrusos"},
  {id:"ajedrez",ic:"♟️",nm:"Ajedrez",color:"red",cat:"pensar",special:"chess",desc:"Cómo se mueve cada pieza, su valor y trucos para empezar bien"},
+ {id:"trucosmate",ic:"🧮",nm:"Trucos de matemáticas",color:"green",cat:"cole",special:"mathtricks",desc:"Hacer diez, dobles, conteo salteado, resta hacia adelante, estimar"},
  {id:"juegos",ic:"🎮",nm:"Todos los juegos",color:"blue",cat:"jugar",special:"games",desc:"Trivias, arcade, letras y más"}];
 const KID_CATS=[["cole","📚 Aprende para el cole"],["en","🇬🇧 Inglés"],["leer","📖 Leer y escribir"],["pensar","🧩 Pensar"],["jugar","🎮 Jugar"]];
 let curNode=null;
@@ -620,11 +621,12 @@ function enNumCheckDN(){
 let C3D={};
 function screenColor3D(){setTheme("kid");
  const tpls=window.COLOR3D_TEMPLATES||[];
- const grid=tpls.map(function(t){return '<button class="wkpiece" style="font-size:2.2rem;height:74px" onclick="gameColor3D(\''+t.id+'\')">'+t.name+'</button>';}).join("");
+ const grid=tpls.map(function(t){const parts=t.name.split(" "),ic=parts.shift(),nm=parts.join(" ");
+  return '<button onclick="gameColor3D(\''+t.id+'\')" style="border:3px solid var(--kid-ink);border-radius:16px;background:#fff;padding:14px 6px;box-shadow:0 5px 0 rgba(30,42,74,.5);text-align:center"><div style="font-size:2.4rem">'+ic+'</div><div style="font-family:Fredoka;font-weight:700;font-size:.9rem;margin-top:4px">'+nm+'</div></button>';}).join("");
  render(topbar("screenArt()")
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🖍️✨ Colorear en 3D</h2>'
  +'<p class="center" style="margin-bottom:10px">Elige un modelo, tócalo para elegir una pieza y píntala 🎨</p>'
- +'<div class="wkgrid" style="grid-template-columns:repeat(2,1fr)">'+grid+'</div>'
+ +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+grid+'</div>'
  +'<button class="kbtn white" style="margin-top:14px" onclick="screenArt()">← Volver</button>');}
 function gameColor3D(id){setTheme("kid");
  C3D={id:id,sel:null,painted:0};

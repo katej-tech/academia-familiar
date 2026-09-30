@@ -280,33 +280,33 @@ function colorNext(){CO.picIdx=(CO.picIdx+1)%COLOR_PICS.length;renderColoring();
 /* ============ CLASES DE DIBUJO PASO A PASO (copia la parte azul) ============ */
 let DL={figIdx:0,step:0};
 const DRAW_FIGS=[
- {name:"🚗 Carro",steps:[
-   [{t:"rect",x:30,y:98,w:140,h:44,rx:16}],
-   [{t:"poly",p:[[68,98],[88,70],[128,70],[148,98]]}],
-   [{t:"line",a:[108,70],b:[108,98]}],
-   [{t:"circle",x:62,y:144,r:18},{t:"circle",x:138,y:144,r:18}],
-   [{t:"circle",x:40,y:112,r:5},{t:"line",a:[95,105],b:[95,135]}]
+ {name:"🚗 Carro",bg:"#EAF6FF",steps:[
+   [{t:"rect",x:30,y:98,w:140,h:44,rx:16,c:"#EF4444",fill:1}],
+   [{t:"poly",p:[[68,98],[88,70],[128,70],[148,98]],c:"#EF4444",fill:1}],
+   [{t:"line",a:[108,70],b:[108,98],c:"#7DD3FC"}],
+   [{t:"circle",x:62,y:144,r:18,c:"#1E293B",fill:1},{t:"circle",x:138,y:144,r:18,c:"#1E293B",fill:1}],
+   [{t:"circle",x:40,y:112,r:5,c:"#FDE047",fill:1},{t:"line",a:[95,105],b:[95,135],c:"#7DD3FC"}]
  ]},
- {name:"🚂 Tren",steps:[
-   [{t:"rect",x:34,y:96,w:150,h:48,rx:6}],
-   [{t:"rect",x:34,y:66,w:46,h:32,rx:4}],
-   [{t:"rect",x:150,y:70,w:16,h:26,rx:2},{t:"circle",x:158,y:60,r:8}],
-   [{t:"circle",x:66,y:146,r:15},{t:"circle",x:150,y:146,r:15}],
-   [{t:"rect",x:44,y:74,w:20,h:16,rx:2},{t:"rect",x:96,y:106,w:22,h:22,rx:2}]
+ {name:"🚂 Tren",bg:"#FFF7ED",steps:[
+   [{t:"rect",x:34,y:96,w:150,h:48,rx:6,c:"#3B82F6",fill:1}],
+   [{t:"rect",x:34,y:66,w:46,h:32,rx:4,c:"#3B82F6",fill:1}],
+   [{t:"rect",x:150,y:70,w:16,h:26,rx:2,c:"#64748B",fill:1},{t:"circle",x:158,y:60,r:8,c:"#94A3B8",fill:1}],
+   [{t:"circle",x:66,y:146,r:15,c:"#1E293B",fill:1},{t:"circle",x:150,y:146,r:15,c:"#1E293B",fill:1}],
+   [{t:"rect",x:44,y:74,w:20,h:16,rx:2,c:"#BAE6FD",fill:1},{t:"rect",x:96,y:106,w:22,h:22,rx:2,c:"#FDE047",fill:1}]
  ]},
- {name:"🤖 Robot",steps:[
-   [{t:"rect",x:66,y:44,w:68,h:52,rx:10}],
-   [{t:"rect",x:58,y:98,w:84,h:64,rx:12}],
-   [{t:"line",a:[100,44],b:[100,26]},{t:"circle",x:100,y:22,r:6},{t:"circle",x:86,y:68,r:8},{t:"circle",x:114,y:68,r:8}],
-   [{t:"rect",x:40,y:104,w:16,h:44,rx:6},{t:"rect",x:144,y:104,w:16,h:44,rx:6}],
-   [{t:"rect",x:72,y:162,w:18,h:30,rx:5},{t:"rect",x:110,y:162,w:18,h:30,rx:5}]
+ {name:"🤖 Robot",bg:"#F3F4F6",steps:[
+   [{t:"rect",x:66,y:44,w:68,h:52,rx:10,c:"#94A3B8",fill:1}],
+   [{t:"rect",x:58,y:98,w:84,h:64,rx:12,c:"#64748B",fill:1}],
+   [{t:"line",a:[100,44],b:[100,26],c:"#94A3B8"},{t:"circle",x:100,y:22,r:6,c:"#EF4444",fill:1},{t:"circle",x:86,y:68,r:8,c:"#22D3EE",fill:1},{t:"circle",x:114,y:68,r:8,c:"#22D3EE",fill:1}],
+   [{t:"rect",x:40,y:104,w:16,h:44,rx:6,c:"#F97316",fill:1},{t:"rect",x:144,y:104,w:16,h:44,rx:6,c:"#F97316",fill:1}],
+   [{t:"rect",x:72,y:162,w:18,h:30,rx:5,c:"#475569",fill:1},{t:"rect",x:110,y:162,w:18,h:30,rx:5,c:"#475569",fill:1}]
  ]},
- {name:"🐱 Gato",steps:[
-   [{t:"circle",x:100,y:54,r:34}],
-   [{t:"tri",p:[[72,40],[80,12],[98,38]]},{t:"tri",p:[[128,40],[120,12],[102,38]]}],
-   [{t:"poly",p:[[72,78],[66,158],[134,158],[128,78]]},{t:"line",a:[132,150],b:[170,116]}],
-   [{t:"circle",x:90,y:52,r:4},{t:"circle",x:110,y:52,r:4},{t:"tri",p:[[96,60],[104,60],[100,68]]},{t:"arc",x:92,y:68,r:9,s:0,e:Math.PI},{t:"arc",x:108,y:68,r:9,s:0,e:Math.PI}],
-   [{t:"line",a:[38,56],b:[80,60]},{t:"line",a:[38,66],b:[80,65]},{t:"line",a:[162,56],b:[120,60]},{t:"line",a:[162,66],b:[120,65]},{t:"circle",x:86,y:156,r:9},{t:"circle",x:114,y:156,r:9}]
+ {name:"🐱 Gato",bg:"#FEF3C7",steps:[
+   [{t:"circle",x:100,y:54,r:34,c:"#F97316",fill:1}],
+   [{t:"tri",p:[[72,40],[80,12],[98,38]],c:"#F97316",fill:1},{t:"tri",p:[[128,40],[120,12],[102,38]],c:"#F97316",fill:1}],
+   [{t:"poly",p:[[72,78],[66,158],[134,158],[128,78]],c:"#FB923C",fill:1},{t:"line",a:[132,150],b:[170,116],c:"#78350F"}],
+   [{t:"circle",x:90,y:52,r:4,c:"#1E293B",fill:1},{t:"circle",x:110,y:52,r:4,c:"#1E293B",fill:1},{t:"tri",p:[[96,60],[104,60],[100,68]],c:"#F472B6",fill:1},{t:"arc",x:92,y:68,r:9,s:0,e:Math.PI,c:"#1E293B"},{t:"arc",x:108,y:68,r:9,s:0,e:Math.PI,c:"#1E293B"}],
+   [{t:"line",a:[38,56],b:[80,60],c:"#1E293B"},{t:"line",a:[38,66],b:[80,65],c:"#1E293B"},{t:"line",a:[162,56],b:[120,60],c:"#1E293B"},{t:"line",a:[162,66],b:[120,65],c:"#1E293B"},{t:"circle",x:86,y:156,r:9,c:"#F472B6",fill:1},{t:"circle",x:114,y:156,r:9,c:"#F472B6",fill:1}]
  ]}
 ];
 function dlShape(c,sh){
@@ -317,15 +317,23 @@ function dlShape(c,sh){
  else if(sh.t==="poly"){c.moveTo(sh.p[0][0],sh.p[0][1]);for(var i=1;i<sh.p.length;i++)c.lineTo(sh.p[i][0],sh.p[i][1]);}
  else if(sh.t==="tri"){c.moveTo(sh.p[0][0],sh.p[0][1]);c.lineTo(sh.p[1][0],sh.p[1][1]);c.lineTo(sh.p[2][0],sh.p[2][1]);c.closePath();}
  else if(sh.t==="arc")c.arc(sh.x,sh.y,sh.r,sh.s,sh.e);
+ if(sh.fill){c.fillStyle=sh.c||"#3B82F6";c.fill();}
  c.stroke();
 }
+/* mini vista previa: el dibujo COMPLETO a color, para saber hacia dónde va cada paso */
+function dlPreview(fig,px){
+ var cv=document.createElement("canvas");cv.width=cv.height=200;
+ var c=cv.getContext("2d");c.fillStyle=fig.bg||"#fff";c.fillRect(0,0,200,200);
+ c.lineWidth=3;c.lineCap="round";c.lineJoin="round";
+ fig.steps.forEach(function(step){step.forEach(function(sh){c.strokeStyle="#1E2A4A";dlShape(c,sh);});});
+ return '<img src="'+cv.toDataURL()+'" style="width:'+px+'px;height:'+px+'px;border-radius:12px;border:3px solid var(--kid-ink);box-shadow:0 4px 0 rgba(30,42,74,.4)">';}
 function gameDrawLesson(){setTheme("kid");if(!DL)DL={};if(DL.figIdx==null)DL.figIdx=0;DL.step=0;startDrawLesson();}
 function startDrawLesson(){
  var fig=DRAW_FIGS[DL.figIdx%DRAW_FIGS.length];
  render(topbar("screenMyStuff()")
   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:2px">🎨 Cómo dibujar</h2>'
-  +'<p class="center" style="font-size:.9rem;margin-bottom:8px">'+fig.name+' — Paso <b><span id="dlstep">1</span> de '+fig.steps.length+'</b>. Copia la parte <span style="color:#3B82F6;font-weight:800">azul</span>.</p>'
-  +'<div style="position:relative;width:100%;max-width:340px;margin:0 auto"><canvas id="dlguide" style="width:100%;display:block;border:2px solid rgba(30,42,74,.1);border-radius:14px;background:#FCFBF6"></canvas><canvas id="dldraw" style="position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none"></canvas></div>'
+  +'<div class="center" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px">'+dlPreview(fig,74)+'<div style="text-align:left"><p style="font-size:.9rem;margin:0"><b>'+fig.name+'</b><br>Paso <b><span id="dlstep">1</span> de '+fig.steps.length+'</b></p><p style="font-size:.82rem;margin:4px 0 0">👉 Copia la parte <span style="color:#3B82F6;font-weight:800">resaltada</span></p></div></div>'
+  +'<div style="position:relative;width:100%;max-width:340px;margin:0 auto"><canvas id="dlguide" style="width:100%;display:block;border:2px solid rgba(30,42,74,.1);border-radius:14px;background:'+(fig.bg||"#FCFBF6")+'"></canvas><canvas id="dldraw" style="position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none"></canvas></div>'
   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:340px;margin:12px auto 0">'
    +'<button class="kbtn white" onclick="dlPrev()" style="min-height:50px">◀ Atrás</button>'
    +'<button class="kbtn blue" onclick="dlNext()" style="min-height:50px">Siguiente ▶</button>'
@@ -347,17 +355,25 @@ function startDrawLesson(){
  dc.addEventListener("pointerup",stop);dc.addEventListener("pointercancel",stop);dc.addEventListener("pointerleave",stop);
 }
 function dlGuide(){
- var c=DL.gctx,fig=DL.fig;if(!c)return;c.clearRect(0,0,200,200);
- for(var s=0;s<=DL.step;s++){var hi=(s===DL.step);
-  c.strokeStyle=hi?"#3B82F6":"rgba(30,42,74,.42)";c.lineWidth=hi?5.5:4;
-  fig.steps[s].forEach(function(sh){dlShape(c,sh);});
- }
+ var c=DL.gctx,fig=DL.fig;if(!c)return;c.clearRect(0,0,200,200);c.fillStyle=fig.bg||"#FCFBF6";c.fillRect(0,0,200,200);
+ for(var s=0;s<DL.step;s++){c.lineWidth=3;
+  fig.steps[s].forEach(function(sh){c.strokeStyle=sh.fill?(sh.c||"#1E2A4A"):"#1E2A4A";dlShape(c,sh);});}
+ fig.steps[DL.step].forEach(function(sh){
+  var s2=Object.assign({},sh,{fill:0});c.strokeStyle="#3B82F6";c.lineWidth=6;dlShape(c,s2);});
  var el=document.getElementById("dlstep");if(el)el.textContent=DL.step+1;
 }
 function dlPrev(){if(DL.step>0){DL.step--;dlGuide();}}
 function dlNext(){
  if(DL.step<DL.fig.steps.length-1){DL.step++;dlGuide();beep([560],.05);}
- else{confetti(20);if(typeof recordAnswer==="function")recordAnswer("Ordenar",true,15);if(typeof artPlus==="function")artPlus();toast("¡Terminaste tu dibujo! 🎨+1 🌟",true,2000);}
+ else{
+  sWIN();confetti(24);if(typeof recordAnswer==="function")recordAnswer("Dibujo",true,15);if(typeof artPlus==="function")artPlus();
+  var p=(typeof prof==="function")?prof():null;if(p){p.coins+=3;if(typeof save==="function")save();}
+  render(topbar("screenMyStuff()")
+   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:10px">🎉 ¡Terminaste tu '+DL.fig.name.replace(/^\S+\s*/,"")+'!</h2>'
+   +'<div class="center">'+dlPreview(DL.fig,220)+'</div>'
+   +'<p class="center" style="margin-top:10px">+3 🪙</p>'
+   +'<button class="kbtn green" style="margin-top:10px" onclick="dlOther()">🔁 Dibujar otra cosa</button>'
+   +'<button class="kbtn white" style="margin-top:8px" onclick="screenArt()">← Volver</button>');}
 }
 function dlClear(){if(DL.dctx&&DL.dc)DL.dctx.clearRect(0,0,DL.W+10,DL.W+10);}
 function dlOther(){DL.figIdx=(DL.figIdx+1)%DRAW_FIGS.length;DL.step=0;startDrawLesson();}

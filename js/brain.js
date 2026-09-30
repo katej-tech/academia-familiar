@@ -37,30 +37,28 @@ function seqStart(){setTheme("kid");
  SEQ={round:0,total:6,ok:0,len:1+brainLv("seq"),pattern:[],input:[],busy:true};
  seqRender();seqNewRound();}
 function seqRender(){
- const pads=SEQ_PADS.map(function(p,i){return '<button id="seqp'+i+'" '+(SEQ.busy?"disabled":'onclick="seqTap('+i+')"')+' style="aspect-ratio:1;border-radius:20px;border:4px solid var(--kid-ink);background:'+p.c+';opacity:.55;box-shadow:0 6px 0 rgba(30,42,74,.4)"></button>';}).join("");
  render(topbar("screenBrain()")
   +'<div class="progressdots">'+dots(SEQ.total,SEQ.round)+'</div>'
   +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:2px">🔴 Secuencia</h2>'
-  +'<p class="center" id="seqMsg" style="font-size:.9rem;margin-bottom:10px;min-height:1.4em">Mira bien… 👀</p>'
-  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:320px;margin:0 auto">'+pads+'</div>');}
+  +'<p class="center" id="seqMsg" style="font-size:.9rem;margin-bottom:6px;min-height:1.4em">Mira bien… 👀</p>'
+  +'<div class="card" style="padding:6px"><div id="seqCanvas" style="width:100%;height:min(88vw,320px)"></div></div>');
+ if(typeof render3DPads==="function")render3DPads("seqCanvas",function(i){seqTap(i);});}
 function seqNewRound(){
  if(SEQ.round>=SEQ.total)return seqEnd();
  SEQ.pattern.push(rnd(4));SEQ.input=[];SEQ.busy=true;
  const msg=document.getElementById("seqMsg");if(msg)msg.textContent="Mira bien… 👀";
- SEQ_PADS.forEach(function(p,i){const b=document.getElementById("seqp"+i);if(b)b.disabled=true;});
  let i=0;
  (function step(){
   if(i>=SEQ.pattern.length){SEQ.busy=false;
-   SEQ_PADS.forEach(function(p,k){const b=document.getElementById("seqp"+k);if(b){b.disabled=false;b.style.opacity=.55;}});
    const m=document.getElementById("seqMsg");if(m)m.textContent="¡Ahora repítelo tú! 👉";
    return;}
-  const k=SEQ.pattern[i],b=document.getElementById("seqp"+k);
-  if(b){b.style.opacity=1;tone(SEQ_PADS[k].f,.3);}
-  setTimeout(function(){if(b)b.style.opacity=.55;i++;setTimeout(step,220);},480);
+  const k=SEQ.pattern[i];
+  if(typeof pad3DLight==="function")pad3DLight(k,true);tone(SEQ_PADS[k].f,.3);
+  setTimeout(function(){if(typeof pad3DLight==="function")pad3DLight(k,false);i++;setTimeout(step,220);},480);
  })();}
 function seqTap(i){
  if(SEQ.busy)return;
- const b=document.getElementById("seqp"+i);if(b){b.style.opacity=1;tone(SEQ_PADS[i].f,.15);setTimeout(function(){b.style.opacity=.55;},180);}
+ if(typeof pad3DLight==="function")pad3DLight(i,true);tone(SEQ_PADS[i].f,.15);setTimeout(function(){if(typeof pad3DLight==="function")pad3DLight(i,false);},180);
  SEQ.input.push(i);
  const k=SEQ.input.length-1;
  if(SEQ.pattern[k]!==i){

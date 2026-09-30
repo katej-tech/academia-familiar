@@ -25,19 +25,17 @@ function screenMathTricks(){setTheme("kid");const done=mtDone();
   +'<p class="center" style="margin-bottom:12px">Así calculan rápido los que son buenos en mate — no es magia, ¡es una técnica que puedes aprender!</p>'
   +cards);}
 
-/* ---------- marco de diez (visual): n puntos llenos de 10 casillas ---------- */
-function tenFrame(n,fillColor){
- const cells=[];for(let i=0;i<10;i++)cells.push('<div style="aspect-ratio:1;border:2px solid var(--kid-ink);border-radius:6px;display:flex;align-items:center;justify-content:center;background:'+(i<n?(fillColor||"#3B82F6"):"#fff")+'">'+(i<n?'<div style="width:60%;height:60%;border-radius:50%;background:#fff;opacity:.0"></div>':"")+'</div>');
- return '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:200px;margin:8px auto">'+cells.join("")+'</div>';}
+/* marco de diez: placeholder que se rellena con render3DTenFrame() (cubos 3D) tras el render */
+function tenSlot(){return '<div id="mtTen" style="width:100%;height:150px"></div>';}
 
 let MTQ={};
 function mtLesson(id){setTheme("kid");MTQ.id=id;
  const T={
   diez:function(){
    const a=8,b=5,need=10-a,rest=b-need;
-   return{title:"Hacer diez",steps:[
-    '<p>Para sumar <b>'+a+' + '+b+'</b>, primero completamos una decena.</p>'+tenFrame(a)+'<p class="center">Al '+a+' le faltan <b>'+need+'</b> para llegar a 10.</p>',
-    '<p>Le quitamos '+need+' al '+b+': '+b+' = '+need+' + '+rest+'.</p>'+tenFrame(10)+'<p class="center"><b>'+a+' + '+need+' = 10</b>, y nos queda <b>'+rest+'</b> por sumar.</p>',
+   return{title:"Hacer diez",tens:{0:{n:a},1:{n:10}},steps:[
+    '<p>Para sumar <b>'+a+' + '+b+'</b>, primero completamos una decena.</p>'+tenSlot()+'<p class="center">Al '+a+' le faltan <b>'+need+'</b> para llegar a 10.</p>',
+    '<p>Le quitamos '+need+' al '+b+': '+b+' = '+need+' + '+rest+'.</p>'+tenSlot()+'<p class="center"><b>'+a+' + '+need+' = 10</b>, y nos queda <b>'+rest+'</b> por sumar.</p>',
     '<p class="center" style="font-size:1.3rem"><b>10 + '+rest+' = '+(10+rest)+'</b></p><p>¡Sumar con una decena redonda es mucho más fácil que sumar '+a+' + '+b+' directo!</p>'],
    gen:function(){const a=pick([7,8,9]),b=2+rnd(7);return{q:a+" + "+b,a:a+b};}};},
   dobles:function(){
@@ -54,9 +52,9 @@ function mtLesson(id){setTheme("kid");MTQ.id=id;
    gen:function(){const n=pick([2,5,10]),t=2+rnd(4);return{q:Array(t).fill(n).join(" + "),a:n*t};}};},
   restadelante:function(){
    const a=15,b=8;
-   return{title:"Resta hacia adelante",steps:[
+   return{title:"Resta hacia adelante",tens:{1:{n:10-b,color:"#F59E0B"}},steps:[
     '<p>Para <b>'+a+' − '+b+'</b>, en vez de restar, ¡cuenta hacia ADELANTE desde '+b+' hasta '+a+'!</p>',
-    '<p>De '+b+' a 10 hay <b>'+(10-b)+'</b>. De 10 a '+a+' hay <b>'+(a-10)+'</b> más.</p>'+tenFrame(10-b,"#F59E0B")+'<p class="center">'+(10-b)+' + '+(a-10)+' = <b>'+(a-b)+'</b></p>',
+    '<p>De '+b+' a 10 hay <b>'+(10-b)+'</b>. De 10 a '+a+' hay <b>'+(a-10)+'</b> más.</p>'+tenSlot()+'<p class="center">'+(10-b)+' + '+(a-10)+' = <b>'+(a-b)+'</b></p>',
     '<p class="center" style="font-size:1.3rem"><b>'+a+' − '+b+' = '+(a-b)+'</b></p><p>Contar hacia adelante es más fácil que restar cuando los números están cerca.</p>'],
    gen:function(){const b=6+rnd(4),a=b+2+rnd(8);return{q:a+" - "+b,a:a-b};}};},
   estimar:function(){
@@ -74,6 +72,9 @@ function mtRenderStep(){
   +'<div class="progressdots">'+dots(T.steps.length,MTQ.step)+'</div>'
   +'<div class="card" style="line-height:1.5">'+T.steps[MTQ.step]+'</div>'
   +'<button class="kbtn '+(MTQ.step<T.steps.length-1?"blue":"green")+'" onclick="mtNextStep()">'+(MTQ.step<T.steps.length-1?"Siguiente →":"🎯 ¡A practicar!")+'</button>');
+ const tf=T.tens&&T.tens[MTQ.step];
+ if(tf&&typeof render3DTenFrame==="function")render3DTenFrame("mtTen",tf.n,tf.color);
+ else if(typeof dispose3DTen==="function")dispose3DTen();
  speakES(MTQ.step===0?T.title:"");}
 function mtNextStep(){
  if(MTQ.step<MTQ.data.steps.length-1){MTQ.step++;return mtRenderStep();}
