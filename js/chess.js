@@ -32,16 +32,6 @@ function chDests(id,r,c){
   dirs.forEach(function(d){for(let k=1;k<N;k++){const rr=r+d[0]*k,cc=c+d[1]*k;if(rr<0||rr>=N||cc<0||cc>=N)break;out.push(rr+","+cc);}});
  }
  return out;}
-function chBoard(id,piece,highlight,star){
- const N=8,cells=[];
- for(let r=0;r<N;r++)for(let c=0;c<N;c++){
-  const dark=(r+c)%2===1,key=r+","+c;
-  let content="";
-  if(piece&&piece.r===r&&piece.c===c)content='<span style="position:relative;display:inline-block;width:1.6em;height:1.6em;line-height:1.6em;border-radius:50%;background:'+piece.def.color+'22;color:'+piece.def.color+';font-size:clamp(1.3rem,6.5vw,1.9rem);text-shadow:0 1px 0 rgba(0,0,0,.15)">'+piece.def.g+'</span>';
-  else if(star===key)content='<span style="font-size:clamp(1.1rem,5.5vw,1.5rem)">★</span>';
-  cells.push('<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:'+(highlight&&highlight.has(key)?"#86EFAC":dark?"#7C9CB5":"#EAF1F8")+'">'+content+'</div>');}
- return '<div style="display:grid;grid-template-columns:repeat(8,1fr);border:4px solid var(--kid-ink);border-radius:12px;overflow:hidden;max-width:340px;margin:0 auto">'+cells.join("")+'</div>';}
-
 /* ---------- hub ---------- */
 function screenChess(){setTheme("kid");const p=prof();const done=p.chessDone||{};
  const pieces=CH_PIECES.map(function(pc){const ok=done[pc.id];
@@ -61,10 +51,11 @@ function chessLesson(id){setTheme("kid");
  render(topbar("screenChess()")
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:2px">'+def.g+' '+def.nm+'</h2>'
   +'<p class="center" style="margin-bottom:8px;line-height:1.5">'+def.tx+'</p>'
-  +'<p class="center mut" style="font-size:.8rem;margin-bottom:6px">🟢 = casillas a las que se puede mover desde aquí</p>'
-  +chBoard(null,{r:r,c:c,def:def},dests)
+  +'<p class="center mut" style="font-size:.8rem;margin-bottom:6px">🟢 = casillas a las que se puede mover desde aquí · arrastra para girar</p>'
+  +'<div class="card" style="padding:6px"><div id="chess3dCanvas" style="width:100%;height:min(88vw,320px);border-radius:12px;overflow:hidden"></div></div>'
   +'<button class="kbtn green" style="margin-top:14px" onclick="chessQuizStart(\''+id+'\')">🎯 ¡Ponme a prueba!</button>'
   +'<button class="kbtn white" style="margin-top:8px" onclick="screenChess()">← Volver</button>');
+ if(typeof render3DChessBoard==="function")render3DChessBoard("chess3dCanvas",id,r,c,dests,null,def.color);
  speakES(def.nm+". "+def.tx);}
 
 /* ---------- quiz: ¿puede moverse ahí? sí/no ---------- */
@@ -82,9 +73,10 @@ function chessQuizNext(){
  render(topbar("screenChess()")
   +'<div class="progressdots">'+dots(CHQ.total,CHQ.round)+'</div>'
   +'<h2 style="font-size:clamp(1.1rem,5vw,1.4rem);text-align:center;margin-bottom:4px">'+def.g+' ¿Puede el '+def.nm.toLowerCase()+' moverse a la ★?</h2>'
-  +chBoard(null,{r:r,c:c,def:def},null,star)
+  +'<div class="card" style="padding:6px"><div id="chess3dCanvas" style="width:100%;height:min(88vw,300px);border-radius:12px;overflow:hidden"></div></div>'
   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><button class="kbtn green" style="min-height:56px;font-size:1.1rem" onclick="chessAns(true)">✅ Sí</button><button class="kbtn red" style="min-height:56px;font-size:1.1rem" onclick="chessAns(false)">❌ No</button></div>'
-  +'<div id="chFb"></div>');}
+  +'<div id="chFb"></div>');
+ if(typeof render3DChessBoard==="function")render3DChessBoard("chess3dCanvas",CHQ.id,r,c,null,star,def.color);}
 function chessAns(said){
  if(CHQ.answered)return;CHQ.answered=true;
  const ok=said===CHQ.correct;recordAnswer("Ajedrez",ok,12);
