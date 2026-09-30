@@ -15,6 +15,7 @@ function screenArt(){setTheme("kid");
  var sub=(typeof subHeader==="function")?subHeader("🎨 Arte y dibujo"):'<h2 style="text-align:center;margin:2px 0 12px">🎨 Arte y dibujo</h2>';
  render(topbar("screenMyStuff()")+sub
   +'<p class="center" style="margin-bottom:14px">Elige una actividad de dibujo</p>'
+  +(typeof screenDrawMethod==="function"?'<button class="kbtn red" onclick="screenDrawMethod()">✏️ Aprende a dibujar de verdad</button>':'')
   +'<button class="kbtn yellow" onclick="gameAiDraw()">✨ Dibuja con IA</button>'
   +'<button class="kbtn purple" onclick="gameColoring()">🖍️ Colorear</button>'
   +(typeof screenColor3D==="function"?'<button class="kbtn blue" onclick="screenColor3D()">🖍️✨ Colorear en 3D</button>':'')
