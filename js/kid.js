@@ -58,6 +58,7 @@ const KID_WORLDS=[
  {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",cat:"pensar",topics:["logica","secuencias","ordinales","izqder","acertijos"],desc:"Acertijos, adivinanzas y patrones"},
  {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",cat:"pensar",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
  {id:"cerebro",ic:"🧠",nm:"Cerebro en forma",color:"purple",cat:"pensar",special:"brain",desc:"Memoria y concentración: secuencias, números e intrusos"},
+ {id:"ajedrez",ic:"♟️",nm:"Ajedrez",color:"red",cat:"pensar",special:"chess",desc:"Cómo se mueve cada pieza, su valor y trucos para empezar bien"},
  {id:"juegos",ic:"🎮",nm:"Todos los juegos",color:"blue",cat:"jugar",special:"games",desc:"Trivias, arcade, letras y más"}];
 const KID_CATS=[["cole","📚 Aprende para el cole"],["en","🇬🇧 Inglés"],["leer","📖 Leer y escribir"],["pensar","🧩 Pensar"],["jugar","🎮 Jugar"]];
 let curNode=null;
@@ -122,6 +123,7 @@ function hubApps(){
   +(typeof screenRobot==="function"?appIcon("screenRobot()","🤖","Programa","linear-gradient(160deg,#A5F3FC,#0891B2)"):"")
   +(typeof screenEco==="function"?appIcon("screenEco()","🌍","Mi planeta","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
   +(typeof screenBrain==="function"?appIcon("screenBrain()","🧠","Cerebro","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
+  +(typeof screenChess==="function"?appIcon("screenChess()","♟️","Ajedrez","linear-gradient(160deg,#94A3B8,#334155)"):"")
   +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
   +'</div>';
  if(courses().length&&prof()&&(prof().age||0)>=10){
@@ -271,6 +273,7 @@ function openWorld(id){
  if(w.special==="body")return gameBody();
  if(w.special==="planetario")return screenSpace();
  if(w.special==="brain")return screenBrain();
+ if(w.special==="chess")return screenChess();
  if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos
  playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
