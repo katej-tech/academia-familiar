@@ -23,40 +23,55 @@ function screenDrawMethod(){setTheme("kid");const p=prof();const done=p.drawMeth
   +'<button class="kbtn purple" style="margin-top:6px" onclick="gameDrawLesson()">✂️ Practicar dibujando paso a paso</button>');}
 
 /* ---------- 🔵 Lección 1: todo son formas ---------- */
-function dmLabel(x,y,t){return '<rect x="'+(x-19)+'" y="'+(y-9)+'" width="38" height="16" rx="8" fill="#1E2A4A"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="9" fill="#fff" font-family="Fredoka,sans-serif" font-weight="700">'+t+'</text>';}
+/* cada forma guía lleva su PROPIO color de trazo, y una leyenda en TEXTO aparte (nunca texto
+   metido dentro del SVG: a ese tamaño se encima con las formas y queda ilegible) */
 const DM_SHAPES=[
- {nm:"Árbol",guide:'<rect x="88" y="110" width="24" height="70" rx="4" fill="none" stroke="#8B5E34" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,190,"cilindro")+'<circle cx="100" cy="80" r="46" fill="none" stroke="#3EC97C" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,26,"círculo"),
-  result:'<rect x="88" y="110" width="24" height="70" rx="4" fill="#8B5E34"/><circle cx="100" cy="78" r="46" fill="#3EC97C"/><circle cx="76" cy="70" r="20" fill="#4ADE80"/><circle cx="126" cy="66" r="18" fill="#4ADE80"/>'},
- {nm:"Casa",guide:'<rect x="50" y="100" width="100" height="80" fill="none" stroke="#3B82F6" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,196,"cuadrado")+'<polygon points="40,100 100,50 160,100" fill="none" stroke="#EF4444" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,42,"triángulo"),
-  result:'<polygon points="40,100 100,50 160,100" fill="#DC2626"/><rect x="50" y="100" width="100" height="80" fill="#FDE68A"/><rect x="88" y="140" width="24" height="40" fill="#8B5E34"/><rect x="60" y="115" width="24" height="24" fill="#7DD3FC"/><rect x="116" y="115" width="24" height="24" fill="#7DD3FC"/>'},
- {nm:"Gato",guide:'<circle cx="100" cy="70" r="30" fill="none" stroke="#F97316" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,26,"círculo")+'<ellipse cx="100" cy="145" rx="38" ry="42" fill="none" stroke="#F59E0B" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,193,"óvalo")+'<polygon points="72,50 80,20 96,46" fill="none" stroke="#EA580C" stroke-width="3" stroke-dasharray="4 3"/><polygon points="128,50 120,20 104,46" fill="none" stroke="#EA580C" stroke-width="3" stroke-dasharray="4 3"/>',
+ {nm:"Árbol",
+  legend:[{c:"#8B5E34",t:"Cilindro = el tronco"},{c:"#3EC97C",t:"Círculo = las hojas"}],
+  guide:'<rect x="76" y="104" width="48" height="80" rx="8" fill="none" stroke="#8B5E34" stroke-width="5" stroke-dasharray="9 6"/><circle cx="100" cy="74" r="58" fill="none" stroke="#3EC97C" stroke-width="5" stroke-dasharray="9 6"/>',
+  result:'<rect x="86" y="112" width="28" height="72" rx="5" fill="#8B5E34"/><circle cx="100" cy="76" r="56" fill="#3EC97C"/><circle cx="70" cy="66" r="24" fill="#4ADE80"/><circle cx="130" cy="60" r="22" fill="#4ADE80"/><circle cx="100" cy="40" r="24" fill="#4ADE80"/>'},
+ {nm:"Casa",
+  legend:[{c:"#3B82F6",t:"Cuadrado = las paredes"},{c:"#EF4444",t:"Triángulo = el techo"}],
+  guide:'<rect x="42" y="96" width="116" height="92" fill="none" stroke="#3B82F6" stroke-width="5" stroke-dasharray="9 6"/><polygon points="30,96 100,38 170,96" fill="none" stroke="#EF4444" stroke-width="5" stroke-dasharray="9 6"/>',
+  result:'<polygon points="30,96 100,38 170,96" fill="#DC2626"/><rect x="42" y="96" width="116" height="92" fill="#FDE68A"/><rect x="86" y="144" width="28" height="44" fill="#8B5E34"/><rect x="54" y="112" width="26" height="26" fill="#7DD3FC"/><rect x="120" y="112" width="26" height="26" fill="#7DD3FC"/>'},
+ {nm:"Gato",
+  legend:[{c:"#F97316",t:"Círculo = la cabeza"},{c:"#F59E0B",t:"Óvalo = el cuerpo"},{c:"#EA580C",t:"Triángulos = las orejas"}],
+  guide:'<ellipse cx="100" cy="148" rx="46" ry="48" fill="none" stroke="#F59E0B" stroke-width="5" stroke-dasharray="9 6"/><circle cx="100" cy="72" r="38" fill="none" stroke="#F97316" stroke-width="5" stroke-dasharray="9 6"/><polygon points="66,52 76,14 100,50" fill="none" stroke="#EA580C" stroke-width="4" stroke-dasharray="7 5"/><polygon points="134,52 124,14 100,50" fill="none" stroke="#EA580C" stroke-width="4" stroke-dasharray="7 5"/>',
   result:null},
- {nm:"Carro",guide:'<rect x="30" y="98" width="140" height="44" rx="16" fill="none" stroke="#EF4444" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,90,"rectángulo")+'<circle cx="62" cy="144" r="18" fill="none" stroke="#1E293B" stroke-width="3" stroke-dasharray="4 3"/><circle cx="138" cy="144" r="18" fill="none" stroke="#1E293B" stroke-width="3" stroke-dasharray="4 3"/>'+dmLabel(100,178,"círculos"),
+ {nm:"Carro",
+  legend:[{c:"#EF4444",t:"Rectángulo = la carrocería"},{c:"#1E293B",t:"Círculos = las ruedas"}],
+  guide:'<rect x="22" y="94" width="156" height="50" rx="20" fill="none" stroke="#EF4444" stroke-width="5" stroke-dasharray="9 6"/><circle cx="58" cy="150" r="22" fill="none" stroke="#1E293B" stroke-width="5" stroke-dasharray="9 6"/><circle cx="142" cy="150" r="22" fill="none" stroke="#1E293B" stroke-width="5" stroke-dasharray="9 6"/>',
   result:null},
- {nm:"Persona",guide:'<circle cx="100" cy="34" r="18" fill="none" stroke="#A855F7" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,10,"círculo")+'<ellipse cx="100" cy="90" rx="22" ry="34" fill="none" stroke="#7C3AED" stroke-width="3" stroke-dasharray="5 4"/>'+dmLabel(100,132,"óvalo")+'<ellipse cx="66" cy="150" rx="9" ry="34" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-dasharray="4 3"/><ellipse cx="134" cy="150" rx="9" ry="34" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-dasharray="4 3"/>',
-  result:'<circle cx="100" cy="34" r="18" fill="#FBCFE8"/><ellipse cx="100" cy="90" rx="22" ry="34" fill="#38BDF8"/><ellipse cx="66" cy="150" rx="9" ry="34" fill="#1E3A8A"/><ellipse cx="134" cy="150" rx="9" ry="34" fill="#1E3A8A"/><circle cx="93" cy="30" r="3" fill="#1E2A4A"/><circle cx="107" cy="30" r="3" fill="#1E2A4A"/><path d="M92 40 Q100 46 108 40" stroke="#1E2A4A" stroke-width="2" fill="none"/>'}
+ {nm:"Persona",
+  legend:[{c:"#A855F7",t:"Círculo = la cabeza"},{c:"#7C3AED",t:"Óvalos = el cuerpo y las piernas"}],
+  guide:'<circle cx="100" cy="38" r="24" fill="none" stroke="#A855F7" stroke-width="5" stroke-dasharray="9 6"/><ellipse cx="100" cy="106" rx="30" ry="42" fill="none" stroke="#7C3AED" stroke-width="5" stroke-dasharray="9 6"/><ellipse cx="76" cy="166" rx="13" ry="34" fill="none" stroke="#7C3AED" stroke-width="4" stroke-dasharray="7 5"/><ellipse cx="124" cy="166" rx="13" ry="34" fill="none" stroke="#7C3AED" stroke-width="4" stroke-dasharray="7 5"/>',
+  result:'<circle cx="100" cy="38" r="24" fill="#FBCFE8"/><ellipse cx="100" cy="106" rx="30" ry="42" fill="#38BDF8"/><ellipse cx="76" cy="166" rx="13" ry="34" fill="#1E3A8A"/><ellipse cx="124" cy="166" rx="13" ry="34" fill="#1E3A8A"/><circle cx="91" cy="32" r="4" fill="#1E2A4A"/><circle cx="109" cy="32" r="4" fill="#1E2A4A"/><path d="M88 46 Q100 54 112 46" stroke="#1E2A4A" stroke-width="3" fill="none"/>'}
 ];
-function dmShapeSvg(inner){return '<svg viewBox="0 0 200 200" style="width:100%;max-width:220px;display:block;margin:0 auto">'+inner+'</svg>';}
-let DMS={i:0};
-function dmShapes(){setTheme("kid");DMS.i=0;dmShapesRender();}
+function dmShapeSvg(inner){return '<svg viewBox="0 0 200 200" style="width:100%;max-width:280px;display:block;margin:0 auto">'+inner+'</svg>';}
+function dmLegendHtml(legend){return '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;max-width:280px;margin:10px auto 0">'+legend.map(function(l){return '<div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:18px;border-radius:5px;background:'+l.c+';flex:0 0 auto"></span><span style="font-size:.9rem;font-family:Fredoka;font-weight:600">'+l.t+'</span></div>';}).join("")+'</div>';}
+let DMS={i:0,revealed:false};
+function dmShapes(){setTheme("kid");DMS={i:0,revealed:false};dmShapesRender();}
 function dmShapesRender(){
  const it=DM_SHAPES[DMS.i];
  const resultHtml=it.result?dmShapeSvg(it.result)
-  :(it.nm==="Gato"&&typeof dlPreview==="function"?dlPreview(DRAW_FIGS[3],200)
-  :(it.nm==="Carro"&&typeof dlPreview==="function"?dlPreview(DRAW_FIGS[0],200)
+  :(it.nm==="Gato"&&typeof dlPreview==="function"?dlPreview(DRAW_FIGS[3],280)
+  :(it.nm==="Carro"&&typeof dlPreview==="function"?dlPreview(DRAW_FIGS[0],280)
   :dmShapeSvg(it.guide)));
  render(topbar("screenDrawMethod()")
   +'<div class="progressdots">'+dots(DM_SHAPES.length,DMS.i)+'</div>'
   +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:6px">🔵 '+it.nm+' = formas simples</h2>'
-  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-   +'<div class="card center" style="padding:8px"><p class="mut" style="font-size:.78rem;margin:0 0 4px">1. Formas guía</p>'+dmShapeSvg(it.guide)+'</div>'
-   +'<div class="card center" style="padding:8px"><p class="mut" style="font-size:.78rem;margin:0 0 4px">2. ¡Ya es un '+it.nm.toLowerCase()+'!</p>'+resultHtml+'</div>'
+  +'<div class="card center" style="padding:12px">'
+   +(DMS.revealed?resultHtml:dmShapeSvg(it.guide))
+   +(DMS.revealed?'':dmLegendHtml(it.legend))
   +'</div>'
-  +'<p class="center" style="margin-top:10px;line-height:1.5">Dibuja primero las formas guía bien flojito, y luego dale forma encima. ¡Así se dibuja cualquier cosa!</p>'
-  +'<button class="kbtn '+(DMS.i<DM_SHAPES.length-1?"blue":"green")+'" onclick="dmShapesNext()">'+(DMS.i<DM_SHAPES.length-1?"Siguiente →":"🎯 ¡Ya entendí, a practicar!")+'</button>');
- speakES(it.nm+" se dibuja con formas simples.");}
+  +(DMS.revealed
+   ?'<p class="center" style="margin-top:10px;font-family:Fredoka;font-weight:700;color:var(--kid-green)">✨ ¡Esas mismas formas se convirtieron en '+(it.nm==="Casa"?"una casa":it.nm==="Persona"?"una persona":"un "+it.nm.toLowerCase())+'!</p>'
+    +'<button class="kbtn '+(DMS.i<DM_SHAPES.length-1?"blue":"green")+'" onclick="dmShapesNext()">'+(DMS.i<DM_SHAPES.length-1?"Siguiente →":"🎯 ¡Ya entendí, a practicar!")+'</button>'
+   :'<button class="kbtn green" style="margin-top:10px" onclick="dmShapesReveal()">✨ ¡Dale forma! Mira en qué se convierte</button>'));
+ speakES(DMS.revealed?"":it.nm+" se dibuja con formas simples: "+it.legend.map(function(l){return l.t;}).join(". "));}
+function dmShapesReveal(){DMS.revealed=true;dmShapesRender();sOK();confetti(10);}
 function dmShapesNext(){
- if(DMS.i<DM_SHAPES.length-1){DMS.i++;return dmShapesRender();}
+ if(DMS.i<DM_SHAPES.length-1){DMS.i++;DMS.revealed=false;return dmShapesRender();}
  const p=prof();if(!p.drawMethodDone)p.drawMethodDone={};p.drawMethodDone.formas=true;p.coins+=3;p.xp+=6;save();
  sWIN();confetti(20);nodeWin(3,"Todo son formas");}
 
