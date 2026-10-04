@@ -81,6 +81,7 @@ function pet3DSetSleeping(sleeping){
  LIVE.group.rotation.z=sleeping?Math.PI/2.3:0;
  LIVE.group.position.y=sleeping?-.15:0;}
 
+window.PET_MODELS=PET_MODELS;
 window.render3DPet=render3DPet;
 window.pet3DPulse=pet3DPulse;
 window.pet3DSetSleeping=pet3DSetSleeping;

@@ -163,6 +163,7 @@ function screenCole(){setTheme("kid");const p=prof();
 function screenEnglishHub(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="en");
  render(topbar("screenKidMap()")+subHeader("🇬🇧 Inglés")
+  +(typeof screenEnglishScenes==="function"?'<button class="kbtn blue" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenEnglishScenes()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎭</span><span style="flex:1"><span>Inglés en acción</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Restaurante, aeropuerto, taxi… con personajes 3D 🌟</span></span></button>':"")
   +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑</span></span></button>'
   +'<button class="kbtn green" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenLevelsEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">📈</span><span style="flex:1"><span>Inglés por niveles A1→B2</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Aprueba exámenes y sube de nivel</span></span></button>'
   +'<button class="kbtn yellow" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenTutorEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎧</span><span style="flex:1"><span>Tutor de inglés (habla)</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">El profe dice y tú repites 🎤</span></span></button>'
@@ -428,7 +429,7 @@ function aiKeyRefresh(){
 function nodeWin(stars,subject,opts){
  opts=opts||{};
  const p=prof();
- if(typeof curNode==="string")bumpWorld(curNode);
+ if(typeof curNode==="string"&&!opts.noWorld)bumpWorld(curNode);
  p.coins+=stars*5;p.xp+=stars*10;touchDay().games++;save();
  sWIN();confetti(34);
  const got=opts.forceCritter?maybeCritter(true):(stars>=2?maybeCritter():null);
@@ -443,8 +444,8 @@ function nodeWin(stars,subject,opts){
  +'<h2>¡Muy bien!</h2>'
  +'<div style="font-size:2.4rem;margin:6px 0">'+"⭐".repeat(stars)+"☆".repeat(3-stars)+'</div>'
  +'<p style="font-size:1.15rem;margin-bottom:16px">Ganaste <b>+'+(stars*5)+' 🪙</b></p>'
- +'<button class="kbtn green" onclick="replayWorld()">Seguir jugando 🔁</button>'
- +'<button class="kbtn white" onclick="screenKidMap()">Ir a los mundos 🌍</button></div>'
+ +'<button class="kbtn green" onclick="'+(opts.replay||'replayWorld()')+'">'+(opts.replayLabel||'Seguir jugando 🔁')+'</button>'
+ +'<button class="kbtn white" onclick="'+(opts.backFn||'screenKidMap()')+'">'+(opts.backLabel||'Ir a los mundos 🌍')+'</button></div>'
  +critterHTML+workshopHTML);}
 function replayWorld(){
  if(typeof curNode==="string"){const w=KID_WORLDS.find(x=>x.id===curNode);

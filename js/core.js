@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.11.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.12.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -478,6 +478,7 @@ function stopGames(){
  try{if(typeof dispose3DPads==="function")dispose3DPads();}catch(e){} // pads 3D de Secuencia (Three.js)
  try{if(typeof dispose3DTen==="function")dispose3DTen();}catch(e){} // marco de diez 3D (Three.js)
  try{if(typeof disposeBricks==="function")disposeBricks();}catch(e){} // constructor de bloques (Three.js)
+ try{if(typeof enSceneCleanup==="function")enSceneCleanup();}catch(e){} // inglés en acción: voz, temporizadores y escenario 3D
  try{if(typeof disposePlanetChar==="function")disposePlanetChar();}catch(e){}
  try{if(typeof dispose3DPlanets==="function")dispose3DPlanets();}catch(e){} // planetario en 3D (Three.js): libera geometrías/renderer del módulo
  try{if(typeof HG!=="undefined")HG.done=true;}catch(e){}
