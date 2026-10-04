@@ -114,6 +114,7 @@ function hubApps(){
   +(typeof screenColor3D==="function"?appIcon("screenColor3D()","🖍️✨","Colorear 3D","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof screenBricks==="function"?appIcon("screenBricks()","🧱","Bloques","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
+  +(typeof screenPlanetLab==="function"?appIcon("screenPlanetLab()","🪐","Planetas","linear-gradient(160deg,#818CF8,#4338CA)"):"")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
   +'</div>';
  html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
@@ -275,6 +276,7 @@ function openWorld(id){
  if(w.special==="planetario")return screenSpace();
  if(w.special==="brain")return screenBrain();
  if(w.special==="chess")return screenChess();
+ if(w.special==="mathtricks")return screenMathTricks();
  if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos
  playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
