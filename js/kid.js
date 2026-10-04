@@ -55,6 +55,8 @@ const KID_WORLDS=[
  {id:"cuentosen",ic:"🇬🇧",nm:"Cuentos en inglés",color:"blue",cat:"en",special:"storiesEN",desc:"Lee y toca para traducir"},
  {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",cat:"leer",special:"stories",desc:"Cuentos ilustrados y comprensión"},
  {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",cat:"leer",special:"writing",desc:"Ordena frases y letras"},
+ {id:"logicavisual",ic:"🔷",nm:"Lógica visual 3D",color:"purple",cat:"pensar",special:"logiclab",desc:"Patrones, matrices, torres de cubos y balanzas"},
+ {id:"comprension",ic:"🔎",nm:"Comprensión lectora",color:"yellow",cat:"leer",special:"readcomp",desc:"Lee, responde y encuentra las pistas"},
  {id:"logica",ic:"🧩",nm:"Lógica y genio",color:"purple",cat:"pensar",topics:["logica","secuencias","ordinales","izqder","acertijos"],desc:"Acertijos, adivinanzas y patrones"},
  {id:"ubicacion",ic:"🧭",nm:"¿Dónde está?",color:"yellow",cat:"pensar",topics:["izqder"],desc:"Izquierda, derecha, sobre y debajo"},
  {id:"cerebro",ic:"🧠",nm:"Cerebro en forma",color:"purple",cat:"pensar",special:"brain",desc:"Memoria y concentración: secuencias, números e intrusos"},
@@ -105,6 +107,8 @@ function hubApps(){
   +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
   +appIcon("screenEnglishHub()","🇬🇧","Inglés","linear-gradient(160deg,#FCA5A5,#EF4444)")
   +(typeof screenCapsules==="function"?appIcon("screenCapsules()","🎞️","Cápsulas","linear-gradient(160deg,#67E8F9,#0891B2)"):"")
+  +(typeof screenLogicLab==="function"?appIcon("screenLogicLab()","🔷","Lógica 3D","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
+  +(typeof screenReadComp==="function"?appIcon("screenReadComp()","🔎","Comprensión","linear-gradient(160deg,#FDE68A,#D97706)"):"")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
   +'</div>';
@@ -280,6 +284,8 @@ function openWorld(id){
  if(w.special==="brain")return screenBrain();
  if(w.special==="chess")return screenChess();
  if(w.special==="mathtricks")return screenMathTricks();
+ if(w.special==="logiclab")return screenLogicLab();
+ if(w.special==="readcomp")return screenReadComp();
  if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos
  playTopics(w.nm,w.topics,{perTopic:4,topicsPerSession:2,total:8});}
