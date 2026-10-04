@@ -104,6 +104,7 @@ function hubApps(){
   +appIcon("screenCole()","📚","Aprender","linear-gradient(160deg,#4ADE80,#16A34A)",{badge:faltaEst?faltaEst:0})
   +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
   +appIcon("screenEnglishHub()","🇬🇧","Inglés","linear-gradient(160deg,#FCA5A5,#EF4444)")
+  +(typeof screenCapsules==="function"?appIcon("screenCapsules()","🎞️","Cápsulas","linear-gradient(160deg,#67E8F9,#0891B2)"):"")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
   +'</div>';
@@ -163,6 +164,7 @@ function screenCole(){setTheme("kid");const p=prof();
 function screenEnglishHub(){setTheme("kid");const p=prof();
  const ws=KID_WORLDS.filter(w=>w.cat==="en");
  render(topbar("screenKidMap()")+subHeader("🇬🇧 Inglés")
+  +(typeof screenCapsules==="function"?'<button class="kbtn purple" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenCapsules()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎞️</span><span style="flex:1"><span>Cápsulas</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Mini-lecciones con dibujos, voz y guía 3D</span></span></button>':"")
   +(typeof screenEnglishScenes==="function"?'<button class="kbtn blue" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenEnglishScenes()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎭</span><span style="flex:1"><span>Inglés en acción</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Restaurante, aeropuerto, taxi… con personajes 3D 🌟</span></span></button>':"")
   +'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAcademyKid()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">🎓</span><span style="flex:1"><span>Academia de Inglés</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Unidades y coronas 👑</span></span></button>'
   +'<button class="kbtn green" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenLevelsEN()"><span style="font-size:clamp(2.2rem,10vw,2.8rem)">📈</span><span style="flex:1"><span>Inglés por niveles A1→B2</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Aprueba exámenes y sube de nivel</span></span></button>'

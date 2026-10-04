@@ -401,3 +401,7 @@ body.adulto .node.current::after{content:"SIGUE";background:var(--adult-accent);
 .wordbank .wtile.used{opacity:.25;pointer-events:none}
 .wordslots{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;border:2px dashed var(--adult-line);border-radius:14px;margin-bottom:14px}
 .wordslots .wtile{background:var(--adult-accent);color:#fff;border:none}
+
+/* cápsulas: movimiento suave sobre la ilustración (Ken Burns) */
+@keyframes capKenA{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.2) translate(-3%,-2%)}}
+@keyframes capKenB{from{transform:scale(1.2) translate(3%,2%)}to{transform:scale(1.03) translate(0,0)}}
