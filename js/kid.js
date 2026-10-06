@@ -52,6 +52,7 @@ const KID_WORLDS=[
  {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",cat:"cole",topics:["tiempo","diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
  {id:"reloj",ic:"🕐",nm:"Aprende la hora",color:"yellow",cat:"cole",special:"clock",desc:"Lee el reloj: en punto y y media"},
  {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",cat:"en",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
+ {id:"engplay",ic:"🎒",nm:"English Playground",color:"purple",cat:"en",special:"engplay",desc:"Libros de solapas 3D, sustantivos, plurales, a/an, rimas…"},
  {id:"cuentosen",ic:"🇬🇧",nm:"Cuentos en inglés",color:"blue",cat:"en",special:"storiesEN",desc:"Lee y toca para traducir"},
  {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",cat:"leer",special:"stories",desc:"Cuentos ilustrados y comprensión"},
  {id:"letras",ic:"🔤",nm:"Letras y palabras",color:"red",cat:"leer",special:"letters",desc:"Letras 3D, sonidos, sílabas, palabras y fichas de caligrafía"},
@@ -294,6 +295,7 @@ function openWorld(id){
  if(w.special==="letters")return screenLetters();
  if(w.special==="grammar")return screenGrammar();
  if(w.special==="gender")return screenGender();
+ if(w.special==="engplay")return screenEnglishPlay();
  if(w.special==="readcomp")return screenReadComp();
  if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos
