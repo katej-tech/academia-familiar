@@ -21,16 +21,18 @@ function wordTex(txt){
  const size=txt.length<=6?60:txt.length<=9?50:40;
  c.fillStyle="#1E293B";c.font='700 '+size+'px Fredoka,"Nunito",sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText(txt,160,70);
  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;}
-function labelTex(k){
- const K=KINDS[k],cv=document.createElement("canvas");cv.width=384;cv.height=160;const c=cv.getContext("2d");
+function labelTex(K){
+ const cv=document.createElement("canvas");cv.width=384;cv.height=160;const c=cv.getContext("2d");
  c.fillStyle=K.col;c.fillRect(0,0,384,160);c.fillStyle="rgba(255,255,255,.22)";c.fillRect(0,110,384,50);
  c.fillStyle="#FFFFFF";c.textAlign="center";c.textBaseline="middle";
  c.font='700 56px Fredoka,"Nunito",sans-serif';c.fillText(K.nm,192,58);
  c.font='600 36px Nunito,sans-serif';c.fillText(K.sub,192,134);
  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;}
 
-/* words:[{w:"perro",k:"n"|"a"|"v"}]; cb(ev,info): ok | wrong | select | done */
-function renderWordSorter(containerId,words,cb){
+/* words:[{w:"perro",k:"n"|"a"|"v"}]; cb(ev,info): ok | wrong | select | done
+   binsCfg (opcional): lista de canastas [{k,nm,sub,col,dark}]; por defecto sustantivo/adjetivo/verbo */
+function renderWordSorter(containerId,words,cb,binsCfg){
+ const BL=binsCfg||["n","a","v"].map(function(k){return Object.assign({k:k},KINDS[k]);});
  const el=document.getElementById(containerId);if(!el)return null;
  disposeSorter3D();
  const w=el.clientWidth||340,h=el.clientHeight||320;
@@ -44,13 +46,14 @@ function renderWordSorter(containerId,words,cb){
  const dl=new THREE.DirectionalLight(0xffffff,1.0);dl.position.set(2,6,6);scene.add(dl);
  /* canastas */
  const bins={},binList=[];
- ["n","a","v"].forEach(function(k,i){
-  const K=KINDS[k],x=(i-1)*2.45,g=new THREE.Group();g.position.set(x,-1.55,0);scene.add(g);
-  const base=new THREE.Mesh(new THREE.BoxGeometry(2.1,.2,1.1),new THREE.MeshStandardMaterial({color:K.dark,roughness:.6}));base.position.y=-.5;g.add(base);
-  [[-1.0,0],[1.0,0]].forEach(function(p){const s=new THREE.Mesh(new THREE.BoxGeometry(.12,1,1.1),new THREE.MeshStandardMaterial({color:K.col,roughness:.6}));s.position.set(p[0],0,0);g.add(s);});
-  const back=new THREE.Mesh(new THREE.BoxGeometry(2.1,1,.12),new THREE.MeshStandardMaterial({color:K.col,roughness:.6}));back.position.set(0,0,-.5);g.add(back);
-  const front=new THREE.Mesh(new THREE.PlaneGeometry(2.0,.84),new THREE.MeshBasicMaterial({map:labelTex(k)}));front.position.set(0,.02,.57);g.add(front);
-  const hit=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.5,1.4),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=.1;hit.userData.bin=k;g.add(hit);
+ const nb=BL.length,sp=Math.min(2.45,7.6/nb),bw=sp-.3;
+ BL.forEach(function(K,i){
+  const k=K.k,x=(i-(nb-1)/2)*sp,g=new THREE.Group();g.position.set(x,-1.55,0);scene.add(g);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(bw,.2,1.1),new THREE.MeshStandardMaterial({color:K.dark,roughness:.6}));base.position.y=-.5;g.add(base);
+  [-1,1].forEach(function(sd){const s=new THREE.Mesh(new THREE.BoxGeometry(.12,1,1.1),new THREE.MeshStandardMaterial({color:K.col,roughness:.6}));s.position.set(sd*(bw/2-.05),0,0);g.add(s);});
+  const back=new THREE.Mesh(new THREE.BoxGeometry(bw,1,.12),new THREE.MeshStandardMaterial({color:K.col,roughness:.6}));back.position.set(0,0,-.5);g.add(back);
+  const front=new THREE.Mesh(new THREE.PlaneGeometry(bw-.1,.84),new THREE.MeshBasicMaterial({map:labelTex(K)}));front.position.set(0,.02,.57);g.add(front);
+  const hit=new THREE.Mesh(new THREE.BoxGeometry(bw+.2,1.5,1.4),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=.1;hit.userData.bin=k;g.add(hit);
   bins[k]={x:x,g:g,hit:hit,n:0,flash:0};binList.push(hit);});
  /* bloques de palabras */
  const per=3,blocks=[];
@@ -64,7 +67,7 @@ function renderWordSorter(containerId,words,cb){
   scene.add(m);blocks.push(m);});
  const ctx={renderer:renderer,scene:scene,camera:camera,raf:null,t:0,ro:null,sel:null,left:words.length,locked:false};
  const rows=Math.ceil(words.length/per),top=1.75+.6,bottom=-1.55-1.05;
- function fit(){const t=Math.tan(camera.fov*Math.PI/360),needH=top-bottom,needW=7.6;const d=Math.max(needH/(2*t),needW/(2*t*camera.aspect))+.3;const cy=(top+bottom)/2;camera.position.set(0,cy,d);camera.lookAt(0,cy,0);}
+ function fit(){const t=Math.tan(camera.fov*Math.PI/360),needH=top-bottom,needW=Math.max(7.6,nb*sp+.4);const d=Math.max(needH/(2*t),needW/(2*t*camera.aspect))+.3;const cy=(top+bottom)/2;camera.position.set(0,cy,d);camera.lookAt(0,cy,0);}
  fit();
  if(window.ResizeObserver){ctx.ro=new ResizeObserver(function(){const nw=el.clientWidth,nh=el.clientHeight;if(nw>0&&nh>0){renderer.setSize(nw,nh,false);camera.aspect=nw/nh;camera.updateProjectionMatrix();fit();}});ctx.ro.observe(el);}
  function pickWord(b){
