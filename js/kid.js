@@ -52,6 +52,7 @@ const KID_WORLDS=[
  {id:"calendario",ic:"📅",nm:"Tiempo",color:"blue",cat:"cole",topics:["tiempo","diasES","mesesES","ordinales"],desc:"Días, meses y orden"},
  {id:"reloj",ic:"🕐",nm:"Aprende la hora",color:"yellow",cat:"cole",special:"clock",desc:"Lee el reloj: en punto y y media"},
  {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",cat:"en",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
+ {id:"audiolibrosen",ic:"🎧",nm:"Audiobooks (3 levels)",color:"blue",cat:"en",special:"audiobooks",desc:"Stories read aloud with a 3D book: levels 1, 2 and 3"},
  {id:"engplay",ic:"🎒",nm:"English Playground",color:"purple",cat:"en",special:"engplay",desc:"Libros de solapas 3D, sustantivos, plurales, a/an, rimas…"},
  {id:"cuentosen",ic:"🇬🇧",nm:"Cuentos en inglés",color:"blue",cat:"en",special:"storiesEN",desc:"Lee y toca para traducir"},
  {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",cat:"leer",special:"stories",desc:"Cuentos ilustrados y comprensión"},
@@ -59,6 +60,7 @@ const KID_WORLDS=[
  {id:"gramatica",ic:"🏷️",nm:"Sustantivo, adjetivo y verbo",color:"blue",cat:"leer",special:"grammar",desc:"Aprende y practica los tipos de palabras con juegos"},
  {id:"genero",ic:"👫",nm:"Género y número",color:"purple",cat:"leer",special:"gender",desc:"Masculino y femenino, singular y plural, y que todo concuerde"},
  {id:"palabras2",ic:"🔤",nm:"Palabras avanzadas",color:"yellow",cat:"leer",special:"words2",desc:"Sílaba tónica, sinónimos, antónimos, mp/mb y r/rr"},
+ {id:"audiolibros",ic:"🎧",nm:"Audiolibros por nivel",color:"purple",cat:"leer",special:"audiobooks",desc:"Un libro 3D que se lee solo: 3 niveles en español e inglés"},
  {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",cat:"leer",special:"writing",desc:"Ordena frases y letras"},
  {id:"logicavisual",ic:"🔷",nm:"Lógica visual 3D",color:"purple",cat:"pensar",special:"logiclab",desc:"Patrones, matrices, torres de cubos y balanzas"},
  {id:"comprension",ic:"🔎",nm:"Comprensión lectora",color:"yellow",cat:"leer",special:"readcomp",desc:"Lee, responde y encuentra las pistas"},
@@ -117,6 +119,7 @@ function hubApps(){
   +(typeof screenLetters==="function"?appIcon("screenLetters()","🔤","Letras","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
   +(typeof screenGrammar==="function"?appIcon("screenGrammar()","🏷️","Gramática","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof screenGender==="function"?appIcon("screenGender()","👫","Género y número","linear-gradient(160deg,#F9A8D4,#9333EA)"):"")
+  +(typeof screenAudiobooks==="function"?appIcon("screenAudiobooks()","🎧","Audiolibros","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
   +'</div>';
@@ -297,6 +300,7 @@ function openWorld(id){
  if(w.special==="grammar")return screenGrammar();
  if(w.special==="gender")return screenGender();
  if(w.special==="words2")return screenWords2();
+ if(w.special==="audiobooks")return screenAudiobooks();
  if(w.special==="engplay")return screenEnglishPlay();
  if(w.special==="readcomp")return screenReadComp();
  if(w.special==="social")return screenSocial();
