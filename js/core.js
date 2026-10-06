@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.22.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.23.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -487,6 +487,7 @@ function stopGames(){
  try{if(typeof gnrCleanup==="function")gnrCleanup();}catch(e){}
  try{if(typeof w2Cleanup==="function")w2Cleanup();}catch(e){}
  try{if(typeof accCleanup==="function")accCleanup();}catch(e){}
+ try{if(typeof spcCleanup==="function")spcCleanup();}catch(e){}
  try{if(typeof disposeBook3D==="function")disposeBook3D();}catch(e){} // libro 3D de los audiolibros
  try{if(typeof abCleanup==="function")abCleanup();}catch(e){}
  try{if(typeof disposeLanding3D==="function")disposeLanding3D();}catch(e){} // aterrizaje en un planeta (Three.js)

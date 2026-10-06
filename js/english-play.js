@@ -65,6 +65,18 @@ const EGR_STRESS=[["banana","🍌","ba-na-na",1],["apple","🍎","ap-ple",0],["e
  ["potato","🥔","po-ta-to",1],["tomato","🍅","to-ma-to",1],["dinosaur","🦖","di-no-saur",0],["butterfly","🦋","but-ter-fly",0],["window","🪟","win-dow",0],["yellow","💛","yel-low",0],
  ["guitar","🎸","gui-tar",1],["hotel","🏨","ho-tel",1],["police","👮","po-lice",1],["music","🎵","mu-sic",0],["water","💧","wa-ter",0],["orange","🍊","or-ange",0],
  ["giraffe","🦒","gi-raffe",1],["balloon","🎈","bal-loon",1],["monkey","🐒","mon-key",0],["spider","🕷️","spi-der",0],["kangaroo","🦘","kan-ga-roo",2],["octopus","🐙","oc-to-pus",0],["hello","👋","hel-lo",1]];
+/* proper / common nouns (English): days, months and languages ARE proper nouns in English */
+const EGR_PROPER=["Tom","Anna","Max","Emma","Mexico","Colombia","Spain","Paris","London","Mars","Monday","Friday","July","March","English","Spanish"];
+const EGR_COMMONN=["boy","girl","dog","cat","city","country","school","teacher","planet","river","book","day","month","language","friend","park"];
+const EGR_PN_BINS=[{k:"p",nm:"PROPER",sub:"special name",col:"#EC4899",dark:"#BE185D"},{k:"c",nm:"COMMON",sub:"name for all",col:"#0EA5E9",dark:"#0369A1"}];
+/* [sentence, correct spelling, why] */
+const EGR_CAPS=[
+ ["My name is ___.","Emma","Names of people start with a capital letter."],["I live in ___.","Colombia","Names of countries start with a capital letter."],
+ ["Today is ___.","Monday","In English, days start with a capital letter."],["My birthday is in ___.","July","In English, months start with a capital letter."],
+ ["I speak ___.","English","Languages start with a capital letter in English."],["The ___ is big.","dog","A common noun uses a small letter."],
+ ["My friend ___ has a cat.","Tom","Names of people start with a capital letter."],["We visit ___ in the summer.","Paris","Names of cities start with a capital letter."],
+ ["I like my ___.","teacher","A common noun uses a small letter."],["___ is a red planet.","Mars","Names of planets start with a capital letter."],
+ ["The ___ is in the park.","girl","A common noun uses a small letter."],["We have school on ___.","Tuesday","In English, days start with a capital letter."]];
 const EGR_ACTS=[
  {id:"baskets",ic:"🧺",nm:"Noun · Adjective · Verb 3D",sub:"Throw each word into its basket",cls:"blue"},
  {id:"aan",ic:"🅰️",nm:"A or AN?",sub:"a pencil · an apple",cls:"green"},
@@ -74,7 +86,9 @@ const EGR_ACTS=[
  {id:"syl",ic:"👏",nm:"Clap the syllables",sub:"How many beats in the word?",cls:"blue"},
  {id:"rhyme",ic:"🎵",nm:"Rhyme time",sub:"Which word sounds the same at the end?",cls:"green"},
  {id:"sameopp",ic:"🔁",nm:"Same or opposite 3D",sub:"big · large  ↔  big · small",cls:"purple"},
- {id:"stress",ic:"🥁",nm:"The strong syllable",sub:"ba-NA-na: which beat is louder?",cls:"red"}];
+ {id:"stress",ic:"🥁",nm:"The strong syllable",sub:"ba-NA-na: which beat is louder?",cls:"red"},
+ {id:"proper3d",ic:"⭐",nm:"Proper or common noun 3D",sub:"Tom, Paris, Monday… or boy, city, day?",cls:"purple"},
+ {id:"caps",ic:"🔠",nm:"Capital letter or small letter?",sub:"Write names, days and months well",cls:"blue"}];
 const EGR_WIN={noWorld:true,replay:"screenEnglishPlay()",replayLabel:"More English 🎒",backFn:"screenEnglishHub()",backLabel:"Volver a Inglés 🇬🇧"};
 let EGR={};
 
@@ -151,12 +165,14 @@ function egStart(kind){
   syl:function(){return take(EGR_SYL,6);},
   rhyme:function(){return take(EGR_RHYME,6);},
   sameopp:function(){return[0,1];},
-  stress:function(){return take(EGR_STRESS,6);}};
+  stress:function(){return take(EGR_STRESS,6);},
+  proper3d:function(){return[0,1];},
+  caps:function(){return take(EGR_CAPS,6);}};
  EGR.items=bank[kind]();
- if(kind==="baskets"||kind==="sameopp"){EGR.total=12;EGR.round=0;}else EGR.total=EGR.items.length;
+ if(kind==="baskets"||kind==="sameopp"||kind==="proper3d"){EGR.total=12;EGR.round=0;}else EGR.total=EGR.items.length;
  egNext();}
 function egNext(){
- if(EGR.i>=EGR.total&&EGR.kind!=="baskets"&&EGR.kind!=="sameopp")return egFinish();
+ if(EGR.i>=EGR.total&&EGR.kind!=="baskets"&&EGR.kind!=="sameopp"&&EGR.kind!=="proper3d")return egFinish();
  EGR.tried=false;EGR.done=false;
  const k=EGR.kind,it=EGR.items[EGR.i];
  if(k==="baskets")return egBaskets();
@@ -167,7 +183,9 @@ function egNext(){
  if(k==="syl")return egSyl(it);
  if(k==="rhyme")return egRhyme(it);
  if(k==="sameopp")return egSameOpp();
- if(k==="stress")return egStress(it);}
+ if(k==="stress")return egStress(it);
+ if(k==="proper3d")return egProper3d();
+ if(k==="caps")return egCaps(it);}
 function egOpts(list,fn,cols){
  return '<div style="display:grid;grid-template-columns:repeat('+(cols||list.length)+',1fr);gap:10px;margin-top:8px">'+list.map(function(o,i){return '<button class="kbtn white" id="egO'+i+'" style="margin:0;min-height:60px;font-size:1.35rem" onclick="'+fn+'('+i+')">'+o+'</button>';}).join("")+'</div><div id="egFb"></div>';}
 function egCard(e,txt,big){return '<div class="card center" style="padding:10px"><div style="font-size:'+(big||4)+'rem;line-height:1.1">'+e+'</div>'+(txt?'<div style="font-family:Fredoka;font-weight:700;font-size:1.5rem;margin-top:4px">'+txt+'</div>':'')+'</div>';}
@@ -288,3 +306,31 @@ function egStressAns(i){
  if(EGR.done)return;const it=EGR.cur,b=document.getElementById("egS"+i);
  if(i===it[3]){b.style.background="#EF4444";b.style.borderColor="#B91C1C";b.style.color="#fff";egFb("✅ "+it[2].split("-").map(function(s,k){return k===it[3]?s.toUpperCase():s;}).join(" · "),true);speakEN(it[0]);egAnswered(!EGR.tried,2400);}
  else{EGR.tried=true;b.style.background="#FCA5A5";b.disabled=true;sNO();egFb("Say it again and feel which beat is stronger 🥁",false);}}
+
+/* ---------- 🧺 proper or common nouns (3D, words in CAPITALS) ---------- */
+function egProper3d(){
+ const props=shuffled(EGR_PROPER).slice(0,3).map(function(w){return{w:w,k:"p"};}),coms=shuffled(EGR_COMMONN).slice(0,3).map(function(w){return{w:w,k:"c"};});
+ const list=shuffled(props.concat(coms));EGR.orig={};list.forEach(function(x){EGR.orig[x.w.toUpperCase()]=x.w;});EGR.tries={};
+ render(topbar("screenEnglishPlay()")+'<div class="progressdots">'+dots(2,EGR.round)+'</div><p class="center" style="margin:2px 0 6px;font-family:Fredoka;font-weight:700">🧺 Proper or common noun</p>'
+  +'<div class="card" style="padding:8px 12px"><b>The words are in CAPITALS: think about what they name!</b><br><span class="mut" style="font-size:.82rem">🩷 proper = the special name of one · 🩵 common = a name for all of a kind (days, months and languages are PROPER in English)</span></div>'
+  +'<div class="card" style="padding:0;overflow:hidden;border-radius:18px"><div id="egCanvas" style="width:100%;height:clamp(300px,50vh,400px)"></div></div><div id="egFb"></div>');
+ EGR.c3=renderWordSorter("egCanvas",list.map(function(x){return{w:x.w.toUpperCase(),k:x.k};}),function(ev,info){
+  const o=EGR.orig[info.w]||info.w;
+  if(ev==="select"){speakEN(o);}
+  else if(ev==="ok"){const first=!EGR.tries[info.w];if(first)EGR.ok++;recordAnswer("Inglés",first,8);EGR.i++;sOK();confetti(4);egFb("✅ <b>"+esc(o)+"</b> is a "+(info.k==="p"?"proper noun: capital letter.":"common noun: small letter."),true);}
+  else if(ev==="wrong"){EGR.tries[info.w]=1;sNO();egFb("🤔 Is «"+esc(o)+"» the special name of ONE, or a name for ALL of a kind?",false);}
+  else if(ev==="done"){EGR.round++;if(EGR.round>=2){egFb("🎉 Great job!",true);egLater(egFinish,1200);}else{egFb("🎉 Well done! Next round…",true);egLater(egProper3d,1300);}}},EGR_PN_BINS);}
+
+/* ---------- 🔠 capital letter or small letter ---------- */
+function egCaps(it){
+ const ok=it[1],alt=ok.charAt(0)===ok.charAt(0).toUpperCase()?ok.toLowerCase():ok.charAt(0).toUpperCase()+ok.slice(1);
+ EGR.cur=it;EGR.opts=shuffled([ok,alt]);
+ render(topbar("screenEnglishPlay()")+egHeader()
+  +'<div class="card center" style="font-size:1.4rem;font-family:Fredoka;font-weight:600;line-height:1.6">'+esc(it[0]).replace("___",'<span style="display:inline-block;min-width:4ch;border-bottom:4px solid #6366F1">&nbsp;</span>')+'</div>'
+  +'<button class="speaker small" onclick="speakEN(EGR.cur[0].replace(\'___\',\'…\'))">🔊 Listen</button>'
+  +'<p class="center" style="margin:4px 0"><b>How do you write it?</b></p>'+egOpts(EGR.opts,"egCapsAns",2));
+ speakEN(it[0].replace("___","…"));}
+function egCapsAns(i){
+ if(EGR.done)return;const it=EGR.cur,o=EGR.opts[i];
+ if(o===it[1]){egMark(i,true);const full=it[0].replace("___",o);egFb("✅ "+esc(full)+" · "+it[2],true);setTimeout(function(){speakEN(full);},300);egAnswered(!EGR.tried,3000);}
+ else{EGR.tried=true;egMark(i,false);sNO();egFb("Not quite 🤔 Is it a special name, or a common noun?",false);}}
