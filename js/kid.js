@@ -54,6 +54,7 @@ const KID_WORLDS=[
  {id:"ingles",ic:"🔤",nm:"Inglés con voz",color:"red",cat:"en",topics:["en_animals","en_colors","en_body","en_house","en_numbers","en_vowels","en_days","en_phrases"],desc:"Escucha y aprende inglés",en:true},
  {id:"cuentosen",ic:"🇬🇧",nm:"Cuentos en inglés",color:"blue",cat:"en",special:"storiesEN",desc:"Lee y toca para traducir"},
  {id:"lectura",ic:"📖",nm:"Cuentos",color:"yellow",cat:"leer",special:"stories",desc:"Cuentos ilustrados y comprensión"},
+ {id:"letras",ic:"🔤",nm:"Letras y palabras",color:"red",cat:"leer",special:"letters",desc:"Letras 3D, sonidos, sílabas, palabras y fichas de caligrafía"},
  {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",cat:"leer",special:"writing",desc:"Ordena frases y letras"},
  {id:"logicavisual",ic:"🔷",nm:"Lógica visual 3D",color:"purple",cat:"pensar",special:"logiclab",desc:"Patrones, matrices, torres de cubos y balanzas"},
  {id:"comprension",ic:"🔎",nm:"Comprensión lectora",color:"yellow",cat:"leer",special:"readcomp",desc:"Lee, responde y encuentra las pistas"},
@@ -109,6 +110,7 @@ function hubApps(){
   +(typeof screenCapsules==="function"?appIcon("screenCapsules()","🎞️","Cápsulas","linear-gradient(160deg,#67E8F9,#0891B2)"):"")
   +(typeof screenLogicLab==="function"?appIcon("screenLogicLab()","🔷","Lógica 3D","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
   +(typeof screenReadComp==="function"?appIcon("screenReadComp()","🔎","Comprensión","linear-gradient(160deg,#FDE68A,#D97706)"):"")
+  +(typeof screenLetters==="function"?appIcon("screenLetters()","🔤","Letras","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
   +'</div>';
@@ -285,6 +287,7 @@ function openWorld(id){
  if(w.special==="chess")return screenChess();
  if(w.special==="mathtricks")return screenMathTricks();
  if(w.special==="logiclab")return screenLogicLab();
+ if(w.special==="letters")return screenLetters();
  if(w.special==="readcomp")return screenReadComp();
  if(w.special==="social")return screenSocial();
  // mundo de retos infinitos adaptativos

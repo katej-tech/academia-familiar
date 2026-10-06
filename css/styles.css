@@ -405,3 +405,11 @@ body.adulto .node.current::after{content:"SIGUE";background:var(--adult-accent);
 /* cápsulas: movimiento suave sobre la ilustración (Ken Burns) */
 @keyframes capKenA{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.2) translate(-3%,-2%)}}
 @keyframes capKenB{from{transform:scale(1.2) translate(3%,2%)}to{transform:scale(1.03) translate(0,0)}}
+
+/* fichas de caligrafía: al imprimir solo sale la hoja (#printSheet), no la app */
+#printSheet{display:none}
+@media print{
+ body.printing>*:not(#printSheet){display:none!important}
+ body.printing #printSheet{display:block!important;background:#fff}
+ @page{size:A4;margin:14mm}
+}

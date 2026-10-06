@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.14.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.15.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -480,6 +480,8 @@ function stopGames(){
  try{if(typeof disposeBricks==="function")disposeBricks();}catch(e){} // constructor de bloques (Three.js)
  try{if(typeof dispose3DLogic==="function")dispose3DLogic();}catch(e){} // lógica visual 3D (Three.js)
  try{if(typeof lgCleanup==="function")lgCleanup();}catch(e){}
+ try{if(typeof disposeSyl3D==="function")disposeSyl3D();}catch(e){} // bloques de sílabas 3D
+ try{if(typeof litCleanup==="function")litCleanup();}catch(e){}
  try{if(typeof rcCleanup==="function")rcCleanup();}catch(e){} // comprensión lectora: voz y temporizadores
  try{if(typeof capCleanup==="function")capCleanup();}catch(e){} // cápsulas: voz, temporizadores y guía 3D
  try{if(typeof enSceneCleanup==="function")enSceneCleanup();}catch(e){} // inglés en acción: voz, temporizadores y escenario 3D
