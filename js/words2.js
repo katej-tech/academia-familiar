@@ -60,7 +60,8 @@ function screenWords2(){setTheme("kid");
  w2Cleanup();
  const cards=W2_ACTS.map(function(a){return '<button class="kbtn '+a.cls+'" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="w2Start(\''+a.id+'\')"><span style="font-size:clamp(2rem,9vw,2.6rem)">'+a.ic+'</span><span style="flex:1"><span>'+a.nm+'</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">'+a.sub+'</span></span></button>';}).join("");
  render(topbar("screenKidMap()")+subHeader("🔤 Palabras avanzadas")
-  +'<p class="center" style="margin:-4px 0 10px">Sílaba tónica, sinónimos, antónimos y ortografía: ¡para segundo grado!</p>'+cards);}
+  +'<p class="center" style="margin:-4px 0 10px">Sílaba tónica, sinónimos, antónimos y ortografía: ¡para segundo grado!</p>'+cards
+  +(typeof screenAccent==="function"?'<button class="kbtn red" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenAccent()"><span style="font-size:clamp(2rem,9vw,2.6rem)">🥁</span><span style="flex:1"><span>Agudas, llanas y esdrújulas</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Cuenta desde el final y aprende cuándo lleva tilde</span></span></button>':""));}
 
 /* ---------- motor ---------- */
 function w2Start(kind){
