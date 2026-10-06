@@ -58,6 +58,7 @@ const KID_WORLDS=[
  {id:"letras",ic:"🔤",nm:"Letras y palabras",color:"red",cat:"leer",special:"letters",desc:"Letras 3D, sonidos, sílabas, palabras y fichas de caligrafía"},
  {id:"gramatica",ic:"🏷️",nm:"Sustantivo, adjetivo y verbo",color:"blue",cat:"leer",special:"grammar",desc:"Aprende y practica los tipos de palabras con juegos"},
  {id:"genero",ic:"👫",nm:"Género y número",color:"purple",cat:"leer",special:"gender",desc:"Masculino y femenino, singular y plural, y que todo concuerde"},
+ {id:"palabras2",ic:"🔤",nm:"Palabras avanzadas",color:"yellow",cat:"leer",special:"words2",desc:"Sílaba tónica, sinónimos, antónimos, mp/mb y r/rr"},
  {id:"escritura",ic:"✍️",nm:"Escribir bien",color:"white",cat:"leer",special:"writing",desc:"Ordena frases y letras"},
  {id:"logicavisual",ic:"🔷",nm:"Lógica visual 3D",color:"purple",cat:"pensar",special:"logiclab",desc:"Patrones, matrices, torres de cubos y balanzas"},
  {id:"comprension",ic:"🔎",nm:"Comprensión lectora",color:"yellow",cat:"leer",special:"readcomp",desc:"Lee, responde y encuentra las pistas"},
@@ -295,6 +296,7 @@ function openWorld(id){
  if(w.special==="letters")return screenLetters();
  if(w.special==="grammar")return screenGrammar();
  if(w.special==="gender")return screenGender();
+ if(w.special==="words2")return screenWords2();
  if(w.special==="engplay")return screenEnglishPlay();
  if(w.special==="readcomp")return screenReadComp();
  if(w.special==="social")return screenSocial();

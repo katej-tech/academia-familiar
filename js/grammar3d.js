@@ -18,7 +18,7 @@ function disposeSorter3D(){
 function wordTex(txt){
  const cv=document.createElement("canvas");cv.width=320;cv.height=128;const c=cv.getContext("2d");
  c.fillStyle="#FFFFFF";c.fillRect(0,0,320,128);c.strokeStyle="#CBD5E1";c.lineWidth=8;c.strokeRect(4,4,312,120);
- const size=txt.length<=6?60:txt.length<=9?50:40;
+ const size=txt.length<=6?60:txt.length<=9?50:txt.length<=12?42:34;
  c.fillStyle="#1E293B";c.font='700 '+size+'px Fredoka,"Nunito",sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText(txt,160,70);
  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;}
 function labelTex(K){
