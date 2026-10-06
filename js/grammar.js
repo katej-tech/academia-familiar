@@ -97,7 +97,8 @@ function screenGrammar(){setTheme("kid");
   +'<p class="center" style="margin:-4px 0 10px">Aprende cómo se llaman las palabras y practica con juegos</p>'
   +'<button class="kbtn white" style="display:flex;align-items:center;gap:14px;text-align:left;border-style:dashed" onclick="gramLesson()"><span style="font-size:2.4rem">📘</span><span style="flex:1"><span>Mini lección</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">Empieza aquí: qué es cada uno, con ejemplos</span></span></button>'
   +cards
-  +(typeof screenNouns==="function"?'<button class="kbtn white" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenNouns()"><span style="font-size:clamp(2rem,9vw,2.6rem)">⭐</span><span style="flex:1"><span>Propios y comunes</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Ana, Colombia… o niña, país: ¿mayúscula o minúscula?</span></span></button>':""));}
+  +(typeof screenNouns==="function"?'<button class="kbtn white" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenNouns()"><span style="font-size:clamp(2rem,9vw,2.6rem)">⭐</span><span style="flex:1"><span>Propios y comunes</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Ana, Colombia… o niña, país: ¿mayúscula o minúscula?</span></span></button>':"")
+  +(typeof screenPunct==="function"?'<button class="kbtn white" style="display:flex;align-items:center;gap:14px;text-align:left" onclick="screenPunct()"><span style="font-size:clamp(2rem,9vw,2.6rem)">✍️</span><span style="flex:1"><span>Mayúscula, punto y signos</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Arma oraciones: ¿ ? ¡ ! . y la coma</span></span></button>':""));}
 function gramLesson(){setTheme("kid");
  gramCleanup();
  const ex=gramParse(GRAM_SENT[Math.floor(Math.random()*GRAM_SENT.length)]);

@@ -77,6 +77,12 @@ const EGR_CAPS=[
  ["My friend ___ has a cat.","Tom","Names of people start with a capital letter."],["We visit ___ in the summer.","Paris","Names of cities start with a capital letter."],
  ["I like my ___.","teacher","A common noun uses a small letter."],["___ is a red planet.","Mars","Names of planets start with a capital letter."],
  ["The ___ is in the park.","girl","A common noun uses a small letter."],["We have school on ___.","Tuesday","In English, days start with a capital letter."]];
+/* sentences (English): capital letter at the start, ONE sign at the END (no upside-down ¿ ¡) */
+const EGR_BUILD=["I like to play.","The dog runs fast.","She reads a book.","We go to school.","My mom cooks soup.","Birds can fly high.","What is your name?","How old are you?","Look at the big sun!","Where do you live?","I have a red ball.","Tom likes his new bike."];
+const EGR_FIXBASE=["My mom cooks soup","The cat sleeps on the bed","We play in the park","She reads a story","Today we go to the beach","My grandma makes a cake"];
+/* [sentence without sign, q|e|d, hint] */
+const EGR_SIGNS=[["How are you","q","You want to know"],["What a beautiful day","e","You are very happy"],["I like pizza","d","You tell something"],["Where is my book","q","You are looking for it"],["Help","e","You shout for help"],
+ ["She is my sister","d","You tell something"],["Do you like dogs","q","You ask a friend"],["Happy birthday","e","You say it with joy"],["It is raining","d","You tell the weather"],["How old are you","q","You want to know"]];
 const EGR_ACTS=[
  {id:"baskets",ic:"🧺",nm:"Noun · Adjective · Verb 3D",sub:"Throw each word into its basket",cls:"blue"},
  {id:"aan",ic:"🅰️",nm:"A or AN?",sub:"a pencil · an apple",cls:"green"},
@@ -88,7 +94,10 @@ const EGR_ACTS=[
  {id:"sameopp",ic:"🔁",nm:"Same or opposite 3D",sub:"big · large  ↔  big · small",cls:"purple"},
  {id:"stress",ic:"🥁",nm:"The strong syllable",sub:"ba-NA-na: which beat is louder?",cls:"red"},
  {id:"proper3d",ic:"⭐",nm:"Proper or common noun 3D",sub:"Tom, Paris, Monday… or boy, city, day?",cls:"purple"},
- {id:"caps",ic:"🔠",nm:"Capital letter or small letter?",sub:"Write names, days and months well",cls:"blue"}];
+ {id:"caps",ic:"🔠",nm:"Capital letter or small letter?",sub:"Write names, days and months well",cls:"blue"},
+ {id:"sent3d",ic:"🧱",nm:"Build the sentence 3D",sub:"Order the words: capital letter first, sign last",cls:"green"},
+ {id:"fixs",ic:"🔎",nm:"Fix the sentence",sub:"Does it need a capital letter or a period?",cls:"red"},
+ {id:"punct",ic:"❓",nm:". ? or !",sub:"Choose the right end sign",cls:"yellow"}];
 const EGR_WIN={noWorld:true,replay:"screenEnglishPlay()",replayLabel:"More English 🎒",backFn:"screenEnglishHub()",backLabel:"Volver a Inglés 🇬🇧"};
 let EGR={};
 
@@ -167,7 +176,10 @@ function egStart(kind){
   sameopp:function(){return[0,1];},
   stress:function(){return take(EGR_STRESS,6);},
   proper3d:function(){return[0,1];},
-  caps:function(){return take(EGR_CAPS,6);}};
+  caps:function(){return take(EGR_CAPS,6);},
+  sent3d:function(){return take(EGR_BUILD,6);},
+  fixs:function(){return take(EGR_FIXBASE,6).map(function(b,i){return{base:b,def:["m","p","mp","ok"][i%4]};}).sort(function(){return Math.random()-.5;});},
+  punct:function(){return take(EGR_SIGNS,6);}};
  EGR.items=bank[kind]();
  if(kind==="baskets"||kind==="sameopp"||kind==="proper3d"){EGR.total=12;EGR.round=0;}else EGR.total=EGR.items.length;
  egNext();}
@@ -185,7 +197,10 @@ function egNext(){
  if(k==="sameopp")return egSameOpp();
  if(k==="stress")return egStress(it);
  if(k==="proper3d")return egProper3d();
- if(k==="caps")return egCaps(it);}
+ if(k==="caps")return egCaps(it);
+ if(k==="sent3d")return egSent3d(it);
+ if(k==="fixs")return egFixs(it);
+ if(k==="punct")return egPunct(it);}
 function egOpts(list,fn,cols){
  return '<div style="display:grid;grid-template-columns:repeat('+(cols||list.length)+',1fr);gap:10px;margin-top:8px">'+list.map(function(o,i){return '<button class="kbtn white" id="egO'+i+'" style="margin:0;min-height:60px;font-size:1.35rem" onclick="'+fn+'('+i+')">'+o+'</button>';}).join("")+'</div><div id="egFb"></div>';}
 function egCard(e,txt,big){return '<div class="card center" style="padding:10px"><div style="font-size:'+(big||4)+'rem;line-height:1.1">'+e+'</div>'+(txt?'<div style="font-family:Fredoka;font-weight:700;font-size:1.5rem;margin-top:4px">'+txt+'</div>':'')+'</div>';}
@@ -334,3 +349,46 @@ function egCapsAns(i){
  if(EGR.done)return;const it=EGR.cur,o=EGR.opts[i];
  if(o===it[1]){egMark(i,true);const full=it[0].replace("___",o);egFb("✅ "+esc(full)+" · "+it[2],true);setTimeout(function(){speakEN(full);},300);egAnswered(!EGR.tried,3000);}
  else{EGR.tried=true;egMark(i,false);sNO();egFb("Not quite 🤔 Is it a special name, or a common noun?",false);}}
+
+/* ---------- 🧱 build the sentence (3D word blocks) ---------- */
+function egSent3d(s){
+ const words=s.split(" ");EGR.cur=s;
+ render(topbar("screenEnglishPlay()")+egHeader()
+  +'<div class="card center" style="padding:8px 12px"><b>Tap the words in order to build the sentence</b><br><span class="mut" style="font-size:.82rem">The first word has a capital letter · the last one has the end sign (. ? !)</span><br><button class="speaker small" style="margin-top:4px" onclick="speakEN(EGR.cur)">🔊 Listen</button></div>'
+  +'<div class="card" style="padding:0;overflow:hidden;border-radius:18px"><div id="egCanvas" style="width:100%;height:clamp(250px,42vh,330px)"></div></div><div id="egFb"></div>');
+ EGR.c3=renderSyllableBuilder("egCanvas",words,function(ev,info){
+  if(ev==="place"){speakEN(info.syl.replace(/[.?!,]/g,""));}
+  else if(ev==="full"){
+   const ok=info.order.every(function(v,k){return v===k;});
+   if(ok){EGR.c3.celebrate();egFb("✅ "+esc(s),true);setTimeout(function(){speakEN(s);},300);egAnswered(!EGR.tried,2600);}
+   else{EGR.tried=true;sNO();egFb("Not quite 🤔 Start with the capital letter and end with the sign",false);setTimeout(function(){if(EGR.c3&&EGR.kind==="sent3d")EGR.c3.reset();},900);}}});
+ setTimeout(function(){speakEN(s);},300);}
+
+/* ---------- 🔎 fix the sentence ---------- */
+function egFixs(it){
+ const cap=it.base,low=cap.charAt(0).toLowerCase()+cap.slice(1);
+ const text=it.def==="m"?low+".":it.def==="p"?cap:it.def==="mp"?low:cap+".";
+ EGR.cur=it;EGR.opts=[["m","It needs a CAPITAL letter"],["p","It needs a PERIOD"],["mp","It needs both"],["ok","It is correct!"]];
+ render(topbar("screenEnglishPlay()")+egHeader()
+  +'<div class="card center" style="font-size:1.4rem;font-family:Fredoka;font-weight:600;line-height:1.6">'+esc(text)+'</div>'
+  +'<button class="speaker small" onclick="speakEN(EGR.cur.base)">🔊 Listen</button>'
+  +EGR.opts.map(function(o,i){return '<button class="kbtn white" id="egO'+i+'" style="min-height:54px;font-size:1.05rem" onclick="egFixsAns('+i+')">'+o[1]+'</button>';}).join("")+'<div id="egFb"></div>');
+ speakEN(it.base);}
+function egFixsAns(i){
+ if(EGR.done)return;const it=EGR.cur,o=EGR.opts[i];
+ if(o[0]===it.def){egMark(i,true);egFb("✅ "+esc(it.base+"."),true);egAnswered(!EGR.tried,2300);}
+ else{EGR.tried=true;egMark(i,false);sNO();egFb("Look at the first letter and the end 🤔",false);}}
+
+/* ---------- ❓ . ? or ! ---------- */
+function egPunct(it){
+ const t=it[0],forms={q:t+"?",e:t+"!",d:t+"."};
+ EGR.cur=it;EGR.opts=shuffled(["q","e","d"]).map(function(k){return{k:k,txt:forms[k]};});
+ render(topbar("screenEnglishPlay()")+egHeader()
+  +'<div class="card center" style="padding:10px"><div style="font-size:2.2rem">🗣️</div><b>'+esc(it[2])+'</b><div style="font-family:Fredoka;font-weight:600;font-size:1.3rem;margin-top:6px;opacity:.85">“'+esc(t)+"”</div></div>"
+  +'<p class="center mut" style="font-size:.85rem;margin:4px 0">In English the sign goes only at the END (no upside-down ¿ ¡).</p>'
+  +EGR.opts.map(function(o,i){return '<button class="kbtn white" id="egO'+i+'" style="min-height:58px;font-size:1.3rem" onclick="egPunctAns('+i+')">'+esc(o.txt)+'</button>';}).join("")+'<div id="egFb"></div>');
+ speakEN(t);}
+function egPunctAns(i){
+ if(EGR.done)return;const it=EGR.cur,o=EGR.opts[i];
+ if(o.k===it[1]){egMark(i,true);egFb("✅ "+esc(o.txt)+" · "+(o.k==="q"?"a question: ?":o.k==="e"?"strong feeling: !":"a statement: ."),true);speakEN(it[0]);egAnswered(!EGR.tried,2600);}
+ else{EGR.tried=true;egMark(i,false);sNO();egFb("Are you asking, shouting with joy, or telling something? 🤔",false);}}

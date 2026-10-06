@@ -17,8 +17,10 @@ function faceTex(txt,base){
  const cv=document.createElement("canvas");cv.width=256;cv.height=160;const c=cv.getContext("2d");
  c.fillStyle=base;c.fillRect(0,0,256,160);
  c.strokeStyle="rgba(255,255,255,.5)";c.lineWidth=8;c.strokeRect(8,8,240,144);
- const size=txt.length<=2?104:txt.length===3?88:txt.length===4?72:60;
- c.fillStyle="#FFFFFF";c.font='700 '+size+'px Fredoka,"Nunito",sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText(txt,128,88);
+ let size=txt.length<=2?104:txt.length===3?88:txt.length===4?72:60;
+ c.font='700 '+size+'px Fredoka,"Nunito",sans-serif';
+ while(size>26&&c.measureText(txt).width>212){size-=3;c.font='700 '+size+'px Fredoka,"Nunito",sans-serif';} /* palabras largas (oraciones) caben en el bloque */
+ c.fillStyle="#FFFFFF";c.textAlign="center";c.textBaseline="middle";c.fillText(txt,128,88);
  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;}
 function shuf(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
 
