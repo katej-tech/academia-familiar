@@ -64,6 +64,7 @@ function screenPlanetLab(){setTheme("kid");
   +card("blue","👋","Conoce a los planetas","Hablan, parpadean y te cuentan su historia","plbMeet()")
   +card("green","🛠️","Arma tu planeta","Elige tipo, colores, anillos, lunas y cara","plbBuild()")
   +card("purple","🌌","Mi sistema solar"+(n?" ("+n+")":""),n?"Tus planetas girando alrededor del Sol":"Primero arma al menos un planeta","plbSystem()")
+  +(typeof screenLanding==="function"?card("green","🛬","Aterriza en un planeta","Camina y salta con la gravedad real","screenLanding()"):"")
   +card("yellow","⚖️","¿Cuánto pesarías?","Tu peso en cada planeta","plbWeight()")
   +card("white","🛰️","Explora más","Sitios de la NASA y simuladores, solo los seguros","plbExplore()"));
  if(typeof renderPlanetChar==="function"){

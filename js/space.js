@@ -11,6 +11,7 @@ function screenSpace(){setTheme("kid");const p=prof();
  render(topbar("screenCole()")
   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">🪐 Centro espacial</h2>'
   +'<p class="center" style="margin-bottom:12px">Explora, resuelve misiones y crea tus propios planetas</p>'
+  +(typeof screenLanding==="function"?card("green","🛬","Aterriza en un planeta","Camina, salta con la gravedad real y recoge muestras","screenLanding()"):"")
   +(typeof screenPlanetLab==="function"?card("purple","🪐","Planetas con personalidad","Conócelos, arma los tuyos y crea tu sistema solar","screenPlanetLab()"):"")
   +card("blue","🔭","Explora el sistema solar","Toca los planetas, aprende datos y acepta retos","screenPlanetario()")
   +card("green","🗺️","Misiones","Tú decides el camino: rescata a Astro, viaja por el cuerpo…","screenMissions()")
