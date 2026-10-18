@@ -54,7 +54,7 @@ function screenGate(mode){setTheme("parent");current.profile=null;
  const offline=!(typeof afCloudAvailable==="function"&&afCloudAvailable());
  const hero='<div style="text-align:center;margin-top:5vh"><div style="font-size:3rem">🏠</div>'
   +'<h1 class="title" style="font-size:1.9rem;margin-top:4px">Academia Familiar</h1>'
-  +'<p class="mut" style="font-size:1.05rem;margin-top:6px">La app donde aprender es un juego</p></div>';
+  +'<p class="mut" style="font-size:1.05rem;margin-top:6px">Tu guía de aprendizaje: primero aprendes, luego juegas</p></div>';
  if(offline){
   return render(hero+'<div class="card" style="margin-top:24px"><h3>Necesitas internet la primera vez</h3>'
    +'<p class="mut" style="margin-top:8px;line-height:1.6">Para crear tu cuenta o iniciar sesión por primera vez necesitas conexión. Después podrás usar la app sin internet.</p>'

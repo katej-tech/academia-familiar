@@ -175,6 +175,7 @@ function screenParentDash(){setTheme("parent");
  +'<button class="pbtn ghost" style="width:auto;padding:0 14px;margin:0" onclick="toggleKeyVisible()" title="Mostrar/ocultar">👁</button></div>'
  +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button>'
  +'<button class="pbtn ghost" onclick="screenAiDiag()">🩺 Diagnóstico completo de la IA</button><div id="keyfb" style="margin:4px 0"></div>'
+ +'<p class="mut" style="margin:12px 0 4px">⚖️ Recreo (mascota, taller, mi planeta) se abre después de…</p><select id="softg" style="margin:0 0 6px">'+[0,5,10].map(function(n){return '<option value="'+n+'"'+(softGoal()===n?' selected':'')+'>'+(n?n+' aciertos del día':'Siempre abierto')+'</option>';}).join("")+'</select>'
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
  +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
  +'<p class="tip">💡 Clave gratuita: <b>aistudio.google.com</b> → Get API key. Nunca la escribas dentro del archivo ni la subas a GitHub.</p></div>'
@@ -252,6 +253,7 @@ function addCourse(){
 function removeCourse(i){var cs=(typeof courses==="function")?courses():(S.courses||[]);cs.splice(i,1);save();if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({courses:S.courses});screenParentDash();}
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
+ const sg=document.getElementById("softg");if(sg)S.softGoal=parseInt(sg.value,10)||0;
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;
  save();
  // comparte la clave con los hijos invitados para que ellos también tengan contenido con IA

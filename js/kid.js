@@ -108,45 +108,53 @@ function hubApps(){
  const faltaArt=Math.max(0,ART_GOAL-(d.art||0));
  const abierto=dailyGoalDone();
  const sec=t=>'<p class="appsec">'+t+'</p>';
- let html=sec("📚 Aprender");
+ const blq=softLocked();
+ let html=balanceCardHTML();
+ html+=sec("📚 Aprender");
  html+='<div class="appgrid">'
   +appIcon("screenCole()","📚","Aprender","linear-gradient(160deg,#4ADE80,#16A34A)",{badge:faltaEst?faltaEst:0})
   +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
   +appIcon("screenEnglishHub()","🇬🇧","Inglés","linear-gradient(160deg,#FCA5A5,#EF4444)")
   +(typeof screenCapsules==="function"?appIcon("screenCapsules()","🎞️","Cápsulas","linear-gradient(160deg,#67E8F9,#0891B2)"):"")
-  +(typeof screenLogicLab==="function"?appIcon("screenLogicLab()","🔷","Lógica 3D","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
   +(typeof screenReadComp==="function"?appIcon("screenReadComp()","🔎","Comprensión","linear-gradient(160deg,#FDE68A,#D97706)"):"")
   +(typeof screenLetters==="function"?appIcon("screenLetters()","🔤","Letras","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
   +(typeof screenGrammar==="function"?appIcon("screenGrammar()","🏷️","Gramática","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof screenGender==="function"?appIcon("screenGender()","👫","Género y número","linear-gradient(160deg,#F9A8D4,#9333EA)"):"")
-  +(typeof screenQuizzes==="function"?appIcon("screenQuizzes()","📝","Mis quizzes","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
   +(typeof screenAudiobooks==="function"?appIcon("screenAudiobooks()","🎧","Audiolibros","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
-  +(typeof screenLanding==="function"?appIcon("screenLanding()","🛬","Aterriza","linear-gradient(160deg,#6EE7B7,#047857)"):"")
-  +(typeof screenRoutine==="function"?appIcon("screenRoutine()","📅","Mi día","linear-gradient(160deg,#FDE68A,#F59E0B)"):"")
-  +(typeof screenCalm==="function"?appIcon("screenCalm()","💙","Calma","linear-gradient(160deg,#93C5FD,#6366F1)"):"")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
   +'</div>';
- html+=sec("🎨 Crear");
+ html+=sec("🧠 Pensar y crear aprendiendo");
+ html+='<div class="appgrid">'
+  +(typeof screenQuizzes==="function"?appIcon("screenQuizzes()","📝","Mis quizzes","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
+  +(typeof screenWorlds==="function"?appIcon("screenWorlds()","🌍","Mi mundo de retos","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
+  +(typeof screenLogicLab==="function"?appIcon("screenLogicLab()","🔷","Lógica 3D","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
+  +(typeof screenRobot==="function"?appIcon("screenRobot()","🤖","Programa","linear-gradient(160deg,#A5F3FC,#0891B2)"):"")
+  +(typeof screenBrain==="function"?appIcon("screenBrain()","🧠","Cerebro","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
+  +(typeof screenChess==="function"?appIcon("screenChess()","♟️","Ajedrez","linear-gradient(160deg,#94A3B8,#334155)"):"")
+  +(typeof screenLanding==="function"?appIcon("screenLanding()","🛬","Aterriza","linear-gradient(160deg,#6EE7B7,#047857)"):"")
+  +(typeof screenPlanetLab==="function"?appIcon("screenPlanetLab()","🪐","Planetas","linear-gradient(160deg,#818CF8,#4338CA)"):"")
+  +'</div>';
+ html+=sec("🎨 Arte y manos");
  html+='<div class="appgrid">'
   +appIcon("screenArt()","🎨","Arte","linear-gradient(160deg,#D8B4FE,#A855F7)",{badge:faltaArt?faltaArt:0})
   +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
   +(typeof screenColor3D==="function"?appIcon("screenColor3D()","🖍️✨","Colorear 3D","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
-  +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
-  +(typeof screenWorlds==="function"?appIcon("screenWorlds()","🌍","Mi mundo de retos","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
-  +(typeof screenBricks==="function"?appIcon("screenBricks()","🧱","Bloques","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
-  +(typeof screenPlanetLab==="function"?appIcon("screenPlanetLab()","🪐","Planetas","linear-gradient(160deg,#818CF8,#4338CA)"):"")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
+  +(typeof screenBricks==="function"?appIcon("screenBricks()","🧱","Bloques","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
+  +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +'</div>';
- html+=sec("🎮 Jugar "+(abierto?"· ¡abierto! 🔓":"· 🔒 haz tus 2 llaves"));
+ html+=sec("💙 Bienestar");
+ html+='<div class="appgrid">'
+  +(typeof screenRoutine==="function"?appIcon("screenRoutine()","📅","Mi día","linear-gradient(160deg,#FDE68A,#F59E0B)"):"")
+  +(typeof screenCalm==="function"?appIcon("screenCalm()","💙","Calma","linear-gradient(160deg,#93C5FD,#6366F1)"):"")
+  +'</div>';
+ html+=sec("🎮 Recreo "+(abierto?"· ¡abierto! 🔓":"· 🔒 después de aprender"));
  html+='<div class="appgrid">'
   +appIcon("screenGamesPick()","🎮","Juegos","linear-gradient(160deg,#A5B4FC,#6366F1)",{locked:!abierto})
-  +appIcon("screenTama()","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)")
-  +(typeof screenWorkshop==="function"?appIcon("screenWorkshop()","🧩","Taller","linear-gradient(160deg,#86EFAC,#16A34A)"):"")
-  +(typeof screenRobot==="function"?appIcon("screenRobot()","🤖","Programa","linear-gradient(160deg,#A5F3FC,#0891B2)"):"")
-  +(typeof screenEco==="function"?appIcon("screenEco()","🌍","Mi planeta","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
-  +(typeof screenBrain==="function"?appIcon("screenBrain()","🧠","Cerebro","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
-  +(typeof screenChess==="function"?appIcon("screenChess()","♟️","Ajedrez","linear-gradient(160deg,#94A3B8,#334155)"):"")
+  +appIcon("playSoft('screenTama')","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)",{locked:blq})
+  +(typeof screenWorkshop==="function"?appIcon("playSoft('screenWorkshop')","🧩","Taller","linear-gradient(160deg,#86EFAC,#16A34A)",{locked:blq}):"")
+  +(typeof screenEco==="function"?appIcon("playSoft('screenEco')","🌍","Mi planeta","linear-gradient(160deg,#86EFAC,#0EA5E9)",{locked:blq}):"")
   +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
   +'</div>';
  if(courses().length&&prof()&&(prof().age||0)>=10){
@@ -334,6 +342,35 @@ function screenWritingPick(){setTheme("kid");
  +'<button class="kbtn green" onclick="gameDictation()">✍️ Dictado de frases</button>'
  +'<button class="kbtn blue" onclick="gameLetters()">🔡 Sonido de las letras (C, S, Q…)</button>'
  +'<button class="kbtn white" onclick="gameSpell()">⌨️ Escribe la palabra en inglés</button>');}
+/* ===== equilibrio: la app es una GUÍA DE APRENDIZAJE; el juego libre es el recreo ===== */
+function softGoal(){const g=(typeof S!=="undefined"&&S.softGoal!=null)?S.softGoal:5;return Math.max(0,g|0);}
+function softLocked(){return touchDay().ok<softGoal();}
+function playSoft(fn){
+ if(!softLocked()){if(typeof window[fn]==="function")window[fn]();return;}
+ setTheme("kid");if(typeof stopGames==="function")stopGames();
+ const d=touchDay(),g=softGoal(),have=Math.min(d.ok,g),pct=Math.round(have/g*100);
+ render(topbar("screenKidMap()")
+ +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:6px">🌱 Primero, a aprender</h2>'
+ +'<div class="card center" style="padding:18px 16px"><div style="font-size:3rem;margin-bottom:4px">🐾</div>'
+ +'<p style="font-size:1.05rem;line-height:1.5">Esto es el <b>recreo</b>. Se abre con <b>'+g+' aciertos</b> de hoy.</p>'
+ +'<div style="height:16px;border-radius:12px;background:#E6ECF5;border:3px solid var(--kid-ink);overflow:hidden;margin:12px 0 4px"><div style="height:100%;width:'+pct+'%;background:var(--kid-green);transition:width .4s"></div></div>'
+ +'<p style="font-size:.92rem">'+have+' / '+g+' aciertos</p></div>'
+ +'<p class="center" style="margin:10px 0 6px">¡Hay formas de aprender que se sienten como jugar!</p>'
+ +'<button class="kbtn green" onclick="screenCole()">📚 Ir a aprender</button>'
+ +(typeof screenWorlds==="function"?'<button class="kbtn blue" onclick="screenWorlds()">🌍 Mi mundo de retos</button>':'')
+ +(typeof screenQuizzes==="function"?'<button class="kbtn purple" onclick="screenQuizzes()">📝 Mis quizzes</button>':''));}
+function balanceCardHTML(){
+ const d=touchDay(),ok=d.ok||0,art=d.art||0;
+ const L=Math.min(ok,DAILY_GOAL),A=Math.min(art,ART_GOAL);
+ const pct=Math.round((L/DAILY_GOAL*70)+(A/ART_GOAL*30));
+ const msg=dailyGoalDone()?"🎉 ¡Meta del día cumplida! El recreo está abierto."
+  :softLocked()?"🌱 Empieza por aprender: con "+softGoal()+" aciertos se abre el recreo."
+  :"👏 ¡Vas muy bien! Con "+DAILY_GOAL+" aciertos y "+ART_GOAL+" dibujos se abren todos los juegos.";
+ return '<div class="card" style="padding:12px 14px;margin-top:10px">'
+  +'<div style="display:flex;justify-content:space-between;font-family:Fredoka;font-weight:700"><span>⚖️ Mi equilibrio de hoy</span><span>'+pct+'%</span></div>'
+  +'<div style="height:14px;border-radius:12px;background:#E6ECF5;border:3px solid var(--kid-ink);overflow:hidden;margin:8px 0 6px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--kid-green),#A855F7);transition:width .4s"></div></div>'
+  +'<p style="font-size:.88rem;line-height:1.4">📚 '+L+'/'+DAILY_GOAL+' aciertos &nbsp; 🎨 '+A+'/'+ART_GOAL+' dibujos</p>'
+  +'<p style="font-size:.9rem;margin-top:4px">'+msg+'</p></div>';}
 const DAILY_GOAL=10; /* aciertos del día para desbloquear los juegos */
 const ART_GOAL=2; // actividades de arte/dibujo necesarias para abrir los juegos
 function artCount(){return touchDay().art||0;}
