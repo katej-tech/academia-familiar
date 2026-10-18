@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.26.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.27.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -490,7 +490,8 @@ function stopGames(){
  try{if(typeof accCleanup==="function")accCleanup();}catch(e){}
  try{if(typeof spcCleanup==="function")spcCleanup();}catch(e){}
  try{if(typeof punCleanup==="function")punCleanup();}catch(e){}
- try{if(typeof calmCleanup==="function"&&!document.getElementById("calmOv"))calmCleanup();}catch(e){} // rincón de la calma (no corta la pausa superpuesta)
+ try{if(typeof calmCleanup==="function"&&!document.getElementById("calmOv"))calmCleanup();}catch(e){}
+ try{if(typeof emwCleanup==="function")emwCleanup();}catch(e){} // planeta de las emociones // rincón de la calma (no corta la pausa superpuesta)
  try{if(typeof disposeBook3D==="function")disposeBook3D();}catch(e){} // libro 3D de los audiolibros
  try{if(typeof abCleanup==="function")abCleanup();}catch(e){}
  try{if(typeof disposeLanding3D==="function")disposeLanding3D();}catch(e){} // aterrizaje en un planeta (Three.js)

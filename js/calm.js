@@ -51,6 +51,7 @@ function screenCalm(){setTheme("kid");
   +'<div class="card center" style="background:#EFF6FF"><div style="font-size:3rem">🫶</div><p style="margin:4px 0 0;line-height:1.5;font-size:1.02rem"><b>Todas las emociones están bien.</b><br>Lo importante es qué hacemos con el enojo: <b>sin patear ni golpear cosas o personas</b>.</p></div>'
   +calmCard("red","🌡️","Estoy enojado o frustrado","Dime cuánto y te muestro qué hacer","calmThermo()")
   +calmCard("blue","🌬️","Respirar con el planeta","Un planeta 3D que respira contigo","calmBreathe()")
+  +(typeof screenEmotions==="function"?calmCard("yellow","🪐","Planeta de las emociones","Un planeta vive situaciones como las del cole","screenEmotions()"):"")
   +calmCard("green","⭐","Mi plan de calma","Elige tus 3 trucos favoritos","calmPlan()")
   +calmCard("white","👨‍👩‍👦","Para mamá y papá","Consejos y cómo me he sentido","calmParents()"));}
 
@@ -157,6 +158,7 @@ function calmParents(){setTheme("kid");
  const after=log.filter(function(x){return x.after;}),better=after.filter(function(x){return x.after<x.l||x.after<=2;}).length;
  render(topbar("screenCalm()")+subHeader("👨‍👩‍👦 Para mamá y papá")
   +'<div class="card"><b>📊 Últimos 7 días</b><div style="display:flex;align-items:flex-end;gap:6px;height:90px;margin-top:8px">'+days.map(function(d){return '<div style="flex:1;text-align:center;font-size:.7rem"><div style="height:'+Math.max(4,Math.round(d.uses/maxU*64))+'px;background:'+(d.high?"#F97316":"#60A5FA")+';border-radius:6px 6px 0 0"></div>'+d.wd+'<br><b>'+d.uses+'</b></div>';}).join("")+'</div><p class="mut" style="margin:6px 0 0;font-size:.82rem">Cada barra = veces que usó la calma. Naranja = hubo momentos de enojo alto (4-5).'+(after.length?' Se sintió mejor después en <b>'+better+' de '+after.length+'</b> ocasiones.':'')+'</p></div>'
+  +'<button class="kbtn purple" style="display:flex;align-items:center;gap:12px;text-align:left" onclick="screenABC()"><span style="font-size:2rem">📝</span><span style="flex:1"><span>Registro para la psicóloga</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Anota qué pasó antes, qué hizo y qué pasó después</span></span></button>'
   +'<div class="card"><b>🔔 Pausa automática</b><p style="margin:4px 0 8px;font-size:.88rem;line-height:1.45">Si falla 4 respuestas seguidas, la app le ofrece respirar un momento antes de seguir.</p><button class="kbtn '+(p.calmWatch===false?"white":"green")+'" style="min-height:48px;font-size:.95rem" onclick="calmToggleWatch()">'+(p.calmWatch===false?"Desactivada · tocar para activar":"Activada ✓ · tocar para desactivar")+'</button></div>'
   +'<div class="card" style="line-height:1.55;font-size:.93rem"><b>💡 Ideas que suelen ayudar</b><ul style="margin:6px 0 0;padding-left:18px">'
   +'<li><b>Primero calmar, después enseñar.</b> En plena rabia el niño no puede razonar. Espera a que baje el enojo.</li>'
@@ -218,3 +220,69 @@ function calmWatch(correct){
  CALMW.streak++;
  const now=Date.now();
  if(CALMW.streak>=4&&now-CALMW.last>15*60000&&!document.getElementById("calmOv")){CALMW.last=now;CALMW.streak=0;setTimeout(function(){calmOverlay("auto");},900);}}
+
+/* ============ REGISTRO PARA LA PSICÓLOGA (modelo A-B-C: antes · conducta · después) ============
+   Para papás: anotar cada episodio en 1 minuto. A una psicóloga infantil le sirve para ver QUÉ lo dispara
+   (antecedente), CÓMO reacciona (conducta, intensidad, duración) y QUÉ pasa después (consecuencia).
+   Los datos quedan en el perfil; se pueden copiar o imprimir para llevarlos a la consulta. */
+const ABC_PLACES=["🏠 Casa","🏫 Colegio","🚌 Ruta","📍 Otro lugar"];
+const ABC_DID=["Gritó","Pateó cosas","Lloró mucho","Dijo cosas hirientes («los odio»)","Rompió o tiró algo","Golpeó a alguien","Se encerró o se fue","Se quedó callado y tenso"];
+let ABCF={};
+function abcList(){const p=prof();if(!p.abcLog)p.abcLog=[];return p.abcLog;}
+function abcDate(t){const d=new Date(t);return d.toLocaleDateString("es-CO",{day:"2-digit",month:"short"})+" "+d.toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"});}
+function screenABC(){setTheme("kid");
+ calmCleanup();
+ const l=abcList();
+ render(topbar("calmParents()")+subHeader("📝 Registro para la psicóloga")
+  +'<div class="card" style="font-size:.92rem;line-height:1.5">Anota cada episodio en 1 minuto: <b>qué pasó antes</b>, <b>qué hizo</b> y <b>qué pasó después</b>. Con unas semanas de registro, una psicóloga infantil puede ver qué lo dispara y qué le ayuda.</div>'
+  +'<button class="kbtn green" onclick="abcNew()">➕ Anotar un episodio</button>'
+  +(l.length?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="kbtn white" style="margin:0;min-height:48px;font-size:.9rem" onclick="abcCopy()">📋 Copiar resumen</button><button class="kbtn white" style="margin:0;min-height:48px;font-size:.9rem" onclick="abcPrint()">🖨️ Imprimir</button></div>':"")
+  +l.slice(0,15).map(function(x,i){return '<div class="card" style="margin-top:10px;font-size:.88rem;line-height:1.45"><b>'+abcDate(x.t)+'</b> · '+esc(x.place)+' · intensidad '+x.int+'/5'+(x.mins?' · '+x.mins+' min':'')+'<br><b>Antes:</b> '+esc(x.a||"—")+'<br><b>Hizo:</b> '+esc((x.did||[]).join(", ")||"—")+'<br><b>Después:</b> '+esc(x.c||"—")+(x.h?'<br><b>Ayudó:</b> '+esc(x.h):"")+'<br><button onclick="abcDel('+i+')" style="margin-top:4px;border:0;background:none;color:#DC2626;font-weight:700;cursor:pointer">🗑️ borrar</button></div>';}).join("")
+  +'<div class="card" style="margin-top:12px;background:#EFF6FF;font-size:.88rem;line-height:1.5"><b>❓ Preguntas para llevar a la consulta</b><ul style="margin:6px 0 0;padding-left:18px"><li>¿Estas reacciones son esperables a su edad o hay que trabajarlas más?</li><li>¿Qué estrategias me recomienda para el momento de la rabia y para después?</li><li>¿Conviene hacer evaluación (atención, ansiedad, regulación emocional)?</li><li>¿Cómo coordinamos con el colegio y con el transporte escolar para el momento de la ruta?</li><li>¿Cada cuánto debemos volver y qué hacemos en casa entre sesiones?</li></ul></div>'
+  +'<button class="kbtn white" onclick="calmParents()">← Volver</button>');}
+function abcNew(){setTheme("kid");
+ ABCF={place:"",did:[],int:0,mins:"",a:"",c:"",h:""};
+ const chip=function(on,t,fn){return '<button onclick="'+fn+'" style="margin:3px;padding:8px 12px;border-radius:14px;border:3px solid '+(on?"#3B82F6":"#E2E8F0")+';background:'+(on?"#DBEAFE":"#fff")+';font-weight:700;font-size:.9rem;cursor:pointer;color:#1E293B">'+t+'</button>';};
+ render(topbar("screenABC()")+subHeader("📝 Nuevo episodio")
+  +'<div class="card"><b>¿Dónde fue?</b><div>'+ABC_PLACES.map(function(x){return chip(ABCF.place===x,x,"abcSet('place',this.dataset.v)").replace('<button ','<button data-v="'+x+'" ');}).join("")+'</div></div>'
+  +'<div class="card"><b>1. ANTES: ¿qué pasó justo antes?</b><textarea id="abcA" rows="2" placeholder="Ej: llegó la ruta y no lo dejaron seguir jugando" style="width:100%;padding:8px;border-radius:12px;border:2px solid #E2E8F0;margin-top:6px;box-sizing:border-box;font-family:Nunito,sans-serif"></textarea></div>'
+  +'<div class="card"><b>2. ¿Qué hizo?</b> <span class="mut" style="font-size:.82rem">(puedes marcar varias)</span><div id="abcDid">'+ABC_DID.map(function(x,i){return chip(false,x,"abcDid("+i+")");}).join("")+'</div></div>'
+  +'<div class="card"><b>¿Qué tan fuerte fue?</b><div style="display:flex;gap:6px;margin-top:6px">'+[1,2,3,4,5].map(function(n){return '<button id="abcI'+n+'" onclick="abcInt('+n+')" style="flex:1;padding:10px 0;border-radius:12px;border:3px solid #E2E8F0;background:#fff;font-family:Fredoka;font-weight:700;font-size:1.1rem;cursor:pointer;color:#1E293B">'+n+'</button>';}).join("")+'</div><div style="margin-top:8px"><b>¿Cuántos minutos duró?</b> <input id="abcM" type="number" min="0" max="180" style="width:80px;padding:6px;border-radius:10px;border:2px solid #E2E8F0;margin-left:6px"></div></div>'
+  +'<div class="card"><b>3. DESPUÉS: ¿qué pasó y qué hicimos los adultos?</b><textarea id="abcC" rows="2" placeholder="Ej: lo abracé, se calmó en 10 minutos" style="width:100%;padding:8px;border-radius:12px;border:2px solid #E2E8F0;margin-top:6px;box-sizing:border-box;font-family:Nunito,sans-serif"></textarea><b style="display:block;margin-top:8px">¿Qué ayudó a calmarlo? (opcional)</b><textarea id="abcH" rows="1" style="width:100%;padding:8px;border-radius:12px;border:2px solid #E2E8F0;margin-top:6px;box-sizing:border-box;font-family:Nunito,sans-serif"></textarea></div>'
+  +'<button class="kbtn green" onclick="abcSave()">💾 Guardar episodio</button><button class="kbtn white" onclick="screenABC()">Cancelar</button>');}
+function abcSet(k,v){ABCF[k]=v;abcPaint();}
+function abcDid(i){const x=ABC_DID[i],k=ABCF.did.indexOf(x);if(k>=0)ABCF.did.splice(k,1);else ABCF.did.push(x);abcPaint();}
+function abcInt(n){ABCF.int=n;abcPaint();}
+function abcPaint(){
+ document.querySelectorAll('button[data-v]').forEach(function(b){const on=ABCF.place===b.dataset.v;b.style.borderColor=on?"#3B82F6":"#E2E8F0";b.style.background=on?"#DBEAFE":"#fff";});
+ document.querySelectorAll('#abcDid button').forEach(function(b,i){const on=ABCF.did.indexOf(ABC_DID[i])>=0;b.style.borderColor=on?"#3B82F6":"#E2E8F0";b.style.background=on?"#DBEAFE":"#fff";});
+ for(let n=1;n<=5;n++){const b=document.getElementById("abcI"+n);if(b){const on=ABCF.int===n;b.style.borderColor=on?["","#22C55E","#84CC16","#F59E0B","#F97316","#EF4444"][n]:"#E2E8F0";b.style.background=on?"#FEF9C3":"#fff";}}}
+function abcSave(){
+ const g=function(id){const e=document.getElementById(id);return e?e.value.trim().slice(0,300):"";};
+ if(!ABCF.place||!ABCF.int){toast("Falta el lugar y qué tan fuerte fue 🙂",false,1800);return;}
+ const l=abcList();
+ l.unshift({t:Date.now(),place:ABCF.place,a:g("abcA"),did:ABCF.did.slice(),int:ABCF.int,mins:parseInt(g("abcM"),10)||0,c:g("abcC"),h:g("abcH")});
+ while(l.length>100)l.pop();save();toast("Episodio guardado 💙",true,1400);screenABC();}
+function abcDel(i){if(!confirm("¿Borrar este episodio?"))return;abcList().splice(i,1);save();screenABC();}
+function abcSummary(){
+ const l=abcList().filter(function(x){return Date.now()-x.t<60*86400000;}),p=prof();
+ if(!l.length)return "Sin episodios registrados.";
+ const avg=(l.reduce(function(a,x){return a+x.int;},0)/l.length).toFixed(1),places={},did={};
+ l.forEach(function(x){places[x.place]=(places[x.place]||0)+1;(x.did||[]).forEach(function(d){did[d]=(did[d]||0)+1;});});
+ const top=function(o){return Object.keys(o).sort(function(a,b){return o[b]-o[a];}).slice(0,3).map(function(k){return k+" ("+o[k]+")";}).join(", ");};
+ let t="REGISTRO DE EPISODIOS DE ENOJO/FRUSTRACIÓN — "+(p.name||"niño")+"\nPeríodo: últimos 60 días · Episodios: "+l.length+" · Intensidad promedio: "+avg+"/5\nLugares más frecuentes: "+top(places)+"\nConductas más frecuentes: "+top(did)+"\n\nDETALLE (antes → conducta → después):\n";
+ l.slice(0,30).forEach(function(x){t+="• "+abcDate(x.t)+" · "+x.place.replace(/^\S+\s/,"")+" · int. "+x.int+"/5"+(x.mins?" · "+x.mins+" min":"")+"\n   ANTES: "+(x.a||"—")+"\n   CONDUCTA: "+((x.did||[]).join(", ")||"—")+"\n   DESPUÉS: "+(x.c||"—")+(x.h?"\n   AYUDÓ: "+x.h:"")+"\n";});
+ const fl=(p.feelLog||[]).filter(function(x){return x.after;});
+ if(fl.length)t+="\nUso del rincón de calma en la app: "+fl.length+" veces; se sintió mejor después en "+fl.filter(function(x){return x.after<x.l||x.after<=2;}).length+".\n";
+ return t;}
+function abcCopy(){
+ const t=abcSummary();
+ const done=function(){toast("Resumen copiado 📋 Pégalo en un mensaje o documento",true,2200);};
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){abcFallbackCopy(t,done);});}else abcFallbackCopy(t,done);}
+function abcFallbackCopy(t,done){const a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");done();}catch(e){toast("No se pudo copiar. Usa Imprimir.",false,2000);}a.remove();}
+function abcPrint(){
+ const old=document.getElementById("printSheet");if(old)old.remove();
+ const d=document.createElement("div");d.id="printSheet";d.style.cssText="font-family:Nunito,Arial,sans-serif;font-size:11pt;line-height:1.45;color:#111;white-space:pre-wrap";d.textContent=abcSummary();document.body.appendChild(d);
+ document.body.classList.add("printing");
+ const fin=function(){document.body.classList.remove("printing");const s=document.getElementById("printSheet");if(s)s.remove();window.removeEventListener("afterprint",fin);};
+ window.addEventListener("afterprint",fin);setTimeout(function(){try{window.print();}catch(e){fin();}},150);}

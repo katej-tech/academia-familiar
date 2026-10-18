@@ -166,9 +166,27 @@ function renderPlanetChar(containerId,cfg0,opts){
  build(cfg0);
  const cv=ctx.renderer.domElement;cv.style.touchAction="none";
  cv.addEventListener("pointerdown",function(){ctx.bounce=1;if(typeof tone==="function")tone(520+Math.random()*180,.12);if(opts.onTap)opts.onTap();});
+ /* ---- "clima" del ánimo del planeta: tormenta, lluvia o sol (emojis flotando alrededor) ---- */
+ const fx=new THREE.Group();b.scene.add(fx);ctx.fx=fx;ctx.fxItems=[];
+ const fxTex={};
+ function etex(e){if(fxTex[e])return fxTex[e];const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d");g.font='92px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';g.textAlign="center";g.textBaseline="middle";g.fillText(e,64,70);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;fxTex[e]=t;return t;}
+ function fxClear(){while(fx.children.length){const c=fx.children.pop();if(c.material)c.material.dispose();}ctx.fxItems=[];}
+ function mood(kind){
+  fxClear();ctx.mood=kind;const R=(ctx.cfg&&ctx.cfg.size)||1;
+  const bg={storm:"#2A0E17",rain:"#0E1B38",sun:"#0B2A4A"}[kind]||"#0B1120";ctx.scene.background.set(bg);
+  const add=function(e,sz,o){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:etex(e),transparent:true}));sp.scale.set(sz,sz,1);fx.add(sp);ctx.fxItems.push(Object.assign({s:sp,e:e},o));};
+  if(kind==="storm"){for(let i=0;i<5;i++)add("☁️",R*.9,{k:"orbit",a:i*1.25,rad:R*1.55,sp:.5+i*.05,y:R*(.65+(i%2)*.2)});for(let i=0;i<2;i++)add("⚡",R*.7,{k:"bolt",a:i*3.1+.5,rad:R*1.45,y:R*.2,ph:i*2});}
+  else if(kind==="rain"){for(let i=0;i<14;i++)add("💧",R*.28,{k:"fall",x:(Math.random()-.5)*R*3.4,z:(Math.random()-.5)*R,y:Math.random()*R*3-R*1.4,sp:.6+Math.random()*.5,top:R*1.6,bot:-R*1.6});add("☁️",R*1.1,{k:"orbit",a:0,rad:0,sp:0,y:R*1.35});}
+  else if(kind==="sun"){for(let i=0;i<8;i++)add(i%2?"⭐":"✨",R*.35,{k:"twinkle",a:i*.8,rad:R*(1.5+(i%3)*.12),sp:.35,y:R*(Math.sin(i*1.7)*.9),ph:i});}}
+ function fxUpdate(dt){
+  ctx.fxItems.forEach(function(it){const sp=it.s;
+   if(it.k==="orbit"){it.a+=it.sp*dt;sp.position.set(Math.cos(it.a)*it.rad,it.y+Math.sin(ctx.t*2+it.a)*.05,Math.sin(it.a)*it.rad*.4+.3);}
+   else if(it.k==="bolt"){const on=Math.sin(ctx.t*5+it.ph)>.55;sp.visible=on;sp.position.set(Math.cos(it.a)*it.rad,it.y,.5);}
+   else if(it.k==="fall"){it.y-=it.sp*dt*1.4;if(it.y<it.bot)it.y=it.top;sp.position.set(it.x,it.y,it.z+.4);}
+   else if(it.k==="twinkle"){it.a+=it.sp*dt;sp.position.set(Math.cos(it.a)*it.rad,it.y,Math.sin(it.a)*it.rad*.5+.3);const k=.8+Math.sin(ctx.t*3+it.ph)*.25;sp.scale.set(k*.35*((ctx.cfg&&ctx.cfg.size)||1),k*.35*((ctx.cfg&&ctx.cfg.size)||1),1);}});}
  LIVE=ctx;
  (function loop(){
-  ctx.raf=requestAnimationFrame(loop);ctx.t+=.016;
+  ctx.raf=requestAnimationFrame(loop);ctx.t+=.016;fxUpdate(.016);
   ctx.camera.position.z+=(camDist(ctx.cfg,ctx.camera.aspect)-ctx.camera.position.z)*.12;
   ctx.pl.body.rotation.y+=.0035;
   ctx.pl.moons.forEach(function(m){const d=m.userData;d.a+=d.sp*1.6;m.position.set(Math.cos(d.a)*d.rad,Math.sin(d.inc)*d.rad*.25,Math.sin(d.a)*d.rad);});
@@ -183,7 +201,7 @@ function renderPlanetChar(containerId,cfg0,opts){
   s*=ctx.breath;holder.scale.setScalar(s);faceHolder.scale.setScalar(s);
   ctx.renderer.render(ctx.scene,ctx.camera);
  })();
- return{update:build,talk:function(on){ctx.talking=!!on;},bounce:function(){ctx.bounce=1;},breath:function(v){ctx.breath=v;}};}
+ return{update:build,talk:function(on){ctx.talking=!!on;},bounce:function(){ctx.bounce=1;},breath:function(v){ctx.breath=v;},mood:mood};}
 
 /* ---------- miniatura para la colección ---------- */
 function snapshotPlanet(cfg){
