@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.25.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.26.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -421,6 +421,7 @@ function touchDay(){const p=prof(),t=todayStr();
 function adlvl(){const p=prof();return p&&p.autoLevel?p.autoLevel:2;}
 function diffMax(arr){return arr[Math.min(arr.length-1,adlvl()-1)];}
 function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
+ try{if(typeof calmWatch==="function")calmWatch(!!correct);}catch(e){} // detector de frustración (4 errores seguidos)
  if(!p.stats[subject])p.stats[subject]={attempts:0,correct:0,sec:0};
  p.stats[subject].attempts++;d.ex++;p.stats[subject].sec+=(secs||0);d.sec+=(secs||0);
  if(correct){p.stats[subject].correct++;d.ok++;p.coins+=2;p.xp+=5;}else p.xp+=1;
@@ -489,6 +490,7 @@ function stopGames(){
  try{if(typeof accCleanup==="function")accCleanup();}catch(e){}
  try{if(typeof spcCleanup==="function")spcCleanup();}catch(e){}
  try{if(typeof punCleanup==="function")punCleanup();}catch(e){}
+ try{if(typeof calmCleanup==="function"&&!document.getElementById("calmOv"))calmCleanup();}catch(e){} // rincón de la calma (no corta la pausa superpuesta)
  try{if(typeof disposeBook3D==="function")disposeBook3D();}catch(e){} // libro 3D de los audiolibros
  try{if(typeof abCleanup==="function")abCleanup();}catch(e){}
  try{if(typeof disposeLanding3D==="function")disposeLanding3D();}catch(e){} // aterrizaje en un planeta (Three.js)
@@ -512,4 +514,5 @@ function exitGame(target){
 function topbar(backFn){const p=prof();
  return '<div class="topbar">'+(backFn?'<button class="back" onclick="'+backFn+'">←</button>':'')
  +'<span class="pill">🔥 '+p.streak+'</span><span class="pill">🪙 '+p.coins+'</span><span class="pill">⭐ Nv '+level(p.xp)+'</span>'
- +'<span class="pill" style="cursor:pointer" title="Sonido" onclick="toggleMute(this)">'+(muted()?"🔇":"🔊")+'</span></div>';}
+ +'<span class="pill" style="cursor:pointer" title="Sonido" onclick="toggleMute(this)">'+(muted()?"🔇":"🔊")+'</span>'
+ +(profType()==="kid"?'<span class="pill" style="cursor:pointer" title="Respirar un momento" onclick="typeof calmOverlay===\'function\'&&calmOverlay(\'manual\')">🌬️</span>':'')+'</div>';}

@@ -121,6 +121,7 @@ function hubApps(){
   +(typeof screenGender==="function"?appIcon("screenGender()","👫","Género y número","linear-gradient(160deg,#F9A8D4,#9333EA)"):"")
   +(typeof screenAudiobooks==="function"?appIcon("screenAudiobooks()","🎧","Audiolibros","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
   +(typeof screenLanding==="function"?appIcon("screenLanding()","🛬","Aterriza","linear-gradient(160deg,#6EE7B7,#047857)"):"")
+  +(typeof screenCalm==="function"?appIcon("screenCalm()","💙","Calma","linear-gradient(160deg,#93C5FD,#6366F1)"):"")
   +appIcon("screenLeer()","📖","Cuentos","linear-gradient(160deg,#FDE047,#F59E0B)")
   +appIcon("screenVideosKid()","🎬","Videos","linear-gradient(160deg,#93C5FD,#3B82F6)")
   +'</div>';

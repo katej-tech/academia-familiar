@@ -155,7 +155,7 @@ function renderPlanetChar(containerId,cfg0,opts){
  disposePlanetChar();
  const b=sceneBase(el,opts.bg);
  const holder=new THREE.Group(),faceHolder=new THREE.Group();b.scene.add(holder,faceHolder);
- const ctx=Object.assign(b,{holder:holder,faceHolder:faceHolder,raf:null,t:0,talking:false,bounce:0,cfg:null,pl:null,face:null,nextBlink:2});
+ const ctx=Object.assign(b,{holder:holder,faceHolder:faceHolder,raf:null,t:0,talking:false,bounce:0,breath:1,cfg:null,pl:null,face:null,nextBlink:2});
  function build(cfg){
   ctx.cfg=cfg;clearGroup(holder);clearGroup(faceHolder);
   ctx.pl=buildPlanet(cfg);holder.add(ctx.pl.g);
@@ -180,10 +180,10 @@ function renderPlanetChar(containerId,cfg0,opts){
   /* rebote al tocar */
   let s=1+Math.sin(ctx.t*2)*.012;
   if(ctx.bounce>0){ctx.bounce-=.04;s+=Math.sin((1-ctx.bounce)*Math.PI)*.1;}
-  holder.scale.setScalar(s);faceHolder.scale.setScalar(s);
+  s*=ctx.breath;holder.scale.setScalar(s);faceHolder.scale.setScalar(s);
   ctx.renderer.render(ctx.scene,ctx.camera);
  })();
- return{update:build,talk:function(on){ctx.talking=!!on;},bounce:function(){ctx.bounce=1;}};}
+ return{update:build,talk:function(on){ctx.talking=!!on;},bounce:function(){ctx.bounce=1;},breath:function(v){ctx.breath=v;}};}
 
 /* ---------- miniatura para la colección ---------- */
 function snapshotPlanet(cfg){

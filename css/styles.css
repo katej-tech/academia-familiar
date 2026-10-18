@@ -413,3 +413,6 @@ body.adulto .node.current::after{content:"SIGUE";background:var(--adult-accent);
  body.printing #printSheet{display:block!important;background:#fff}
  @page{size:A4;margin:14mm}
 }
+
+/* rincón de la calma: la bola respira (4 s inhala, 1,5 s sostén, 6 s suelta = 11,5 s) */
+@keyframes calmBreath{0%{transform:scale(.85)}35%{transform:scale(1.35)}48%{transform:scale(1.35)}100%{transform:scale(.85)}}
