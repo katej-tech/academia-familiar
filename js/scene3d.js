@@ -44,6 +44,7 @@ function renderScene3D(containerId,cfg){
  camera.position.set(0,.45,3.9);camera.lookAt(0,.25,0);
  scene.add(new THREE.AmbientLight(0xffffff,1.5));
  const dl=new THREE.DirectionalLight(0xffffff,1.2);dl.position.set(2,5,5);scene.add(dl);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:4.5});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
  const bg=cfg.bg||["#BFE3FF","#8EC5F5"];
  const back=new THREE.Mesh(new THREE.PlaneGeometry(11,5.4),new THREE.MeshBasicMaterial({map:backTex(bg[0],bg[1],cfg.props||["⭐"])}));
  back.position.set(0,.9,-2.2);scene.add(back);

@@ -10,7 +10,11 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.m
 const SPH=function(r){return new THREE.SphereGeometry(r,18,14);};
 const CYL=function(a,b,h){return new THREE.CylinderGeometry(a,b,h,18);};
 const CON=function(r,h,n){return new THREE.ConeGeometry(r,h,n||18);};
-const BOX=function(x,y,z){return new THREE.BoxGeometry(x,y,z);};
+/* caja con bordes redondeados (extrusión con bisel): se ve mucho más pulida que un cubo recortado */
+const BOX=function(x,y,z){
+ const b=Math.min(.03,Math.min(x,y,z)*.28),rx=x/2,ry=y/2,r=Math.min(rx,ry)*.5,sh=new THREE.Shape();
+ sh.moveTo(-rx+r,-ry);sh.lineTo(rx-r,-ry);sh.absarc(rx-r,-ry+r,r,-Math.PI/2,0,false);sh.lineTo(rx,ry-r);sh.absarc(rx-r,ry-r,r,0,Math.PI/2,false);sh.lineTo(-rx+r,ry);sh.absarc(-rx+r,ry-r,r,Math.PI/2,Math.PI,false);sh.lineTo(-rx,-ry+r);sh.absarc(-rx+r,-ry+r,r,Math.PI,Math.PI*1.5,false);
+ const g=new THREE.ExtrudeGeometry(sh,{depth:Math.max(.01,z-b*2),bevelEnabled:true,bevelThickness:b,bevelSize:b*.9,bevelSegments:2,curveSegments:5});g.center();return g;};
 
 /* cada plantilla: build(part) → part(id,label,color,fixed) devuelve add(geo,pos,scale,rot) */
 const COLOR3D_TEMPLATES=[
@@ -87,6 +91,7 @@ function render3DColorTemplate(containerId,templateId,onSelect){
  camera.position.set(0,.6,4.1);camera.lookAt(0,.14,0);
  scene.add(new THREE.AmbientLight(0xffffff,1.45));
  const dir=new THREE.DirectionalLight(0xffffff,1.3);dir.position.set(3,5,4);scene.add(dir);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:3.2,groundY:-.95});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
  const fillL=new THREE.DirectionalLight(0xffffff,.5);fillL.position.set(-3,2,2);scene.add(fillL);
  const outl=new THREE.MeshBasicMaterial({color:"#1E2A4A",side:THREE.BackSide});
 
@@ -94,7 +99,7 @@ function render3DColorTemplate(containerId,templateId,onSelect){
  const parts=[];   /* {id,label,mat,fixed,def,meshes[]} */
  const allMeshes=[];
  tpl.build(function(id,label,color,fixed){
-  const pd={id:id,label:label,def:color,fixed:!!fixed,mat:new THREE.MeshStandardMaterial({color:color,roughness:.55}),meshes:[]};
+  const pd={id:id,label:label,def:color,fixed:!!fixed,mat:new THREE.MeshStandardMaterial({color:color,roughness:.38,metalness:.04}),meshes:[]};
   parts.push(pd);
   return function(geo,pos,scale,rot){
    const m=new THREE.Mesh(geo,pd.mat);

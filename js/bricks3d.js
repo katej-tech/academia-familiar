@@ -33,6 +33,7 @@ function initBricks(containerId,opts){
  updateCam();
  scene.add(new THREE.AmbientLight(0xffffff,1.35));
  const dl=new THREE.DirectionalLight(0xffffff,1.3);dl.position.set(6,12,7);scene.add(dl);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:10});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
  const fl=new THREE.DirectionalLight(0xffffff,.45);fl.position.set(-6,4,-5);scene.add(fl);
 
  const base=new THREE.Mesh(new THREE.BoxGeometry(N,.3,N),new THREE.MeshStandardMaterial({color:"#4CAF50",roughness:.7}));

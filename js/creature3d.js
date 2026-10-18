@@ -96,6 +96,7 @@ function make3DScene(container,bg){
  camera.position.set(0,.5,4.1);camera.lookAt(0,.17,0);
  scene.add(new THREE.AmbientLight(0xffffff,1.45));
  const dir=new THREE.DirectionalLight(0xffffff,1.3);dir.position.set(3,5,4);scene.add(dir);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:3.5});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
  const fill=new THREE.DirectionalLight(0xffffff,.5);fill.position.set(-3,2,2);scene.add(fill);
  const plat=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.08,32),new THREE.MeshStandardMaterial({color:"#E6ECF5",roughness:.9}));
  plat.position.y=-.86;scene.add(plat);

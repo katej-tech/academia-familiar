@@ -27,6 +27,7 @@ function baseScene(el,bg,fov){
  const camera=new THREE.PerspectiveCamera(fov||38,w/h,.1,80);
  scene.add(new THREE.AmbientLight(0xffffff,1.35));
  const dl=new THREE.DirectionalLight(0xffffff,1.3);dl.position.set(3,6,5);scene.add(dl);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:6});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
  const ctx={renderer:renderer,scene:scene,camera:camera,el:el,raf:null,t:0,ro:null,onResize:null};
  if(window.ResizeObserver){ctx.ro=new ResizeObserver(function(){const nw=el.clientWidth,nh=el.clientHeight;if(nw>0&&nh>0){renderer.setSize(nw,nh,false);camera.aspect=nw/nh;camera.updateProjectionMatrix();if(ctx.onResize)ctx.onResize();}});ctx.ro.observe(el);}
  return ctx;}

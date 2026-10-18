@@ -52,6 +52,7 @@ function render3DPet(containerId,idx,sleeping){
  camera.position.set(0,.2,2.7);camera.lookAt(0,.08,0);
  scene.add(new THREE.AmbientLight(0xffffff,1.5));
  const dir=new THREE.DirectionalLight(0xffffff,1.2);dir.position.set(3,5,4);scene.add(dir);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:3.5});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
  const fill=new THREE.DirectionalLight(0xffffff,.5);fill.position.set(-3,2,2);scene.add(fill);
 
  const group=new THREE.Group();

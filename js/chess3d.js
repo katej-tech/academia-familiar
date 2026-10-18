@@ -53,6 +53,7 @@ function render3DChessBoard(containerId,pieceId,pr,pc,highlightSet,starKey,piece
  camera.position.set(0,3.6,3.4);camera.lookAt(0,0,pr!=null?pr-3.5:.3);
  scene.add(new THREE.AmbientLight(0xffffff,1.35));
  const dl=new THREE.DirectionalLight(0xffffff,1.2);dl.position.set(3,7,4);scene.add(dl);
+ try{if(window.polish3D)polish3D(THREE,renderer,scene,{radius:7});}catch(e){} // pulido común: sombras y luz de cielo (js/polish3d.js)
 
  const boardG=new THREE.Group();scene.add(boardG);
  const rim=new THREE.Mesh(new THREE.BoxGeometry(8.8,.35,8.8),new THREE.MeshStandardMaterial({color:"#5D4630",roughness:.8}));rim.position.y=-.25;boardG.add(rim);
