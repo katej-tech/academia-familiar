@@ -126,7 +126,7 @@ function hubApps(){
   +'</div>';
  html+=sec("🧠 Pensar y crear aprendiendo");
  html+='<div class="appgrid">'
-  +(typeof screenWorlds==="function"?appIcon("screenWorlds()","🌍","Mi mundo de retos","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
+  +(typeof screenWorlds==="function"?appIcon("screenWorlds()","🏁","Mundos y carreras","linear-gradient(160deg,#FDE047,#F97316)"):"")
   +(typeof screenLogicLab==="function"?appIcon("screenLogicLab()","🔷","Lógica 3D","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
   +(typeof screenBrain==="function"?appIcon("screenBrain()","🧠","Cerebro","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
   +(typeof screenChess==="function"?appIcon("screenChess()","♟️","Ajedrez","linear-gradient(160deg,#94A3B8,#334155)"):"")
