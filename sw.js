@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin internet y se actualiza sola al abrir con conexión. */
-const VERSION = "af-v10.32.0";
+const VERSION = "af-v10.33.0";
 const CORE = [
   ".",
   "index.html",
@@ -34,7 +34,6 @@ const CORE = [
   "js/planetchar3d.js",
   "js/planetlab.js",
   "js/bricks.js",
-  "js/robot.js",
   "js/ecoplanet3d.js",
   "js/ecoplanet.js",
   "js/brain.js",
@@ -56,14 +55,11 @@ const CORE = [
   "js/calm.js",
   "js/emotions.js",
   "js/routine.js",
-  "js/quizmaker.js",
   "js/world3d.js",
   "js/worldgame.js",
   "js/book3d.js",
   "js/audiobooks.js",
   "js/audiobooks-more.js",
-  "js/landing3d.js",
-  "js/landing.js",
   "js/mathtricks.js",
   "js/drawmethod.js",
   "js/english-academy.js",

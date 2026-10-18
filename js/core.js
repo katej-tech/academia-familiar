@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.32.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.33.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -493,13 +493,10 @@ function stopGames(){
  try{if(typeof calmCleanup==="function"&&!document.getElementById("calmOv"))calmCleanup();}catch(e){}
  try{if(typeof emwCleanup==="function")emwCleanup();}catch(e){} // planeta de las emociones
  try{if(typeof rutCleanup==="function")rutCleanup();}catch(e){}
- try{if(typeof myqCleanup==="function")myqCleanup();}catch(e){} // mis quizzes
  try{if(typeof disposeWorld3D==="function")disposeWorld3D();}catch(e){} // mundo de retos (Three.js)
  try{if(typeof wrlCleanup==="function")wrlCleanup();}catch(e){} // mi día visual (el avisador global sigue corriendo) // rincón de la calma (no corta la pausa superpuesta)
  try{if(typeof disposeBook3D==="function")disposeBook3D();}catch(e){} // libro 3D de los audiolibros
  try{if(typeof abCleanup==="function")abCleanup();}catch(e){}
- try{if(typeof disposeLanding3D==="function")disposeLanding3D();}catch(e){} // aterrizaje en un planeta (Three.js)
- try{if(typeof landCleanup==="function")landCleanup();}catch(e){}
  try{if(typeof disposeFlaps3D==="function")disposeFlaps3D();}catch(e){} // libros de solapas 3D
  try{if(typeof egCleanup==="function")egCleanup();}catch(e){}
  try{if(typeof rcCleanup==="function")rcCleanup();}catch(e){} // comprensión lectora: voz y temporizadores

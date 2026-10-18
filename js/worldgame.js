@@ -12,8 +12,8 @@
    Motor 3D: js/world3d.js. Prefijo wrl / WRL. */
 
 const WRL_N=10;
-const WRL_KINDS=[["sum","➕","Sumas"],["res","➖","Restas"],["tab","✖️","Tablas"],["pat","🔢","Patrones"],["cmp","⚖️","Comparar"],["log","🔷","Lógica"],["quiz","📝","Mi quiz"]];
-const WRL_KINDS_EN=[["sum","➕","Add"],["res","➖","Subtract"],["tab","✖️","Times tables"],["pat","🔢","Patterns"],["cmp","⚖️","Compare"],["log","🔷","Logic"],["voc","🗣️","Words"],["ear","👂","Listen"],["num","🔟","Number words"],["quiz","📝","My quiz"]];
+const WRL_KINDS=[["sum","➕","Sumas"],["res","➖","Restas"],["tab","✖️","Tablas"],["pat","🔢","Patrones"],["cmp","⚖️","Comparar"],["log","🔷","Lógica"]];
+const WRL_KINDS_EN=[["sum","➕","Add"],["res","➖","Subtract"],["tab","✖️","Times tables"],["pat","🔢","Patterns"],["cmp","⚖️","Compare"],["log","🔷","Logic"],["voc","🗣️","Words"],["ear","👂","Listen"],["num","🔟","Number words"]];
 function wrlKinds(W){return(W&&W.lang==="en")?WRL_KINDS_EN:WRL_KINDS;}
 function wrlFlag(W){return(W&&W.lang==="en")?"🇬🇧":"🇨🇴";}
 const WRL_WIN={noWorld:true,replay:"screenWorlds()",replayLabel:"Mis mundos 🌍",backFn:"screenKidMap()",backLabel:"Ir a los mundos 🌍"};

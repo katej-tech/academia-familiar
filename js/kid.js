@@ -126,13 +126,10 @@ function hubApps(){
   +'</div>';
  html+=sec("🧠 Pensar y crear aprendiendo");
  html+='<div class="appgrid">'
-  +(typeof screenQuizzes==="function"?appIcon("screenQuizzes()","📝","Mis quizzes","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
   +(typeof screenWorlds==="function"?appIcon("screenWorlds()","🌍","Mi mundo de retos","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
   +(typeof screenLogicLab==="function"?appIcon("screenLogicLab()","🔷","Lógica 3D","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
-  +(typeof screenRobot==="function"?appIcon("screenRobot()","🤖","Programa","linear-gradient(160deg,#A5F3FC,#0891B2)"):"")
   +(typeof screenBrain==="function"?appIcon("screenBrain()","🧠","Cerebro","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
   +(typeof screenChess==="function"?appIcon("screenChess()","♟️","Ajedrez","linear-gradient(160deg,#94A3B8,#334155)"):"")
-  +(typeof screenLanding==="function"?appIcon("screenLanding()","🛬","Aterriza","linear-gradient(160deg,#6EE7B7,#047857)"):"")
   +(typeof screenPlanetLab==="function"?appIcon("screenPlanetLab()","🪐","Planetas","linear-gradient(160deg,#818CF8,#4338CA)"):"")
   +'</div>';
  html+=sec("🎨 Arte y manos");
@@ -357,8 +354,7 @@ function playSoft(fn){
  +'<p style="font-size:.92rem">'+have+' / '+g+' aciertos</p></div>'
  +'<p class="center" style="margin:10px 0 6px">¡Hay formas de aprender que se sienten como jugar!</p>'
  +'<button class="kbtn green" onclick="screenCole()">📚 Ir a aprender</button>'
- +(typeof screenWorlds==="function"?'<button class="kbtn blue" onclick="screenWorlds()">🌍 Mi mundo de retos</button>':'')
- +(typeof screenQuizzes==="function"?'<button class="kbtn purple" onclick="screenQuizzes()">📝 Mis quizzes</button>':''));}
+ +(typeof screenWorlds==="function"?'<button class="kbtn blue" onclick="screenWorlds()">🌍 Mi mundo de retos</button>':''));}
 function balanceCardHTML(){
  const d=touchDay(),ok=d.ok||0,art=d.art||0;
  const L=Math.min(ok,DAILY_GOAL),A=Math.min(art,ART_GOAL);
