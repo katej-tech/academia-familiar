@@ -13,6 +13,9 @@
 
 const WRL_N=10;
 const WRL_KINDS=[["sum","➕","Sumas"],["res","➖","Restas"],["tab","✖️","Tablas"],["pat","🔢","Patrones"],["cmp","⚖️","Comparar"],["log","🔷","Lógica"],["quiz","📝","Mi quiz"]];
+const WRL_KINDS_EN=[["sum","➕","Add"],["res","➖","Subtract"],["tab","✖️","Times tables"],["pat","🔢","Patterns"],["cmp","⚖️","Compare"],["log","🔷","Logic"],["voc","🗣️","Words"],["ear","👂","Listen"],["num","🔟","Number words"],["quiz","📝","My quiz"]];
+function wrlKinds(W){return(W&&W.lang==="en")?WRL_KINDS_EN:WRL_KINDS;}
+function wrlFlag(W){return(W&&W.lang==="en")?"🇬🇧":"🇨🇴";}
 const WRL_WIN={noWorld:true,replay:"screenWorlds()",replayLabel:"Mis mundos 🌍",backFn:"screenKidMap()",backLabel:"Ir a los mundos 🌍"};
 let WRL={timers:[],tool:"up",color:0,gate:{kind:"sum",lv:1,quiz:null}};
 
@@ -57,24 +60,64 @@ function wrlNums(ans,extra){
  shuffled(cand).forEach(function(v){if(Object.keys(set).length<4&&v>=0&&!set[v])set[v]=1;});
  let g=0;while(Object.keys(set).length<4&&g++<30)set[ans+rint(3,15)]=1;
  return shuffled(Object.keys(set).map(Number)).map(function(n){return{t:String(n),ok:n===ans};});}
-function wrlGate(kind,lv,quizId){
+/* ---- inglés (gemelo del Mundo de retos): vocabulario con dibujos, escuchar, números en palabras, y los retos de mate/lógica en inglés ---- */
+const WRL_VOC=[["🐶","dog","animal"],["🐱","cat","animal"],["🐟","fish","animal"],["🐦","bird","animal"],["🐴","horse","animal"],["🐮","cow","animal"],["🐷","pig","animal"],["🐸","frog","animal"],["🐰","rabbit","animal"],["🐘","elephant","animal"],["🦁","lion","animal"],["🐵","monkey","animal"],["🐢","turtle","animal"],["🦋","butterfly","animal"],
+ ["🍎","apple","food"],["🍌","banana","food"],["🍞","bread","food"],["🥛","milk","food"],["🧀","cheese","food"],["🍕","pizza","food"],["🍇","grapes","food"],["🍓","strawberry","food"],["🥕","carrot","food"],["🍪","cookie","food"],
+ ["🏠","house","thing"],["🚗","car","thing"],["🚌","bus","thing"],["⚽","ball","thing"],["📖","book","thing"],["✏️","pencil","thing"],["🎒","backpack","thing"],["🪑","chair","thing"],["🛏️","bed","thing"],["☀️","sun","thing"],["🌙","moon","thing"],["⭐","star","thing"],["🌳","tree","thing"],["🌸","flower","thing"],["⏰","clock","thing"],["👟","shoe","thing"],["🎂","cake","thing"],["🚲","bike","thing"],["✈️","plane","thing"],["🚪","door","thing"]];
+const WRL_UNITS=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const WRL_TENS=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+function wrlNumWord(n){return n<20?WRL_UNITS[n]:WRL_TENS[Math.floor(n/10)]+(n%10?"-"+WRL_UNITS[n%10]:"");}
+const WRL_TR=[[/Suma primero las unidades y después las decenas\./,"Add the ones first, then the tens."],[/Cuenta hacia atrás desde el número mayor\./,"Count back from the bigger number."],
+ [/Piensa en (\d+) grupos de (\d+)\./,"Think of $1 groups of $2."],[/¿Qué número multiplicado por (\d+) da (\d+)\?/,"What number times $1 makes $2?"],
+ [/Mira por cuánto se multiplica cada número\./,"Look at what each number is multiplied by."],[/Mira cuánto cambia de un número al siguiente\./,"Look at how much it changes each time."],
+ [/¿Cuál es MAYOR\?/,"Which is BIGGER?"],[/¿Cuál da MÁS\?/,"Which gives MORE?"],[/Son iguales/,"They are equal"],[/ {2}o {2}/,"  or  "],[/Mira primero las decenas\./,"Look at the tens first."],
+ [/Resuelve cada lado y compara los resultados\./,"Solve each side and compare the results."],[/Se turnan: uno, otro, uno, otro…/,"They take turns: one, then the other…"],
+ [/Un grupito de 3 se repite una y otra vez\./,"A group of 3 repeats again and again."],[/Se repite un grupo de 3 figuras distintas\./,"A group of 3 different shapes repeats."]];
+function wrlTr(t){let o=String(t);WRL_TR.forEach(function(x){o=o.replace(x[0],x[1]);});return o;}
+/* texto para leer en voz alta en inglés: símbolos → palabras, sin emojis */
+function wrlSayEN(t){return String(t).replace(/❓/g," what ").replace(/\+/g," plus ").replace(/−/g," minus ").replace(/×/g," times ").replace(/÷/g," divided by ").replace(/=/g," equals ").replace(/[\u{1F000}-\u{1FFFF}\u2B50\u2600-\u27BF\uFE0F]/gu," ").replace(/\s+/g," ").trim();}
+function wrlGateEN(kind,lv,quizId){
+ const base={lang:"en",subj:"Inglés"};
+ if(kind==="voc"){
+  const pool=lv===1?WRL_VOC.filter(function(x){return x[2]!=="thing";}):WRL_VOC;
+  if(lv===3){const cat=pick(["animal","food","thing"]),right=pick(pool.filter(function(x){return x[2]===cat;})),wrong=shuffled(pool.filter(function(x){return x[2]!==cat;})).slice(0,3);
+   return Object.assign(base,{q:"Which one is "+(cat==="animal"?"an ANIMAL":cat==="food"?"FOOD":"a THING")+"?",say:"Which one is "+(cat==="animal"?"an animal":cat==="food"?"food":"a thing")+"?",ops:shuffled([{t:right[1],ok:true}].concat(wrong.map(function(x){return{t:x[1],ok:false};}))),hint:"Think: can you eat it? Does it move? Is it an object?"});}
+  const right=pick(pool),n=lv===1?2:3,wrong=shuffled(pool.filter(function(x){return x!==right;})).slice(0,n);
+  return Object.assign(base,{q:"What is this?  "+right[0],say:"What is this?",ops:shuffled([{t:right[1],ok:true}].concat(wrong.map(function(x){return{t:x[1],ok:false};}))),hint:"Say it out loud: "+right[1].charAt(0)+"…"});}
+ if(kind==="ear"){
+  const right=pick(WRL_VOC),n=lv===1?2:3,same=lv>=2?WRL_VOC.filter(function(x){return x!==right&&x[2]===right[2];}):WRL_VOC.filter(function(x){return x!==right&&x[2]!==right[2];}),wrong=shuffled(same).slice(0,n);
+  const say=lv===3?pick(["I like ","I see a ","I have a "])+right[1]:right[1];
+  return Object.assign(base,{q:"👂 Listen and choose the picture",say:say,big:true,ops:shuffled([{t:right[0],ok:true}].concat(wrong.map(function(x){return{t:x[0],ok:false};}))),hint:"Press 🔊 Listen again, slowly."});}
+ if(kind==="num"){
+  const hi=lv===1?10:lv===2?20:99,ans=lv===3?rint(21,hi):rint(1,hi);
+  return Object.assign(base,{q:"Which number is “"+wrlNumWord(ans)+"”?",say:"Which number is "+wrlNumWord(ans)+"?",ops:wrlNums(ans,[lv===3?(ans%10)*10+Math.floor(ans/10):ans+1]),hint:lv===3?"Tens first, then ones: twenty, thirty, forty…":"Count: one, two, three…"});}
+ if(kind==="quiz"&&quizId&&typeof myqRandomQuestion==="function"){const x=myqRandomQuestion(quizId);if(x)return{q:x.q,say:x.q,lang:x.lang||"en",subj:x.subj||"Inglés",ops:x.ops,hint:x.exp||"Read again slowly."};}
+ return null;}
+function wrlGate(kind,lv,quizId,lang){
  lv=lv||1;
- if(kind==="sum"){const a=lv===1?rint(2,9):lv===2?rint(12,58):rint(120,480),b=lv===1?rint(2,9):lv===2?rint(14,39):rint(110,390);return{q:a+" + "+b+" = ❓",ops:wrlNums(a+b),hint:"Suma primero las unidades y después las decenas.",subj:"Matemáticas"};}
- if(kind==="res"){const a=lv===1?rint(6,18):lv===2?rint(30,99):rint(200,900),b=lv===1?rint(1,a-1):lv===2?rint(11,a-1):rint(100,a-50);return{q:a+" − "+b+" = ❓",ops:wrlNums(a-b),hint:"Cuenta hacia atrás desde el número mayor.",subj:"Matemáticas"};}
+ if(lang==="en"){
+  const x=wrlGateEN(kind,lv,quizId);if(x)return x;
+  const y=wrlGate(kind==="voc"||kind==="ear"||kind==="num"||kind==="quiz"?"sum":kind,lv,null,"es");
+  const out={q:wrlTr(y.q),ops:y.ops.map(function(o){return{t:wrlTr(o.t),ok:o.ok};}),hint:wrlTr(y.hint),subj:"Inglés",lang:"en"};
+  if(kind==="log")out.q="What comes next?  "+out.q;
+  out.say=kind==="log"?"What comes next?":wrlSayEN(out.q);return out;}
+ if(kind==="voc"||kind==="ear"||kind==="num")kind="sum";
+ if(kind==="sum"){const a=lv===1?rint(2,9):lv===2?rint(12,58):rint(120,480),b=lv===1?rint(2,9):lv===2?rint(14,39):rint(110,390);return{q:a+" + "+b+" = ❓",ops:wrlNums(a+b),hint:"Suma primero las unidades y después las decenas.",subj:"Mate"};}
+ if(kind==="res"){const a=lv===1?rint(6,18):lv===2?rint(30,99):rint(200,900),b=lv===1?rint(1,a-1):lv===2?rint(11,a-1):rint(100,a-50);return{q:a+" − "+b+" = ❓",ops:wrlNums(a-b),hint:"Cuenta hacia atrás desde el número mayor.",subj:"Mate"};}
  if(kind==="tab"){const t=pick(lv===1?[2,5,10]:lv===2?[3,4,6]:[7,8,9]),n=rint(2,10);
-  if(lv===3&&Math.random()<.35)return{q:(t*n)+" ÷ "+t+" = ❓",ops:wrlNums(n),hint:"¿Qué número multiplicado por "+t+" da "+(t*n)+"?",subj:"Matemáticas"};
-  return{q:t+" × "+n+" = ❓",ops:wrlNums(t*n),hint:"Piensa en "+n+" grupos de "+t+".",subj:"Matemáticas"};}
+  if(lv===3&&Math.random()<.35)return{q:(t*n)+" ÷ "+t+" = ❓",ops:wrlNums(n),hint:"¿Qué número multiplicado por "+t+" da "+(t*n)+"?",subj:"Mate"};
+  return{q:t+" × "+n+" = ❓",ops:wrlNums(t*n),hint:"Piensa en "+n+" grupos de "+t+".",subj:"Mate"};}
  if(kind==="pat"){
   let a,s,seq=[],geo=false;
   if(lv<3){s=pick(lv===1?[1,2,5,10]:[3,4,6,7,9]);a=rint(1,9);for(let i=0;i<5;i++)seq.push(a+s*i);}
   else if(Math.random()<.5){geo=true;s=pick([2,3]);a=rint(1,4);for(let i=0;i<5;i++)seq.push(a*Math.pow(s,i));}
   else{s=pick([11,12,15,25]);a=rint(5,40);for(let i=0;i<5;i++)seq.push(a+s*i);}
-  const ans=seq[4];return{q:seq.slice(0,4).join(", ")+", ❓",ops:wrlNums(ans,[seq[3]]),hint:geo?"Mira por cuánto se multiplica cada número.":"Mira cuánto cambia de un número al siguiente.",subj:"Matemáticas"};}
+  const ans=seq[4];return{q:seq.slice(0,4).join(", ")+", ❓",ops:wrlNums(ans,[seq[3]]),hint:geo?"Mira por cuánto se multiplica cada número.":"Mira cuánto cambia de un número al siguiente.",subj:"Mate"};}
  if(kind==="cmp"){
-  if(lv===1){let a=rint(10,99),b=rint(10,99);while(a===b)b=rint(10,99);const ans=Math.max(a,b);return{q:"¿Cuál es MAYOR?  "+a+"  o  "+b,ops:shuffled([{t:String(a),ok:a===ans},{t:String(b),ok:b===ans},{t:"Son iguales",ok:false}]),hint:"Mira primero las decenas.",subj:"Matemáticas"};}
+  if(lv===1){let a=rint(10,99),b=rint(10,99);while(a===b)b=rint(10,99);const ans=Math.max(a,b);return{q:"¿Cuál es MAYOR?  "+a+"  o  "+b,ops:shuffled([{t:String(a),ok:a===ans},{t:String(b),ok:b===ans},{t:"Son iguales",ok:false}]),hint:"Mira primero las decenas.",subj:"Mate"};}
   const mk=function(){const k=rint(0,2);if(k===0){const x=rint(3,12),y=rint(3,12);return{s:x+" + "+y,v:x+y};}if(k===1){const x=rint(2,9),y=rint(2,9);return{s:x+" × "+y,v:x*y};}const x=rint(15,40),y=rint(2,14);return{s:x+" − "+y,v:x-y};};
   let A=mk(),B=mk(),g=0;while((A.v===B.v||A.s===B.s)&&g++<20)B=mk();
-  const ans=A.v>B.v?A.s:B.s;return{q:"¿Cuál da MÁS?  "+A.s+"  o  "+B.s,ops:shuffled([{t:A.s,ok:A.s===ans},{t:B.s,ok:B.s===ans},{t:"Son iguales",ok:A.v===B.v}]),hint:"Resuelve cada lado y compara los resultados.",subj:"Matemáticas"};}
+  const ans=A.v>B.v?A.s:B.s;return{q:"¿Cuál da MÁS?  "+A.s+"  o  "+B.s,ops:shuffled([{t:A.s,ok:A.s===ans},{t:B.s,ok:B.s===ans},{t:"Son iguales",ok:A.v===B.v}]),hint:"Resuelve cada lado y compara los resultados.",subj:"Mate"};}
  if(kind==="log"){
   const S=shuffled(["🔴","🔵","🟡","🟢","🟣","🟠","⭐","🌙","🍎","🐱"]).slice(0,4);let seq,ans,hint;
   if(lv===1){seq=[S[0],S[1],S[0],S[1],S[0]];ans=S[1];hint="Se turnan: uno, otro, uno, otro…";}
@@ -82,7 +125,7 @@ function wrlGate(kind,lv,quizId){
   else{seq=[];for(let i=0;i<8;i++)seq.push(S[i%3]);ans=S[8%3];hint="Se repite un grupo de 3 figuras distintas.";}
   const others=S.filter(function(x){return x!==ans;}).slice(0,3).concat(["❔"]).slice(0,3);
   return{q:seq.join(" ")+" ❓",ops:shuffled([{t:ans,ok:true}].concat(others.map(function(t){return{t:t,ok:false};}))),hint:hint,subj:"Lógica"};}
- if(kind==="quiz"&&quizId&&typeof myqRandomQuestion==="function"){const x=myqRandomQuestion(quizId);if(x)return{q:x.q,ops:x.ops,hint:x.exp||"Lee otra vez con calma.",subj:x.subj||"Mis quizzes"};}
+ if(kind==="quiz"&&quizId&&typeof myqRandomQuestion==="function"){const x=myqRandomQuestion(quizId);if(x)return{q:x.q,ops:x.ops,hint:x.exp||"Lee otra vez con calma.",subj:x.subj||"Mis quizzes",lang:x.lang};}
  return wrlGate("sum",lv);}
 
 /* ---------- lista de mundos ---------- */
@@ -91,26 +134,28 @@ function screenWorlds(){setTheme("kid");
  wrlCleanup();
  const l=wrlList(),best=prof().wrlBest||{},bean=prof().beanColor||0;
  render(topbar("screenKidMap()")+subHeader("🌍 Mi mundo de retos")
-  +'<div class="card" style="background:#ECFEFF;font-size:.92rem;line-height:1.5"><b>🧠 Aprender creando.</b> Construye tu pista con bloques. Para abrir cada <b>puerta 🚪</b> hay que resolver un reto, <b>¡y los retos los eliges tú!</b> Un buen creador de mundos es un buen profe.</div>'
+  +'<div class="card" style="background:#ECFEFF;font-size:.92rem;line-height:1.5"><b>🧠 Aprender creando.</b> Construye tu pista con bloques (en 🇨🇴 español o 🇬🇧 English: palabras, escuchar y números en inglés). Para abrir cada <b>puerta 🚪</b> hay que resolver un reto, <b>¡y los retos los eliges tú!</b> Un buen creador de mundos es un buen profe.</div>'
   +'<button class="kbtn green" style="display:flex;align-items:center;gap:12px;text-align:left" onclick="wrlNew()"><span style="font-size:2.2rem">🧱</span><span style="flex:1"><span>Crear un mundo nuevo</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Bloques, escalones, huecos, estrellas y puertas de reto</span></span></button>'
   +'<button class="kbtn yellow" style="display:flex;align-items:center;gap:12px;text-align:left" onclick="wrlCopySample()"><span style="font-size:2.2rem">🏁</span><span style="flex:1"><span>Probar la pista de ejemplo</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Para ver cómo funciona y cambiarla a tu gusto</span></span></button>'
+  +'<button class="kbtn yellow" style="display:flex;align-items:center;gap:12px;text-align:left" onclick="wrlCopySample(\'en\')"><span style="font-size:2.2rem">🇬🇧</span><span style="flex:1"><span>Try the English track</span><br><span style="font-size:.78rem;opacity:.9;font-weight:500">Words, listening and number words in English</span></span></button>'
   +'<div class="card" style="padding:8px 12px"><b style="font-size:.9rem">Mi frijolito:</b> '+(window.WORLD_PAL||[]).map(function(c,i){return '<button onclick="wrlBean('+i+')" aria-label="color" style="width:34px;height:34px;border-radius:50%;border:4px solid '+(i===bean?"#1E293B":"#fff")+';box-shadow:0 0 0 2px #CBD5E1;background:'+c+';margin:2px;cursor:pointer"></button>';}).join("")+'</div>'
   +(l.length?'<p class="appsec" style="margin-top:10px">Mis mundos ('+l.length+')</p>':"")
-  +l.map(function(w){const ch=wrlCheck(w),b=best[w.id];return '<div class="card" style="padding:10px 12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.9rem">🌍</span><div style="flex:1;line-height:1.3"><b>'+esc(w.nm)+'</b><br><span class="mut" style="font-size:.8rem">🚪 '+ch.gates+' · ⭐ '+ch.stars+(ch.ok?" · ✅ lista":" · 🔧 por terminar")+(b?" · mejor "+"⭐".repeat(b):"")+'</span></div></div><div style="display:flex;gap:6px;margin-top:8px"><button class="kbtn green" style="margin:0;min-height:44px;font-size:.9rem;flex:2" onclick="wrlPlay(\''+w.id+'\')">▶ Jugar</button><button class="kbtn white" style="margin:0;min-height:44px;font-size:.9rem;flex:2" onclick="wrlEdit(\''+w.id+'\')">🧱 Editar</button><button class="kbtn white" style="margin:0;min-height:44px;font-size:.9rem;flex:1" onclick="wrlShare(\''+w.id+'\')" aria-label="Compartir">📤</button><button class="kbtn white" style="margin:0;min-height:44px;font-size:.9rem;flex:1" onclick="wrlDel(\''+w.id+'\')" aria-label="Borrar">🗑️</button></div></div>';}).join("")
+  +l.map(function(w){const ch=wrlCheck(w),b=best[w.id];return '<div class="card" style="padding:10px 12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.9rem">🌍</span><div style="flex:1;line-height:1.3"><b>'+wrlFlag(w)+' '+esc(w.nm)+'</b><br><span class="mut" style="font-size:.8rem">🚪 '+ch.gates+' · ⭐ '+ch.stars+(ch.ok?" · ✅ lista":" · 🔧 por terminar")+(b?" · mejor "+"⭐".repeat(b):"")+'</span></div></div><div style="display:flex;gap:6px;margin-top:8px"><button class="kbtn green" style="margin:0;min-height:44px;font-size:.9rem;flex:2" onclick="wrlPlay(\''+w.id+'\')">▶ Jugar</button><button class="kbtn white" style="margin:0;min-height:44px;font-size:.9rem;flex:2" onclick="wrlEdit(\''+w.id+'\')">🧱 Editar</button><button class="kbtn white" style="margin:0;min-height:44px;font-size:.9rem;flex:1" onclick="wrlShare(\''+w.id+'\')" aria-label="Compartir">📤</button><button class="kbtn white" style="margin:0;min-height:44px;font-size:.9rem;flex:1" onclick="wrlDel(\''+w.id+'\')" aria-label="Borrar">🗑️</button></div></div>';}).join("")
   +'<button class="kbtn white" style="min-height:44px;font-size:.9rem;margin-top:6px" onclick="wrlImportScreen()">📥 Importar un mundo con código</button>');}
 function wrlBean(i){prof().beanColor=i;save();screenWorlds();}
 function wrlNew(){const W=wrlBlank();const l=wrlList();if(l.length>=8){toast("Máximo 8 mundos: borra uno para crear otro 🙂",false,2200);return;}l.unshift(W);save();wrlEdit(W.id);}
-function wrlCopySample(){const l=wrlList();if(l.length>=8){toast("Máximo 8 mundos: borra uno primero 🙂",false,2200);return;}const W=wrlSample();l.unshift(W);save();wrlPlay(W.id);}
+function wrlCopySample(lang){const l=wrlList();if(l.length>=8){toast("Máximo 8 mundos: borra uno primero 🙂",false,2200);return;}const W=wrlSample();
+ if(lang==="en"){W.lang="en";W.nm="Example track";W.items["8,3"].g={kind:"voc",lv:1};W.items["5,5"].g={kind:"ear",lv:1};W.items["3,5"].g={kind:"num",lv:1};}l.unshift(W);save();wrlPlay(W.id);}
 function wrlDel(id){if(!confirm("¿Borrar este mundo?"))return;const l=wrlList(),k=l.findIndex(function(w){return w.id===id;});if(k>=0){l.splice(k,1);save();}screenWorlds();}
 
 /* ---------- compartir ---------- */
-function wrlEncode(W){const o={n:W.nm,h:W.h.join(""),c:W.c.join(""),i:Object.keys(W.items).map(function(k){const it=W.items[k];return[k,it.t,it.g?it.g.kind:"",it.g?it.g.lv:0];}),s:W.start,f:W.fin};return "AFW1:"+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
+function wrlEncode(W){const o={n:W.nm,l:W.lang==="en"?"en":"es",h:W.h.join(""),c:W.c.join(""),i:Object.keys(W.items).map(function(k){const it=W.items[k];return[k,it.t,it.g?it.g.kind:"",it.g?it.g.lv:0];}),s:W.start,f:W.fin};return "AFW1:"+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function wrlDecode(code){
  const m=/^AFW1:([A-Za-z0-9+/=]+)$/.exec(String(code||"").trim());if(!m)throw new Error("El código no es válido");
  const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
  const N=WRL_N;if(typeof o.h!=="string"||o.h.length!==N*N||typeof o.c!=="string"||o.c.length!==N*N)throw new Error("El mundo del código no es compatible");
- const W={id:"w"+Date.now(),nm:String(o.n||"Mundo importado").replace(/[<>]/g,"").slice(0,24),N:N,h:o.h.split("").map(function(x){return Math.max(0,Math.min(3,+x||0));}),c:o.c.split("").map(function(x){return Math.max(0,Math.min(5,+x||0));}),items:{},start:null,fin:null,ts:Date.now()};
- (o.i||[]).forEach(function(x){if(Array.isArray(x)&&/^\d,\d$/.test(x[0])){if(x[1]==="star")W.items[x[0]]={t:"star"};else if(x[1]==="gate"&&WRL_KINDS.some(function(k){return k[0]===x[2];}))W.items[x[0]]={t:"gate",g:{kind:x[2],lv:Math.max(1,Math.min(3,+x[3]||1))}};}});
+ const W={id:"w"+Date.now(),nm:String(o.n||"Mundo importado").replace(/[<>]/g,"").slice(0,24),lang:o.l==="en"?"en":"es",N:N,h:o.h.split("").map(function(x){return Math.max(0,Math.min(3,+x||0));}),c:o.c.split("").map(function(x){return Math.max(0,Math.min(5,+x||0));}),items:{},start:null,fin:null,ts:Date.now()};
+ (o.i||[]).forEach(function(x){if(Array.isArray(x)&&/^\d,\d$/.test(x[0])){if(x[1]==="star")W.items[x[0]]={t:"star"};else if(x[1]==="gate"&&WRL_KINDS_EN.some(function(k){return k[0]===x[2];}))W.items[x[0]]={t:"gate",g:{kind:x[2],lv:Math.max(1,Math.min(3,+x[3]||1))}};}});
  if(Array.isArray(o.s)&&o.s.length===2)W.start=[+o.s[0],+o.s[1]];if(Array.isArray(o.f)&&o.f.length===2)W.fin=[+o.f[0],+o.f[1]];
  return W;}
 function wrlShare(id){const W=wrlFind(id);if(!W)return;const code=wrlEncode(W);
@@ -130,13 +175,19 @@ function wrlEdit(id){setTheme("kid");
  wrlCleanup();
  WRL.W=W;WRL.tool="up";WRL.gate=WRL.gate||{kind:"sum",lv:1,quiz:null};
  render(topbar("screenWorlds()")
-  +'<div class="card" style="padding:8px 12px"><input id="wrlName" value="'+esc(W.nm)+'" maxlength="24" oninput="WRL.W.nm=this.value" style="width:100%;font-family:Fredoka;font-weight:700;font-size:1.15rem;border:0;border-bottom:3px solid #CBD5E1;padding:4px;box-sizing:border-box" aria-label="Nombre del mundo"></div>'
+  +'<div class="card" style="padding:8px 12px"><input id="wrlName" value="'+esc(W.nm)+'" maxlength="24" oninput="WRL.W.nm=this.value" style="width:100%;font-family:Fredoka;font-weight:700;font-size:1.15rem;border:0;border-bottom:3px solid #CBD5E1;padding:4px;box-sizing:border-box" aria-label="Nombre del mundo"><div id="wrlLangRow" style="margin-top:4px"></div></div>'
   +'<div class="card" style="padding:0;overflow:hidden;border-radius:18px"><div id="wrlCanvas" style="width:100%;height:clamp(250px,40vh,370px)"></div></div>'
   +'<div id="wrlTools" style="margin-top:6px"></div><div id="wrlPanel"></div>'
   +'<div id="wrlStatus" class="card" style="margin-top:6px;font-size:.9rem;line-height:1.5"></div>'
   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="kbtn green" style="margin:0" onclick="wrlSaveEdit(false)">💾 Guardar</button><button class="kbtn yellow" style="margin:0" onclick="wrlSaveEdit(true)">▶ Probar</button></div>');
  WRL.c3=renderWorld3D("wrlCanvas",W,{mode:"edit"},wrlTap);
- wrlToolsDraw();wrlStatus();}
+ wrlLangDraw();wrlToolsDraw();wrlStatus();}
+function wrlLangDraw(){const el=document.getElementById("wrlLangRow");if(!el||!WRL.W)return;
+ el.innerHTML='<span class="mut" style="font-size:.8rem">Idioma de los retos / Language:</span> '+[["es","🇨🇴 Español"],["en","🇬🇧 English"]].map(function(x){const on=(WRL.W.lang||"es")===x[0];return '<button onclick="wrlSetLang(\''+x[0]+'\')" style="margin:2px;padding:4px 10px;border-radius:12px;border:3px solid '+(on?"#7C3AED":"#E2E8F0")+';background:'+(on?"#EDE9FE":"#fff")+';font-weight:700;font-size:.82rem;cursor:pointer;color:#1E293B">'+x[1]+'</button>';}).join("");}
+function wrlSetLang(l){const W=WRL.W;if(!W)return;W.lang=l;if(!wrlKinds(W).some(function(k){return k[0]===WRL.gate.kind;}))WRL.gate.kind="sum";WRL.gate.quiz=null;
+ Object.keys(W.items).forEach(function(k){const it=W.items[k];if(it.t==="gate"&&!wrlKinds(W).some(function(x){return x[0]===it.g.kind;}))it.g.kind="sum";});
+ wrlLangDraw();wrlToolsDraw();if(WRL.c3&&WRL.c3.refresh)WRL.c3.refresh(W);}
+function wrlQuizzes(){const W=WRL.W||{},lg=W.lang==="en"?"en":"es";return(typeof myqList==="function"?myqList():[]).filter(function(q){return(q.lang==="en"?"en":"es")===lg;});}
 function wrlToolsDraw(){
  const T=[["up","⬆️","Subir"],["down","⬇️","Bajar"],["color","🎨","Pintar"],["star","⭐","Estrella"],["gate","🚪","Reto"],["start","🚩","Salida"],["fin","🏁","Meta"],["erase","🧽","Borrar"]];
  const el=document.getElementById("wrlTools");if(!el)return;
@@ -145,9 +196,9 @@ function wrlToolsDraw(){
  let h="";
  if(WRL.tool==="up"||WRL.tool==="color"){h='<div class="card" style="padding:8px 10px;margin-top:0"><b style="font-size:.85rem">Color del bloque:</b> '+(window.WORLD_PAL||[]).map(function(c,i){return '<button onclick="WRL.color='+i+';wrlToolsDraw()" aria-label="color" style="width:32px;height:32px;border-radius:8px;border:4px solid '+(i===WRL.color?"#1E293B":"#fff")+';box-shadow:0 0 0 2px #CBD5E1;background:'+c+';margin:2px;cursor:pointer"></button>';}).join("")+'</div>';}
  else if(WRL.tool==="gate"){
-  const qz=typeof myqList==="function"?myqList():[];
-  h='<div class="card" style="padding:8px 10px;margin-top:0"><b style="font-size:.85rem">¿Qué reto tendrá la puerta?</b><div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+WRL_KINDS.map(function(k){const on=WRL.gate.kind===k[0];return '<button onclick="WRL.gate.kind=\''+k[0]+'\';wrlToolsDraw()" style="padding:6px 10px;border-radius:12px;border:3px solid '+(on?(window.WORLD_KIND_COL||{})[k[0]]:"#E2E8F0")+';background:'+(on?"#F8FAFC":"#fff")+';cursor:pointer;font-weight:700;font-size:.82rem;color:#1E293B">'+k[1]+' '+k[2]+'</button>';}).join("")+'</div>'
-   +(WRL.gate.kind==="quiz"?(qz.length?'<select onchange="WRL.gate.quiz=this.value" style="width:100%;padding:8px;border-radius:10px;border:2px solid #E2E8F0;margin-bottom:6px">'+qz.map(function(q){return '<option value="'+q.id+'"'+(WRL.gate.quiz===q.id?" selected":"")+'>'+esc(q.ic+" "+q.ti)+'</option>';}).join("")+'</select>':'<p class="mut" style="font-size:.82rem;margin:0 0 6px">Aún no tienes quizzes: créalos en «📝 Mis quizzes».</p>'):'<b style="font-size:.85rem">Nivel:</b> '+[1,2,3].map(function(l){const on=WRL.gate.lv===l;return '<button onclick="WRL.gate.lv='+l+';wrlToolsDraw()" style="padding:6px 12px;border-radius:12px;border:3px solid '+(on?"#7C3AED":"#E2E8F0")+';background:'+(on?"#EDE9FE":"#fff")+';cursor:pointer;font-weight:700;margin-left:4px">'+["","🌱 Fácil","🌿 Medio","🌳 Reto"][l]+'</button>';}).join(""))
+  const qz=wrlQuizzes();
+  h='<div class="card" style="padding:8px 10px;margin-top:0"><b style="font-size:.85rem">¿Qué reto tendrá la puerta?</b><div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+wrlKinds(WRL.W).map(function(k){const on=WRL.gate.kind===k[0];return '<button onclick="WRL.gate.kind=\''+k[0]+'\';wrlToolsDraw()" style="padding:6px 10px;border-radius:12px;border:3px solid '+(on?(window.WORLD_KIND_COL||{})[k[0]]:"#E2E8F0")+';background:'+(on?"#F8FAFC":"#fff")+';cursor:pointer;font-weight:700;font-size:.82rem;color:#1E293B">'+k[1]+' '+k[2]+'</button>';}).join("")+'</div>'
+   +(WRL.gate.kind==="quiz"?(qz.length?'<select onchange="WRL.gate.quiz=this.value" style="width:100%;padding:8px;border-radius:10px;border:2px solid #E2E8F0;margin-bottom:6px">'+qz.map(function(q){return '<option value="'+q.id+'"'+(WRL.gate.quiz===q.id?" selected":"")+'>'+esc(q.ic+" "+q.ti)+'</option>';}).join("")+'</select>':'<p class="mut" style="font-size:.82rem;margin:0 0 6px">Aún no tienes quizzes en este idioma: créalos en «📝 Mis quizzes».</p>'):'<b style="font-size:.85rem">Nivel:</b> '+[1,2,3].map(function(l){const on=WRL.gate.lv===l;return '<button onclick="WRL.gate.lv='+l+';wrlToolsDraw()" style="padding:6px 12px;border-radius:12px;border:3px solid '+(on?"#7C3AED":"#E2E8F0")+';background:'+(on?"#EDE9FE":"#fff")+';cursor:pointer;font-weight:700;margin-left:4px">'+["","🌱 Fácil","🌿 Medio","🌳 Reto"][l]+'</button>';}).join(""))
    +'<p class="mut" style="font-size:.78rem;margin:6px 0 0">Toca una casilla con bloque para poner la puerta.</p></div>';}
  else{h='<p class="mut" style="font-size:.82rem;margin:2px 4px">'+({down:"Toca un bloque para bajarlo. Si lo bajas del todo, ¡queda un hueco y se cae al mar!",star:"Toca un bloque para poner o quitar una estrella.",start:"Toca un bloque para poner la salida.",fin:"Toca un bloque para poner la meta.",erase:"Toca para borrar lo que haya encima (estrella, puerta, salida o meta)."})[WRL.tool]+'</p>';}
  pn.innerHTML=h;}
@@ -164,7 +215,7 @@ function wrlTap(ev,info){
  else if(t==="color"){if(W.h[i]>0)W.c[i]=WRL.color;}
  else if(t==="star"){if(!W.h[i]||(W.start&&W.start[0]===r&&W.start[1]===c)||(W.fin&&W.fin[0]===r&&W.fin[1]===c)||(W.items[key]&&W.items[key].t==="gate")){sNO();return;}if(W.items[key]&&W.items[key].t==="star")delete W.items[key];else W.items[key]={t:"star"};sOK();}
  else if(t==="gate"){if(!W.h[i]||(W.start&&W.start[0]===r&&W.start[1]===c)||(W.fin&&W.fin[0]===r&&W.fin[1]===c)){sNO();toast("Pon la puerta en un bloque que no sea la salida ni la meta",false,1800);return;}
-  if(WRL.gate.kind==="quiz"&&!WRL.gate.quiz){const qz=typeof myqList==="function"?myqList():[];if(!qz.length){toast("Primero crea un quiz en «Mis quizzes»",false,2000);return;}WRL.gate.quiz=qz[0].id;}
+  if(WRL.gate.kind==="quiz"){const qz=wrlQuizzes();if(!qz.length){toast("Primero crea un quiz en este idioma, en «Mis quizzes»",false,2400);return;}if(!qz.some(function(q){return q.id===WRL.gate.quiz;}))WRL.gate.quiz=qz[0].id;}
   W.items[key]={t:"gate",g:{kind:WRL.gate.kind,lv:WRL.gate.lv,quiz:WRL.gate.kind==="quiz"?WRL.gate.quiz:null}};sOK();}
  else if(t==="start"){if(!W.h[i]){sNO();return;}if(W.start){const o=W.start;W.start=null;WRL.c3.setCell(o[0],o[1]);}delete W.items[key];if(W.fin&&W.fin[0]===r&&W.fin[1]===c)W.fin=null;W.start=[r,c];sOK();}
  else if(t==="fin"){if(!W.h[i]){sNO();return;}if(W.fin){const o=W.fin;W.fin=null;WRL.c3.setCell(o[0],o[1]);}delete W.items[key];if(W.start&&W.start[0]===r&&W.start[1]===c)W.start=null;W.fin=[r,c];sOK();}
@@ -208,26 +259,27 @@ function wrlEvent(ev,info){
  else if(ev==="finish"){wrlFinish();}}
 function wrlOpenGate(info){
  const P=WRL.play,g=info.item.g||{kind:"sum",lv:1};
- P.gateOpen={r:info.r,c:info.c,g:g,q:wrlGate(g.kind,g.lv,g.quiz),wrong:0,t0:Date.now()};
- wrlGateDraw();}
+ P.gateOpen={r:info.r,c:info.c,g:g,q:wrlGate(g.kind,g.lv,g.quiz,P.W.lang),wrong:0,t0:Date.now()};
+ wrlGateDraw();if(P.gateOpen.q.lang==="en")setTimeout(wrlSayGate,350);}
+function wrlSayGate(){const G=WRL.play&&WRL.play.gateOpen;if(!G)return;if(G.q.lang==="en")speakEN(G.q.say||G.q.q);else speakES(G.q.q.replace(/[❓➕➖✖️÷×−]/g," "));}
 function wrlGateDraw(){
  const P=WRL.play,G=P.gateOpen,pnl=document.getElementById("wrlQ");if(!G||!pnl)return;
  const pad=document.getElementById("wrlPad");if(pad)pad.style.display="none";
- const emo=(window.WORLD_KIND_EMO||{})[G.g.kind]||"🚪";
- pnl.innerHTML='<div class="card" style="border:3px solid '+((window.WORLD_KIND_COL||{})[G.g.kind]||"#6366F1")+'"><b>'+emo+' ¡Una puerta de reto! Resuélvelo para abrirla</b><div style="font-family:Fredoka;font-weight:700;font-size:1.35rem;line-height:1.5;margin:8px 0;text-align:center">'+esc(G.q.q)+'</div><button class="speaker small" onclick="speakES(WRL.play.gateOpen.q.q.replace(/[❓➕➖✖️÷×−]/g,\' \'))">🔊 Léemelo</button></div>'
-  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+G.q.ops.map(function(o,i){return '<button class="kbtn white" id="wrlO'+i+'" style="margin:0;min-height:56px;font-size:1.25rem" onclick="wrlAns('+i+')">'+esc(o.t)+'</button>';}).join("")+'</div><div id="wrlHint"></div>';}
+ const emo=(window.WORLD_KIND_EMO||{})[G.g.kind]||"🚪",en=G.q.lang==="en";
+ pnl.innerHTML='<div class="card" style="border:3px solid '+((window.WORLD_KIND_COL||{})[G.g.kind]||"#6366F1")+'"><b>'+emo+(en?' A challenge door! Solve it to open it · ¡Resuélvelo para abrirla!':' ¡Una puerta de reto! Resuélvelo para abrirla')+'</b><div style="font-family:Fredoka;font-weight:700;font-size:1.35rem;line-height:1.5;margin:8px 0;text-align:center">'+esc(G.q.q)+'</div><button class="speaker small" onclick="wrlSayGate()">🔊 '+(en?"Listen":"Léemelo")+'</button></div>'
+  +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+G.q.ops.map(function(o,i){return '<button class="kbtn white" id="wrlO'+i+'" style="margin:0;min-height:56px;font-size:'+(G.q.big?"2.2rem":"1.25rem")+'" onclick="wrlAns('+i+')">'+esc(o.t)+'</button>';}).join("")+'</div><div id="wrlHint"></div>';}
 function wrlAns(i){
  const P=WRL.play,G=P.gateOpen;if(!G)return;
  const o=G.q.ops[i],b=document.getElementById("wrlO"+i),first=G.wrong===0;
  P.tries++;
  if(o.ok){
-  recordAnswer(G.q.subj||"Matemáticas",first,Math.round((Date.now()-G.t0)/1000));
+  recordAnswer(G.q.subj||"Mate",first,Math.round((Date.now()-G.t0)/1000));
   if(first)P.firstOk++;P.solved++;sOK();confetti(first?10:4);if(b)b.style.background="#86EFAC";
   const r=G.r,c=G.c;P.gateOpen=null;
   setTimeout(function(){const pnl=document.getElementById("wrlQ");if(pnl)pnl.innerHTML="";const pad=document.getElementById("wrlPad");if(pad)pad.style.display="grid";wrlMsg(first?"🚪 ¡Puerta abierta!":"🚪 ¡Puerta abierta! Lo lograste","#16A34A");wrlHud();if(WRL.c3)WRL.c3.openGate(r,c);},700);
  }else{
-  G.wrong++;recordAnswer(G.q.subj||"Matemáticas",false,5);sNO();if(b){b.style.background="#FCA5A5";b.disabled=true;}
-  const h=document.getElementById("wrlHint");if(h)h.innerHTML='<p style="text-align:center;font-weight:700;margin-top:8px">Casi… 🤔 '+(G.wrong>=2?'<span style="color:#7C3AED">Pista: '+esc(G.q.hint)+'</span>':'Inténtalo otra vez, sin prisa.')+'</p>';}}
+  G.wrong++;recordAnswer(G.q.subj||"Mate",false,5);sNO();if(b){b.style.background="#FCA5A5";b.disabled=true;}
+  const h=document.getElementById("wrlHint");if(h)h.innerHTML='<p style="text-align:center;font-weight:700;margin-top:8px">'+(G.q.lang==="en"?'Almost… 🤔 '+(G.wrong>=2?'<span style="color:#7C3AED">Hint: '+esc(G.q.hint)+'</span>':'Try again, no rush!'):'Casi… 🤔 '+(G.wrong>=2?'<span style="color:#7C3AED">Pista: '+esc(G.q.hint)+'</span>':'Inténtalo otra vez, sin prisa.'))+'</p>';}}
 function wrlFinish(){
  const P=WRL.play;if(!P)return;
  const p=prof(),stars=starsFor(P.firstOk,Math.max(1,P.gatesTotal)),st=WRL.c3?WRL.c3.state().got:0;

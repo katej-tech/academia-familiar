@@ -9,8 +9,8 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js";
 
 const PAL=["#F472B6","#60A5FA","#FBBF24","#34D399","#A78BFA","#FB923C"];
-const KIND_COL={sum:"#EF4444",res:"#3B82F6",tab:"#F59E0B",pat:"#8B5CF6",cmp:"#10B981",log:"#EC4899",quiz:"#6366F1"};
-const KIND_EMO={sum:"➕",res:"➖",tab:"✖️",pat:"🔢",cmp:"⚖️",log:"🔷",quiz:"📝"};
+const KIND_COL={sum:"#EF4444",res:"#3B82F6",tab:"#F59E0B",pat:"#8B5CF6",cmp:"#10B981",log:"#EC4899",quiz:"#6366F1",voc:"#14B8A6",ear:"#F97316",num:"#0EA5E9"};
+const KIND_EMO={sum:"➕",res:"➖",tab:"✖️",pat:"🔢",cmp:"⚖️",log:"🔷",quiz:"📝",voc:"🗣️",ear:"👂",num:"🔟"};
 let LIVE=null;
 function disposeWorld3D(){
  if(!LIVE)return;
