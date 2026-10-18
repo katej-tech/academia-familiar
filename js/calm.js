@@ -52,6 +52,7 @@ function screenCalm(){setTheme("kid");
   +calmCard("red","🌡️","Estoy enojado o frustrado","Dime cuánto y te muestro qué hacer","calmThermo()")
   +calmCard("blue","🌬️","Respirar con el planeta","Un planeta 3D que respira contigo","calmBreathe()")
   +(typeof screenEmotions==="function"?calmCard("yellow","🪐","Planeta de las emociones","Un planeta vive situaciones como las del cole","screenEmotions()"):"")
+  +(typeof screenRoutine==="function"?calmCard("yellow","📅","Mi día: ahora y después","Sé qué viene y recibo avisos antes de cambiar","screenRoutine()"):"")
   +calmCard("green","⭐","Mi plan de calma","Elige tus 3 trucos favoritos","calmPlan()")
   +calmCard("white","👨‍👩‍👦","Para mamá y papá","Consejos y cómo me he sentido","calmParents()"));}
 
