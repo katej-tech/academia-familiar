@@ -119,6 +119,7 @@ function hubApps(){
   +(typeof screenLetters==="function"?appIcon("screenLetters()","🔤","Letras","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
   +(typeof screenGrammar==="function"?appIcon("screenGrammar()","🏷️","Gramática","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof screenGender==="function"?appIcon("screenGender()","👫","Género y número","linear-gradient(160deg,#F9A8D4,#9333EA)"):"")
+  +(typeof screenQuizzes==="function"?appIcon("screenQuizzes()","📝","Mis quizzes","linear-gradient(160deg,#C4B5FD,#7C3AED)"):"")
   +(typeof screenAudiobooks==="function"?appIcon("screenAudiobooks()","🎧","Audiolibros","linear-gradient(160deg,#C4B5FD,#6D28D9)"):"")
   +(typeof screenLanding==="function"?appIcon("screenLanding()","🛬","Aterriza","linear-gradient(160deg,#6EE7B7,#047857)"):"")
   +(typeof screenRoutine==="function"?appIcon("screenRoutine()","📅","Mi día","linear-gradient(160deg,#FDE68A,#F59E0B)"):"")
