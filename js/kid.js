@@ -133,6 +133,7 @@ function hubApps(){
   +appIcon("gameColoring()","🖍️","Colorear","linear-gradient(160deg,#F9A8D4,#EC4899)")
   +(typeof screenColor3D==="function"?appIcon("screenColor3D()","🖍️✨","Colorear 3D","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
   +(typeof gamePaperPlane==="function"?appIcon("gamePaperPlane()","✈️","Avión","linear-gradient(160deg,#93C5FD,#2563EB)"):"")
+  +(typeof screenWorlds==="function"?appIcon("screenWorlds()","🌍","Mi mundo de retos","linear-gradient(160deg,#86EFAC,#0EA5E9)"):"")
   +(typeof screenBricks==="function"?appIcon("screenBricks()","🧱","Bloques","linear-gradient(160deg,#FCA5A5,#DC2626)"):"")
   +(typeof screenPlanetLab==="function"?appIcon("screenPlanetLab()","🪐","Planetas","linear-gradient(160deg,#818CF8,#4338CA)"):"")
   +appIcon("gameCursive()","✍️","Cursiva","linear-gradient(160deg,#FDBA74,#EA580C)")
