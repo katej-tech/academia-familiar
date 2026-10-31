@@ -91,13 +91,14 @@ function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGam
  +'<div onclick="openProfileMenu()" style="cursor:pointer;position:relative">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'<span style="position:absolute;bottom:-2px;right:-2px;background:var(--kid-ink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.8rem">⚙️</span></div>'
  +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.2rem,5.5vw,1.5rem)">¡Hola, '+esc(p.name)+'!</h1>'
  +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
- +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="screenTama()">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
- +(typeof dailyPathCardHTML==="function"?dailyPathCardHTML():"")
- +missionsHTML()
+ +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="examGo(\'screenTama\')">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
+ +(typeof examHubCardHTML==="function"?examHubCardHTML():"")
+ +(typeof examLocked==="function"&&examLocked()?"":(typeof dailyPathCardHTML==="function"?dailyPathCardHTML():"")+missionsHTML())
  +hubApps());}
 /* ===== apps por iconos, como la pantalla de un celular ===== */
 function appIcon(onclick,ic,label,bg,opts){
  opts=opts||{};
+ if(typeof examLocked==="function"&&examLocked()&&!examExempt(onclick)){onclick="screenExamLock()";opts=Object.assign({},opts,{locked:true,badge:"🔒"});}
  const badge=opts.badge?'<span class="badge">'+opts.badge+'</span>':'';
  return '<button class="app'+(opts.locked?" locked":"")+'" onclick="'+onclick+'">'
   +'<span class="ic" style="background:'+bg+'">'+ic+badge+'</span>'
@@ -109,11 +110,15 @@ function hubApps(){
  const abierto=dailyGoalDone();
  const sec=t=>'<p class="appsec">'+t+'</p>';
  const blq=softLocked();
- let html=balanceCardHTML();
+ let html=(typeof examLocked==="function"&&examLocked())?"":balanceCardHTML();
+ html+=sec("📌 Tarea del cole");
+ html+='<div class="appgrid">'
+  +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
+  +(typeof screenExpo==="function"?appIcon("screenExpo()","🎤","Exposición","linear-gradient(160deg,#6EE7B7,#059669)",{badge:"¡Martes!"}):"")
+  +'</div>';
  html+=sec("📚 Aprender");
  html+='<div class="appgrid">'
   +appIcon("screenCole()","📚","Aprender","linear-gradient(160deg,#4ADE80,#16A34A)",{badge:faltaEst?faltaEst:0})
-  +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
   +appIcon("screenEnglishHub()","🇬🇧","Inglés","linear-gradient(160deg,#FCA5A5,#EF4444)")
   +(typeof screenCapsules==="function"?appIcon("screenCapsules()","🎞️","Cápsulas","linear-gradient(160deg,#67E8F9,#0891B2)"):"")
   +(typeof screenReadComp==="function"?appIcon("screenReadComp()","🔎","Comprensión","linear-gradient(160deg,#FDE68A,#D97706)"):"")
@@ -343,6 +348,7 @@ function screenWritingPick(){setTheme("kid");
 function softGoal(){const g=(typeof S!=="undefined"&&S.softGoal!=null)?S.softGoal:5;return Math.max(0,g|0);}
 function softLocked(){return touchDay().ok<softGoal();}
 function playSoft(fn){
+ if(typeof examLocked==="function"&&examLocked()){screenExamLock();return;}
  if(!softLocked()){if(typeof window[fn]==="function")window[fn]();return;}
  setTheme("kid");if(typeof stopGames==="function")stopGames();
  const d=touchDay(),g=softGoal(),have=Math.min(d.ok,g),pct=Math.round(have/g*100);
@@ -392,6 +398,7 @@ function screenGamesLocked(){setTheme("kid");
  +(okArt?'':'<button class="kbtn purple" onclick="screenArt()">🎨 Ir a dibujar</button>')
  +(okEst?'<button class="kbtn blue" onclick="screenEnglishHub()">🇬🇧 Practicar inglés</button>':''));}
 function screenGamesPick(){setTheme("kid");if(typeof stopGames==="function")stopGames();
+ if(typeof examLocked==="function"&&examLocked())return screenExamLock();
  if(!dailyGoalDone())return screenGamesLocked();
  const sub=t=>'<p style="font-size:1rem;margin:14px 2px 8px;font-family:Fredoka;font-weight:700">'+t+'</p>';
  render(topbar("screenKidMap()")

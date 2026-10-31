@@ -1,0 +1,342 @@
+"use strict";
+/* ============ EXAMEN DEL COLE (temario de 2.º) + REGLA «PRIMERO EL EXAMEN» ============
+   Pedido: «el niño tiene exámenes: solo permitir los demás contenidos si supera la parte de los exámenes».
+   Temario: MATEMÁTICAS → sumas llevando, restas prestando, resolución de problemas (sumas y restas), escritura y lectura
+   de números de 4 cifras. LENGUAJE → la oración, sujeto, predicado, verbo, uso de la mayúscula y tiempos verbales.
+   Cada tema nuevo trae: una explicación corta con dibujos (se ve la primera vez y se puede repasar) + práctica de 8 preguntas.
+   Todo se genera localmente (nunca por IA) porque necesita estructura exacta (columnas, oraciones partidas, conjugación).
+   REGLA: mientras no se supere cada tema obligatorio (por defecto 80 %), el resto del menú queda con candado 🔒.
+   Siempre abiertos: Examen, Calma (💙), Mi día y la Exposición. Los padres pueden cambiar el % o apagar la regla por hijo
+   (Panel de padres), o desbloquear el día con el PIN. No aplica a perfiles de adolescentes. */
+
+const EXAM_REQ=["sumallev","restapres","problemas","num4escr","num4lect","oracion","sujeto","predicado","verbo","mayuscula","tverbales"];
+(function addUnits(){
+ const sub=function(id){return EXAM_SUBJECTS.find(function(s){return s.id===id;});};
+ const mate=sub("mate"),leng=sub("leng"),nat=sub("nat");
+ const mk=function(id,nm,ic){return{id:id,nm:nm,ic:ic,req:true};};
+ /* los dos que ya existían pasan a ser obligatorios y suben al principio */
+ const old=function(s,id){const u=s.units.find(function(x){return x.id===id;});s.units=s.units.filter(function(x){return x!==u;});u.req=true;return u;};
+ const sl=old(mate,"sumallev"),rp=old(mate,"restapres");
+ mate.units=[sl,rp,mk("problemas","Problemas de sumas y restas","🧩"),mk("num4escr","Escribir números de 4 cifras","✍️"),mk("num4lect","Leer números de 4 cifras","📖")].concat(mate.units);
+ leng.units=[mk("oracion","La oración","💬"),mk("sujeto","El sujeto","🧑"),mk("predicado","El predicado","🏃"),mk("verbo","El verbo","⚡"),mk("mayuscula","Uso de la mayúscula","🔠"),mk("tverbales","Tiempos verbales","⏳")].concat(leng.units);
+ nat.units=[{id:"reinos",nm:"Reinos de la naturaleza",ic:"🌿"}].concat(nat.units);
+})();
+
+/* ---------- utilidades ---------- */
+function exOpts(ans,wrongs,fmt){
+ fmt=fmt||function(x){return String(x);};
+ const seen={},out=[];seen[ans]=1;out.push(ans);
+ shuffled(wrongs).forEach(function(w){if(out.length<4&&w!==ans&&w>=0&&!seen[w]){seen[w]=1;out.push(w);}});
+ let g=0;while(out.length<4&&g++<40){const w=ans+(1+rnd(9))*(Math.random()<.5?-1:1)*(Math.random()<.5?1:10);if(w>=0&&!seen[w]){seen[w]=1;out.push(w);}}
+ const ops=shuffled(out.map(fmt));return{ops:ops,a:ops.indexOf(fmt(ans))};}
+function exCol(a,b,sig,say){
+ const colWrongsAdd=function(x,y){let r=0,m=1,X=x,Y=y;while(X>0||Y>0){r+=((X%10+Y%10)%10)*m;m*=10;X=Math.floor(X/10);Y=Math.floor(Y/10);}return r;};
+ const colWrongsSub=function(x,y){let r=0,m=1,X=x,Y=y;while(X>0||Y>0){r+=Math.abs(X%10-Y%10)*m;m*=10;X=Math.floor(X/10);Y=Math.floor(Y/10);}return r;};
+ let ans=sig==="+"?a+b:a-b,mistake=sig==="+"?colWrongsAdd(a,b):colWrongsSub(a,b);if(mistake<10&&ans>=100)mistake=ans+10;
+ const o=exOpts(ans,[mistake,ans+10,ans-10,ans+100,ans-100,ans+1,ans-1]);
+ return{q:a+" "+(sig==="+"?"+":"−")+" "+b+" = ?",ops:o.ops,a:o.a,say:say||"",op:{a:a,b:b,sig:sig==="+"?"+":"−"}};}
+function exHasCarry(a,b){let c=0;while(a>0||b>0){if((a%10)+(b%10)+c>=10)return true;c=0;a=Math.floor(a/10);b=Math.floor(b/10);}return false;}
+function exHasBorrow(a,b){while(a>0||b>0){if((a%10)<(b%10))return true;a=Math.floor(a/10);b=Math.floor(b/10);}return false;}
+function exNumEs(n){
+ if(n<100)return numEs(n);
+ const cen=["","ciento","doscientos","trescientos","cuatrocientos","quinientos","seiscientos","setecientos","ochocientos","novecientos"];
+ if(n<1000){if(n===100)return"cien";const c=Math.floor(n/100),r=n%100;return cen[c]+(r?" "+numEs(r):"");}
+ const k=Math.floor(n/1000),r=n%1000;
+ const mil=k===1?"mil":numEs(k)+" mil";
+ return mil+(r?" "+exNumEs(r):"");}
+function exFmt4(n){return String(n);}
+
+/* ---------- MATEMÁTICAS ---------- */
+EXAM_BANK.sumallev=function(){
+ let a,b,t=0;const big=Math.random()<.45,huge=Math.random()<.2;
+ do{if(huge){a=1000+rnd(5000);b=1000+rnd(4000);}else if(big){a=100+rnd(800);b=100+rnd(800);}else{a=15+rnd(80);b=15+rnd(80);}t++;}while((!exHasCarry(a,b)||a+b>9999)&&t<200);
+ return exCol(a,b,"+","");};
+EXAM_BANK.restapres=function(){
+ let a,b,t=0;const big=Math.random()<.45,huge=Math.random()<.2;
+ do{if(huge){a=2000+rnd(7000);b=1000+rnd(a-1000);}else if(big){a=200+rnd(790);b=100+rnd(a-100);}else{a=31+rnd(68);b=11+rnd(a-11);}t++;}while((!exHasBorrow(a,b)||a<=b)&&t<200);
+ return exCol(a,b,"-","");};
+const EXP_NAMES=["Sofía","Mateo","Valentina","Samuel","Camila","Santiago","Luna","Tomás","Isabela","Emilio","Mariana","Daniel"];
+const EXP_THINGS=[["canicas","una caja","f"],["cromos","un álbum","m"],["lápices","un estuche","m"],["galletas","una bandeja","f"],["stickers","un cuaderno","m"],["monedas","una alcancía","f"],["globos","una bolsa","m"],["libros","una repisa","m"],["flores","un jardín","f"],["manzanas","una canasta","f"]];
+EXAM_BANK.problemas=function(){
+ const nm=pick(EXP_NAMES),th=pick(EXP_THINGS),n2=pick(EXP_NAMES.filter(function(x){return x!==nm;})),big=Math.random()<.5;
+ const C_=th[2]==="f"?"Cuántas":"Cuántos",c_=C_.toLowerCase();
+ const A=big?100+rnd(400):12+rnd(60),B=big?40+rnd(200):6+rnd(30),C=big?20+rnd(90):4+rnd(15);
+ const T=rnd(6);let q,ans,hint;
+ if(T===0){q=nm+" tenía "+A+" "+th[0]+" y su abuela le regaló "+B+" más. ¿"+C_+" "+th[0]+" tiene ahora?";ans=A+B;hint="juntar → SUMA";}
+ else if(T===1){q=nm+" tenía "+(A+B)+" "+th[0]+" y le regaló "+B+" a "+n2+". ¿"+C_+" "+th[0]+" le quedan?";ans=A;hint="le quedan → RESTA";}
+ else if(T===2){q="En una caja hay "+(A+B)+" "+th[0]+" y en otra caja hay "+B+". ¿"+C_+" "+th[0]+" más hay en la primera caja?";ans=A;hint="cuántos más → RESTA";}
+ else if(T===3){const x=big?200+rnd(300):20+rnd(40),y=big?120+rnd(200):15+rnd(30);q="En el colegio hay "+x+" niños y "+y+" niñas. ¿Cuántos estudiantes hay en total?";ans=x+y;hint="en total → SUMA";}
+ else if(T===4){q="Para llenar "+th[1]+" se necesitan "+(A+B)+" "+th[0]+". "+nm+" ya tiene "+A+". ¿"+C_+" le faltan?";ans=B;hint="cuántos faltan → RESTA";}
+ else{q=nm+" tenía "+A+" "+th[0]+". Compró "+B+" más y después regaló "+C+". ¿"+C_+" "+th[0]+" tiene al final?";ans=A+B-C;hint="primero SUMA y luego RESTA";}
+ const o=exOpts(ans,[ans+10,ans-10,ans+C,ans-C,A+B+C,A,B,ans+1,ans-1]);
+ return{q:q,ops:o.ops,a:o.a,say:q,tip:hint};};
+const EXP_UNITS=["unidades","decenas","centenas","unidades de mil"];
+EXAM_BANK.num4escr=function(){
+ const T=rnd(3);
+ let n=1000+rnd(8999);while(n%10===0&&Math.random()<.5)n=1000+rnd(8999);
+ const d=[Math.floor(n/1000),Math.floor(n/100)%10,Math.floor(n/10)%10,n%10];
+ const wrongs=function(){const w=[];
+  w.push(d[1]*1000+d[0]*100+d[2]*10+d[3]);w.push(d[0]*1000+d[2]*100+d[1]*10+d[3]);w.push(d[0]*1000+d[1]*100+d[3]*10+d[2]);
+  w.push(d[0]*10000+d[1]*100+d[2]*10+d[3]);w.push(d[0]*1000+d[2]*10+d[3]);w.push(n+100);w.push(n-100);w.push(n+10);
+  return w.filter(function(x){return x>=1000&&x<=9999&&x!==n;});};
+ if(T===0){const o=exOpts(n,wrongs(),exFmt4);
+  return{q:"¿Cómo se escribe con cifras? <b>"+exNumEs(n)+"</b>",ops:o.ops,a:o.a,say:exNumEs(n)};}
+ if(T===1){const o=exOpts(n,wrongs(),exFmt4);
+  return{q:"<b>"+(d[0]*1000)+" + "+(d[1]*100)+" + "+(d[2]*10)+" + "+d[3]+"</b> = ?",ops:o.ops,a:o.a,say:exNumEs(n)};}
+ const vis='<div style="display:flex;justify-content:center;gap:12px;margin:8px 0 4px;flex-wrap:wrap">'
+  +[["🟪","Unidades de mil",d[0]],["🟥","Centenas",d[1]],["🟦","Decenas",d[2]],["🟩","Unidades",d[3]]].map(function(x){return '<div><div style="font-size:.74rem;font-weight:700">'+x[1]+'</div><div style="font-size:1.25rem;line-height:1.25;min-width:70px">'+(x[2]?x[0].repeat(x[2]):"—")+'</div><div style="font-size:.8rem;font-weight:700">'+x[2]+'</div></div>';}).join("")+'</div>';
+ const o=exOpts(n,wrongs(),exFmt4);
+ return{q:vis+"¿Qué número representan los bloques?",ops:o.ops,a:o.a,say:"¿Qué número representan los bloques?"};};
+EXAM_BANK.num4lect=function(){
+ const T=rnd(4);
+ let n=1000+rnd(8999);
+ const d=[Math.floor(n/1000),Math.floor(n/100)%10,Math.floor(n/10)%10,n%10];
+ if(T===0){
+  const wr=[];[n+100,n-100,n+10,n-10,n+1000,n-1000,d[0]*1000+d[2]*100+d[1]*10+d[3]].forEach(function(x){if(x>=1000&&x<=9999&&x!==n)wr.push(exNumEs(x));});
+  const ans=exNumEs(n),seen={};seen[ans]=1;const out=[ans];shuffled(wr).forEach(function(w){if(out.length<4&&!seen[w]){seen[w]=1;out.push(w);}});
+  const ops=shuffled(out);return{q:"¿Cómo se lee el número <b>"+n+"</b>?",ops:ops,a:ops.indexOf(ans),say:String(n)};}
+ if(T===1){
+  const pos=rnd(4),val=d[pos]*Math.pow(10,3-pos),nm=["unidades de mil","centenas","decenas","unidades"][pos];
+  if(d[pos]===0){n+=Math.pow(10,3-pos);return EXAM_BANK.num4lect();}
+  const o=exOpts(val,[d[pos],d[pos]*10,d[pos]*100,d[pos]*1000,d[pos]*Math.pow(10,2-pos>=0?2-pos:0)],String);
+  return{q:"En el número <b>"+n+"</b>, ¿qué valor tiene la cifra <b>"+d[pos]+"</b>?",ops:o.ops,a:o.a,say:"En el número "+n+", ¿qué valor tiene la cifra "+d[pos]+"?"};}
+ if(T===2){
+  const pos=rnd(4),names=["las unidades de mil","las centenas","las decenas","las unidades"];
+  const others=[0,1,2,3].filter(function(x){return x!==pos;}).map(function(x){return d[x];});
+  let ans=d[pos];const set=[ans];others.forEach(function(x){if(set.indexOf(x)<0&&set.length<4)set.push(x);});let g=0;while(set.length<4&&g++<30){const r=rnd(10);if(set.indexOf(r)<0)set.push(r);}
+  const ops=shuffled(set.map(String));
+  return{q:"En el número <b>"+n+"</b>, ¿qué cifra está en <b>"+names[pos]+"</b>?",ops:ops,a:ops.indexOf(String(ans)),say:"En el número "+n+", ¿qué cifra está en "+names[pos]+"?"};}
+ const k=exNumEs(n),wr=[n+1000,n-1000,n+100,n-100,n+10,n-10].filter(function(x){return x>=1000&&x<=9999;});
+ const o=exOpts(n,wr,exFmt4);
+ return{q:"¿Qué número es: <b>"+k+"</b>?",ops:o.ops,a:o.a,say:k};};
+
+/* ---------- LENGUAJE: oración, sujeto, predicado, verbo ---------- */
+const EXS_PERSON=["Mi mamá","La maestra","Mi hermano","Mi abuela","La niña","Los niños","Sofía y Camilo","Mis amigos","El profesor","Mi papá"];
+const EXS_PERSON_PL=["Los niños","Sofía y Camilo","Mis amigos"];
+const EXS_ANIMAL=["El perro","El caballo","Los gatos","La vaca","Los conejos"];
+const EXS_ANIMAL_PL=["Los gatos","Los conejos"];
+const EXS_FLY=["El pájaro","Las mariposas","La abeja","Las aves"];
+const EXS_FLY_PL=["Las mariposas","Las aves"];
+const EXS_PRED={
+ person:[["juega","juegan","con la pelota"],["lee","leen","un libro nuevo"],["camina","caminan","hacia la escuela"],["escribe","escriben","en el cuaderno"],["pinta","pintan","un dibujo de colores"],["canta","cantan","una canción bonita"],["bebe","beben","agua fría"],["corre","corren","por el parque"]],
+ animal:[["duerme","duermen","bajo el árbol"],["corre","corren","por el campo"],["bebe","beben","agua del río"],["salta","saltan","muy alto"],["come","comen","hierba fresca"]],
+ fly:[["vuela","vuelan","sobre las flores"],["canta","cantan","en la rama"],["descansa","descansan","en el jardín"],["busca","buscan","su comida"]]};
+function exSent(){
+ const ty=pick(["person","person","animal","fly"]),S=ty==="person"?EXS_PERSON:ty==="animal"?EXS_ANIMAL:EXS_FLY,PL=ty==="person"?EXS_PERSON_PL:ty==="animal"?EXS_ANIMAL_PL:EXS_FLY_PL;
+ const sj=pick(S),pr=pick(EXS_PRED[ty]),pl=PL.indexOf(sj)>=0;
+ const verb=pl?pr[1]:pr[0],comp=pr[2];
+ return{subj:sj,verb:verb,comp:comp,pred:verb+" "+comp,text:sj+" "+verb+" "+comp+"."};}
+function exOtherWords(s,notThese){
+ const words=(s.subj+" "+s.comp).split(" ").filter(function(w){return w.length>2&&notThese.indexOf(w)<0&&w!==s.verb;});return words;}
+EXAM_BANK.oracion=function(){
+ const T=rnd(5);
+ if(T===0){const s=exSent(),bad=[s.subj+" de la",s.comp.charAt(0).toUpperCase()+s.comp.slice(1),"Con mi amiga en el"];
+  const ops=shuffled([s.text].concat(bad));return{q:"¿Cuál de estas es una ORACIÓN (tiene sentido completo)?",ops:ops,a:ops.indexOf(s.text),say:"¿Cuál de estas es una oración?"};}
+ if(T===1){const s=exSent(),words=(s.subj+" "+s.verb+" "+s.comp).split(" ");
+  const bad1=shuffled(words).join(" ")+".",bad2=[words[words.length-1]].concat(words.slice(0,-1)).join(" ")+".";
+  const ok=s.text,ops=shuffled([ok,bad1===ok?words.slice().reverse().join(" ")+".":bad1,bad2===ok?words.slice().reverse().join(" ")+".":bad2,words.slice(1).join(" ")+" "+words[0]+"."].filter(function(x,i,a){return a.indexOf(x)===i;}));
+  while(ops.length<3)ops.push(words.slice().reverse().join(" ")+"!");
+  return{q:"¿Cuál oración está bien ordenada?",ops:ops,a:ops.indexOf(ok),say:"¿Cuál oración está bien ordenada?"};}
+ if(T===2)return pick([
+  {q:"Una oración siempre empieza con…",ops:["Mayúscula","minúscula","un número","una coma"],a:0},
+  {q:"Una oración termina con…",ops:["Punto (o signos de pregunta o exclamación)","una letra cualquiera","nada","una coma siempre"],a:0},
+  {q:"Una oración nos dice algo con…",ops:["Sentido completo","Una sola palabra suelta","Palabras al revés","Letras sueltas"],a:0},
+  {q:"Las dos partes de una oración son…",ops:["Sujeto y predicado","Inicio y fin","Verbo y punto","Nombre y apellido"],a:0}]);
+ if(T===3){const a=exSent(),b=exSent();const ops=["1","2","3","4"];
+  return{q:"¿Cuántas oraciones hay? <br><i>«"+a.text+" "+b.text+"»</i>",ops:ops,a:1,say:"¿Cuántas oraciones hay?"};}
+ const s=exSent(),lowered=s.text.charAt(0).toLowerCase()+s.text.slice(1),nopoint=s.text.slice(0,-1);
+ const ops=shuffled([s.text,lowered,nopoint,lowered.slice(0,-1)]);
+ return{q:"¿Cuál oración está escrita correctamente?",ops:ops,a:ops.indexOf(s.text),say:"¿Cuál oración está escrita correctamente?"};};
+EXAM_BANK.sujeto=function(){
+ const T=rnd(5);
+ if(T===4)return pick([
+  {q:"El SUJETO de una oración es…",ops:["De quién o de qué se habla","Lo que se hace","El punto final","La última palabra"],a:0},
+  {q:"Para encontrar el sujeto preguntamos…",ops:["¿Quién? o ¿Qué?","¿Cuándo termina?","¿Cuántas letras tiene?","¿Dónde está el punto?"],a:0},
+  {q:"En «Los niños juegan», el sujeto es…",ops:["Los niños","juegan","Los","niños juegan"],a:0}]);
+ const s=exSent(),extra=exOtherWords(s,s.subj.split(" "));
+ const wrong=[s.pred,s.verb,extra.length?extra[extra.length-1]:s.comp].filter(function(x,i,a){return x&&x!==s.subj&&a.indexOf(x)===i;});
+ const ops=shuffled([s.subj].concat(wrong).slice(0,4));
+ return{q:"«"+s.text+"»<br>¿Cuál es el <b>SUJETO</b> (de quién se habla)?",ops:ops,a:ops.indexOf(s.subj),say:s.text+". ¿Cuál es el sujeto?"};};
+EXAM_BANK.predicado=function(){
+ const T=rnd(5);
+ if(T===4)return pick([
+  {q:"El PREDICADO de una oración es…",ops:["Lo que se dice o hace del sujeto","De quién se habla","La primera mayúscula","El título"],a:0},
+  {q:"El predicado siempre tiene un…",ops:["Verbo","Punto en medio","Número","Dibujo"],a:0},
+  {q:"En «Mi mamá cocina arroz», el predicado es…",ops:["cocina arroz","Mi mamá","Mi","arroz"],a:0}]);
+ const s=exSent();
+ const wrong=[s.subj,s.verb,s.subj+" "+s.verb].filter(function(x,i,a){return x!==s.pred&&a.indexOf(x)===i;});
+ const ops=shuffled([s.pred].concat(wrong).slice(0,4));
+ return{q:"«"+s.text+"»<br>¿Cuál es el <b>PREDICADO</b> (lo que se dice del sujeto)?",ops:ops,a:ops.indexOf(s.pred),say:s.text+". ¿Cuál es el predicado?"};};
+const EXS_VERBS=["saltar","correr","cantar","dormir","escribir","comer","jugar","leer","pintar","caminar","beber","volar"];
+const EXS_NOUNS=["mesa","casa","perro","flor","libro","escuela","sol","silla","árbol","luna"];
+const EXS_ADJ=["bonito","grande","rojo","alegre","pequeño","suave"];
+EXAM_BANK.verbo=function(){
+ const T=rnd(5);
+ if(T===0)return pick([
+  {q:"El VERBO es la palabra que dice…",ops:["Una acción (lo que se hace)","El color","El nombre de alguien","Cuántos hay"],a:0},
+  {q:"Los verbos en infinitivo terminan en…",ops:["-ar, -er, -ir","-a, -o","-ito, -ita","-mente"],a:0},
+  {q:"¿Cuál de estos es un verbo en infinitivo?",ops:["cantar","cantante","canción","canto bonito"],a:0}]);
+ if(T===1){const v=pick(EXS_VERBS),ops=shuffled([v].concat(shuffled(EXS_NOUNS).slice(0,2),[pick(EXS_ADJ)]));
+  return{q:"¿Cuál de estas palabras es un <b>VERBO</b> (una acción)?",ops:ops,a:ops.indexOf(v),say:"¿Cuál de estas palabras es un verbo?"};}
+ const s=exSent(),others=s.subj.split(" ").concat(s.comp.split(" ")).filter(function(w){return w.length>1&&w!==s.verb;});
+ const pool=[];others.forEach(function(w){if(pool.indexOf(w)<0)pool.push(w);});
+ const ops=shuffled([s.verb].concat(shuffled(pool).slice(0,3)));
+ return{q:"«"+s.text+"»<br>¿Cuál es el <b>VERBO</b> (la acción)?",ops:ops,a:ops.indexOf(s.verb),say:s.text+". ¿Cuál es el verbo?"};};
+const EXM_NAMES=["Laura","Mateo","Sofía","Samuel","Valentina","Camilo","Isabel","Andrés"];
+const EXM_PLACES=["Bogotá","Medellín","Cali","Cartagena","Colombia","Barranquilla","Bucaramanga","Santa Marta"];
+EXAM_BANK.mayuscula=function(){
+ const T=rnd(6);
+ if(T===0){const n=pick(EXM_NAMES),ops=shuffled(["Mi amiga se llama "+n+".","mi amiga se llama "+n.toLowerCase()+".","Mi amiga se llama "+n.toLowerCase()+".","mi amiga se llama "+n+"."]);
+  const ok="Mi amiga se llama "+n+".";return{q:"¿Cuál oración está escrita correctamente?",ops:ops,a:ops.indexOf(ok),say:"¿Cuál oración está escrita correctamente?"};}
+ if(T===1){const p=pick(EXM_PLACES),ok="Yo vivo en "+p+".",ops=shuffled([ok,"yo vivo en "+p+".","Yo vivo en "+p.toLowerCase()+".","Yo Vivo En "+p+"."]);
+  return{q:"¿Cuál oración está escrita correctamente?",ops:ops,a:ops.indexOf(ok),say:"¿Cuál oración está escrita correctamente?"};}
+ if(T===2){const n=pick(EXM_NAMES),w=["perro","gato","caballo","conejo"],a=pick(w),ops=shuffled([n.toLowerCase(),a,"se","llama"]);
+  return{q:"«Mi "+a+" se llama "+n.toLowerCase()+".»<br>¿Qué palabra debe llevar <b>mayúscula</b> (además de «Mi»)?",ops:ops,a:ops.indexOf(n.toLowerCase()),say:"¿Qué palabra debe llevar mayúscula?"};}
+ if(T===3)return pick([
+  {q:"Usamos MAYÚSCULA al comenzar una oración y en…",ops:["Los nombres de personas y lugares","Todas las palabras","Los verbos","Los números"],a:0},
+  {q:"Después de un punto, la siguiente palabra empieza con…",ops:["Mayúscula","minúscula","un número","coma"],a:0},
+  {q:"Los nombres propios (Ana, Colombia, Bogotá) se escriben con…",ops:["Mayúscula inicial","minúscula","todo en mayúscula siempre","comillas"],a:0},
+  {q:"¿Cuál nombre de ciudad está bien escrito?",ops:["Medellín","medellín","MEDELLÍN siempre","medeLLín"],a:0}]);
+ if(T===4){const ok="Mi cumpleaños es el lunes.",ops=shuffled([ok,"Mi cumpleaños es el Lunes.","mi cumpleaños es el lunes.","Mi Cumpleaños Es El Lunes."]);
+  return{q:"Los días de la semana van con minúscula (si no empiezan la oración). ¿Cuál está bien escrita?",ops:ops,a:ops.indexOf(ok),say:"¿Cuál está bien escrita?"};}
+ const n=pick(EXM_NAMES),p=pick(EXM_PLACES),t=pick([n+" viaja a "+p+".",n+" nació en "+p+"."]),w=t.split(" ");
+ const wrong=w.slice(0,1).concat(w.slice(1).map(function(x){return x.toLowerCase();})),bad=[t.toLowerCase(),t.charAt(0).toLowerCase()+t.slice(1),t.replace(n,n.toLowerCase())];
+ const ops=shuffled([t].concat(bad.filter(function(x,i,a){return x!==t&&a.indexOf(x)===i;})).slice(0,4));
+ return{q:"¿Cuál oración está escrita correctamente?",ops:ops,a:ops.indexOf(t),say:"¿Cuál oración está escrita correctamente?"};};
+/* tiempos verbales: verbos regulares (los que cambian la raíz, como «jugar», se evitan) */
+const EXV=[["cantar","ar"],["saltar","ar"],["bailar","ar"],["pintar","ar"],["caminar","ar"],["mirar","ar"],["estudiar","ar"],["lavar","ar"],["comer","er"],["correr","er"],["beber","er"],["aprender","er"],["vivir","ir"],["escribir","ir"],["subir","ir"],["partir","ir"]];
+const EXV_PERS=[["yo",0],["tú",1],["él",2],["ella",2],["ellos",4]]; /* sin «nosotros»: en -ar/-ir canta­mos es igual en presente y pasado */
+function exConj(inf,type,tense,p){
+ const st=inf.slice(0,-2),e={ar:{pre:["o","as","a","amos","an"],pas:["é","aste","ó","amos","aron"],fut:["é","ás","á","emos","án"]},er:{pre:["o","es","e","emos","en"],pas:["í","iste","ió","imos","ieron"],fut:["é","ás","á","emos","án"]},ir:{pre:["o","es","e","imos","en"],pas:["í","iste","ió","imos","ieron"],fut:["é","ás","á","emos","án"]}}[type];
+ if(tense==="fut")return inf+e.fut[p];
+ return st+e[tense==="pre"?"pre":"pas"][p];}
+const EXV_MARK={pas:["Ayer","Anoche","La semana pasada"],pre:["Hoy","Ahora","Todos los días"],fut:["Mañana","Pronto","El próximo año"]};
+const EXV_NAME={pas:"Pasado",pre:"Presente",fut:"Futuro"};
+EXAM_BANK.tverbales=function(){
+ const T=rnd(4),v=pick(EXV),pp=pick(EXV_PERS),tense=pick(["pas","pre","fut"]);
+ if(T===0)return pick([
+  {q:"El tiempo que YA pasó se llama…",ops:["Pasado ⏪","Presente","Futuro","Mañana"],a:0},
+  {q:"Lo que está pasando AHORA está en…",ops:["Presente ⏺️","Pasado","Futuro","Ayer"],a:0},
+  {q:"Lo que va a pasar MÁS TARDE está en…",ops:["Futuro ⏩","Pasado","Presente","Antes"],a:0},
+  {q:"¿Qué palabra nos avisa que algo es del pasado?",ops:["Ayer","Mañana","Pronto","Ahora"],a:0},
+  {q:"¿Qué palabra nos avisa que algo es del futuro?",ops:["Mañana","Ayer","Anoche","Hace un rato"],a:0}]);
+ if(T===1){const f=exConj(v[0],v[1],tense,pp[1]);
+  const ops=["Pasado","Presente","Futuro"];
+  return{q:"¿En qué tiempo está el verbo <b>«"+f+"»</b>?",ops:ops,a:ops.indexOf(EXV_NAME[tense]),say:"¿En qué tiempo está el verbo "+f+"?"};}
+ if(T===2){const sj=pp[0],f=exConj(v[0],v[1],tense,pp[1]),sent=pick(EXV_MARK[tense])+" "+sj+" "+f+".";
+  const ops=["Pasado","Presente","Futuro"];
+  return{q:"«"+sent+"»<br>¿En qué tiempo está la oración?",ops:ops,a:ops.indexOf(EXV_NAME[tense]),say:sent+". ¿En qué tiempo está la oración?"};}
+ const mk=pick(EXV_MARK[tense]),ok=exConj(v[0],v[1],tense,pp[1]),others=["pas","pre","fut"].filter(function(x){return x!==tense;}).map(function(x){return exConj(v[0],v[1],x,pp[1]);});
+ const ops=shuffled([ok].concat(others));
+ return{q:mk+" "+pp[0]+" ___ ("+v[0]+").<br>¿Cuál es la forma correcta?",ops:ops,a:ops.indexOf(ok),say:mk+" "+pp[0]+" ___. ¿Cuál es la forma correcta?"};};
+
+/* ---------- NATURALES: reinos de la naturaleza ---------- */
+EXAM_BANK.reinos=function(){return pick([
+ {q:"Los seres vivos que se mueven, comen y tienen crías pertenecen al reino…",ops:["Animal 🐶","Mineral 💎","Vegetal 🌿","Ninguno"],a:0},
+ {q:"Los seres vivos que fabrican su alimento con la luz del sol pertenecen al reino…",ops:["Vegetal 🌳","Animal","Mineral","Hongos"],a:0},
+ {q:"Las rocas, la sal y el oro pertenecen al reino…",ops:["Mineral 💎","Animal","Vegetal","Hongos"],a:0},
+ {q:"¿Cuál de estos es del reino ANIMAL?",ops:["El perro 🐕","El rosal 🌹","La roca 🪨","El champiñón 🍄"],a:0},
+ {q:"¿Cuál de estos es del reino VEGETAL?",ops:["El árbol de mango 🥭","La vaca 🐮","El oro 🪙","El pez 🐟"],a:0},
+ {q:"¿Cuál de estos es del reino MINERAL?",ops:["La sal 🧂","El gato 🐱","La margarita 🌼","La mariposa 🦋"],a:0},
+ {q:"Los minerales NO son seres vivos porque…",ops:["No nacen, no crecen ni se reproducen","Son muy pequeños","Viven en el agua","Se mueven mucho"],a:0},
+ {q:"Las plantas NECESITAN para vivir…",ops:["Sol, agua, aire y tierra ☀️💧","Solo dulces","Solo oscuridad","Nada"],a:0},
+ {q:"¿Cuál es una parte de la planta?",ops:["La raíz 🌱","La cola","Las alas","Las escamas"],a:0},
+ {q:"¿Qué parte de la planta la sostiene y la mantiene en la tierra?",ops:["La raíz","La flor","El fruto","La semilla"],a:0},
+ {q:"¿Qué parte de la planta puede dar frutos y semillas?",ops:["La flor 🌸","La raíz","El tronco","La piedra"],a:0},
+ {q:"Los animales necesitan para vivir…",ops:["Alimento, agua y aire 🍖💧","Solo sol","Solo tierra","Nada"],a:0},
+ {q:"El champiñón 🍄 pertenece al reino de los…",ops:["Hongos","Animales","Minerales","Vegetales (plantas)"],a:0},
+ {q:"Las bacterias son seres vivos tan pequeños que solo se ven con…",ops:["Un microscopio 🔬","Una regla","Una lupa de juguete","Los ojos"],a:0},
+ {q:"¿Qué tienen en común los animales y las plantas?",ops:["Nacen, crecen, se reproducen y mueren","Se mueven de lugar","Fabrican su alimento","Son de piedra"],a:0},
+ {q:"¿Cuál NO es un ser vivo?",ops:["La piedra 🪨","El gusano 🪱","La hormiga 🐜","El pasto 🌱"],a:0}]);};
+
+/* ---------- explicaciones cortas (se ven la primera vez; se pueden repasar) ---------- */
+const EXAM_LESSONS={
+ sumallev:{t:"➕ Sumas llevando",say:"Cuando sumamos las unidades y el resultado es diez o más, escribimos las unidades abajo y llevamos una decena a la columna de al lado.",
+  html:'<div class="excol-wrap"><div class="excol"><div class="excol-row" style="color:#2563EB;font-size:.9rem">&nbsp;1</div><div class="excol-row">&nbsp;&nbsp;4&nbsp;&nbsp;8</div><div class="excol-row"><span class="excol-sig">+</span>&nbsp;&nbsp;3&nbsp;&nbsp;7</div><div class="excol-line"></div><div class="excol-row">&nbsp;&nbsp;8&nbsp;&nbsp;5</div></div></div>'
+   +'<ol style="line-height:1.7"><li>Empieza por las <b>unidades</b>: 8 + 7 = 15.</li><li>Escribe el <b>5</b> abajo y <b>lleva 1</b> a las decenas.</li><li>Suma las <b>decenas</b>: 4 + 3 + 1 (la que llevas) = 8.</li><li>Resultado: <b>85</b>.</li></ol><p>💡 Lo mismo pasa con centenas y unidades de mil: siempre de <b>derecha a izquierda</b>.</p>'},
+ restapres:{t:"➖ Restas prestando",say:"Si el número de arriba es más pequeño que el de abajo, le pedimos prestada una decena al vecino de la izquierda. La decena vale diez unidades.",
+  html:'<div class="excol-wrap"><div class="excol"><div class="excol-row" style="color:#DC2626;font-size:.9rem">&nbsp;3&nbsp;&nbsp;<span>12</span></div><div class="excol-row">&nbsp;&nbsp;<s>4</s>&nbsp;&nbsp;<s>2</s></div><div class="excol-row"><span class="excol-sig">−</span>&nbsp;&nbsp;1&nbsp;&nbsp;7</div><div class="excol-line"></div><div class="excol-row">&nbsp;&nbsp;2&nbsp;&nbsp;5</div></div></div>'
+   +'<ol style="line-height:1.7"><li>2 − 7 no se puede: ¡el de arriba es más chiquito!</li><li><b>Pide prestada</b> 1 decena al 4: el 4 queda en <b>3</b> y el 2 se vuelve <b>12</b>.</li><li>12 − 7 = <b>5</b>. Luego 3 − 1 = <b>2</b>.</li><li>Resultado: <b>25</b>.</li></ol><p>💡 Comprueba sumando: 25 + 17 = 42 ✅</p>'},
+ problemas:{t:"🧩 Problemas de sumas y restas",say:"Lee el problema con calma. Busca las palabras clave. En total, juntar y regalar más suman. Quedan, faltan y cuántos más restan.",
+  html:'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#DCFCE7;border-radius:14px;padding:10px"><b>➕ SUMAR</b><br>en total · juntar · agregar · le regalaron · compró más · ahora tiene</div><div style="background:#FEE2E2;border-radius:14px;padding:10px"><b>➖ RESTAR</b><br>quedan · faltan · perdió · regaló · cuántos más · diferencia</div></div>'
+   +'<ol style="line-height:1.7;margin-top:8px"><li><b>Lee</b> todo el problema.</li><li><b>Subraya</b> los números y la pregunta.</li><li>Elige: ¿<b>suma</b> o <b>resta</b>?</li><li>Resuelve y <b>responde</b> con una frase.</li></ol><p>💡 Si hay dos pasos, resuélvelos uno por uno.</p>'},
+ num4escr:{t:"✍️ Escribir números de 4 cifras",say:"Un número de cuatro cifras tiene unidades de mil, centenas, decenas y unidades. Escribimos cada cifra en su lugar y usamos cero cuando falta una.",
+  html:'<table style="margin:0 auto;border-collapse:collapse;text-align:center;font-weight:700"><tr style="font-size:.8rem"><td style="padding:4px 8px;background:#EDE9FE">Unidades de mil</td><td style="padding:4px 8px;background:#FEE2E2">Centenas</td><td style="padding:4px 8px;background:#DBEAFE">Decenas</td><td style="padding:4px 8px;background:#DCFCE7">Unidades</td></tr><tr style="font-size:1.8rem"><td>3</td><td>4</td><td>0</td><td>7</td></tr></table>'
+   +'<p style="text-align:center;margin:8px 0"><b>3 407</b> = 3000 + 400 + 0 + 7</p><p>Se dice: <b>tres mil cuatrocientos siete</b>.</p><p>💡 Cuando en el nombre no se dice una parte (ej. «decenas»), ahí va un <b>0</b>. En el colegio a veces lo ves como 3.407: es el mismo número.</p>'},
+ num4lect:{t:"📖 Leer números de 4 cifras",say:"Para leer un número de cuatro cifras, primero decimos los miles, luego las centenas, decenas y unidades.",
+  html:'<p style="text-align:center;font-size:1.6rem;font-weight:800;margin:4px 0">5 284</p><p style="text-align:center"><b>cinco mil</b> · <b>doscientos</b> · <b>ochenta y cuatro</b></p>'
+   +'<ul style="line-height:1.7"><li>El <b>5</b> vale 5000 (cinco unidades de mil).</li><li>El <b>2</b> vale 200 (dos centenas).</li><li>El <b>8</b> vale 80 (ocho decenas).</li><li>El <b>4</b> vale 4 (cuatro unidades).</li></ul><p>💡 El <b>valor</b> de una cifra depende del lugar donde está.</p>'},
+ oracion:{t:"💬 La oración",say:"Una oración es un grupo de palabras con sentido completo. Empieza con mayúscula y termina con punto. Tiene dos partes: sujeto y predicado.",
+  html:'<div style="background:#EEF2FF;border-radius:14px;padding:12px;text-align:center;font-size:1.15rem"><b>El perro corre por el parque.</b></div>'
+   +'<ul style="line-height:1.7;margin-top:8px"><li>✅ Tiene <b>sentido completo</b>.</li><li>🔠 Empieza con <b>mayúscula</b>.</li><li>🔚 Termina con <b>punto</b>.</li><li>🧩 Tiene <b>sujeto</b> y <b>predicado</b>.</li></ul><p>❌ «El perro de la» no es una oración: le falta algo.</p>'},
+ sujeto:{t:"🧑 El sujeto",say:"El sujeto es de quién o de qué se habla en la oración. Para encontrarlo preguntamos: ¿quién?",
+  html:'<div style="text-align:center;font-size:1.2rem;line-height:2"><span style="background:#FEF08A;padding:4px 8px;border-radius:10px;font-weight:800">Mi mamá</span> cocina arroz.</div>'
+   +'<ul style="line-height:1.7;margin-top:8px"><li>Pregunta: <b>¿Quién cocina arroz?</b></li><li>Respuesta: <b>Mi mamá</b> → ese es el <b>sujeto</b>.</li></ul><p>💡 El sujeto puede ser una persona, un animal o una cosa: <i>El perro</i>, <i>Los niños</i>, <i>La luna</i>.</p>'},
+ predicado:{t:"🏃 El predicado",say:"El predicado es lo que se dice o lo que hace el sujeto. Siempre tiene un verbo.",
+  html:'<div style="text-align:center;font-size:1.2rem;line-height:2">Mi mamá <span style="background:#BBF7D0;padding:4px 8px;border-radius:10px;font-weight:800">cocina arroz.</span></div>'
+   +'<ul style="line-height:1.7;margin-top:8px"><li>Pregunta: <b>¿Qué hace mi mamá?</b></li><li>Respuesta: <b>cocina arroz</b> → ese es el <b>predicado</b>.</li></ul><p>💡 Oración = <span style="background:#FEF08A;padding:0 6px;border-radius:6px">sujeto</span> + <span style="background:#BBF7D0;padding:0 6px;border-radius:6px">predicado</span></p>'},
+ verbo:{t:"⚡ El verbo",say:"El verbo es la palabra que dice la acción: lo que alguien hace. Por ejemplo correr, comer, saltar.",
+  html:'<div style="text-align:center;font-size:1.2rem;line-height:2">Los niños <span style="background:#FBCFE8;padding:4px 8px;border-radius:10px;font-weight:800">juegan</span> en el parque.</div>'
+   +'<ul style="line-height:1.7;margin-top:8px"><li>El verbo dice <b>qué hacen</b>: juegan.</li><li>En infinitivo termina en <b>-ar, -er, -ir</b>: jug<b>ar</b>, com<b>er</b>, viv<b>ir</b>.</li></ul><p>💡 Truco: si puedes decir «yo ___» o «ellos ___», ¡es un verbo! (yo salto, ellos comen).</p>'},
+ mayuscula:{t:"🔠 Uso de la mayúscula",say:"Usamos mayúscula al empezar una oración, después de un punto, y en los nombres de personas, ciudades y países.",
+  html:'<ul style="line-height:1.9;font-size:1.02rem"><li>🔠 Al <b>empezar</b> una oración: <b>M</b>i casa es azul.</li><li>🔠 Después de un <b>punto</b>: Hoy llovió. <b>A</b>yer no.</li><li>🔠 Nombres de <b>personas</b>: <b>L</b>aura, <b>M</b>ateo.</li><li>🔠 Nombres de <b>lugares</b>: <b>B</b>ogotá, <b>C</b>olombia.</li></ul><p>💡 Los días y los meses van con <b>minúscula</b>: el lunes, en marzo.</p>'},
+ tverbales:{t:"⏳ Tiempos verbales",say:"Los verbos cambian según cuándo pasa la acción. Si ya pasó es pasado, si pasa ahora es presente, y si va a pasar es futuro.",
+  html:'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center"><div style="background:#FEE2E2;border-radius:12px;padding:8px"><b>⏪ Pasado</b><br>Ayer<br><b>canté</b></div><div style="background:#DCFCE7;border-radius:12px;padding:8px"><b>⏺️ Presente</b><br>Hoy<br><b>canto</b></div><div style="background:#DBEAFE;border-radius:12px;padding:8px"><b>⏩ Futuro</b><br>Mañana<br><b>cantaré</b></div></div>'
+   +'<p style="margin-top:8px">Más ejemplos con <b>comer</b>: <i>comí</i> (pasado) · <i>como</i> (presente) · <i>comeré</i> (futuro).</p><p>💡 Las palabras <b>ayer, hoy, mañana</b> te ayudan a saber el tiempo.</p>'},
+ reinos:{t:"🌿 Reinos de la naturaleza",say:"La naturaleza se organiza en reinos. El reino animal, el reino vegetal y el reino mineral. Los animales y las plantas son seres vivos. Los minerales no.",
+  html:'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center"><div style="background:#FEE2E2;border-radius:12px;padding:8px"><div style="font-size:2rem">🐶🐟</div><b>Animal</b><br><span style="font-size:.78rem">se mueve, come y tiene crías</span></div><div style="background:#DCFCE7;border-radius:12px;padding:8px"><div style="font-size:2rem">🌳🌹</div><b>Vegetal</b><br><span style="font-size:.78rem">fabrica su alimento con el sol</span></div><div style="background:#E0E7FF;border-radius:12px;padding:8px"><div style="font-size:2rem">🪨💎</div><b>Mineral</b><br><span style="font-size:.78rem">no tiene vida</span></div></div>'
+   +'<p style="margin-top:8px">¡Abre <b>🎤 Exposición</b> en el menú para ver tu afiche y practicar!</p>'}};
+
+function examLessonSeen(uid){const e=examState();if(!e.seen)e.seen={};return !!e.seen[uid];}
+function examLessonFirst(uid){if(!EXAM_LESSONS[uid]||examLessonSeen(uid))return false;examLesson(uid);return true;}
+function examLesson(uid){setTheme("kid");
+ const L=EXAM_LESSONS[uid];if(!L){startExamUnit(uid);return;}
+ render(topbar("screenExam()")
+  +'<h2 style="font-size:clamp(1.25rem,5.5vw,1.55rem);text-align:center;margin-bottom:8px">'+L.t+'</h2>'
+  +'<div class="card" style="line-height:1.55">'+L.html+'</div>'
+  +'<button class="speaker small" style="margin:6px auto;display:block" onclick="speakES('+jsStr(L.say)+')">🔊 Escuchar la explicación</button>'
+  +'<button class="kbtn green" onclick="examLessonDone(\''+uid+'\')">✏️ ¡A practicar!</button>');
+ setTimeout(function(){try{speakES(L.say);}catch(e){}},500);}
+function examLessonDone(uid){const e=examState();if(!e.seen)e.seen={};e.seen[uid]=1;save();startExamUnit(uid);}
+
+/* ---------- la regla ---------- */
+function examRuleOf(p){
+ if(!p||(p.type&&p.type!=="kid"))return{on:false,thr:80};
+ const r=p.examRule;return{on:!r||r.on!==false,thr:(r&&r.thr)||80};}
+function examReqOf(p){
+ const u=(p&&p.exam&&p.exam.units)||{},thr=examRuleOf(p).thr;
+ return EXAM_REQ.map(function(id){const un=examAllUnits().find(function(x){return x.id===id;}),b=(u[id]&&u[id].best)||0;return{id:id,u:un,best:b,tries:(u[id]&&u[id].tries)||0,ok:b>=thr};});}
+function examPassed(p){return examReqOf(p||prof()).every(function(x){return x.ok;});}
+function examLocked(){const p=prof();if(!p)return false;const r=examRuleOf(p);if(!r.on)return false;if(p.examUnlockDay===todayStr())return false;return !examPassed(p);}
+function examGo(fn){if(examLocked()){screenExamLock();return;}if(typeof window[fn]==="function")window[fn]();}
+function examExempt(onclick){return /screenExam\(|screenCalm\(|screenRoutine\(|screenExpo|openWorld\('expo/.test(String(onclick));}
+function examHubCardHTML(){
+ const p=prof(),r=examRuleOf(p);if(!r.on)return"";
+ const st=examReqOf(p),done=st.filter(function(x){return x.ok;}).length,pct=Math.round(done/st.length*100);
+ if(examPassed(p))return '<div class="card" style="margin-top:10px;padding:10px 14px;background:linear-gradient(135deg,#DCFCE7,#ECFEFF);display:flex;align-items:center;gap:10px"><span style="font-size:1.8rem">🎓</span><span style="flex:1;font-size:.92rem"><b>¡Examen superado!</b> Todo el contenido está abierto.</span></div>';
+ const next=st.find(function(x){return !x.ok;});
+ return '<div class="card" style="margin-top:10px;padding:14px;background:linear-gradient(135deg,#FEF3C7,#FCE7F3);border:3px solid #F59E0B"><div style="display:flex;align-items:center;gap:12px"><span style="font-size:2.4rem">📝</span><span style="flex:1"><b style="font-size:1.1rem">Primero, el examen del cole</b><br><span style="font-size:.85rem">Supera los '+st.length+' temas (≥ '+r.thr+'%) y se abre todo lo demás 🔓</span></span></div>'
+  +'<div style="height:14px;border-radius:10px;background:#fff;border:3px solid var(--kid-ink);overflow:hidden;margin:10px 0 4px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#22C55E,#16A34A)"></div></div>'
+  +'<div style="font-size:.85rem;margin-bottom:8px">✅ '+done+' de '+st.length+' temas superados'+(next?' · Siguiente: <b>'+next.u.nm+'</b>':'')+'</div>'
+  +'<button class="kbtn green" style="margin:0" onclick="'+(next?"startExamUnit('"+next.id+"')":"screenExam()")+'">📝 '+(done?'Seguir con el examen':'Empezar el examen')+'</button></div>';}
+function screenExamLock(){setTheme("kid");if(typeof stopGames==="function")stopGames();
+ const p=prof(),r=examRuleOf(p),st=examReqOf(p),done=st.filter(function(x){return x.ok;}).length;
+ render(topbar("screenKidMap()")
+  +'<div class="card center" style="padding:18px 16px"><div style="font-size:3.4rem">🔒</div><h2 style="font-size:clamp(1.25rem,5.5vw,1.55rem);margin:4px 0">Primero el examen del cole</h2>'
+  +'<p style="font-size:.98rem;line-height:1.5">Esto se abre cuando superes los temas del examen (con <b>'+r.thr+'%</b> o más en cada uno). ¡Tú puedes! 💪</p></div>'
+  +'<div class="card" style="padding:10px 12px"><b>✅ '+done+' de '+st.length+' temas superados</b>'
+  +st.map(function(x){return '<button onclick="startExamUnit(\''+x.id+'\')" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:2px solid '+(x.ok?"#86EFAC":"#E2E8F0")+';background:'+(x.ok?"#F0FDF4":"#fff")+';border-radius:14px;padding:8px 10px;margin-top:6px;cursor:pointer;font-size:.95rem;color:#1E293B"><span style="font-size:1.4rem">'+x.u.ic+'</span><span style="flex:1;font-weight:700">'+x.u.nm+'</span><span style="font-weight:800;color:'+(x.ok?"#16A34A":"#64748B")+'">'+(x.ok?"✅ "+x.best+"%":(x.tries?x.best+"%":"nuevo"))+'</span></button>';}).join("")+'</div>'
+  +'<button class="kbtn green" onclick="screenExam()">📝 Ir al examen</button>'
+  +'<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:700;color:#64748B">👨‍👩‍👧 Papá o mamá: desbloquear por hoy</summary><div class="card" style="margin-top:6px"><input type="password" id="exPin" inputmode="numeric" placeholder="PIN de papá o mamá" style="margin-bottom:6px"><button class="kbtn white" style="margin:0;min-height:44px" onclick="examParentUnlock()">🔓 Desbloquear hoy</button><div id="exPinFb" class="mut" style="font-size:.85rem;margin-top:4px"></div></div></details>');}
+function examParentUnlock(){
+ const v=(document.getElementById("exPin")||{}).value;
+ if(v&&v===S.pin){const p=prof();p.examUnlockDay=todayStr();save();toast("🔓 Desbloqueado por hoy",true,1600);screenKidMap();}
+ else{const f=document.getElementById("exPinFb");if(f)f.textContent="PIN incorrecto";}}
+function examBannerHTML(){
+ const p=prof(),r=examRuleOf(p);if(!r.on)return"";
+ const st=examReqOf(p),done=st.filter(function(x){return x.ok;}).length;
+ return '<div class="card" style="padding:10px 14px;margin-bottom:10px;background:'+(done===st.length?"#DCFCE7":"#FEF9C3")+';font-size:.92rem;line-height:1.45">'+(done===st.length?'🎓 <b>¡Superaste todos los temas del cole!</b> El resto de la app está abierto.':'📌 Los temas con <b>📌</b> son los del examen del cole. Supera los <b>'+st.length+'</b> con '+r.thr+'% o más para abrir lo demás 🔓 <b>('+done+'/'+st.length+')</b>')+'</div>';}
+function setExamRule(id,val){
+ const p=S.profiles&&S.profiles[id];if(!p)return;
+ if(val==="off")p.examRule={on:false,thr:80};else p.examRule={on:true,thr:parseInt(val,10)||80};save();
+ toast("Regla del examen guardada ✓",true,1400);}

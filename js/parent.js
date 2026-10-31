@@ -31,6 +31,7 @@ function profileReport(key){
   +' · ⏱️ '+fmt(weekSec)+' esta semana';
  const signals=isKid?signalsBlock(p):"";
  return '<div class="card"><h3>'+(p.emoji||"🙂")+' '+esc(p.name)+(p.age?' <span class="mut" style="font-weight:600">('+p.age+" años)</span>":'')+' <span class="mut" style="font-weight:600">· 🔥 '+p.streak+' días · 🪙 '+p.coins+' · Nv '+level(p.xp)+extra+'</span></h3>'
+ +(isKid&&typeof examRuleOf==="function"?examRuleRowHTML(p,key):'')
  +'<table><tr><th>Tema</th><th>Intentos</th><th>Aciertos</th><th>%</th><th>Tiempo</th></tr>'+rows+'</table>'
  +'<p class="mut" style="margin-top:16px"><b>Ejercicios por día — últimos 7 días</b></p>'
  +'<div class="barchart">'+bars+'</div><div style="height:24px"></div>'+signals+'</div>';}
@@ -357,3 +358,10 @@ function aiDiagCopy(){
  const fb=document.getElementById("aidcopyfb");
  try{navigator.clipboard.writeText(txt).then(()=>{if(fb)fb.innerHTML=' <b style="color:#16A34A">✓ Copiado</b>';});}
  catch(e){if(fb)fb.innerHTML=' <b style="color:#DC2626">No se pudo copiar</b>';}}
+
+/* regla «primero el examen del cole»: por hijo (Panel de padres) */
+function examRuleRowHTML(p,key){
+ const r=examRuleOf(p),st=examReqOf(p),done=st.filter(function(x){return x.ok;}).length,cur=!r.on?"off":String(r.thr);
+ return '<div style="background:#FEF9C3;border-radius:14px;padding:10px 12px;margin:10px 0"><b>📝 Regla del examen del cole</b> <span class="mut">('+done+'/'+st.length+' temas superados)</span>'
+  +'<div class="mut" style="font-size:.82rem;margin:4px 0 6px">Mientras no supere los temas obligatorios (sumas llevando, restas prestando, problemas, números de 4 cifras, oración, sujeto, predicado, verbo, mayúscula y tiempos verbales), el resto de la app queda bloqueado. Calma, Mi día, Examen y Exposición siempre están abiertos.</div>'
+  +'<select onchange="setExamRule(\''+key+'\',this.value)" style="margin:0"><option value="80"'+(cur==="80"?" selected":"")+'>Activada · superar con 80 % (recomendado)</option><option value="70"'+(cur==="70"?" selected":"")+'>Activada · superar con 70 %</option><option value="60"'+(cur==="60"?" selected":"")+'>Activada · superar con 60 %</option><option value="100"'+(cur==="100"?" selected":"")+'>Activada · 100 %</option><option value="off"'+(cur==="off"?" selected":"")+'>Desactivada (todo abierto)</option></select></div>';}

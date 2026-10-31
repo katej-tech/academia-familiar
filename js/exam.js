@@ -203,13 +203,14 @@ function screenExam(){setTheme("kid");
   const us=sub.units.map(u=>{const sc=exUnitScore(u.id);
    const st=sc.best>=80?"🌟":sc.best>=50?"🔸":sc.tries?"⚪":"";
    return '<button class="exu" onclick="startExamUnit(\''+u.id+'\')"><span class="exi">'+u.ic+'</span>'
-    +'<span class="exn">'+u.nm+'</span><span class="exb" style="background:'+sub.color+'">'+(sc.tries?sc.best+"% "+st:"¡Nuevo!")+'</span></button>';}).join("");
+    +'<span class="exn">'+(u.req?'📌 ':'')+u.nm+'</span><span class="exb" style="background:'+sub.color+'">'+(sc.tries?sc.best+"% "+st:"¡Nuevo!")+'</span></button>';}).join("");
   return '<div class="excard" style="border-color:'+sub.color+'"><div class="exhead" style="color:'+sub.color+';border-color:'+sub.color+'"><span>'+sub.ic+'</span>'+sub.nm+'</div>'+us+'</div>';}).join("");
  render(topbar("screenKidMap()")
  +'<div class="exhero"><div class="exring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="'+R+'" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="13"/>'
  +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pr.pct/100))+'" transform="rotate(-90 60 60)"/></svg>'
  +'<div class="exringtxt">'+pr.pct+'%</div></div>'
  +'<div class="exhero-t">📝 Modo Examen</div><div class="exhero-p">'+pr.m+' de '+pr.t+' temas dominados</div></div>'
+ +(typeof examBannerHTML==="function"?examBannerHTML():"")
  +'<button class="kbtn green" onclick="startExamSim()" style="display:flex;align-items:center;gap:12px;text-align:left"><span style="font-size:clamp(2rem,9vw,2.5rem)">🏁</span><span style="flex:1"><span style="font-size:clamp(1.05rem,4.8vw,1.28rem)">Simulacro completo</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">12 preguntas de todos los temas</span></span></button>'
  +cards);}
 
@@ -227,6 +228,7 @@ function exColumnHTML(op){
 let EX={};
 async function startExamUnit(uid){
  setTheme("kid");
+ if(typeof examLessonFirst==="function"&&examLessonFirst(uid))return;
  if(uid==="dictado")return examDictWords();
  if(uid==="dictnum")return examDictNums();
  if(uid==="comprension")return examComprension();
@@ -327,6 +329,8 @@ function endEX(){
  +(good?'<p style="font-size:1.1rem;margin-bottom:12px">'+(EX.sim?"¡Estás listo para el examen! 🎓":"¡Tema dominado! 🎓")+'</p>'
        :'<p style="font-size:1.05rem;margin-bottom:12px">Llega al 80% para dominarlo</p>')
  +'<button class="kbtn green" onclick="'+(EX.sim?"startExamSim()":"startExamUnit('"+EX.uid+"')")+'">Practicar otra vez 🔁</button>'
+ +(typeof EXAM_LESSONS!=="undefined"&&EXAM_LESSONS[EX.uid]?'<button class="kbtn white" onclick="examLesson(\''+EX.uid+'\')">📖 Ver la explicación</button>':'')
+ +(good&&typeof examLocked==="function"&&!EX.sim&&!examLocked()&&examRuleOf(prof()).on&&examPassed(prof())?'<p style="margin:8px 0;font-weight:700;color:#16A34A">🎓 ¡Superaste todos los temas del examen! Ya se abrió el resto de la app.</p>':'')
  +'<button class="kbtn white" onclick="screenExam()">Ver todos los temas 📝</button></div>');}
 
 /* ---------- dictado de palabras ---------- */
