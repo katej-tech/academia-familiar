@@ -203,7 +203,7 @@ function screenExam(){setTheme("kid");
   const us=sub.units.map(u=>{const sc=exUnitScore(u.id);
    const st=sc.best>=80?"🌟":sc.best>=50?"🔸":sc.tries?"⚪":"";
    return '<button class="exu" onclick="startExamUnit(\''+u.id+'\')"><span class="exi">'+u.ic+'</span>'
-    +'<span class="exn">'+(u.req?'📌 ':'')+u.nm+'</span><span class="exb" style="background:'+sub.color+'">'+(sc.tries?sc.best+"% "+st:"¡Nuevo!")+'</span></button>';}).join("");
+    +'<span class="exn">'+(u.req?'📌 ':'')+u.nm+'</span><span class="exb" style="background:'+sub.color+'">'+(typeof exBadge==="function"?exBadge(u,sc,st):(sc.tries?sc.best+"% "+st:"¡Nuevo!"))+'</span></button>';}).join("");
   return '<div class="excard" style="border-color:'+sub.color+'"><div class="exhead" style="color:'+sub.color+';border-color:'+sub.color+'"><span>'+sub.ic+'</span>'+sub.nm+'</div>'+us+'</div>';}).join("");
  render(topbar("screenKidMap()")
  +'<div class="exhero"><div class="exring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="'+R+'" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="13"/>'
@@ -238,15 +238,15 @@ async function startExamUnit(uid){
   try{const o=await geminiJSON('Eres profesor de primero de primaria. Crea 8 preguntas de opción múltiple sobre '+EXAM_PROMPTS[uid]+'. 4 opciones cada una, una sola correcta, lenguaje muy sencillo para un niño de 7 años. SOLO JSON: {"items":[{"q":"pregunta","ops":["correcta","mala","mala","mala"],"a":0}]}');
    if(o&&o.items&&o.items.length)items=o.items.map(it=>{const c=it.ops[it.a],ops=shuffled(it.ops);return{q:it.q,ops,a:ops.indexOf(c)};});
   }catch(e){}}
- if(!items.length&&EXAM_BANK[uid])for(let i=0;i<8;i++)items.push(EXAM_BANK[uid]());
+ if(!items.length&&EXAM_BANK[uid])for(let i=0;i<8;i++)items.push(EXAM_BANK[uid](typeof exLevel==="function"?exLevel(uid):1));
  if(!items.length){toast("No se pudo cargar",false,1800);return screenExam();}
- EX={uid,items,i:0,ok:0,sim:false};renderEX();}
+ EX={uid,items,i:0,ok:0,sim:false,lvl:typeof exLevel==="function"?exLevel(uid):1};renderEX();}
 
 /* ---------- simulacro ---------- */
 function startExamSim(){setTheme("kid");
  const us=examAllUnits().filter(u=>u.id!=="dictado"&&u.id!=="dictnum"&&u.id!=="comprension");
  let items=[];
- shuffled(us).slice(0,6).forEach(u=>{if(EXAM_BANK[u.id]){items.push(EXAM_BANK[u.id]());items.push(EXAM_BANK[u.id]());}});
+ shuffled(us).slice(0,6).forEach(u=>{if(EXAM_BANK[u.id]){items.push(EXAM_BANK[u.id](typeof exLevel==="function"?exLevel(u.id):1));items.push(EXAM_BANK[u.id](typeof exLevel==="function"?exLevel(u.id):1));}});
  items=shuffled(items).slice(0,12);
  EX={uid:"simulacro",items,i:0,ok:0,sim:true};renderEX();}
 
@@ -315,6 +315,7 @@ function ansEX(vi){
  EX.i++;setTimeout(renderEX,ok?1000:2100);}
 
 function endEX(){
+ if(typeof exLevelEnd==="function"&&exLevelEnd())return;
  if(typeof closeBoard==="function")closeBoard();
  const pct=Math.round(EX.ok/EX.items.length*100);
  if(!EX.sim){const e=examState();

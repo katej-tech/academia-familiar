@@ -301,8 +301,8 @@ function examLessonDone(uid){const e=examState();if(!e.seen)e.seen={};e.seen[uid
 
 /* ---------- la regla ---------- */
 function examRuleOf(p){
- if(!p||(p.type&&p.type!=="kid"))return{on:false,thr:80};
- const r=p.examRule;return{on:!r||r.on!==false,thr:(r&&r.thr)||80};}
+ if(!p||(p.type&&p.type!=="kid"))return{on:false,thr:70};
+ const r=p.examRule;return{on:!r||r.on!==false,thr:(r&&r.thr)||70};}
 function examReqOf(p){
  const u=(p&&p.exam&&p.exam.units)||{},thr=examRuleOf(p).thr;
  return EXAM_REQ.map(function(id){const un=examAllUnits().find(function(x){return x.id===id;}),b=(u[id]&&u[id].best)||0;return{id:id,u:un,best:b,tries:(u[id]&&u[id].tries)||0,ok:b>=thr};});}
@@ -340,3 +340,194 @@ function setExamRule(id,val){
  const p=S.profiles&&S.profiles[id];if(!p)return;
  if(val==="off")p.examRule={on:false,thr:80};else p.examRule={on:true,thr:parseInt(val,10)||80};save();
  toast("Regla del examen guardada ✓",true,1400);}
+
+/* ============ NIVELES (el examen se adapta al niño: de 6 años a lo que pide el cole) ============
+   Feedback (1-nov-2026): «las preguntas están fuertes para un niño de 6 años». Ahora cada tema tiene 3 niveles:
+     ⭐ Nivel 1 = calentamiento MUY fácil (números chicos, 3 opciones, oraciones cortas). No cuenta para superar el tema.
+     ⭐⭐ Nivel 2 = lo que pide el cole, pero suave. Superarlo (≥ % de la regla) cuenta como TEMA SUPERADO.
+     ⭐⭐⭐ Nivel 3 = reto (el nivel anterior más difícil).
+   Con ≥ % se sube de nivel; con menos de 50 % se baja uno. Empieza siempre en el nivel 1. */
+function exLevel(uid){const e=examState();if(!e.lvl)e.lvl={};return Math.max(1,Math.min(3,e.lvl[uid]||1));}
+function exLeveled(uid){return EXAM_REQ.indexOf(uid)>=0||uid==="reinos";}
+/* deja solo n opciones (siempre la correcta) */
+function exTrimOps(it,n){
+ if(!it||!it.ops||it.ops.length<=n)return it;
+ const ok=it.ops[it.a],wrong=shuffled(it.ops.filter(function(_,i){return i!==it.a;})).slice(0,n-1);
+ const ops=shuffled([ok].concat(wrong));it.ops=ops;it.a=ops.indexOf(ok);return it;}
+function exBadge(u,sc,st){
+ if(!exLeveled(u.id))return sc.tries?sc.best+"% "+st:"¡Nuevo!";
+ const l=exLevel(u.id),stars="⭐".repeat(l);
+ if(u.req&&sc.best>=examRuleOf(prof()).thr)return"✅ "+sc.best+"%";
+ return sc.tries?stars+" nivel "+l:"¡Nuevo!";}
+
+/* ---- Matemáticas ---- */
+const _sumOld=EXAM_BANK.sumallev,_resOld=EXAM_BANK.restapres,_probOld=EXAM_BANK.problemas,_escOld=EXAM_BANK.num4escr,_lecOld=EXAM_BANK.num4lect;
+EXAM_BANK.sumallev=function(l){
+ l=l||1;if(l>=3)return _sumOld();
+ let a,b,t=0;
+ do{if(l===1){a=8+rnd(20);b=3+rnd(9);}else{a=15+rnd(65);b=12+rnd(60);}t++;}while((!exHasCarry(a,b)||(l===1?a+b>40:a+b>120))&&t<300);
+ const it=exCol(a,b,"+","");return l===1?exTrimOps(it,3):it;};
+EXAM_BANK.restapres=function(l){
+ l=l||1;if(l>=3)return _resOld();
+ let a,b,t=0;
+ do{if(l===1){a=12+rnd(25);b=3+rnd(18);}else{a=31+rnd(68);b=11+rnd(a-11);}t++;}while((!exHasBorrow(a,b)||a<=b)&&t<300);
+ const it=exCol(a,b,"-","");return l===1?exTrimOps(it,3):it;};
+EXAM_BANK.problemas=function(l){
+ l=l||1;if(l>=3)return _probOld();
+ const nm=pick(EXP_NAMES),th=pick(EXP_THINGS),n2=pick(EXP_NAMES.filter(function(x){return x!==nm;}));
+ const C_=th[2]==="f"?"Cuántas":"Cuántos";
+ const A=l===1?5+rnd(8):15+rnd(35),B=l===1?2+rnd(5):6+rnd(20);
+ const T=l===1?pick([0,1,0,1,3]):rnd(5);let q,ans,hint;
+ if(T===0){q=nm+" tenía "+A+" "+th[0]+". Su abuela le regaló "+B+" más. ¿"+C_+" "+th[0]+" tiene ahora?";ans=A+B;hint="le regalaron más → SUMA";}
+ else if(T===1){q=nm+" tenía "+(A+B)+" "+th[0]+". Le regaló "+B+" a "+n2+". ¿"+C_+" "+th[0]+" le quedan?";ans=A;hint="le quedan → RESTA";}
+ else if(T===2){q="En una caja hay "+(A+B)+" "+th[0]+" y en otra caja hay "+B+". ¿"+C_+" "+th[0]+" más hay en la primera caja?";ans=A;hint="cuántos más → RESTA";}
+ else if(T===3){q="En el salón hay "+A+" niños y "+B+" niñas. ¿Cuántos estudiantes hay en total?";ans=A+B;hint="en total → SUMA";}
+ else{q="Para llenar "+th[1]+" se necesitan "+(A+B)+" "+th[0]+". "+nm+" ya tiene "+A+". ¿"+C_+" le faltan?";ans=B;hint="cuántos faltan → RESTA";}
+ const o=exOpts(ans,[ans+1,ans-1,ans+10,ans-10,A,B,A+B+1]);
+ const it={q:q,ops:o.ops,a:o.a,say:q,tip:hint};return l===1?exTrimOps(it,3):it;};
+EXAM_BANK.num4escr=function(l){
+ l=l||1;if(l>=3)return _escOld();
+ let n;
+ if(l===1)n=(1+rnd(9))*1000+rnd(10)*100;else{n=(1+rnd(9))*1000+rnd(10)*100+rnd(10)*10;}
+ const d=[Math.floor(n/1000),Math.floor(n/100)%10,Math.floor(n/10)%10,n%10];
+ const wr=[n+100,n-100,n+1000,n-1000,d[1]*1000+d[0]*100+d[2]*10,d[0]*10000+d[1]*100+d[2]*10,n+10,n-10].filter(function(x){return x>=1000&&x<=9999&&x!==n;});
+ const T=l===1?pick([0,0,1]):rnd(3);
+ if(T===0){const o=exOpts(n,wr,exFmt4);const it={q:"¿Cómo se escribe con cifras? <b>"+exNumEs(n)+"</b>",ops:o.ops,a:o.a,say:exNumEs(n)};return l===1?exTrimOps(it,3):it;}
+ if(T===1&&(d[1]+d[2]+d[3]===0)){const o=exOpts(n,wr,exFmt4);const it={q:"¿Cómo se escribe con cifras? <b>"+exNumEs(n)+"</b>",ops:o.ops,a:o.a,say:exNumEs(n)};return l===1?exTrimOps(it,3):it;}
+ if(T===1){const o=exOpts(n,wr,exFmt4);const parts=[d[0]*1000,d[1]*100,d[2]*10,d[3]].filter(function(x){return x>0;});
+  const it={q:"<b>"+parts.join(" + ")+"</b> = ?",ops:o.ops,a:o.a,say:exNumEs(n)};return l===1?exTrimOps(it,3):it;}
+ const vis='<div style="display:flex;justify-content:center;gap:12px;margin:8px 0 4px;flex-wrap:wrap">'
+  +[["🟪","Unidades de mil",d[0]],["🟥","Centenas",d[1]],["🟦","Decenas",d[2]],["🟩","Unidades",d[3]]].filter(function(x,i){return l>=2||i<2;}).map(function(x){return '<div><div style="font-size:.74rem;font-weight:700">'+x[1]+'</div><div style="font-size:1.25rem;line-height:1.25;min-width:70px">'+(x[2]?x[0].repeat(x[2]):"—")+'</div><div style="font-size:.8rem;font-weight:700">'+x[2]+'</div></div>';}).join("")+'</div>';
+ const o=exOpts(n,wr,exFmt4);const it={q:vis+"¿Qué número representan los bloques?",ops:o.ops,a:o.a,say:"¿Qué número representan los bloques?"};return l===1?exTrimOps(it,3):it;};
+EXAM_BANK.num4lect=function(l){
+ l=l||1;if(l>=3)return _lecOld();
+ let n=l===1?(1+rnd(9))*1000+rnd(10)*100:(1+rnd(9))*1000+rnd(10)*100+rnd(10)*10;
+ const d=[Math.floor(n/1000),Math.floor(n/100)%10,Math.floor(n/10)%10,n%10];
+ const T=l===1?pick([0,0,1]):rnd(3);
+ if(T===0){
+  const wr=[n+100,n-100,n+1000,n-1000,n+10,n-10].filter(function(x){return x>=1000&&x<=9999&&x!==n;}).map(exNumEs);
+  const ans=exNumEs(n),seen={};seen[ans]=1;const out=[ans];shuffled(wr).forEach(function(w){if(out.length<4&&!seen[w]){seen[w]=1;out.push(w);}});
+  const ops=shuffled(out);const it={q:"¿Cómo se lee el número <b>"+n+"</b>?",ops:ops,a:ops.indexOf(ans),say:String(n)};return l===1?exTrimOps(it,3):it;}
+ if(T===1){
+  const val=d[0]*1000,o=exOpts(val,[d[0],d[0]*10,d[0]*100,d[0]*10000],String);
+  const it={q:"En el número <b>"+n+"</b>, ¿qué valor tiene la cifra <b>"+d[0]+"</b>?",ops:o.ops,a:o.a,say:"En el número "+n+", ¿qué valor tiene la cifra "+d[0]+"?"};return l===1?exTrimOps(it,3):it;}
+ const k=exNumEs(n),wr=[n+1000,n-1000,n+100,n-100,n+10,n-10].filter(function(x){return x>=1000&&x<=9999;});
+ const o=exOpts(n,wr,exFmt4);return{q:"¿Qué número es: <b>"+k+"</b>?",ops:o.ops,a:o.a,say:k};};
+
+/* ---- Lenguaje ---- */
+const _orOld=EXAM_BANK.oracion,_suOld=EXAM_BANK.sujeto,_prOld=EXAM_BANK.predicado,_veOld=EXAM_BANK.verbo,_maOld=EXAM_BANK.mayuscula,_tvOld=EXAM_BANK.tverbales,_reOld=EXAM_BANK.reinos;
+function exSentShort(){
+ const ty=pick(["person","person","animal","fly"]),S=ty==="person"?EXS_PERSON:ty==="animal"?EXS_ANIMAL:EXS_FLY,PL=ty==="person"?EXS_PERSON_PL:ty==="animal"?EXS_ANIMAL_PL:EXS_FLY_PL;
+ const sj=pick(S),pr=pick(EXS_PRED[ty]),pl=PL.indexOf(sj)>=0,verb=pl?pr[1]:pr[0];
+ return{subj:sj,verb:verb,comp:"",pred:verb,text:sj+" "+verb+"."};}
+EXAM_BANK.oracion=function(l){
+ l=l||1;if(l>=3)return _orOld();
+ const T=l===1?pick([0,0,2,4]):pick([0,1,2,4]);
+ if(T===2)return exTrimOps(pick([
+  {q:"Una oración siempre empieza con…",ops:["Mayúscula","minúscula","un número","una coma"],a:0},
+  {q:"Una oración termina con…",ops:["Punto (.)","un número","una letra cualquiera","nada"],a:0},
+  {q:"Una oración nos dice algo con…",ops:["Sentido completo","Una sola letra","Palabras al revés","Dibujos"],a:0}]),3);
+ const s=l===1?exSentShort():exSent();
+ if(T===0){const bad=[s.subj+" de la",s.subj,"Con mi amiga en el"];
+  const ops=shuffled([s.text].concat(bad)).slice(0,4);if(ops.indexOf(s.text)<0)ops[0]=s.text;const a=shuffled(ops);
+  return exTrimOps({q:"¿Cuál de estas es una ORACIÓN (dice algo completo)?",ops:a,a:a.indexOf(s.text),say:"¿Cuál de estas es una oración?"},l===1?3:4);}
+ if(T===1){const words=(s.subj+" "+s.verb+(s.comp?" "+s.comp:"")).split(" ");
+  const bad1=words.slice().reverse().join(" ")+".",bad2=[words[words.length-1]].concat(words.slice(0,-1)).join(" ")+".";
+  const ops=shuffled([s.text,bad1,bad2].filter(function(x,i,ar){return ar.indexOf(x)===i;}));
+  return{q:"¿Cuál oración está bien ordenada?",ops:ops,a:ops.indexOf(s.text),say:"¿Cuál oración está bien ordenada?"};}
+ const lowered=s.text.charAt(0).toLowerCase()+s.text.slice(1),nopoint=s.text.slice(0,-1);
+ const ops=shuffled([s.text,lowered,nopoint]);
+ return{q:"¿Cuál oración está escrita correctamente?",ops:ops,a:ops.indexOf(s.text),say:"¿Cuál oración está escrita correctamente?"};};
+EXAM_BANK.sujeto=function(l){
+ l=l||1;if(l>=3)return _suOld();
+ if(l===1){
+  if(Math.random()<.25)return exTrimOps(pick([
+   {q:"El SUJETO es…",ops:["De quién se habla","Lo que se hace","El punto","La última letra"],a:0},
+   {q:"En «Los niños juegan», el sujeto es…",ops:["Los niños","juegan","niños juegan","el punto"],a:0}]),3);
+  const s=exSentShort(),ops=shuffled([s.subj,s.verb,s.subj.split(" ").slice(-1)[0]+" "+s.verb].filter(function(x,i,a){return a.indexOf(x)===i;}));
+  while(ops.length<3)ops.push("juegan");
+  return{q:"«"+s.text+"»<br>¿De quién se habla? (el <b>SUJETO</b>)",ops:ops,a:ops.indexOf(s.subj),say:s.text+". ¿Cuál es el sujeto?"};}
+ return exTrimOps(_suOld(),3);};
+EXAM_BANK.predicado=function(l){
+ l=l||1;if(l>=3)return _prOld();
+ if(l===1){
+  if(Math.random()<.25)return exTrimOps(pick([
+   {q:"El PREDICADO es…",ops:["Lo que hace el sujeto","De quién se habla","La mayúscula","El título"],a:0},
+   {q:"En «Mi mamá cocina», el predicado es…",ops:["cocina","Mi mamá","Mi","mamá cocina"],a:0}]),3);
+  const s=exSentShort(),ops=shuffled([s.verb,s.subj,s.subj.split(" ").slice(0,1)[0]].filter(function(x,i,a){return a.indexOf(x)===i;}));
+  while(ops.length<3)ops.push("la");
+  return{q:"«"+s.text+"»<br>¿Qué <b>hace</b> o qué se dice? (el <b>PREDICADO</b>)",ops:ops,a:ops.indexOf(s.verb),say:s.text+". ¿Cuál es el predicado?"};}
+ return exTrimOps(_prOld(),3);};
+EXAM_BANK.verbo=function(l){
+ l=l||1;if(l>=3)return _veOld();
+ if(l===1){
+  const pairs=[["🏃","correr","corre"],["🍽️","comer","come"],["🎵","cantar","canta"],["😴","dormir","duerme"],["🦘","saltar","salta"],["✏️","escribir","escribe"],["📖","leer","lee"],["🎨","pintar","pinta"]];
+  const v=pick(pairs),ops=shuffled([v[1]].concat(shuffled(EXS_NOUNS).slice(0,2)));
+  return{q:"Un <b>VERBO</b> es una acción. ¿Cuál es un verbo?  "+v[0],ops:ops,a:ops.indexOf(v[1]),say:"¿Cuál de estas palabras es un verbo, una acción?"};}
+ return exTrimOps(_veOld(),3);};
+EXAM_BANK.mayuscula=function(l){
+ l=l||1;if(l>=3)return _maOld();
+ if(l===1){
+  const T=rnd(3);
+  if(T===0){const n=pick(EXM_NAMES),ops=shuffled([n,n.toLowerCase(),n.toUpperCase().charAt(0)+n.slice(1,2).toUpperCase()+n.slice(2)]);
+   return{q:"¿Cuál nombre está bien escrito?",ops:ops,a:ops.indexOf(n),say:"¿Cuál nombre está bien escrito?"};}
+  if(T===1){const p=pick(EXM_PLACES),ops=shuffled([p,p.toLowerCase(),p.toUpperCase()]);
+   return{q:"¿Cuál está bien escrito?",ops:ops,a:ops.indexOf(p),say:"¿Cuál está bien escrito?"};}
+  return pick([
+   {q:"Los nombres de personas (Ana, Luis) empiezan con…",ops:["Mayúscula","minúscula","un número"],a:0},
+   {q:"Una oración empieza con…",ops:["Mayúscula","minúscula","una coma"],a:0},
+   {q:"Después de un punto escribimos con…",ops:["Mayúscula","minúscula","un dibujo"],a:0}]);}
+ let it,g=0;do{it=_maOld();g++;}while(/lunes|Lunes/.test(it.q+it.ops.join(""))&&g<10);return exTrimOps(it,3);};
+EXAM_BANK.tverbales=function(l){
+ l=l||1;if(l>=3)return _tvOld();
+ const v=pick(EXV),pp=pick(EXV_PERS),tense=pick(["pas","pre","fut"]);
+ if(l===1){
+  const T=rnd(3);
+  if(T===0)return pick([
+   {q:"Lo que pasó AYER está en…",ops:["Pasado ⏪","Presente","Futuro"],a:0},
+   {q:"Lo que pasa HOY, ahora, está en…",ops:["Presente ⏺️","Pasado","Futuro"],a:0},
+   {q:"Lo que pasará MAÑANA está en…",ops:["Futuro ⏩","Pasado","Presente"],a:0}]);
+  const sj=pp[0],f=exConj(v[0],v[1],tense,pp[1]),sent=pick(EXV_MARK[tense])+" "+sj+" "+f+".";
+  return{q:"«"+sent+"»<br>¿Cuándo pasa? (<b>ayer, hoy o mañana</b>)",ops:["Pasado","Presente","Futuro"],a:["pas","pre","fut"].indexOf(tense),say:sent+". ¿Cuándo pasa?"};}
+ const T=rnd(2);
+ if(T===0){const f=exConj(v[0],v[1],tense,pp[1]);return{q:"¿En qué tiempo está el verbo <b>«"+f+"»</b>?",ops:["Pasado","Presente","Futuro"],a:["pas","pre","fut"].indexOf(tense),say:"¿En qué tiempo está el verbo "+f+"?"};}
+ const sj=pp[0],f=exConj(v[0],v[1],tense,pp[1]),sent=pick(EXV_MARK[tense])+" "+sj+" "+f+".";
+ return{q:"«"+sent+"»<br>¿En qué tiempo está la oración?",ops:["Pasado","Presente","Futuro"],a:["pas","pre","fut"].indexOf(tense),say:sent+". ¿En qué tiempo está la oración?"};};
+EXAM_BANK.reinos=function(l){
+ l=l||1;if(l>=2)return _reOld();
+ return pick([
+  {q:"¿Cuál es un ANIMAL?",ops:["El perro 🐕","La roca 🪨","La rosa 🌹"],a:0},
+  {q:"¿Cuál es una PLANTA?",ops:["El árbol 🌳","El gato 🐱","La sal 🧂"],a:0},
+  {q:"¿Cuál NO está vivo? (es mineral)",ops:["La piedra 🪨","La mariposa 🦋","La flor 🌼"],a:0},
+  {q:"Las plantas necesitan agua y…",ops:["Sol ☀️","Dulces 🍬","Juguetes 🧸"],a:0},
+  {q:"Los animales necesitan…",ops:["Comida y agua 🍖💧","Solo piedras","Nada"],a:0},
+  {q:"¿Cuál es del reino vegetal?",ops:["El mango 🥭","El pez 🐟","El oro 🪙"],a:0}]);};
+
+/* ---- fin de la práctica: sube/baja de nivel y cuenta el tema solo en el nivel 2 o 3 ---- */
+function exLevelEnd(){
+ if(!EX||EX.sim||!exLeveled(EX.uid))return false;
+ if(typeof closeBoard==="function")closeBoard();
+ const uid=EX.uid,pct=Math.round(EX.ok/EX.items.length*100),lvl=EX.lvl||1,e=examState(),thr=Math.min(80,examRuleOf(prof()).thr||70);
+ if(!e.lvl)e.lvl={};if(!e.units[uid])e.units[uid]={best:0,tries:0};
+ e.units[uid].tries++;
+ let passed=false,msg="";
+ if(lvl>=2){e.units[uid].best=Math.max(e.units[uid].best,pct);passed=pct>=examRuleOf(prof()).thr;}
+ let nl=lvl;
+ if(pct>=thr&&lvl<3){nl=lvl+1;msg=lvl===1?"¡Calentamiento superado! Subes al <b>nivel 2</b> ⭐⭐":"¡Subes al <b>nivel 3</b> (reto) ⭐⭐⭐!";}
+ else if(pct<50&&lvl>1){nl=lvl-1;msg="Vamos a practicar un poquito más fácil 💪 (nivel "+nl+")";}
+ e.lvl[uid]=nl;
+ const p=prof();if(p){p.coins+=Math.round(pct/10);p.xp+=Math.round(pct/4);}
+ save();
+ const good=pct>=thr;if(good){sWIN();confetti(26);}
+ const unit=examAllUnits().find(function(x){return x.id===uid;});
+ const done=e.units[uid].best>=examRuleOf(prof()).thr&&unit&&unit.req;
+ render(topbar("screenExam()")
+ +'<div class="card endcard"><div class="big">'+(good?"🌟":pct>=50?"💪":"📚")+'</div><h2>'+pct+'%</h2>'
+ +'<p class="mut" style="margin:4px 0 8px">'+EX.ok+' de '+EX.items.length+' correctas · Nivel '+"⭐".repeat(lvl)+'</p>'
+ +(done&&passed?'<p style="font-size:1.1rem;margin-bottom:8px;color:#16A34A;font-weight:800">✅ ¡Tema superado! 🎓</p>':'')
+ +(msg?'<p style="font-size:1.02rem;margin-bottom:10px">'+msg+'</p>':(good?'':'<p style="font-size:1.02rem;margin-bottom:10px">¡Casi! Un intento más y lo logras 🙂</p>'))
+ +'<button class="kbtn green" onclick="startExamUnit(\''+uid+'\')">'+(good&&nl>lvl?"Seguir al nivel "+nl+" ➜":"Practicar otra vez 🔁")+'</button>'
+ +(EXAM_LESSONS[uid]?'<button class="kbtn white" onclick="examLesson(\''+uid+'\')">📖 Ver la explicación</button>':'')
+ +(unit&&unit.req&&examRuleOf(prof()).on&&examPassed(prof())?'<p style="margin:8px 0;font-weight:700;color:#16A34A">🎓 ¡Superaste todos los temas del examen! Ya se abrió el resto de la app.</p>':'')
+ +'<button class="kbtn white" onclick="screenExam()">Ver todos los temas 📝</button></div>');
+ return true;}
