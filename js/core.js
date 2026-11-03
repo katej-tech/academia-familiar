@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.39.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.40.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -133,7 +133,7 @@ function pickEnVoice(){
    Si el padre puso la clave de Gemini, la voz (sobre todo inglés) suena natural.
    Si no hay clave, usa la voz del dispositivo. Con caché para no gastar cuota. */
 const GEM_TTS_MODEL="gemini-2.5-flash-preview-tts";
-let AF_AUDIO=null,GEM_TTS_SRC=null;
+let AF_AUDIO=null,GEM_TTS_SRC=null,SPEAK_SEQ=0,LAST_SPEAK_T=0;
 const GEM_TTS_CACHE={}; // texto -> AudioBuffer (evita volver a llamar a la API)
 function getAudioCtx(){if(!AF_AUDIO){try{AF_AUDIO=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AF_AUDIO=null;}}return AF_AUDIO;}
 function stopGemAudio(){if(GEM_TTS_SRC){try{GEM_TTS_SRC.onended=null;GEM_TTS_SRC.stop();}catch(e){}GEM_TTS_SRC=null;}}
@@ -143,7 +143,7 @@ function pcm16ToBuffer(bytes,ctx,rate){
  const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
  for(let i=0;i<n;i++)ch[i]=dv.getInt16(i*2,true)/32768;
  return buf;}
-function geminiTTS(text,onEnd){
+function geminiTTS(text,onEnd,seq){
  // devuelve Promise<bool>: true si reprodujo con Gemini, false si hay que usar la voz del dispositivo
  return (async()=>{
   if(!S.geminiKey)return false;
@@ -163,6 +163,7 @@ function geminiTTS(text,onEnd){
     buf=pcm16ToBuffer(b64ToBytes(data),ctx,rate);
     GEM_TTS_CACHE[text]=buf;
    }
+   if(seq!=null&&seq!==SPEAK_SEQ)return true; /* ya se pasó a otra pregunta: no hablar tarde */
    try{window.speechSynthesis.cancel();}catch(e){}
    stopGemAudio();
    const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=.85;src.connect(ctx.destination);
@@ -210,13 +211,20 @@ function speechText(t){
  t=t.replace(/\b\d{1,3}(?:\.\d{3})+\b/g,function(m){return numToEs(+m.replace(/\./g,""));});
  t=t.replace(/\d+/g,function(m){return m.length<=9?numToEs(+m):m;});
  return t.replace(/[°º]/g,"").replace(/\s+/g," ").trim();}
+/* voz INSTANTÁNEA del dispositivo (ejercicios que deben sonar justo cuando aparecen; Gemini tarda varios segundos) */
+function speakFast(text,onEnd){
+ if(muted()){if(onEnd)onEnd();return;}
+ SPEAK_SEQ++;LAST_SPEAK_T=Date.now();stopGemAudio();
+ text=speechText(text);if(!text){if(onEnd)onEnd();return;}
+ speakESDevice(text,onEnd);}
 function speakES(text,onEnd){
  if(muted()){if(onEnd)onEnd();return;}
+ const my=++SPEAK_SEQ;LAST_SPEAK_T=Date.now();
  text=speechText(text);if(!text){if(onEnd)onEnd();return;}
  // con clave de Gemini, voz premium para textos cortos (preguntas, instrucciones, frases).
  // los cuentos largos usan la voz del dispositivo para no gastar cuota.
  // la instrucción de idioma evita que palabras sueltas («casa», «sol») se lean con acento inglés.
- if(S.geminiKey&&String(text).length<=240){geminiTTS("Lee en voz alta, en español latinoamericano, con voz clara y calmada: "+text,onEnd).then(ok=>{if(!ok)speakESDevice(text,onEnd);});return;}
+ if(S.geminiKey&&String(text).length<=240){geminiTTS("Lee en voz alta, en español latinoamericano, con voz clara y calmada: "+text,onEnd,my).then(ok=>{if(!ok&&my===SPEAK_SEQ)speakESDevice(text,onEnd);});return;}
  speakESDevice(text,onEnd);}
 function hasSpanishVoice(){try{return (VOICES||[]).some(function(v){return /^es/i.test(v.lang);});}catch(e){return true;}}
 function speakESDevice(text,onEnd){
@@ -477,6 +485,7 @@ function setTheme(t){document.body.className=t;if(typeof boardFabHide==="functio
 function render(h){app.innerHTML=h;window.scrollTo(0,0);}
 /* detiene cualquier juego con temporizador/animación en curso (evita que sigan corriendo al salir) */
 function stopGames(){
+ if(Date.now()-LAST_SPEAK_T>500){SPEAK_SEQ++;try{stopGemAudio();window.speechSynthesis.cancel();}catch(e){}} /* la voz de la pantalla anterior no sigue sonando */
  try{if(typeof HG!=="undefined")clearInterval(HG.timer);}catch(e){}
  try{if(typeof TG!=="undefined"){clearInterval(TG.spawn);clearInterval(TG.timer);cancelAnimationFrame(TG.raf);TG.over=true;}}catch(e){}
  try{if(typeof RC!=="undefined"){clearInterval(RC.loop);cancelAnimationFrame(RC.raf);RC.over=true;}}catch(e){}

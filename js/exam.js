@@ -265,8 +265,10 @@ function renderEX(){
  +(EX.passage?'<div class="card" style="line-height:1.6;margin-bottom:8px">'+esc(EX.passage)+'<br><button class="speaker small" style="margin-top:8px" onclick="speakES('+jsStr(EX.passage)+')">🔊 Escuchar el texto</button></div>':'')
  +(esMate?exColumnHTML(it.op):'<div class="bigq center">'+it.q+'</div>')
  +(pizarra&&typeof boardBtn==="function"?boardBtn():'')
- +'<button class="speaker small" onclick="speakES(exSayNow())">🔊 Escuchar</button>'
- +'<div class="choices2'+(largo?' wide':'')+'">'+order.map((o,vi)=>'<button class="kbtn white" style="font-size:clamp(1rem,4.4vw,1.28rem)" onclick="ansEX('+vi+')">'+o.o+'</button>').join("")+'</div>');}
+ +'<button class="speaker small" onclick="speakFast(exSayNow())">🔊 Escuchar</button>'
+ +'<div class="choices2'+(largo?' wide':'')+'">'+order.map((o,vi)=>'<button class="kbtn white" style="font-size:clamp(1rem,4.4vw,1.28rem)" onclick="ansEX('+vi+')">'+o.o+'</button>').join("")+'</div>');
+ /* la pregunta se lee sola al aparecer (voz del dispositivo = al instante; no se lee si ya se pasó a otra) */
+ const shown=it;setTimeout(function(){if(EX&&EX.items&&EX.items[EX.i]===shown&&!EX.passage)speakFast(exSayNow());},350);}
 
 /* ---------- comprensión lectora: un texto corto + varias preguntas sobre ÉL ----------
    Único caso donde el "banco" no es una función que da UNA pregunta suelta, sino un texto
@@ -311,7 +313,7 @@ function ansEX(vi){
  if(typeof closeBoard==="function")closeBoard();
  const it=EX.items[EX.i],ok=EX.order[vi].k===it.a;
  recordAnswer("Examen: "+(EX.sim?"simulacro":EX.uid),ok,15);
- if(ok){sOK();confetti(8);EX.ok++;if(it.say)speakES(it.say);toast("¡Correcto! 🎉",true,1000);}
+ if(ok){sOK();confetti(8);EX.ok++;toast("¡Correcto! 🎉",true,1000);}
  else{sNO();toast("Era: "+it.ops[it.a],false,2100);}
  EX.i++;setTimeout(renderEX,ok?1000:2100);}
 
@@ -354,18 +356,18 @@ function exRenderDW(){
  +'<div class="progressdots">'+dots(EXDW.total,EXDW.r)+'</div>'
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:4px">🎧 Dictado</h2>'
  +'<p class="center" style="margin-bottom:10px">Escucha bien y escribe la palabra</p>'
- +'<button class="speaker" onclick="speakES(\''+EXDW.w[0]+'\')"><span class="ic">🔊</span> Escuchar otra vez</button>'
+ +'<button class="speaker" onclick="speakFast(\''+EXDW.w[0]+'\')"><span class="ic">🔊</span> Escuchar otra vez</button>'
  +'<div class="letterslots">'+slots+'</div>'
  +'<div class="keys">'+EXDW.keys.map((c,k)=>'<button class="key'+(EXDW.used.indexOf(k)>=0?' used':'')+'" onclick="exTapDW('+k+',\''+c+'\')">'+c+'</button>').join("")+'</div>'
  +'<div style="height:10px"></div><button class="kbtn white" onclick="EXDW.typed=[];EXDW.used=[];exRenderDW()">🧽 Borrar</button>');
- setTimeout(function(){speakES(EXDW.w[0]);},450);}
+ setTimeout(function(){speakFast(EXDW.w[0]);},450);}
 function exTapDW(k,c){
  if(EXDW.used.indexOf(k)>=0||EXDW.typed.length>=EXDW.w[0].length)return;
  EXDW.typed.push(c);EXDW.used.push(k);beep([520],.06);exRenderDW();
  if(EXDW.typed.length===EXDW.w[0].length){
   const ok=EXDW.typed.join("").toLowerCase()===EXDW.w[0].toLowerCase();
   recordAnswer("Examen: dictado",ok,25);
-  if(ok){sOK();confetti(12);speakES(EXDW.w[0]);toast("¡"+EXDW.w[0].toUpperCase()+"! Perfecto 🎉",true,1500);EXDW.ok++;}
+  if(ok){sOK();confetti(12);speakFast(EXDW.w[0]);toast("¡"+EXDW.w[0].toUpperCase()+"! Perfecto 🎉",true,1500);EXDW.ok++;}
   else{sNO();toast("Se escribe: "+EXDW.w[0].toUpperCase(),false,2300);}
   EXDW.r++;setTimeout(exNextDW,ok?1600:2400);}}
 
@@ -380,13 +382,13 @@ function exRenderDN(){
  +'<div class="progressdots">'+dots(EXDN.total,EXDN.r)+'</div>'
  +'<h2 style="font-size:clamp(1.15rem,5vw,1.45rem);text-align:center;margin-bottom:4px">🔊 Dictado de números</h2>'
  +'<p class="center" style="margin-bottom:10px">Escucha el número y escríbelo</p>'
- +'<button class="speaker" onclick="speakES(\''+EXDN.n+'\')"><span class="ic">🔊</span> Escuchar otra vez</button>'
+ +'<button class="speaker" onclick="speakFast(\''+EXDN.n+'\')"><span class="ic">🔊</span> Escuchar otra vez</button>'
  +'<div class="numdisp">'+(EXDN.typed||"&nbsp;")+'</div>'
  +'<div class="numpad">'+[1,2,3,4,5,6,7,8,9].map(d=>'<button class="key" onclick="exTapDN(\''+d+'\')">'+d+'</button>').join("")
  +'<button class="key" onclick="EXDN.typed=EXDN.typed.slice(0,-1);exRenderDN()">⌫</button>'
  +'<button class="key" onclick="exTapDN(\'0\')">0</button>'
  +'<button class="key okk" onclick="exCheckDN()">✓</button></div>');
- setTimeout(function(){speakES(String(EXDN.n));},450);}
+ setTimeout(function(){speakFast(String(EXDN.n));},450);}
 function exTapDN(d){if(EXDN.typed.length<4){EXDN.typed+=d;beep([560],.05);exRenderDN();}}
 function exCheckDN(){
  if(!EXDN.typed)return;

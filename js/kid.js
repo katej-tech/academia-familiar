@@ -111,10 +111,9 @@ function hubApps(){
  const sec=t=>'<p class="appsec">'+t+'</p>';
  const blq=softLocked();
  let html=(typeof examLocked==="function"&&examLocked())?"":balanceCardHTML();
- html+=sec("📌 Tarea del cole");
+ html+=sec("📌 Examen del cole");
  html+='<div class="appgrid">'
   +(typeof screenExam==="function"?appIcon("screenExam()","📝","Examen","linear-gradient(160deg,#C084FC,#7C3AED)",{badge:(typeof examProgress==="function"&&examProgress().m<examProgress().t)?(examProgress().t-examProgress().m):0}):"")
-  +(typeof screenExpo==="function"?appIcon("screenExpo()","🎤","Exposición","linear-gradient(160deg,#6EE7B7,#059669)",{badge:"¡Martes!"}):"")
   +'</div>';
  html+=sec("📚 Aprender");
  html+='<div class="appgrid">'
