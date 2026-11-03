@@ -1,5 +1,5 @@
 "use strict";
-const APP_VERSION="10.38.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.39.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
 const DEFAULT_STATE={pin:"1234",geminiKey:"",
  profiles:{
@@ -191,12 +191,34 @@ function pickLatinVoice(){
   ||VOICES.find(x=>/^es/i.test(x.lang)&&NATURAL.test(x.name))
   ||VOICES.find(x=>/^es/i.test(x.lang)&&!/es[-_]ES/i.test(x.lang))
   ||VOICES.find(x=>/^es/i.test(x.lang));}
+/* número → palabras en español (0 a 999 999 999): las voces leen «2345» o «15 + 43» en inglés si no se les dice nada */
+function numToEs(n){
+ n=Math.floor(Math.abs(Number(n)||0));if(n>999999999)return String(n);
+ const u=["cero","uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve","veinte","veintiuno","veintidós","veintitrés","veinticuatro","veinticinco","veintiséis","veintisiete","veintiocho","veintinueve"];
+ const dec=["","","","treinta","cuarenta","cincuenta","sesenta","setenta","ochenta","noventa"];
+ const cen=["","ciento","doscientos","trescientos","cuatrocientos","quinientos","seiscientos","setecientos","ochocientos","novecientos"];
+ const b100=function(x){if(x<30)return u[x];const d=Math.floor(x/10),r=x%10;return dec[d]+(r?" y "+u[r]:"");};
+ const b1000=function(x){if(x<100)return b100(x);if(x===100)return"cien";const c=Math.floor(x/100),r=x%100;return cen[c]+(r?" "+b100(r):"");};
+ if(n<1000)return b1000(n);
+ if(n<1000000){const k=Math.floor(n/1000),r=n%1000;return(k===1?"mil":b1000(k).replace(/veintiuno$/,"veintiún").replace(/uno$/,"un")+" mil")+(r?" "+b1000(r):"");}
+ const m=Math.floor(n/1000000),r=n%1000000;return(m===1?"un millón":b1000(m).replace(/uno$/,"un")+" millones")+(r?" "+numToEs(r):"");}
+/* texto limpio para la voz en español: sin etiquetas ni emojis, con números y signos dichos en español */
+function speechText(t){
+ t=String(t==null?"":t).replace(/<br\s*\/?>/gi,". ").replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").replace(/&amp;/g," y ");
+ t=t.replace(/[\u{1F000}-\u{1FFFF}☀-➿️‍]/gu," ").replace(/_{2,}/g," … ");
+ t=t.replace(/\s*\+\s*/g," más ").replace(/(\d)\s*[−–-]\s*(?=\d)/g,"$1 menos ").replace(/\s*[×✖]\s*/g," por ").replace(/\s*÷\s*/g," dividido entre ").replace(/\s*=\s*/g," es igual a ");
+ t=t.replace(/\b\d{1,3}(?:\.\d{3})+\b/g,function(m){return numToEs(+m.replace(/\./g,""));});
+ t=t.replace(/\d+/g,function(m){return m.length<=9?numToEs(+m):m;});
+ return t.replace(/[°º]/g,"").replace(/\s+/g," ").trim();}
 function speakES(text,onEnd){
  if(muted()){if(onEnd)onEnd();return;}
+ text=speechText(text);if(!text){if(onEnd)onEnd();return;}
  // con clave de Gemini, voz premium para textos cortos (preguntas, instrucciones, frases).
  // los cuentos largos usan la voz del dispositivo para no gastar cuota.
- if(S.geminiKey&&String(text).length<=240){geminiTTS(text,onEnd).then(ok=>{if(!ok)speakESDevice(text,onEnd);});return;}
+ // la instrucción de idioma evita que palabras sueltas («casa», «sol») se lean con acento inglés.
+ if(S.geminiKey&&String(text).length<=240){geminiTTS("Lee en voz alta, en español latinoamericano, con voz clara y calmada: "+text,onEnd).then(ok=>{if(!ok)speakESDevice(text,onEnd);});return;}
  speakESDevice(text,onEnd);}
+function hasSpanishVoice(){try{return (VOICES||[]).some(function(v){return /^es/i.test(v.lang);});}catch(e){return true;}}
 function speakESDevice(text,onEnd){
  if(!("speechSynthesis"in window)){if(onEnd)onEnd();return;}
  stopGemAudio();window.speechSynthesis.cancel();
@@ -496,7 +518,8 @@ function stopGames(){
  try{if(typeof disposeWorld3D==="function")disposeWorld3D();}catch(e){} // mundo de retos (Three.js)
  try{if(typeof wrlCleanup==="function")wrlCleanup();}catch(e){}
  try{if(typeof disposeLudo==="function")disposeLudo();}catch(e){} // ludo (Three.js)
- try{if(typeof ldCleanup==="function")ldCleanup();}catch(e){} // mi día visual (el avisador global sigue corriendo) // rincón de la calma (no corta la pausa superpuesta)
+ try{if(typeof ldCleanup==="function")ldCleanup();}catch(e){}
+ try{if(typeof exTypedCleanup==="function")exTypedCleanup();}catch(e){} // examen: teclado físico // mi día visual (el avisador global sigue corriendo) // rincón de la calma (no corta la pausa superpuesta)
  try{if(typeof disposeBook3D==="function")disposeBook3D();}catch(e){} // libro 3D de los audiolibros
  try{if(typeof abCleanup==="function")abCleanup();}catch(e){}
  try{if(typeof disposeFlaps3D==="function")disposeFlaps3D();}catch(e){} // libros de solapas 3D

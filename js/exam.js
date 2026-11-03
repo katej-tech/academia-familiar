@@ -244,7 +244,7 @@ async function startExamUnit(uid){
 
 /* ---------- simulacro ---------- */
 function startExamSim(){setTheme("kid");
- const us=examAllUnits().filter(u=>u.id!=="dictado"&&u.id!=="dictnum"&&u.id!=="comprension");
+ const us=typeof examSimUnits==="function"?examSimUnits():examAllUnits().filter(u=>u.id!=="dictado"&&u.id!=="dictnum"&&u.id!=="comprension");
  let items=[];
  shuffled(us).slice(0,6).forEach(u=>{if(EXAM_BANK[u.id]){items.push(EXAM_BANK[u.id](typeof exLevel==="function"?exLevel(u.id):1));items.push(EXAM_BANK[u.id](typeof exLevel==="function"?exLevel(u.id):1));}});
  items=shuffled(items).slice(0,12);
@@ -253,18 +253,19 @@ function startExamSim(){setTheme("kid");
 function renderEX(){
  const it=EX.items[EX.i];
  if(!it)return endEX();
+ if(it.typed&&typeof exRenderTyped==="function")return exRenderTyped(it);
  const order=shuffled(it.ops.map((o,k)=>({o,k})));EX.order=order;
  const u=examAllUnits().find(x=>x.id===EX.uid);
  const titulo=EX.sim?"🏁 Simulacro":(u?u.ic+" "+u.nm:"Repaso");
  const largo=it.ops.some(o=>String(o).length>14);
- const esMate=!!it.op;
+ const esMate=!!it.op,pizarra=esMate||!!it.board;
  render(topbar("screenExam()")
  +'<div class="progressdots">'+dots(EX.items.length,EX.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+titulo+' · '+(EX.i+1)+'/'+EX.items.length+'</p>'
  +(EX.passage?'<div class="card" style="line-height:1.6;margin-bottom:8px">'+esc(EX.passage)+'<br><button class="speaker small" style="margin-top:8px" onclick="speakES('+jsStr(EX.passage)+')">🔊 Escuchar el texto</button></div>':'')
  +(esMate?exColumnHTML(it.op):'<div class="bigq center">'+it.q+'</div>')
- +(esMate&&typeof boardBtn==="function"?boardBtn():'')
- +'<button class="speaker small" onclick="speakES(\''+String(it.say||it.q).replace(/[\\'"]/g,"")+'\')">🔊 Escuchar</button>'
+ +(pizarra&&typeof boardBtn==="function"?boardBtn():'')
+ +'<button class="speaker small" onclick="speakES(exSayNow())">🔊 Escuchar</button>'
  +'<div class="choices2'+(largo?' wide':'')+'">'+order.map((o,vi)=>'<button class="kbtn white" style="font-size:clamp(1rem,4.4vw,1.28rem)" onclick="ansEX('+vi+')">'+o.o+'</button>').join("")+'</div>');}
 
 /* ---------- comprensión lectora: un texto corto + varias preguntas sobre ÉL ----------

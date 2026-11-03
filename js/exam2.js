@@ -56,7 +56,7 @@ EXAM_BANK.restapres=function(){
  do{if(huge){a=2000+rnd(7000);b=1000+rnd(a-1000);}else if(big){a=200+rnd(790);b=100+rnd(a-100);}else{a=31+rnd(68);b=11+rnd(a-11);}t++;}while((!exHasBorrow(a,b)||a<=b)&&t<200);
  return exCol(a,b,"-","");};
 const EXP_NAMES=["Sofía","Mateo","Valentina","Samuel","Camila","Santiago","Luna","Tomás","Isabela","Emilio","Mariana","Daniel"];
-const EXP_THINGS=[["canicas","una caja","f"],["cromos","un álbum","m"],["lápices","un estuche","m"],["galletas","una bandeja","f"],["stickers","un cuaderno","m"],["monedas","una alcancía","f"],["globos","una bolsa","m"],["libros","una repisa","m"],["flores","un jardín","f"],["manzanas","una canasta","f"]];
+const EXP_THINGS=[["canicas","una caja","f"],["cromos","un álbum","m"],["lápices","un estuche","m"],["galletas","una bandeja","f"],["calcomanías","un cuaderno","f"],["monedas","una alcancía","f"],["globos","una bolsa","m"],["libros","una repisa","m"],["flores","un jardín","f"],["manzanas","una canasta","f"]];
 EXAM_BANK.problemas=function(){
  const nm=pick(EXP_NAMES),th=pick(EXP_THINGS),n2=pick(EXP_NAMES.filter(function(x){return x!==nm;})),big=Math.random()<.5;
  const C_=th[2]==="f"?"Cuántas":"Cuántos",c_=C_.toLowerCase();
@@ -531,3 +531,103 @@ function exLevelEnd(){
  +(unit&&unit.req&&examRuleOf(prof()).on&&examPassed(prof())?'<p style="margin:8px 0;font-weight:700;color:#16A34A">🎓 ¡Superaste todos los temas del examen! Ya se abrió el resto de la app.</p>':'')
  +'<button class="kbtn white" onclick="screenExam()">Ver todos los temas 📝</button></div>');
  return true;}
+
+/* ============ v10.39: escribir con el teclado, pizarra en mates, barra de avance y periodos ============
+   Feedback (3-nov-2026): la voz leía en inglés y había cosas en «spanglish»; no había pizarra en mates;
+   «escribir los números» debe ser ESCRIBIRLOS (teclado), no marcar una opción; la barra de Modo Examen no avanzaba;
+   y había muchos temas de exámenes anteriores mezclados con los de ahora → ahora «Este periodo» arriba y
+   «Periodos anteriores» (repaso) plegado abajo. */
+EXAM_SUBJECTS.forEach(function(s){s.units.forEach(function(u){if(u.req||u.id==="reinos")u.cur=true;});});
+function examSimUnits(){return examAllUnits().filter(function(u){return u.cur&&EXAM_BANK[u.id];});}
+function exSayNow(){const it=EX&&EX.items?EX.items[EX.i]:null;return it?(it.say||it.q||""):"";}
+
+/* pizarra para todo lo de matemática */
+["sumallev","restapres","problemas","num4escr","num4lect","numletras","abaco"].forEach(function(id){
+ const f=EXAM_BANK[id];if(!f)return;
+ EXAM_BANK[id]=function(l){const it=f(l);if(it)it.board=true;return it;};});
+
+/* ---- escribir números: se teclea (digitos o letras) ---- */
+const _escLetters=EXAM_BANK.num4escr;
+EXAM_BANK.num4escr=function(l){
+ l=l||1;
+ let n=l===1?(1+rnd(9))*1000+rnd(10)*100:(1+rnd(9))*1000+rnd(10)*100+rnd(10)*10+(l===3?rnd(10):0);
+ if(l>=3&&n%10===0)n+=1+rnd(9);
+ const d=[Math.floor(n/1000),Math.floor(n/100)%10,Math.floor(n/10)%10,n%10];
+ const parts=[d[0]*1000,d[1]*100,d[2]*10,d[3]].filter(function(x){return x>0;});
+ const T=l===1?pick([0,0,1]):l===2?pick([0,1,2]):pick([3,3,0,2]);
+ if(T===0)return{typed:"num",q:"✍️ Escribe con <b>cifras</b>:<br><b>"+exNumEs(n)+"</b>",answer:String(n),say:exNumEs(n),hint:"Se escribe "+n};
+ if(T===1&&parts.length>1)return{typed:"num",q:"✍️ ¿Qué número es?<br><b>"+parts.join(" + ")+"</b>",answer:String(n),say:parts.join(" más ")+". ¿Qué número es?",hint:"Se escribe "+n};
+ if(T===2)return{typed:"num",q:"🔊 <b>Escucha</b> y escribe el número con cifras",answer:String(n),say:exNumEs(n),hint:"Se escribe "+n};
+ return{typed:"text",q:"✍️ Escribe con <b>letras</b>:<br><b style=\"font-size:1.8rem\">"+n+"</b>",answer:exNumEs(n),say:exNumEs(n),hint:exNumEs(n)};};
+EXAM_BANK.num4escr=(function(f){return function(l){const it=f(l);it.board=true;return it;};})(EXAM_BANK.num4escr);
+
+let EXT={listener:null};
+function exTypedCleanup(){if(EXT.listener){document.removeEventListener("keydown",EXT.listener);EXT.listener=null;}}
+function exNorm(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zñ0-9 ]/g,"").replace(/\s+/g," ").trim();}
+function exRenderTyped(it){
+ exTypedCleanup();
+ const num=it.typed==="num";
+ EXT.it=it;EXT.val="";EXT.num=num;EXT.done=false;
+ const keyBtn=function(c,label){return '<button class="key" style="min-width:0;padding:9px 0;font-size:1.1rem" onclick="exTypedKey(\''+c+'\')">'+(label||c)+'</button>';};
+ let pad;
+ if(num)pad='<div class="numpad">'+[1,2,3,4,5,6,7,8,9].map(function(d){return '<button class="key" onclick="exTypedKey(\''+d+'\')">'+d+'</button>';}).join("")+'<button class="key" onclick="exTypedBack()">⌫</button><button class="key" onclick="exTypedKey(\'0\')">0</button><button class="key okk" onclick="exTypedOk()">✓</button></div>';
+ else{
+  const rows=["qwertyuiop","asdfghjklñ","zxcvbnm","áéíóú"];
+  pad='<div style="display:grid;gap:5px;margin-top:6px">'+rows.map(function(r){return '<div style="display:grid;grid-template-columns:repeat('+(r.length===4?5:10)+',1fr);gap:4px;'+(r.length<10?'padding:0 '+(r.length===7?'5%':r.length===4?'20%':'0')+';':'')+'">'+r.split("").map(function(c){return keyBtn(c);}).join("")+'</div>';}).join("")
+   +'<div style="display:grid;grid-template-columns:1fr 3fr 1fr;gap:4px"><button class="key" style="padding:9px 0" onclick="exTypedBack()">⌫</button><button class="key" style="padding:9px 0" onclick="exTypedKey(\' \')">espacio</button><button class="key okk" style="padding:9px 0" onclick="exTypedOk()">✓</button></div></div>';}
+ const u=examAllUnits().find(function(x){return x.id===EX.uid;});
+ render(topbar("screenExam()")
+  +'<div class="progressdots">'+dots(EX.items.length,EX.i)+'</div>'
+  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+(EX.sim?"🏁 Simulacro":(u?u.ic+" "+u.nm:"Examen"))+' · '+(EX.i+1)+'/'+EX.items.length+'</p>'
+  +'<div class="bigq center">'+it.q+'</div>'
+  +(typeof boardBtn==="function"&&it.board?boardBtn():"")
+  +'<button class="speaker small" onclick="speakES(exSayNow())">🔊 Escuchar</button>'
+  +'<div class="numdisp" id="extDisp" style="min-height:3.4rem;font-size:'+(num?"2.4rem":"1.35rem")+';word-break:break-word">&nbsp;</div>'
+  +pad+'<div id="extFb"></div>');
+ EXT.listener=function(e){
+  if(e.ctrlKey||e.metaKey||e.altKey)return;const t=e.target&&e.target.tagName;if(t==="INPUT"||t==="TEXTAREA")return;
+  if(e.key==="Backspace"){e.preventDefault();exTypedBack();}
+  else if(e.key==="Enter"){e.preventDefault();exTypedOk();}
+  else if(EXT.num&&/^\d$/.test(e.key)){e.preventDefault();exTypedKey(e.key);}
+  else if(!EXT.num&&(/^[a-zA-ZñÑáéíóúÁÉÍÓÚ]$/.test(e.key)||e.key===" ")){e.preventDefault();exTypedKey(e.key.toLowerCase());}};
+ document.addEventListener("keydown",EXT.listener);
+ setTimeout(function(){try{speakES(exSayNow());}catch(x){}},450);}
+function exTypedShow(){const d=document.getElementById("extDisp");if(d)d.textContent=EXT.val||" ";}
+function exTypedKey(c){if(EXT.done)return;const max=EXT.num?6:70;if(EXT.val.length>=max)return;EXT.val+=c;try{beep([560],.04);}catch(e){}exTypedShow();}
+function exTypedBack(){if(EXT.done)return;EXT.val=EXT.val.slice(0,-1);exTypedShow();}
+function exTypedOk(){
+ if(EXT.done||!EXT.val)return;EXT.done=true;
+ const it=EXT.it,ok=EXT.num?EXT.val===it.answer:exNorm(EXT.val)===exNorm(it.answer);
+ recordAnswer("Examen: "+(EX.sim?"simulacro":EX.uid),ok,25);
+ if(ok){sOK();confetti(8);EX.ok++;toast("¡Correcto! 🎉",true,1000);}
+ else{sNO();toast("Se escribe: "+it.answer,false,2600);const f=document.getElementById("extFb");if(f)f.innerHTML='<p style="text-align:center;font-weight:800;margin-top:8px;color:#B45309">Se escribe: '+it.answer+'</p>';}
+ exTypedCleanup();EX.i++;setTimeout(renderEX,ok?1000:2600);}
+
+/* ---- progreso de «Este periodo» (la barra sí avanza: cada nivel que sube suma) ---- */
+function examProgress(){
+ const p=prof(),r=examRuleOf(p);
+ if(!r.on){let t=0,m=0;EXAM_SUBJECTS.forEach(function(s){s.units.forEach(function(u){t++;if(exUnitScore(u.id).best>=80)m++;});});return{t:t,m:m,pct:t?Math.round(m/t*100):0};}
+ const st=examReqOf(p);let sum=0;
+ st.forEach(function(x){if(x.ok)sum+=1;else sum+=Math.min(.7,(exLevel(x.id)-1)*.3+(x.tries?.06:0));});
+ return{t:st.length,m:st.filter(function(x){return x.ok;}).length,pct:Math.round(sum/st.length*100)};}
+function exUnitBtn(sub,u){
+ const sc=exUnitScore(u.id),st=sc.best>=80?"🌟":sc.best>=50?"🔸":sc.tries?"⚪":"";
+ return '<button class="exu" onclick="startExamUnit(\''+u.id+'\')"><span class="exi">'+u.ic+'</span><span class="exn">'+(u.req?"📌 ":"")+u.nm+'</span><span class="exb" style="background:'+sub.color+'">'+(typeof exBadge==="function"?exBadge(u,sc,st):(sc.tries?sc.best+"% "+st:"¡Nuevo!"))+'</span></button>';}
+function screenExam(){setTheme("kid");
+ const pr=examProgress(),R=52,C=2*Math.PI*R;
+ const group=function(sub,cur){const us=sub.units.filter(function(u){return !!u.cur===cur;});if(!us.length)return"";
+  return '<div class="excard" style="border-color:'+sub.color+'"><div class="exhead" style="color:'+sub.color+';border-color:'+sub.color+'"><span>'+sub.ic+'</span>'+sub.nm+'</div>'+us.map(function(u){return exUnitBtn(sub,u);}).join("")+'</div>';};
+ const cur=EXAM_SUBJECTS.map(function(s){return group(s,true);}).join("");
+ const oldN=examAllUnits().filter(function(u){return !u.cur;}).length;
+ const old=EXAM_SUBJECTS.map(function(s){return group(s,false);}).join("");
+ const noVoice=(!S.geminiKey&&typeof hasSpanishVoice==="function"&&!hasSpanishVoice())?'<div class="card" style="background:#FEF3C7;font-size:.88rem;line-height:1.45;margin-bottom:10px">🔊 Este dispositivo no tiene voz en <b>español</b>: las preguntas se escucharán con otra voz. En Ajustes → Idioma → Texto a voz instala «Español», o activa la clave de IA en el Panel de padres.</div>':"";
+ render(topbar("screenKidMap()")
+ +'<div class="exhero"><div class="exring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="'+R+'" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="13"/>'
+ +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pr.pct/100))+'" transform="rotate(-90 60 60)"/></svg>'
+ +'<div class="exringtxt">'+pr.pct+'%</div></div>'
+ +'<div class="exhero-t">📝 Examen de este periodo</div><div class="exhero-p">'+pr.m+' de '+pr.t+' temas superados · ¡cada nivel que subes cuenta!</div></div>'
+ +noVoice
+ +(typeof examBannerHTML==="function"?examBannerHTML():"")
+ +'<button class="kbtn green" onclick="startExamSim()" style="display:flex;align-items:center;gap:12px;text-align:left"><span style="font-size:clamp(2rem,9vw,2.5rem)">🏁</span><span style="flex:1"><span style="font-size:clamp(1.05rem,4.8vw,1.28rem)">Simulacro</span><br><span style="font-size:.78rem;opacity:.85;font-weight:500">12 preguntas de los temas de este periodo</span></span></button>'
+ +'<p class="appsec" style="margin:12px 2px 6px">📌 Este periodo</p>'+cur
+ +'<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:800;color:#64748B;padding:8px 2px">🗂️ Periodos anteriores · repaso ('+oldN+' temas)</summary><p class="mut" style="font-size:.85rem;margin:2px 4px 8px">Temas de exámenes pasados. Sirven para repasar, pero no cuentan para abrir el resto de la app.</p>'+old+'</details>');}
