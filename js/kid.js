@@ -156,6 +156,7 @@ function hubApps(){
   +appIcon("playSoft('screenTama')","🐾","Mascota","linear-gradient(160deg,#FCD34D,#F59E0B)",{locked:blq})
   +(typeof screenWorkshop==="function"?appIcon("playSoft('screenWorkshop')","🧩","Taller","linear-gradient(160deg,#86EFAC,#16A34A)",{locked:blq}):"")
   +(typeof screenEco==="function"?appIcon("playSoft('screenEco')","🌍","Mi planeta","linear-gradient(160deg,#86EFAC,#0EA5E9)",{locked:blq}):"")
+  +(typeof screenSalas==="function"?appIcon("screenSalas()","🌐","Salas en línea","linear-gradient(160deg,#67E8F9,#2563EB)"):"")
   +appIcon("screenMyStuff()","🛍️","Mi mundo","linear-gradient(160deg,#C4B5FD,#8B5CF6)")
   +'</div>';
  if(courses().length&&prof()&&(prof().age||0)>=10){

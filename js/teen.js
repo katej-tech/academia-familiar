@@ -14,14 +14,17 @@ function screenTeenHome(){setTheme("teen");
  +missionsHTML()+ai
  +sec("🇬🇧 Inglés")
  +'<div class="tgrid">'
-  +tile("screenAcademyTeen()","🎓","English Academy","unidades · 👑","acc wide")
+  +(typeof screenEnglishApp==="function"?tile("screenEnglishApp()","🇬🇧","English App","libros · palabras · juegos · cursos","acc wide"):"")
+  +tile("screenAcademyTeen()","🎓","English Academy","unidades · 👑")
   +tile("screenLevelsEN()","📈","Niveles A1→B2","exámenes")
   +tile("startFlash()","🎴","Flashcards","vocabulario")
-  +tile("screenReadList()","📖","Lecturas","toca y traduce")
   +tile("startQuiz('Grammar',B_GRAMMAR)","✍️","Grammar",rec("Grammar"))
-  +tile("startComprension()","🧠","Comprensión","lectura")
-  +tile("startEar()","🎹","Tu oído","escucha y adivina")
  +'</div>'
+ +sec("🧮 Matemáticas")
+ +'<div class="tgrid">'
+  +(typeof screenFactor==="function"?tile("screenFactor()","🧮","Factorización","7 casos · ejercicios infinitos","acc wide"):"")
+ +'</div>'
+ +(typeof screenSalas==="function"?sec("🌐 En línea")+'<div class="tgrid">'+tile("screenSalas()","🌐","Salas en línea","reta a tu familia","wide")+'</div>':"")
  +sec("🔬 Ciencias y lógica")
  +'<div class="tgrid">'
   +tile("startQuiz('Química',B_QUIMICA)","⚗️","Química",rec("Química"))

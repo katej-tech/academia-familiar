@@ -180,6 +180,7 @@ function screenParentDash(){setTheme("parent");
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
  +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
  +'<p class="tip">💡 Clave gratuita: <b>aistudio.google.com</b> → Get API key. Nunca la escribas dentro del archivo ni la subas a GitHub.</p></div>'
+ +(typeof salaParentCardHTML==="function"?salaParentCardHTML():"")
  +coursesCard()
  +'<div class="card"><h3>🗂️ Datos</h3><p class="mut" style="margin:8px 0">El progreso se guarda en cada dispositivo (y en la nube si inicias sesión). Respáldalo o muévelo:</p>'
  +'<button class="pbtn ghost" onclick="exportData()">⬇️ Exportar respaldo</button>'

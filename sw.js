@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin internet y se actualiza sola al abrir con conexión. */
-const VERSION = "af-v10.40.0";
+const VERSION = "af-v10.41.0";
 const CORE = [
   ".",
   "index.html",
@@ -59,6 +59,9 @@ const CORE = [
   "js/world3d.js",
   "js/worldgame.js",
   "js/ludo.js",
+  "js/factor.js",
+  "js/english-hub.js",
+  "js/rooms.js",
   "js/book3d.js",
   "js/audiobooks.js",
   "js/audiobooks-more.js",
