@@ -20,7 +20,7 @@ function screenStoryEN(){setTheme("kid");
  +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">🇬🇧 Cuentos en inglés</h2>'
  +'<p class="center" style="margin-bottom:12px">Toca una palabra punteada y verás qué significa</p>'
  +enStories().map((c,i)=>'<button class="kbtn blue" onclick="openStoryEN('+i+')"><span style="font-size:1.5rem">'+c.scene+'</span> '+esc(c.title)+'</button>').join("")
- +(S.geminiKey?'<button class="kbtn green" onclick="aiStoryEN()">✨ Cuento nuevo en inglés con IA</button>':''));}
+ +(aiOn()?'<button class="kbtn green" onclick="aiStoryEN()">✨ Cuento nuevo en inglés con IA</button>':''));}
 function openStoryEN(i){setTheme("kid");
  const c=enStories()[i];EST={c,i};
  const html=stripHTML(c.text).split(/(\s+)/).map(tok=>{

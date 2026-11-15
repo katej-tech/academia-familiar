@@ -183,6 +183,8 @@ function screenParentDash(){setTheme("parent");
  +'<button class="pbtn ghost" style="width:auto;padding:0 14px;margin:0" onclick="toggleKeyVisible()" title="Mostrar/ocultar">👁</button></div>'
  +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button>'
  +'<button class="pbtn ghost" onclick="screenAiDiag()">🩺 Diagnóstico completo de la IA</button><div id="keyfb" style="margin:4px 0"></div>'
+ +'<p class="mut" style="margin:12px 0 4px">Clave de Groq (opcional · respaldo gratis cuando Gemini se queda sin cupo)</p><input type="password" id="gqkey" style="margin:0" placeholder="Pega aquí la clave de Groq" value="'+esc(S.groqKey||"")+'">'
+ +'<button class="pbtn ghost" onclick="testGroqKey()">🧪 Probar la clave de Groq</button><div id="gqfb" style="margin:4px 0"></div>'
  +'<p class="mut" style="margin:12px 0 4px">⚖️ Recreo (mascota, taller, mi planeta) se abre después de…</p><select id="softg" style="margin:0 0 6px">'+[0,5,10].map(function(n){return '<option value="'+n+'"'+(softGoal()===n?' selected':'')+'>'+(n?n+' aciertos del día':'Siempre abierto')+'</option>';}).join("")+'</select>'
  +'<p class="mut" style="margin:6px 0 4px">Cambiar PIN</p><input type="password" id="newpin" inputmode="numeric" placeholder="Nuevo PIN (opcional)">'
  +'<button class="pbtn" onclick="saveSettings()">Guardar cambios</button><span id="fb"></span>'
@@ -262,6 +264,8 @@ function addCourse(){
 function removeCourse(i){var cs=(typeof courses==="function")?courses():(S.courses||[]);cs.splice(i,1);save();if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({courses:S.courses});screenParentDash();}
 function saveSettings(){
  S.geminiKey=document.getElementById("gkey").value.trim();
+ const gq=document.getElementById("gqkey");if(gq)S.groqKey=gq.value.trim();
+ if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({groqKey:S.groqKey||""});
  const sg=document.getElementById("softg");if(sg)S.softGoal=parseInt(sg.value,10)||0;
  const np=document.getElementById("newpin").value.trim();if(np)S.pin=np;
  save();
@@ -373,3 +377,11 @@ function examRuleRowHTML(p,key){
  return '<div style="background:#FEF9C3;border-radius:14px;padding:10px 12px;margin:10px 0"><b>📝 Modo examen (bloquear lo demás hasta superar el examen)</b> <span class="mut">('+done+'/'+st.length+' temas superados)</span>'
   +'<div class="mut" style="font-size:.82rem;margin:4px 0 6px">Está <b>apagada</b> (todo abierto). Si la activas, mientras no supere los temas del examen (sumas llevando, restas prestando, problemas, números de 4 cifras, oración, sujeto, predicado, verbo, mayúscula y tiempos verbales) el resto de la app queda bloqueado; Calma, Mi día y Examen siempre siguen abiertos.</div>'
   +'<select onchange="setExamRule(\''+key+'\',this.value)" style="margin:0"><option value="80"'+(cur==="80"?" selected":"")+'>Activada · superar con 80 %</option><option value="70"'+(cur==="70"?" selected":"")+'>Activada · superar con 70 % (recomendado)</option><option value="60"'+(cur==="60"?" selected":"")+'>Activada · superar con 60 %</option><option value="100"'+(cur==="100"?" selected":"")+'>Activada · 100 %</option><option value="off"'+(cur==="off"?" selected":"")+'>Apagado (todo abierto)</option></select></div>';}
+
+/* prueba rápida de la clave de Groq (respaldo de IA) */
+async function testGroqKey(){
+ const el=document.getElementById("gqkey"),fb=document.getElementById("gqfb");if(!el||!fb)return;
+ const k=el.value.trim();if(!k){fb.innerHTML='<b style="color:#DC2626">Pega la clave primero</b>';return;}
+ fb.innerHTML='⏳ Probando con Groq…';const prev=S.groqKey;S.groqKey=k;
+ try{await groqJSON('Responde SOLO este JSON: {"ok":true}');save();fb.innerHTML='<b style="color:var(--par-acc)">✓ La clave de Groq funciona. Queda guardada como respaldo.</b>';if(typeof afSharePayloadWithChildren==="function")afSharePayloadWithChildren({groqKey:k});}
+ catch(e){S.groqKey=prev;fb.innerHTML='<b style="color:#DC2626">✗ '+esc(e.message||"No funcionó")+'</b>';}}

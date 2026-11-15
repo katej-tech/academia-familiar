@@ -1005,12 +1005,12 @@ let KT={};
 function gameKidTrivia(){setTheme("kid");
  render(topbar("exitGame('games')")
  +'<h2 style="font-size:clamp(1.2rem,5.5vw,1.5rem);text-align:center;margin-bottom:4px">🧠 Trivia Divertida</h2>'
- +'<p class="center" style="font-size:.95rem;margin-bottom:12px">Elige un tema y responde. '+(S.geminiKey?'La IA inventa preguntas nuevas cada vez 🤖':'¡A ver cuántas aciertas!')+'</p>'
+ +'<p class="center" style="font-size:.95rem;margin-bottom:12px">Elige un tema y responde. '+(aiOn()?'La IA inventa preguntas nuevas cada vez 🤖':'¡A ver cuántas aciertas!')+'</p>'
  +Object.keys(KTRIVIA).map(function(k){var c=["green","red","blue","purple","yellow","white"][Object.keys(KTRIVIA).indexOf(k)%6];
    return '<button class="kbtn '+c+'" style="text-align:left;display:flex;align-items:center;gap:14px" onclick="ktStart(\''+k+'\')"><span style="font-size:1.9rem">'+KTRIVIA[k].ic+'</span> <span style="flex:1">'+KTRIVIA[k].nm+'</span></button>';}).join(""));}
 async function ktStart(theme){
  KT={theme:theme,i:0,score:0,qs:[]};setTheme("kid");
- if(S.geminiKey){
+ if(aiOn()){
   render(topbar("gameKidTrivia()")+'<div class="card center" style="padding:22px"><div style="font-size:2.4rem" class="spin">⏳</div><p style="margin-top:8px">La IA está creando preguntas de <b>'+KTRIVIA[theme].nm+'</b>…</p></div>');
   try{
    var seen=aiSeenList("kt_"+theme).slice(-18);

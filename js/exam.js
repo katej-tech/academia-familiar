@@ -234,7 +234,7 @@ async function startExamUnit(uid){
  if(uid==="comprension")return examComprension();
  render(topbar("screenExam()")+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando el repaso…</h2></div>');
  let items=[];
- if(S.geminiKey&&EXAM_PROMPTS[uid]&&EXAM_NEEDS_OP.indexOf(uid)<0&&typeof geminiJSON==="function"){
+ if(aiOn()&&EXAM_PROMPTS[uid]&&EXAM_NEEDS_OP.indexOf(uid)<0&&typeof geminiJSON==="function"){
   try{const o=await geminiJSON('Eres profesor de primero de primaria. Crea 8 preguntas de opción múltiple sobre '+EXAM_PROMPTS[uid]+'. 4 opciones cada una, una sola correcta, lenguaje muy sencillo para un niño de 7 años. SOLO JSON: {"items":[{"q":"pregunta","ops":["correcta","mala","mala","mala"],"a":0}]}');
    if(o&&o.items&&o.items.length)items=o.items.map(it=>{const c=it.ops[it.a],ops=shuffled(it.ops);return{q:it.q,ops,a:ops.indexOf(c)};});
   }catch(e){}}
@@ -259,6 +259,19 @@ function renderEX(){
  const titulo=EX.sim?"🏁 Simulacro":(u?u.ic+" "+u.nm:"Repaso");
  const largo=it.ops.some(o=>String(o).length>14);
  const esMate=!!it.op,pizarra=esMate||!!it.board;
+ /* escenario en canvas cuando la pregunta es solo texto (sin columnas ni bloques HTML) */
+ const plain=function(s){return String(s==null?"":s).replace(/<br\s*\/?>/gi,"\n").replace(/<\/?(b|i|strong|em)>/gi,"").replace(/&lt;/g,"‹").replace(/&gt;/g,"›");};
+ const sq=plain(it.q),sops=order.map(o=>plain(o.o));
+ EX.stage=!esMate&&!EX.passage&&typeof Stage!=="undefined"&&Stage.ok(sq,null,sops);
+ if(EX.stage){
+  const teen=typeof profType==="function"&&profType()!=="kid";
+  render(topbar("screenExam()")+'<div id="stageBox"></div>'
+   +'<div style="display:flex;gap:8px;margin-top:10px"><button class="kbtn white" style="flex:1;margin:0;min-height:50px;font-size:1rem" onclick="speakFast(exSayNow())">🔊 Leer</button>'
+   +(pizarra&&typeof openBoard==="function"?'<button class="kbtn white" style="flex:1;margin:0;min-height:50px;font-size:1rem" onclick="openBoard()">✏️ Pizarra</button>':'')+'</div>');
+  Stage.open("stageBox",{theme:teen?"teen":"kid"});
+  Stage.ask({title:titulo,i:EX.i,n:EX.items.length,q:sq,ops:sops,onPick:ansEX});
+  const shown0=it;setTimeout(function(){if(EX&&EX.items&&EX.items[EX.i]===shown0)speakFast(exSayNow());},380);
+  return;}
  render(topbar("screenExam()")
  +'<div class="progressdots">'+dots(EX.items.length,EX.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+titulo+' · '+(EX.i+1)+'/'+EX.items.length+'</p>'
@@ -291,7 +304,7 @@ const EXAM_READING_BANK=[
    {q:"¿Dónde ponen huevos las gallinas?",ops:["En el gallinero","En el río","En el árbol","En el establo"],a:0},
    {q:"¿Qué hacen los caballos?",ops:["Corren libres por el campo","Vuelan","Nadan","Duermen todo el día"],a:0}]}];
 async function buildComprensionSet(){
- if(S.geminiKey&&typeof geminiJSON==="function"){
+ if(aiOn()&&typeof geminiJSON==="function"){
   try{
    const o=await geminiJSON('Eres profesor de primero de primaria. Escribe un texto corto (40 a 60 palabras) en español, sencillo, sobre una situación cotidiana para un niño de 7 años (sin personajes de marcas registradas). Luego crea 4 preguntas de comprensión lectora sobre ese texto, opción múltiple con 4 opciones cada una, una sola correcta. SOLO JSON: {"text":"el texto","items":[{"q":"pregunta","ops":["correcta","mala","mala","mala"],"a":0}]}');
    if(o&&o.text&&o.items&&o.items.length){
@@ -313,6 +326,13 @@ function ansEX(vi){
  if(typeof closeBoard==="function")closeBoard();
  const it=EX.items[EX.i],ok=EX.order[vi].k===it.a;
  recordAnswer("Examen: "+(EX.sim?"simulacro":EX.uid),ok,15);
+ if(EX.stage&&typeof Stage!=="undefined"&&Stage.active()){
+  const cvi=EX.order.findIndex(o=>o.k===it.a),next=function(){EX.i++;renderEX();},strip=function(s){return String(s).replace(/<[^>]+>/g,"");};
+  if(ok){sOK();EX.ok++;Stage.result({ok:true,correct:vi,chosen:vi,msg:pick(["¡Correcto! 🎉","¡Muy bien! ⭐","¡Eso es! 💪"]),autoMs:1150,onDone:next});}
+  else{sNO();const canAI=typeof aiOn==="function"&&aiOn()&&typeof aiWhyText==="function";
+   Stage.result({ok:false,correct:cvi,chosen:vi,msg:"Era: "+strip(it.ops[it.a])+(it.tip?"\n💡 "+it.tip:""),autoMs:canAI?5200:3000,onDone:next,
+    why:canAI?function(){aiWhyText("Examen del cole",strip(it.q),strip(it.ops[it.a]),strip(EX.order[vi].o),profType()==="kid").then(function(t){Stage.say("💡 "+t);speakFast(t);}).catch(function(){Stage.say("Ahora no pude explicarlo 😅 Era: "+strip(it.ops[it.a]));});}:null});}
+  return;}
  if(ok){sOK();confetti(8);EX.ok++;toast("¡Correcto! 🎉",true,1000);}
  else{sNO();toast("Era: "+it.ops[it.a],false,2100);}
  EX.i++;setTimeout(renderEX,ok?1000:2100);}

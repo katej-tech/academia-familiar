@@ -7,7 +7,7 @@
    cambia de donde sale el texto. Practica complementaria, no bloquea el avance de nivel. */
 async function buildListeningPassage(id,lvl,situation){
  const vocab=LANG_VOCAB_SEED[id][situation];
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const vocabTxt=vocab.map(function(v){return v[0]+" = "+v[1];}).join(", ");
    const obj=await geminiJSON('Eres creador de exámenes de '+langInfo(id).name+' estilo Cambridge (FCE/PET) para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Escribe un diálogo o monólogo CORTO (60 a 90 palabras) en '+langInfo(id).name+', sobre "'+LANG_SITUATION_LABEL[situation]+'", usando naturalmente parte de este vocabulario: '+vocabTxt+'. Luego crea 4 preguntas de comprensión sobre ese texto, mezclando opción múltiple (4 opciones) y verdadero/falso/no se menciona (esas SIEMPRE con exactamente las 3 opciones "Verdadero","Falso","No se menciona" — no le agregues una cuarta a esas). IMPORTANTE: las preguntas ("q") y TODAS las opciones ("ops") van 100% en ESPAÑOL — solo el texto ("passage") va en '+langInfo(id).name+' — así se evalúa comprensión auditiva, no más vocabulario nuevo. Responde SOLO JSON: {"passage":"el texto completo en '+langInfo(id).name+'","items":[{"q":"pregunta en español","ops":["opción en español","...","...","..."],"a":0,"why":"explicación breve en español"}]} con 4 items.');

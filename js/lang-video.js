@@ -8,7 +8,7 @@ function screenLangVideos(id,lvl){setTheme("adulto");
  render(topbar("screenLangLevelDetail('"+id+"',"+lvl+")")
   +'<h2 style="text-align:center">🎬 Videos y comprensión</h2>'
   +'<p class="mut center" style="margin-bottom:10px">La IA sugiere qué buscar en YouTube; tú eliges el mejor video y lo ves fuera de la app.</p>'
-  +(S.geminiKey?'<button class="abtn" onclick="suggestLangVideoSearches(\''+id+'\','+lvl+')">🤖 Sugerir búsquedas</button>'
+  +(aiOn()?'<button class="abtn" onclick="suggestLangVideoSearches(\''+id+'\','+lvl+')">🤖 Sugerir búsquedas</button>'
    :'<p class="tip">💡 Activa tu clave de Gemini en el panel de padres para que la IA sugiera videos.</p>')
   +'<div id="langvidsug"></div>'
   +'<button class="abtn green" style="margin-top:14px" onclick="screenLangComprehension(\''+id+'\','+lvl+')">📝 Ya vi un video → practicar comprensión</button>');}
@@ -31,7 +31,7 @@ async function genLangComprehension(id,lvl){
  const tEl=document.getElementById("transcriptTxt"),pEl=document.getElementById("topicTxt");
  const t=(tEl&&tEl.value||"").trim(),topic=(pEl&&pEl.value||"").trim();
  if(!t&&!topic)return toast("Pega la transcripción o describe el tema",false,1500);
- if(!S.geminiKey)return toast("Esto necesita la clave de Gemini activa",false,1800);
+ if(!aiOn())return toast("Esto necesita la clave de Gemini activa",false,1800);
  setTheme("adulto");
  render(topbar(null)+'<div class="card center" style="padding:40px"><div class="spin" style="font-size:3rem">⏳</div><h2 style="margin-top:10px">Preparando la comprensión…</h2></div>');
  try{

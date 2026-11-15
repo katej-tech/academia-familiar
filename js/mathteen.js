@@ -204,7 +204,7 @@ async function mtAI(id){
 /* explicación personalizada de un error (sirve para cualquier materia del perfil adolescente) */
 async function aiExplain(elId,subject,question,correct,chosen){
  const el=document.getElementById(elId);if(!el)return;
- if(!S.geminiKey){el.innerHTML='<div class="card mut">La explicación con IA necesita la clave de Gemini (Panel de padres).</div>';return;}
+ if(!aiOn()){el.innerHTML='<div class="card mut">La explicación con IA necesita la clave de Gemini (Panel de padres).</div>';return;}
  el.innerHTML='<div class="card center"><span class="spin">⏳</span> Pensando la explicación…</div>';
  try{
   const g=(prof().mt&&prof().mt.grade)||9;
@@ -219,13 +219,13 @@ function screenMathTeen(){setTheme("teen");
  const row=function(t){const s=st.t[t.id]||{},lv=mtLvl(t.id);
   if(t.link){const fs=(prof().fac||{}).mix;return '<div class="card" style="padding:12px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.5rem">'+t.ic+'</span><div style="flex:1"><b>'+t.nm+'</b><br><span class="mut" style="font-size:.82rem">'+(fs?"mezcla: "+fs.best+"%":"7 casos con explicación")+'</span></div></div><button class="tbtn acc" style="text-align:center;margin:10px 0 0" onclick="'+t.link+'">Abrir →</button></div>';}
   return '<div class="card" style="padding:12px 14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.5rem">'+t.ic+'</span><div style="flex:1"><b>'+t.nm+'</b><br><span class="mut" style="font-size:.82rem">Nivel '+"⭐".repeat(lv)+(s.tries?" · mejor "+s.best+"%":" · nuevo")+'</span></div></div>'
-   +'<div style="display:flex;gap:8px;margin-top:10px"><button class="tbtn acc" style="flex:2;margin:0;text-align:center" onclick="mtStart(\''+t.id+'\')">✏️ Practicar</button>'+(S.geminiKey?'<button class="tbtn" style="flex:1;margin:0;text-align:center" onclick="mtAI(\''+t.id+'\')">✨ IA</button>':'')+'</div></div>';};
+   +'<div style="display:flex;gap:8px;margin-top:10px"><button class="tbtn acc" style="flex:2;margin:0;text-align:center" onclick="mtStart(\''+t.id+'\')">✏️ Practicar</button>'+(aiOn()?'<button class="tbtn" style="flex:1;margin:0;text-align:center" onclick="mtAI(\''+t.id+'\')">✨ IA</button>':'')+'</div></div>';};
  const cur=MT_TOPICS.filter(function(t){return t.g===g;}),prev=MT_TOPICS.filter(function(t){return t.g<g;});
  const done9=MT_TOPICS.filter(function(t){return t.g===9&&!t.link;}),ok9=done9.filter(function(t){return(st.t[t.id]||{}).best>=80;}).length;
  render(topbar("screenTeenHome()")
   +'<h2 style="margin-bottom:6px">🧮 Matemáticas</h2>'
   +'<div class="card"><b>Mi grado</b><div style="display:flex;gap:8px;margin-top:8px">'+[9,10].map(function(n){const on=g===n;return '<button onclick="mtGrade('+n+')" style="flex:1;padding:10px;border-radius:14px;border:2px solid '+(on?"var(--teen-cyan)":"#322B52")+';background:'+(on?"rgba(34,211,238,.14)":"transparent")+';color:inherit;font-weight:800;font-size:1.05rem;cursor:pointer">'+n+'.º</button>';}).join("")+'</div>'
-  +'<p class="mut" style="margin-top:8px;font-size:.85rem;line-height:1.5">Los ejercicios cambian cada vez y el nivel sube solo cuando aciertas. Siempre verás el <b>paso a paso</b>'+(S.geminiKey?', y la IA puede crear ejercicios nuevos o explicarte de otra forma':'')+'.</p></div>'
+  +'<p class="mut" style="margin-top:8px;font-size:.85rem;line-height:1.5">Los ejercicios cambian cada vez y el nivel sube solo cuando aciertas. Siempre verás el <b>paso a paso</b>'+(aiOn()?', y la IA puede crear ejercicios nuevos o explicarte de otra forma':'')+'.</p></div>'
   +(g===9&&ok9>=done9.length-1&&done9.length?'<div class="card" style="border-color:#16A34A">🎓 ¡Ya dominas casi todo 9.º! Prueba los temas de <b>10.º</b> cuando quieras.</div>':'')
   +'<button class="tbtn acc" style="text-align:center" onclick="mtStart(\'mix\')">🎯 Reto mixto de '+g+'.º</button>'
   +'<div id="mtFb"></div>'
@@ -262,7 +262,7 @@ function mtAns(k){
  const fb=document.getElementById("mtFb");
  if(fb){fb.innerHTML='<div class="card" style="line-height:1.75;border-color:'+(ok?"#16A34A":"#DC2626")+'"><b>'+(ok?"✅ ¡Correcto! Así se hace:":"❌ Casi. Mira el paso a paso:")+'</b>'+(q.steps&&q.steps.length?q.steps.map(function(s){return '<div style="margin-top:4px">• '+s+'</div>';}).join(""):'<div style="margin-top:4px">La respuesta correcta es <b>'+q.ops[q.a]+'</b></div>')+(q.ai?'<div class="mut" style="font-size:.78rem;margin-top:6px">Ejercicio creado por IA: si algo no cuadra, resuélvelo en la pizarra y cuéntale a tu profe.</div>':'')+'</div>'
   +'<div id="mtAI"></div>'
-  +(!ok&&S.geminiKey?'<button class="tbtn" style="text-align:center" onclick="aiExplain(\'mtAI\',\'Matemáticas\',MT.q.q,MT.q.ops[MT.q.a],MT.chosen)">🤖 Explícamelo de otra forma</button>':'')
+  +(!ok&&aiOn()?'<button class="tbtn" style="text-align:center" onclick="aiExplain(\'mtAI\',\'Matemáticas\',MT.q.q,MT.q.ops[MT.q.a],MT.chosen)">🤖 Explícamelo de otra forma</button>':'')
   +'<button class="tbtn acc" style="text-align:center" onclick="MT.i++;mtNext()">'+(MT.i+1>=MT.n?"Ver resultado →":"Siguiente →")+'</button>';
   fb.scrollIntoView({behavior:"smooth",block:"nearest"});}}
 function mtEnd(){
@@ -277,5 +277,13 @@ function mtEnd(){
   +'<div class="card endcard"><div class="big">'+(pct>=80?"🏆":pct>=50?"🌟":"💪")+'</div><h2>'+pct+'%</h2>'
   +'<p class="mut" style="margin-bottom:8px">'+MT.ok+' de '+MT.n+' correctas</p>'+(msg?'<p style="margin-bottom:12px;font-weight:800">'+msg+'</p>':'')
   +'<button class="tbtn acc" style="text-align:center" onclick="mtStart(\''+mode+'\')">🔁 Otra ronda (ejercicios nuevos)</button>'
-  +(S.geminiKey&&mode!=="mix"?'<button class="tbtn" style="text-align:center" onclick="screenMathTeen();mtAI(\''+mode+'\')">✨ Ejercicios nuevos con IA</button>':'')
+  +(aiOn()&&mode!=="mix"?'<button class="tbtn" style="text-align:center" onclick="screenMathTeen();mtAI(\''+mode+'\')">✨ Ejercicios nuevos con IA</button>':'')
   +'<button class="tbtn" style="text-align:center" onclick="screenMathTeen()">Ver todos los temas</button></div>');}
+/* explicación corta en texto (la usa el escenario en canvas). kid=true → lenguaje para un niño de 6-7 años */
+async function aiWhyText(subject,question,correct,chosen,kid){
+ const g=(prof().mt&&prof().mt.grade)||9;
+ const o=await geminiJSON((kid?'Eres un profe muy cariñoso de un niño de 6 años en Colombia. ':'Eres una tutora cercana de una estudiante colombiana de grado '+g+'°. ')
+  +'Materia: '+subject+'. Pregunta: "'+stripHTML(String(question)).slice(0,400)+'". Respuesta correcta: "'+stripHTML(String(correct)).slice(0,160)+'". '+(chosen?'Respondió: "'+stripHTML(String(chosen)).slice(0,160)+'". ':'')
+  +(kid?'Explícale en español, en MÁXIMO 2 frases muy cortas y sencillas, por qué la correcta es esa. Sin regaños, con ánimo.':'Explica en español en máximo 3 frases cortas cómo se llega a la correcta y cuál fue el error probable. Si es de inglés, da la regla.')
+  +' Responde SOLO JSON: {"exp":"..."}');
+ return String(o.exp||"").replace(/\s+/g," ").trim().slice(0,kid?220:340);}

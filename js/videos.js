@@ -55,7 +55,7 @@ function parentVideosHTML(){
  +'<input type="text" id="vidurl" placeholder="https://www.youtube.com/watch?v=...">'
  +tsel
  +'<button class="pbtn" onclick="parentAddVideo()">➕ Agregar video</button>'
- +(S.geminiKey?'<button class="pbtn ghost" onclick="parentSuggestVideos()">🤖 Sugerir videos con IA (según lo que debe reforzar)</button>':'<p class="tip">💡 Activa la clave de Gemini arriba para que la IA sugiera videos según las falencias del niño.</p>')
+ +(aiOn()?'<button class="pbtn ghost" onclick="parentSuggestVideos()">🤖 Sugerir videos con IA (según lo que debe reforzar)</button>':'<p class="tip">💡 Activa la clave de Gemini arriba para que la IA sugiera videos según las falencias del niño.</p>')
  +'<div id="vidsug"></div></div>';}
 /* La IA sugiere TEMAS de video y abre la búsqueda en YouTube (el padre elige y pega el bueno).
    No incrustamos IDs inventados: la IA recomienda, el padre cura. */

@@ -78,7 +78,7 @@ function screenAudiobooks(){setTheme("kid");
  render(topbar("screenKidMap()")+subHeader("🎧 Audiolibros")
   +'<p class="center" style="margin:-4px 0 8px">Un libro 3D que se lee solo. ¡Escucha, sigue la frase iluminada y responde!</p>'
   +[1,2,3].map(function(lv){return lvl("es",lv);}).join("")+[1,2,3].map(function(lv){return lvl("en",lv);}).join("")
-  +(S.geminiKey
+  +(aiOn()
    ?'<p class="appsec" style="margin-top:14px">✨ Audiolibro nuevo con IA</p><div class="card"><b>🔎 ¿De qué quieres que trate?</b><input id="abTopic" maxlength="60" placeholder="Ej: un dragón que tiene hipo…" style="width:100%;font-size:1.05rem;padding:10px;border-radius:12px;border:2px solid #E5E7EB;margin:8px 0;box-sizing:border-box">'
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'+[1,2,3].map(function(l){return '<button class="kbtn green" style="margin:0;font-size:.85rem;min-height:44px;padding:4px" onclick="abGen(\'es\','+l+')">🇪🇸 Nivel '+l+'</button>';}).join("")+[1,2,3].map(function(l){return '<button class="kbtn blue" style="margin:0;font-size:.85rem;min-height:44px;padding:4px" onclick="abGen(\'en\','+l+')">🇬🇧 Level '+l+'</button>';}).join("")+'</div></div>'
    :'<p class="center mut" style="font-size:.82rem;margin-top:12px">✨ Con la clave de IA (papá o mamá) se pueden crear audiolibros nuevos.</p>')

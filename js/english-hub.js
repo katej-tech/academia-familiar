@@ -331,7 +331,7 @@ function enhWrite(){setTheme("teen");
  render(topbar("screenEnglishApp('learn')")+'<h2 style="margin-bottom:8px">📝 Escribe en inglés</h2>'
   +'<div class="card" style="border-color:var(--teen-cyan);line-height:1.5"><b>'+esc(ENW.topic)+'</b><br><span class="mut" style="font-size:.85rem">Escribe sin miedo a equivocarte: la IA te muestra cada error y por qué.</span></div>'
   +'<textarea id="enhTxt" rows="6" maxlength="700" placeholder="Write here…" spellcheck="false" style="width:100%;padding:12px;border-radius:14px;border:2px solid #322B52;background:#141127;color:inherit;font-size:1.05rem;box-sizing:border-box;font-family:inherit"></textarea>'
-  +(S.geminiKey?'<button class="tbtn acc" style="text-align:center" onclick="enhWriteCheck()">🤖 Corregir y explicar</button>':'<div class="card mut">La corrección necesita la clave de Gemini (Panel de padres). Mientras tanto, compara tu texto con las reglas de «Grammar con explicación».</div>')
+  +(aiOn()?'<button class="tbtn acc" style="text-align:center" onclick="enhWriteCheck()">🤖 Corregir y explicar</button>':'<div class="card mut">La corrección necesita la clave de Gemini (Panel de padres). Mientras tanto, compara tu texto con las reglas de «Grammar con explicación».</div>')
   +'<button class="tbtn" style="text-align:center" onclick="enhWrite()">🔀 Otro tema</button><div id="enhWr"></div>');}
 async function enhWriteCheck(){
  const txt=String((document.getElementById("enhTxt")||{}).value||"").trim(),out=document.getElementById("enhWr");if(!out)return;

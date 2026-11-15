@@ -1,7 +1,7 @@
 "use strict";
-const APP_VERSION="10.44.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
+const APP_VERSION="10.45.0"; /* sincronizar con el ?v= de index.html y VERSION de sw.js en cada release */
 /* ============ ESTADO ============ */
-const DEFAULT_STATE={pin:"1234",geminiKey:"",
+const DEFAULT_STATE={pin:"1234",geminiKey:"",groqKey:"",
  profiles:{
   nino:{name:"Explorador",emoji:"🦖",type:"kid",age:7,alias:"",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},map:{unlocked:1,stars:{}},worldWins:{},critters:[],mastery:{},signals:{read:{n:0,slow:0,err:0},math:{n:0,err:0},en:{n:0,err:0},seq:{n:0,err:0}}},
   nina:{name:"Estrella",emoji:"🎧",type:"teen",age:14,alias:"",coins:0,xp:0,streak:0,lastDay:"",days:{},stats:{},best:{}}
@@ -412,7 +412,7 @@ function aiRemember(topicKey,texts){const l=aiSeenList(topicKey);texts.forEach(t
 async function buildChallenges(topicKey,n){
  const topic=KID_TOPICS[topicKey];
  const promptText=typeof topic.prompt==="function"?topic.prompt():topic.prompt;
- if(S.geminiKey&&!topic.noAI){
+ if(aiOn()&&!topic.noAI){
   try{
    const seen=aiSeenList(topicKey);
    const avoid=seen.slice(-18);
@@ -482,7 +482,10 @@ function recordAnswer(subject,correct,secs){const p=prof(),d=touchDay();
  save();}
 function level(xp){return Math.floor(Math.sqrt(xp/20))+1;}
 function setTheme(t){document.body.className=t;if(typeof boardFabHide==="function")boardFabHide();}
-function render(h){app.innerHTML=h;window.scrollTo(0,0);}
+/* al cambiar de pantalla el contenido entra con una transición suave; si es la misma pantalla que se repinta
+   (teclear, voltear una carta) no se anima para que no parpadee */
+function render(h){app.innerHTML=h;window.scrollTo(0,0);
+ const k=String(h).slice(0,150);if(k!==render._k){render._k=k;app.classList.remove("in");void app.offsetWidth;app.classList.add("in");}}
 /* detiene cualquier juego con temporizador/animación en curso (evita que sigan corriendo al salir) */
 function stopGames(){
  if(Date.now()-LAST_SPEAK_T>500){SPEAK_SEQ++;try{stopGemAudio();window.speechSynthesis.cancel();}catch(e){}} /* la voz de la pantalla anterior no sigue sonando */
@@ -528,7 +531,8 @@ function stopGames(){
  try{if(typeof wrlCleanup==="function")wrlCleanup();}catch(e){}
  try{if(typeof disposeLudo==="function")disposeLudo();}catch(e){} // ludo (Three.js)
  try{if(typeof ldCleanup==="function")ldCleanup();}catch(e){}
- try{if(typeof exTypedCleanup==="function")exTypedCleanup();}catch(e){} // examen: teclado físico // mi día visual (el avisador global sigue corriendo) // rincón de la calma (no corta la pausa superpuesta)
+ try{if(typeof exTypedCleanup==="function")exTypedCleanup();}catch(e){} // examen: teclado físico
+ try{if(typeof stageCleanup==="function")stageCleanup();}catch(e){} // escenario en canvas // mi día visual (el avisador global sigue corriendo) // rincón de la calma (no corta la pausa superpuesta)
  try{if(typeof disposeBook3D==="function")disposeBook3D();}catch(e){} // libro 3D de los audiolibros
  try{if(typeof abCleanup==="function")abCleanup();}catch(e){}
  try{if(typeof disposeFlaps3D==="function")disposeFlaps3D();}catch(e){} // libros de solapas 3D

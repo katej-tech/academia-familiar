@@ -4,13 +4,14 @@ function screenTeenHome(){setTheme("teen");
  const rec=s=>best[s]?("récord "+best[s]+" pts"):"reto cronometrado";
  const tile=(onclick,ic,tt,ts,cls)=>'<button class="ttile'+(cls?" "+cls:"")+'" onclick="'+onclick+'"><span class="ti">'+ic+'</span><span class="tt">'+tt+'</span>'+(ts?'<span class="ts">'+ts+'</span>':'')+'</button>';
  const sec=t=>'<p class="tsection">'+t+'</p>';
- const ai=S.geminiKey?'<button class="tbtn acc" style="margin-bottom:8px" onclick="screenAIGen()">✨ Generar reto nuevo con IA</button>':'';
+ const ai=aiOn()?'<button class="tbtn acc" style="margin-bottom:8px" onclick="screenAIGen()">✨ Generar reto nuevo con IA</button>':'';
  render(topbar("screenStart()")
  +'<div class="thero"><div class="thero-row">'
   +'<div class="tav" onclick="openProfileMenu()">'+(typeof avatarHTML==="function"?avatarHTML(56):"🧑")+'<span class="tgear">⚙️</span></div>'
   +'<div style="flex:1"><h1 class="title" style="margin:0;font-size:1.5rem">Hey, '+esc(p.name)+' '+p.emoji+'</h1>'
   +'<p class="mut" style="margin:3px 0 0;font-size:.88rem">⭐ Nivel '+level(p.xp)+' &nbsp;·&nbsp; 🪙 '+p.coins+' &nbsp;·&nbsp; 🔥 '+p.streak+'</p></div>'
-  +'<div class="eq"><i></i><i></i><i></i><i></i><i></i></div></div></div>'
+  +'<canvas id="heroT" aria-hidden="true" style="width:76px;height:76px;flex:0 0 auto"></canvas></div></div>'
+ +(typeof teenNextStepHTML==="function"?teenNextStepHTML():"")
  +missionsHTML()+ai
  +sec("🇬🇧 Inglés")
  +'<div class="tgrid">'
@@ -33,7 +34,8 @@ function screenTeenHome(){setTheme("teen");
   +tile("startQuiz('Lógica',B_LOGICA)","💻","Lógica & código",rec("Lógica"))
   +tile("startQuiz('Música',B_MUSICA)","🎼","Teoría musical",rec("Música"))
  +'</div>'
- +((typeof courses==="function"&&courses().length)?sec("🎓 Cursos")+'<div class="tgrid">'+tile("screenCourses()","🎓","Mis cursos","asignados por tu familia","wide")+'</div>':''));}
+ +((typeof courses==="function"&&courses().length)?sec("🎓 Cursos")+'<div class="tgrid">'+tile("screenCourses()","🎓","Mis cursos","asignados por tu familia","wide")+'</div>':''));
+ if(typeof stageMascot==="function")stageMascot("heroT","teen");}
 
 /* ============ QUIZ TEEN: cronómetro + combos ============ */
 let QZ={};
@@ -49,7 +51,13 @@ function renderQ(){
  QZ.timeLeft=100;
  const qtext=q.code?'<pre style="white-space:pre-wrap;background:#141127;border:1px solid #322B52;padding:14px;border-radius:14px;font-size:1rem;line-height:1.5">'+esc(q.q)+'</pre>':'<div class="bigq">'+esc(stripHTML(q.q))+'</div>';
  const textBlock=q.t?'<div class="card" style="line-height:1.7;font-size:1.05rem">'+esc(stripHTML(q.t))+'</div>':'';
- render(topbar("screenTeenHome()")
+ /* escenario en canvas si la pregunta es solo texto */
+ QZ.stage=!q.code&&!q.t&&typeof Stage!=="undefined"&&Stage.ok(stripHTML(q.q),null,QZ.order.map(it=>it.o));
+ if(QZ.stage){
+  render(topbar("screenTeenHome()")+'<div id="stageBox"></div>');
+  Stage.open("stageBox",{theme:"teen"});
+  Stage.ask({title:QZ.subject,i:QZ.i,n:QZ.qs.length,right:QZ.score+" pts",q:stripHTML(q.q),ops:QZ.order.map(it=>String(it.o)),onPick:ansQ,timer:{ms:20000}});}
+ else render(topbar("screenTeenHome()")
  +'<div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(QZ.subject)+' · '+(QZ.i+1)+'/'+QZ.qs.length+'</b><b style="color:var(--teen-cyan)">'+QZ.score+' pts</b></div>'
  +'<div class="timerbar"><div id="tb" style="width:100%"></div></div>'
  +textBlock+qtext
@@ -65,12 +73,17 @@ function timeUp(){
 /* si se equivoca: se detiene, muestra la correcta + explicación (la del banco o, con clave, la de la IA) y sigue al tocar */
 function quizExplain(q,chosen){
  clearInterval(QZ.tick);QZ.chosen=chosen;
+ if(QZ.stage&&typeof Stage!=="undefined"&&Stage.active()){
+  const cvi=QZ.order.findIndex(function(o){return o.i===q.a;}),vi=QZ.order.findIndex(function(o){return o.o===chosen;}),canAI=aiOn()&&typeof aiWhyText==="function";
+  Stage.result({ok:false,correct:cvi,chosen:vi,msg:"La correcta es: "+q.ops[q.a]+(q.exp?String.fromCharCode(10)+"💡 "+q.exp:""),autoMs:0,onDone:function(){QZ.i++;renderQ();},
+   why:canAI?function(){aiWhyText(QZ.subject,q.q,q.ops[q.a],chosen,false).then(function(x){Stage.say("💡 "+x);}).catch(function(){Stage.say("No pude explicarlo ahora. La correcta es: "+q.ops[q.a]);});}:null});
+  return;}
  const btns=document.querySelectorAll(".opt");
  btns.forEach(function(b,i){b.disabled=true;if(QZ.order[i]&&QZ.order[i].i===q.a){b.style.borderColor="#16A34A";b.style.color="#86EFAC";}});
  const host=btns.length?btns[0].parentNode:null;if(!host){QZ.i++;return renderQ();}
  const d=document.createElement("div");d.id="qzExp";
  d.innerHTML='<div class="card" style="border-color:#DC2626;line-height:1.6"><b>❌ La correcta es:</b> '+esc(q.ops[q.a])+(q.exp?'<div style="margin-top:6px">💡 '+esc(q.exp)+'</div>':'')+'</div><div id="qzAI"></div>'
-  +(S.geminiKey&&typeof aiExplain==="function"?'<button class="tbtn" style="text-align:center" onclick="quizAskAI()">🤖 Explícame por qué</button>':'')
+  +(aiOn()&&typeof aiExplain==="function"?'<button class="tbtn" style="text-align:center" onclick="quizAskAI()">🤖 Explícame por qué</button>':'')
   +'<button class="tbtn acc" style="text-align:center" onclick="QZ.i++;renderQ()">Continuar →</button>';
  host.appendChild(d);d.scrollIntoView({behavior:"smooth",block:"nearest"});}
 function quizAskAI(){const q=QZ.qs[QZ.i];if(!q)return;aiExplain("qzAI",QZ.subject,(q.t?q.t+" — ":"")+q.q,q.ops[q.a],QZ.chosen);}
@@ -87,7 +100,8 @@ function ansQ(k){
   if(QZ.combo>=3)touchDay().combo3=true;
   save();sOK();
   if(QZ.combo>=2){const c=document.createElement("div");c.className="combo";c.textContent="⚡ COMBO x"+QZ.combo;document.body.appendChild(c);setTimeout(()=>c.remove(),900);}
-  toast("✓ +"+pts+" pts"+(QZ.combo>=2?" · combo x"+QZ.combo:""),true,900);}
+  if(QZ.stage&&typeof Stage!=="undefined"&&Stage.active())Stage.result({ok:true,correct:k,chosen:k,msg:"✓ +"+pts+" pts"+(QZ.combo>=2?" · combo x"+QZ.combo:"")});
+  else toast("✓ +"+pts+" pts"+(QZ.combo>=2?" · combo x"+QZ.combo:""),true,900);}
  else{QZ.combo=0;sNO();const b=document.getElementById("op"+k);if(b){b.style.borderColor="#DC2626";b.style.color="#FCA5A5";}quizExplain(q,QZ.order[k].o);return;}
  QZ.i++;setTimeout(renderQ,950);}
 function quizEnd(){
@@ -184,7 +198,29 @@ function ansEar(k){
  ER.i++;setTimeout(nextEar,1400);}
 
 /* ============ IA GEMINI ============ */
+/* ¿hay alguna IA disponible? (Gemini o Groq) */
+function aiOn(){return !!(S.geminiKey||S.groqKey);}
+/* Groq (API compatible con OpenAI): respaldo cuando Gemini no está o se quedó sin cuota gratuita */
+async function groqJSON(promptText){
+ const models=["llama-3.3-70b-versatile","llama-3.1-8b-instant"];let last="";
+ for(const m of models){
+  let res;
+  try{res=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.groqKey},
+   body:JSON.stringify({model:m,temperature:0.8,response_format:{type:"json_object"},messages:[{role:"system",content:"Responde ÚNICAMENTE con un objeto JSON válido, sin markdown ni texto adicional."},{role:"user",content:promptText}]})});}
+  catch(e){last="sin internet o bloqueado";continue;}
+  if(!res.ok){try{const j=await res.json();last=(j.error&&j.error.message)||("HTTP "+res.status);}catch(e){last="HTTP "+res.status;}continue;}
+  const data=await res.json();
+  let txt=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||"";
+  txt=txt.replace(/```json|```/g,"").trim();const a=txt.indexOf("{"),b=txt.lastIndexOf("}");
+  return JSON.parse(txt.slice(a,b+1));}
+ throw new Error("Error de Groq: "+String(last).slice(0,130)+" — revisa la clave en el panel de padres.");}
+/* punto único de IA: primero Gemini; si falla (cuota, red, clave) o no hay, Groq */
 async function geminiJSON(promptText){
+ let err=null;
+ if(S.geminiKey){try{return await geminiOnlyJSON(promptText);}catch(e){err=e;}}
+ if(S.groqKey){try{return await groqJSON(promptText);}catch(e){if(!err)err=e;}}
+ throw err||new Error("Falta la clave de IA (Panel de padres).");}
+async function geminiOnlyJSON(promptText){
  const models=["gemini-2.5-flash","gemini-2.0-flash","gemini-flash-latest"];
  let res=null,lastDetail="",lastStatus=0;
  const call=async m=>fetch("https://generativelanguage.googleapis.com/v1beta/models/"+m+":generateContent?key="+encodeURIComponent(S.geminiKey),

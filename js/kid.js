@@ -87,14 +87,11 @@ function hubTile(onclick,ic,title,sub,color){
 function screenKidMap(){setTheme("kid");if(typeof stopGames==="function")stopGames();
  const p=prof();const pet=(typeof legendaryPet==="function"&&legendaryPet())||petStage(p.xp);
  render(topbar("screenStart()")
- +'<div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">'
- +'<div onclick="openProfileMenu()" style="cursor:pointer;position:relative">'+(typeof avatarHTML==="function"?avatarHTML(64):"🧒")+'<span style="position:absolute;bottom:-2px;right:-2px;background:var(--kid-ink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.8rem">⚙️</span></div>'
- +'<div style="flex:1"><h1 class="title" style="font-size:clamp(1.2rem,5.5vw,1.5rem)">¡Hola, '+esc(p.name)+'!</h1>'
- +'<p style="font-size:.92rem">Mascota: <b>'+pet.n+'</b> '+pet.e+' · 🎒 '+uniqueCritters()+'/'+CRITTERS.length+'</p></div>'
- +'<div style="font-size:clamp(2.2rem,11vw,3rem);cursor:pointer" onclick="examGo(\'screenTama\')">'+(p.tama?p.tama.sp:"🥚")+'</div></div>'
+ +(typeof kidHeroHTML==="function"?kidHeroHTML():'<div class="card"><h1 class="title">¡Hola, '+esc(p.name)+'!</h1></div>')
  +(typeof examHubCardHTML==="function"?examHubCardHTML():"")
- +(typeof examLocked==="function"&&examLocked()?"":(typeof dailyPathCardHTML==="function"?dailyPathCardHTML():"")+missionsHTML())
- +hubApps());}
+ +(typeof examLocked==="function"&&examLocked()?"":(typeof kidNextStepHTML==="function"?kidNextStepHTML():"")+(typeof dailyPathCardHTML==="function"?dailyPathCardHTML():"")+missionsHTML())
+ +hubApps());
+ if(typeof stageMascot==="function")stageMascot("heroM","kid");}
 /* ===== apps por iconos, como la pantalla de un celular ===== */
 function appIcon(onclick,ic,label,bg,opts){
  opts=opts||{};
@@ -331,7 +328,7 @@ function screenStoryPick(){setTheme("kid");
  +'<p class="center" style="margin-bottom:14px">Lee, escucha y responde</p>'
  +CUENTOS.map((c,i)=>'<button class="kbtn yellow" onclick="gameStory('+i+')"><span style="font-size:1.6rem">'+c.pages[0].scene.split(/(?=)/)[0]+'</span> '+esc(c.title)+'</button>').join("")
  +'<button class="kbtn blue" onclick="screenStoryEN()">🇬🇧 Cuentos en inglés (toca y traduce)</button>'
- +(S.geminiKey?
+ +(aiOn()?
     '<button class="kbtn green" onclick="aiStoryKid()">✨ Cuento nuevo con IA</button>'
    +'<button class="kbtn purple" onclick="aiStoryKid(\'misterio\')">🕵️ Cuento de misterio (IA)</button>'
    +'<button class="kbtn blue" onclick="aiStoryKid(\'aventura\')">🗺️ Aventura nueva (IA)</button>'
@@ -1251,7 +1248,7 @@ async function playTopics(label,topicKeys,opts){
  render(topbar("screenKidMap()")
   +'<div class="card center" style="padding:40px"><div style="font-size:3rem" class="spin">⏳</div>'
   +'<h2 style="margin-top:10px">Preparando tus retos…</h2>'
-  +'<p class="mut">'+(S.geminiKey?"Creando preguntas nuevas con IA ✨":"Cargando retos")+'</p></div>');
+  +'<p class="mut">'+(aiOn()?"Creando preguntas nuevas con IA ✨":"Cargando retos")+'</p></div>');
  // elige los temas más débiles si son varios
  const chosen = topicKeys.length>1 ? weakestTopics(topicKeys, Math.min(opts.topicsPerSession||2,topicKeys.length)) : topicKeys;
  let items=[];
@@ -1273,6 +1270,19 @@ function renderCH(){
  const topic=KID_TOPICS[it._topic];
  const head=topic?topic.emoji+" "+topic.name:CH.label;
  const isMath=["sumas2","restas2","restapres","sumas3","multi","mayorMenor","decenas","numpalabra","palabra_num","problemas2","poligonos","diagramas"].indexOf(it._topic)>=0;
+ /* la pregunta se dibuja en el ESCENARIO (canvas) si no trae HTML (diagramas, banderas…) */
+ CH.stage=typeof Stage!=="undefined"&&Stage.ok(it.q,it.pic,shown.map(s=>s.o));
+ if(CH.stage){
+  render(topbar("screenKidMap()")+'<div id="stageBox"></div>'
+   +'<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
+   +(isEN&&it.word?'<button class="kbtn white" style="flex:1;margin:0;min-height:50px;font-size:1rem" onclick="speakEN(CH.items[CH.i].word)">🔊 Escuchar</button>':'<button class="kbtn white" style="flex:1;margin:0;min-height:50px;font-size:1rem" onclick="speakFast(CH.items[CH.i].q)">🔊 Leer</button>')
+   +(isMath&&typeof openBoard==="function"?'<button class="kbtn white" style="flex:1;margin:0;min-height:50px;font-size:1rem" onclick="openBoard()">✏️ Pizarra</button>':'')
+   +(function(){const vi=(S.videos||[]).findIndex(v=>v.topic===it._topic);return vi>=0?'<button class="kbtn white" style="flex:1;margin:0;min-height:50px;font-size:1rem" onclick="watchVideo('+vi+')">📺 Clase</button>':'';})()
+   +'</div>');
+  Stage.open("stageBox",{theme:"kid"});
+  Stage.ask({title:head,i:CH.i,n:CH.items.length,q:String(it.q),pic:it.pic||null,ops:shown.map(s=>String(s.o)),onPick:ansCH});
+  const cur=it;setTimeout(()=>{if(CH.items[CH.i]!==cur)return;if(isEN&&it.word)speakEN(it.word.replace(/'/g,""));else speakFast(it.q);},380);
+  return;}
  render(topbar("screenKidMap()")
  +'<div class="progressdots">'+dots(CH.items.length,CH.i)+'</div>'
  +'<p class="center" style="font-family:Fredoka;font-weight:600;margin-bottom:8px">'+head+' · '+(CH.i+1)+'/'+CH.items.length+'</p>'
@@ -1294,6 +1304,15 @@ function ansCH(vi){
   const leveled=enNumBump(ok);
   if(leveled)setTimeout(function(){toast("🎉 ¡Subiste de nivel en números en inglés! 🔢",true,2400);},1300);
  }
+ if(CH.stage&&typeof Stage!=="undefined"&&Stage.active()){
+  const cvi=CH.order.findIndex(o=>o.k===CH.correctK),next=function(){CH.i++;renderCH();};
+  if(ok){sOK();if(it.word)speakEN(it.word.replace(/'/g,""));CH.ok++;
+   Stage.result({ok:true,correct:vi,chosen:vi,msg:pick(["¡Correcto! 🎉","¡Muy bien! ⭐","¡Eso es! 💪","¡Genial! 🌟"]),autoMs:1150,onDone:next});}
+  else{sNO();CH.wrongTopics[it._topic]=(CH.wrongTopics[it._topic]||0)+1;
+   const canAI=typeof aiOn==="function"&&aiOn()&&typeof aiWhyText==="function";
+   Stage.result({ok:false,correct:cvi,chosen:vi,msg:"Era: "+it.ops[it.a]+(it.tip?"\n💡 "+it.tip:""),autoMs:canAI?5200:3000,onDone:next,
+    why:canAI?function(){aiWhyText(subj,it.q,it.ops[it.a],CH.order[vi].o,true).then(function(t){Stage.say("💡 "+t);speakFast(t);}).catch(function(){Stage.say("Ahora no pude explicarlo 😅 La correcta es: "+it.ops[it.a]);});}:null});}
+  return;}
  if(ok){sOK();confetti(8);if(it.word)speakEN(it.word.replace(/'/g,""));toast("¡Correcto! 🎉",true,1000);CH.ok++;}
  else{sNO();CH.wrongTopics[it._topic]=(CH.wrongTopics[it._topic]||0)+1;
   toast("Era: "+it.ops[it.a]+(it.tip?"  💡 "+it.tip:""),false,it.tip?3000:1800);}

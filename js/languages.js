@@ -21,7 +21,7 @@ function screenLangHub(){setTheme("adulto");
     +'<span style="flex:1"><span style="font-size:1.15rem;font-weight:700">'+l.name+'</span><br>'
     +'<span class="mut" style="font-size:.82rem">Nivel '+CEFR_LEVELS[st.lvl]+' · lección '+(st.lesson+1)+'/'+LANG_SITUATIONS.length+'</span></span></button>';
   }).join("")
-  +(S.geminiKey?'':'<p class="mut" style="margin-top:12px">💡 Con la clave de Gemini activa, la conversación y el quiz se generan libremente. Sin ella, usa un banco fijo curado.</p>'));}
+  +(aiOn()?'':'<p class="mut" style="margin-top:12px">💡 Con la clave de Gemini activa, la conversación y el quiz se generan libremente. Sin ella, usa un banco fijo curado.</p>'));}
 
 /* camino/roadmap visual reutilizable (mapa de niveles y mapa de lecciones dentro de un nivel).
    nodes: [{ic,nm,state:"done"|"open"|"locked",current:bool,onclick:"...js..."}] */
@@ -147,7 +147,7 @@ function buildRepaso(prevEntry){
    Sin clave o si la IA falla/devuelve algo inválido, cae al banco curado tal cual. */
 async function buildLangVocab(id,lvl,situation){
  const bank=LANG_VOCAB_SEED[id][situation];
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const topicKey="lang_vocab_"+id+"_"+situation;
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-20);
@@ -165,7 +165,7 @@ async function buildLangVocab(id,lvl,situation){
 async function buildLangGrammar(id,lvl,situation){
  const variants=LANG_GRAMMAR_SEED[id][lvl];
  const bank=variants[Math.floor(Math.random()*variants.length)];
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const topicKey="lang_gram_"+id+"_"+lvl;
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-10);
@@ -347,7 +347,7 @@ function tapLangLessonWord(w){
 async function buildWorksheet(id,lvl,vocab,grammar){
  /* con clave, la IA genera la hoja COMPLETA (varía cada vez, más rica) — el banco curado
     de abajo solo entra si no hay clave o si la IA falla, para que nunca se quede sin hoja. */
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const vocabTxt=vocab.map(function(v){return v[0]+" = "+v[1];}).join(", ");
    const obj=await geminiJSON('Eres profesor de '+langInfo(id).name+' nivel '+CEFR_LEVELS[lvl]+' para un adulto hispanohablante. Crea 5 ejercicios de completar el espacio en blanco (una frase en '+langInfo(id).name+' con "____" donde falta UNA palabra) que practiquen este vocabulario: '+vocabTxt+'; y esta regla gramatical: "'+grammar.rule+'" ('+grammar.explicacion+'). Varía qué palabra falta en cada frase. Responde SOLO JSON: {"items":[{"prompt":"frase con ____","answer":"palabra que falta","hint":"pista corta en español"}]} con 5 items.');
@@ -420,7 +420,7 @@ function buildFallbackConvoScript(id,situation){
  ];}
 function convoVocabPool(){return LL.vocab.map(v=>v[0]+" ("+v[1]+")").join(", ");}
 async function buildLangDialogue(id,lvl,situation){
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const topicKey="lang_dlg_"+id+"_"+situation;
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-8);
@@ -522,7 +522,7 @@ function finishLangConvo(){startLangQuiz();}
 /* ---- mini quiz (5 preguntas, 80% para avanzar): mezcla opción múltiple + ordenar + dictado ---- */
 async function buildLangQuizMCQ(id,lvl,vocab,grammar){
  const topicKey="lang_"+id+"_"+lvl;
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-15);
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(q=>'"'+q+'"').join("; ")+'.'):'';
@@ -573,7 +573,7 @@ async function buildLangExamQuiz(id,lvl){
  const allVocab=LANG_SITUATIONS.reduce(function(acc,sit){return acc.concat(LANG_VOCAB_SEED[id][sit]);},[]);
  const topicKey="lang_exam_"+id+"_"+lvl;
  let mcq=[];
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const seen=aiSeenList(topicKey);const avoid=seen.slice(-15);
    const noRep=avoid.length?(' No repitas ni parafrasees: '+avoid.map(function(q){return '"'+q+'"';}).join("; ")+'.'):'';

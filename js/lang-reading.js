@@ -4,7 +4,7 @@
    (openStoryEN/tapWordEN) — aquí generalizado a los 4 idiomas del curso de adulto. */
 async function buildLangStory(id,lvl,situation){
  const vocab=LANG_VOCAB_SEED[id][situation];
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const vocabTxt=vocab.map(function(v){return v[0]+" = "+v[1];}).join(", ");
    const obj=await geminiJSON('Eres autor de lecturas de '+langInfo(id).name+' para un adulto hispanohablante nivel '+CEFR_LEVELS[lvl]+'. Escribe un texto corto (100 a 150 palabras) en '+langInfo(id).name+' sobre "'+LANG_SITUATION_LABEL[situation]+'", usando naturalmente parte de este vocabulario: '+vocabTxt+'. Luego arma un glosario con la traducción al español de TODAS las palabras no triviales del texto (sustantivos, verbos, adjetivos — no artículos ni preposiciones comunes), y también la traducción completa del texto al español. Responde SOLO JSON: {"title":"título corto","text":"el texto completo","text_es":"la traducción completa del texto al español","words":{"palabra1":"traducción1","palabra2":"traducción2"}}. Las claves de "words" deben estar en minúsculas y sin puntuación, tal como aparecen en el texto.');

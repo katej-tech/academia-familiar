@@ -78,7 +78,7 @@ function screenCapsules(){setTheme("kid");
  render(topbar("screenKidMap()")+subHeader("🎞️ Cápsulas")
   +'<p class="center" style="margin:-4px 0 10px">Mini-lecciones con dibujos, voz y un guía 3D. ¡Mira, escucha y responde!</p>'
   +list
-  +(S.geminiKey
+  +(aiOn()
    ?'<p class="appsec" style="margin-top:14px">✨ Crea una cápsula nueva con IA</p>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+CAP_TOPICS.map(function(t,i){return '<button class="kbtn white" style="font-size:.9rem;min-height:64px;padding:8px;text-align:center" onclick="capCreate('+i+')"><span style="font-size:1.6rem">'+t[0]+'</span><br>'+esc(t[1])+'</button>';}).join("")+'</div>'
     +'<div class="card" style="margin-top:10px"><b>🔎 ¿Sobre qué quieres aprender?</b><input id="capTopic" maxlength="60" placeholder="Ej: los pulpos, el arcoíris…" style="width:100%;font-size:1.05rem;padding:10px;border-radius:12px;border:2px solid #E5E7EB;margin:8px 0;box-sizing:border-box"><div style="display:flex;gap:8px"><button class="kbtn green" style="margin:0;font-size:.95rem;min-height:48px" onclick="capCreateCustom(\'es\')">🇪🇸 En español</button><button class="kbtn blue" style="margin:0;font-size:.95rem;min-height:48px" onclick="capCreateCustom(\'en\')">🇬🇧 In English</button></div></div>'

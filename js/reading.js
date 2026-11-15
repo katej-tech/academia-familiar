@@ -98,7 +98,7 @@ function screenReadComp(){setTheme("kid");
   +'<p class="center" style="margin:-4px 0 10px">Lee, responde y demuestra con una pista que lo entendiste 🔦</p>'
   +(total?'<div class="card" style="padding:10px 12px"><b>📊 Tus superpoderes de lectura</b>'+bars+'</div>':"")
   +lvBlock(1)+lvBlock(2)+lvBlock(3)
-  +(S.geminiKey
+  +(aiOn()
    ?'<p class="appsec" style="margin-top:14px">✨ Texto nuevo con IA</p>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+RC_AI_TOPICS.map(function(t,i){return '<button class="kbtn white" style="font-size:.88rem;min-height:56px;padding:6px;margin:0" onclick="rcGen('+i+')">'+t[0]+' '+esc(t[1])+'</button>';}).join("")+'</div>'
     +'<div class="card" style="margin-top:10px"><b>🔎 ¿Sobre qué quieres leer?</b><input id="rcTopic" maxlength="60" placeholder="Ej: los pulpos…" style="width:100%;font-size:1.05rem;padding:10px;border-radius:12px;border:2px solid #E5E7EB;margin:8px 0;box-sizing:border-box"><div style="display:flex;gap:6px">'+[1,2,3].map(function(l){return '<button class="kbtn green" style="margin:0;font-size:.9rem;min-height:46px;padding:4px" onclick="rcGenCustom('+l+')">Nivel '+l+'</button>';}).join("")+'</div></div>'

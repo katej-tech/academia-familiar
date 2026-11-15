@@ -416,3 +416,32 @@ body.adulto .node.current::after{content:"SIGUE";background:var(--adult-accent);
 
 /* rincón de la calma: la bola respira (4 s inhala, 1,5 s sostén, 6 s suelta = 11,5 s) */
 @keyframes calmBreath{0%{transform:scale(.85)}35%{transform:scale(1.35)}48%{transform:scale(1.35)}100%{transform:scale(.85)}}
+
+/* ================= v10.45 · pulido moderno ================= */
+#app.in>*{animation:afUp .34s cubic-bezier(.2,.8,.2,1) both}
+#app.in>*:nth-child(2){animation-delay:.03s}#app.in>*:nth-child(3){animation-delay:.06s}#app.in>*:nth-child(4){animation-delay:.09s}
+#app.in>*:nth-child(5){animation-delay:.12s}#app.in>*:nth-child(6){animation-delay:.15s}#app.in>*:nth-child(n+7){animation-delay:.18s}
+@keyframes afUp{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#app.in>*{animation:none}}
+.hero2{position:relative;display:flex;align-items:center;gap:12px;padding:16px 16px 16px 10px;border-radius:28px;margin-bottom:14px;overflow:hidden;color:#fff;
+ background:linear-gradient(135deg,#6366F1 0%,#3B82F6 45%,#22D3EE 100%);box-shadow:0 16px 34px rgba(59,130,246,.35)}
+.hero2::after{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.14)}
+.hero2::before{content:"";position:absolute;right:60px;bottom:-70px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.10)}
+.hero2 canvas{width:96px;height:96px;flex:0 0 auto;position:relative;z-index:1}
+.hero2 .h2t{position:relative;z-index:1;flex:1;min-width:0}
+.hero2 h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:clamp(1.25rem,5.6vw,1.6rem);line-height:1.15;margin:0}
+.hero2 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.hero2 .chips span{background:rgba(255,255,255,.22);border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700;backdrop-filter:blur(4px)}
+.hero2.teen{background:linear-gradient(135deg,#4C1D95 0%,#7C3AED 50%,#EC4899 120%);box-shadow:0 16px 34px rgba(124,58,237,.4)}
+.nextstep{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-radius:24px;padding:14px 16px;margin-bottom:14px;cursor:pointer;color:#fff;
+ background:linear-gradient(135deg,#F59E0B,#EF4444);box-shadow:0 12px 26px rgba(239,68,68,.32);font-family:'Fredoka',sans-serif;transition:transform .12s}
+.nextstep:active{transform:scale(.98)}
+.nextstep .ns-ic{font-size:2.2rem;width:54px;height:54px;border-radius:18px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.nextstep b{font-size:1.12rem;display:block}.nextstep span.s{font-size:.82rem;opacity:.95;font-weight:500}
+.nextstep .go{margin-left:auto;font-size:1.5rem;animation:afNudge 1.4s ease-in-out infinite}
+@keyframes afNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+body.kid .app .ic{box-shadow:0 8px 18px rgba(30,42,74,.18),inset 0 2px 0 rgba(255,255,255,.45);transition:transform .14s cubic-bezier(.3,1.6,.5,1)}
+body.kid .app:active .ic{transform:scale(.9)}
+body.kid .appsec{letter-spacing:.06em}
+.ttile{transition:transform .14s cubic-bezier(.3,1.6,.5,1),box-shadow .14s}.ttile:active{transform:scale(.96)}
+.tbtn{transition:transform .1s,border-color .15s,background .15s}.tbtn:active{transform:scale(.985)}

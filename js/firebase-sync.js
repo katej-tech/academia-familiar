@@ -181,7 +181,8 @@ function afLoadChild(uid,fid){
   var localKey=(S&&S.geminiKey)||""; // clave que ya estaba en ESTE dispositivo
   var base=JSON.parse(JSON.stringify(DEFAULT_STATE));
   base.profiles={};base.profiles[uid]=prof;base.role="child";base.childProfile=uid;base.hasAccount=true;base.updatedAt=Date.now();
-  base.geminiKey=prof.geminiKey||localKey||""; // gana la clave que compartió el padre (la buena); si no hay, se queda la local. Así una clave vieja mal copiada en la tablet se corrige sola al entrar.
+  base.geminiKey=prof.geminiKey||localKey||"";
+  base.groqKey=prof.groqKey||(S&&S.groqKey)||""; // respaldo de IA compartido por el padre // gana la clave que compartió el padre (la buena); si no hay, se queda la local. Así una clave vieja mal copiada en la tablet se corrige sola al entrar.
   if(prof.courses)base.courses=prof.courses; // hereda los cursos que asignó el padre
   if(prof.videos)base.videos=prof.videos; // hereda los videos (clases) que asignó el padre
   if(base.geminiKey&&!prof.geminiKey){try{afDB.collection("families").doc(fid).collection("profiles").doc(uid).set({geminiKey:base.geminiKey},{merge:true});}catch(e){}} // súbela a su perfil para que persista

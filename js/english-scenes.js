@@ -141,7 +141,7 @@ function screenEnglishScenes(){setTheme("kid");
   +subHeader("🎭 Inglés en acción")
   +'<p class="center" style="margin:-4px 0 10px">Situaciones de la vida real: míralas, escúchalas y ¡habla como un experto!</p>'
   +scenes
-  +(S.geminiKey?card("white","✨","Escena nueva con IA","Pide un lugar y se inventa un diálogo nuevo","enAiPick()"):'<p class="center mut" style="font-size:.82rem">✨ Con la clave de IA (papá o mamá) se pueden inventar escenas nuevas.</p>')
+  +(aiOn()?card("white","✨","Escena nueva con IA","Pide un lugar y se inventa un diálogo nuevo","enAiPick()"):'<p class="center mut" style="font-size:.82rem">✨ Con la clave de IA (papá o mamá) se pueden inventar escenas nuevas.</p>')
   +'<p class="appsec" style="margin-top:14px">🧠 Practica</p>'
   +card("green","🔁","Repaso de palabras",nW?(due?due+" palabras te esperan hoy":"¡Al día! Vuelve mañana"):"Aprende palabras en una escena primero","enReviewStart()",due?String(due):"")
   +card("yellow","⚔️","Duelo de palabras","Compite contra el Robo-Rival","enDuelStart()"));}

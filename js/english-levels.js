@@ -47,7 +47,7 @@ function screenLevelsEN(){elTheme();const c=cefrState();const cls=elBtn();
   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">📈 Inglés por niveles</h2>'
   +'<p class="'+(isTeen()?'mut':'')+' center" style="margin-bottom:14px">Practica y aprueba el examen (80%) para subir de A1 a B2</p>'
   +path
-  +(S.geminiKey?'':'<p class="'+(isTeen()?'mut':'audiotip')+'" style="margin-top:12px">💡 Con la clave de Gemini activa, la IA crea lecciones y exámenes nuevos sin fin. Sin ella, usa un banco fijo.</p>'));}
+  +(aiOn()?'':'<p class="'+(isTeen()?'mut':'audiotip')+'" style="margin-top:12px">💡 Con la clave de Gemini activa, la IA crea lecciones y exámenes nuevos sin fin. Sin ella, usa un banco fijo.</p>'));}
 function screenLevelDetail(i){elTheme();const lv=CEFR[i],c=cefrState(),cls=elBtn();
  render(topbar("screenLevelsEN()")
   +'<h2 style="font-size:clamp(1.3rem,6vw,1.6rem);text-align:center;margin-bottom:4px">'+lv.ic+' '+lv.nm+'</h2>'
@@ -58,7 +58,7 @@ function screenLevelDetail(i){elTheme();const lv=CEFR[i],c=cefrState(),cls=elBtn
 let EL2={};
 async function elGen(i,n,exam){
  const lv=CEFR[i];
- if(S.geminiKey){
+ if(aiOn()){
   try{
    const aud=isTeen()?"una adolescente de 14 años":"un niño de 7-8 años";
    const obj=await geminiJSON('Crea '+n+' preguntas de opción múltiple de INGLÉS '+lv.prompt+', para '+aud+'. '+(exam?'Es un EXAMEN para evaluar el nivel.':'Es práctica.')+' Mezcla gramática y vocabulario. El enunciado puede estar en inglés; las preguntas de significado en español. Responde SOLO JSON válido sin markdown: {"items":[{"q":"...","ops":["correcta","mala","mala"],"a":0}]} con '+n+' items.');

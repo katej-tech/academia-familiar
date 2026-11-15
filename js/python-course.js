@@ -184,7 +184,7 @@ async function runPyExercise(){
  const passed=res.results.filter(Boolean).length,allOk=passed===t.tests.length;
  PY.testsPassed=allOk;
  let aiHtml="";
- if(S.geminiKey){
+ if(aiOn()){
   box.innerHTML='<div class="card center"><span class="spin">⏳</span> Resultados listos, la IA está revisando tu estilo…</div>';
   try{
    const obj=await geminiJSON('Eres profesor de Python. Un estudiante resolvió este ejercicio: "'+t.enunciado+'". Su código:\n'+code+'\nLos tests automáticos dieron: '+passed+'/'+t.tests.length+' correctos. Da retroalimentación BREVE (2-3 frases) en español sobre claridad y estilo del código, sea cual sea el resultado. Responde SOLO JSON: {"feedback":"..."}');
