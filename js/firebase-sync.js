@@ -228,3 +228,11 @@ function afDoSignup(){var e=document.getElementById("acmail").value.trim(),p=doc
  if(!e||!p){fb.innerHTML='Escribe un correo y una contraseña (mínimo 6)';return;}
  fb.innerHTML='⏳ Creando tu cuenta…';
  afSignup(e,p,function(err){if(err)fb.innerHTML='<b style="color:#DC2626">'+esc(afErr(err))+'</b>';else{fb.innerHTML='<b style="color:var(--par-acc)">✓ ¡Cuenta creada!</b>';setTimeout(screenParentDash,900);}});}
+/* el padre cambia el tipo de contenido (niño ↔ adolescente) de un hijo con cuenta propia */
+function afSetMemberType(childUid,type,cb){
+ var u=afUser();if(!u||!afReady||(type!=="kid"&&type!=="teen")){if(cb)cb(false);return;}
+ var mi={};mi[childUid]={type:type};
+ Promise.all([
+  afDB.collection("families").doc(u.uid).collection("profiles").doc(childUid).set({type:type,updatedAt:Date.now()},{merge:true}),
+  afDB.collection("families").doc(u.uid).set({memberIndex:mi},{merge:true})
+ ]).then(function(){if(cb)cb(true);}).catch(function(){if(cb)cb(false);});}

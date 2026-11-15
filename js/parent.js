@@ -98,13 +98,19 @@ function editChild(id){
   +'<input type="text" id="edName" value="'+esc(p.name)+'" placeholder="Nombre">'
   +'<input type="text" id="edAlias" value="'+esc(p.alias||"")+'" placeholder="Apodo">'
   +'<input type="number" id="edAge" value="'+(p.age||"")+'" placeholder="Edad">'
+  +(p.type==="adulto"?'':'<p class="mut" style="margin:6px 0 4px">Tipo de contenido (cámbialo si el perfil quedó con el menú equivocado)</p><select id="edType"><option value="kid"'+(p.type!=="teen"?" selected":"")+'>Niño (primaria: juegos y lo del cole)</option><option value="teen"'+(p.type==="teen"?" selected":"")+'>Adolescente (bachillerato: matemáticas 9.º-10.º, English App…)</option></select>')
   +'<button class="pbtn" onclick="saveChild(\''+id+'\')">Guardar</button>'
   +'<button class="pbtn ghost" onclick="document.getElementById(\'childform\').innerHTML=\'\'">Cancelar</button></div>';}
 function saveChild(id){const p=S.profiles[id];if(!p)return;
  p.name=document.getElementById("edName").value.trim()||p.name;
  p.alias=document.getElementById("edAlias").value.trim();
  const a=parseInt(document.getElementById("edAge").value,10);if(a)p.age=a;
+ const ty=document.getElementById("edType");if(ty&&(ty.value==="kid"||ty.value==="teen")&&ty.value!==p.type){p.type=ty.value;if(typeof normalizeProfiles==="function")normalizeProfiles();}
  save();screenParentDash();}
+/* hijo con cuenta propia: cambiar su tipo de contenido (niño ↔ adolescente). Se aplica la próxima vez que entre. */
+function setMemberType(uid,type){
+ if(typeof afSetMemberType!=="function")return;
+ afSetMemberType(uid,type,function(ok){toast(ok?"✓ Cambiado: verá el menú de "+(type==="teen"?"adolescente":"niño")+" al volver a entrar":"No se pudo cambiar (revisa la conexión)",ok,2600);loadMembersInto();});}
 function askDeleteChild(id){const p=S.profiles[id];if(!p)return;
  if(confirm('¿Eliminar a "'+p.name+'" y todo su progreso? No se puede deshacer.')){deleteProfile(id);screenParentDash();}}
 function inviteChildCard(){
@@ -149,6 +155,7 @@ function loadMembersInto(){
    const pct=tot?Math.round(ok/tot*100):0;
    return '<div style="display:flex;align-items:center;gap:8px;border:1px solid var(--par-line);border-radius:10px;padding:8px 10px;margin:5px 0">'
     +'<span style="flex:1"><b>'+(m.emoji||"🙂")+' '+esc(m.name||"Hijo")+'</b> <span class="mut" style="font-size:.85rem">· 🔥 '+(m.streak||0)+' · 🪙 '+(m.coins||0)+' · Nv '+(typeof level==="function"?level(m.xp||0):1)+' · '+tot+' ejercicios ('+pct+'%)</span></span>'
+    +'<select onchange="setMemberType(\''+m.uid+'\',this.value)" style="width:auto;margin:0;padding:6px" aria-label="Tipo de contenido"><option value="kid"'+(m.type!=="teen"?" selected":"")+'>Niño</option><option value="teen"'+(m.type==="teen"?" selected":"")+'>Adolescente</option></select>'
     +'<button class="pbtn ghost" style="width:auto;padding:6px 10px;margin:0" onclick="removeMember(\''+m.uid+'\',\''+esc(m.name||"")+'\')">🗑️</button></div>';
   }).join("");});}
 function removeMember(uid,name){
@@ -363,6 +370,6 @@ function aiDiagCopy(){
 /* regla «primero el examen del cole»: por hijo (Panel de padres) */
 function examRuleRowHTML(p,key){
  const r=examRuleOf(p),st=examReqOf(p),done=st.filter(function(x){return x.ok;}).length,cur=!r.on?"off":String(r.thr);
- return '<div style="background:#FEF9C3;border-radius:14px;padding:10px 12px;margin:10px 0"><b>📝 Regla del examen del cole</b> <span class="mut">('+done+'/'+st.length+' temas superados)</span>'
-  +'<div class="mut" style="font-size:.82rem;margin:4px 0 6px">Mientras no supere los temas obligatorios (sumas llevando, restas prestando, problemas, números de 4 cifras, oración, sujeto, predicado, verbo, mayúscula y tiempos verbales), el resto de la app queda bloqueado. Calma, Mi día y Examen siempre están abiertos.</div>'
-  +'<select onchange="setExamRule(\''+key+'\',this.value)" style="margin:0"><option value="80"'+(cur==="80"?" selected":"")+'>Activada · superar con 80 %</option><option value="70"'+(cur==="70"?" selected":"")+'>Activada · superar con 70 % (recomendado)</option><option value="60"'+(cur==="60"?" selected":"")+'>Activada · superar con 60 %</option><option value="100"'+(cur==="100"?" selected":"")+'>Activada · 100 %</option><option value="off"'+(cur==="off"?" selected":"")+'>Desactivada (todo abierto)</option></select></div>';}
+ return '<div style="background:#FEF9C3;border-radius:14px;padding:10px 12px;margin:10px 0"><b>📝 Modo examen (bloquear lo demás hasta superar el examen)</b> <span class="mut">('+done+'/'+st.length+' temas superados)</span>'
+  +'<div class="mut" style="font-size:.82rem;margin:4px 0 6px">Está <b>apagada</b> (todo abierto). Si la activas, mientras no supere los temas del examen (sumas llevando, restas prestando, problemas, números de 4 cifras, oración, sujeto, predicado, verbo, mayúscula y tiempos verbales) el resto de la app queda bloqueado; Calma, Mi día y Examen siempre siguen abiertos.</div>'
+  +'<select onchange="setExamRule(\''+key+'\',this.value)" style="margin:0"><option value="80"'+(cur==="80"?" selected":"")+'>Activada · superar con 80 %</option><option value="70"'+(cur==="70"?" selected":"")+'>Activada · superar con 70 % (recomendado)</option><option value="60"'+(cur==="60"?" selected":"")+'>Activada · superar con 60 %</option><option value="100"'+(cur==="100"?" selected":"")+'>Activada · 100 %</option><option value="off"'+(cur==="off"?" selected":"")+'>Apagado (todo abierto)</option></select></div>';}

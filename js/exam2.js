@@ -302,7 +302,7 @@ function examLessonDone(uid){const e=examState();if(!e.seen)e.seen={};e.seen[uid
 /* ---------- la regla ---------- */
 function examRuleOf(p){
  if(!p||(p.type&&p.type!=="kid"))return{on:false,thr:70};
- const r=p.examRule;return{on:!r||r.on!==false,thr:(r&&r.thr)||70};}
+ const r=p.examRule;return{on:!!(r&&r.on===true),thr:(r&&r.thr)||70};} /* apagada por defecto: Katerine pidió quitar el bloqueo (15-nov-2026) */
 function examReqOf(p){
  const u=(p&&p.exam&&p.exam.units)||{},thr=examRuleOf(p).thr;
  return EXAM_REQ.map(function(id){const un=examAllUnits().find(function(x){return x.id===id;}),b=(u[id]&&u[id].best)||0;return{id:id,u:un,best:b,tries:(u[id]&&u[id].tries)||0,ok:b>=thr};});}
@@ -764,3 +764,12 @@ EXAM_REQ.concat(["reinos"]).forEach(function(id){
   let it,g=0;
   do{it=f(l);const k=exKey(it);if(rec.indexOf(k)<0){rec.push(k);if(rec.length>60)rec.shift();return it;}g++;}while(g<40);
   return it;};});
+
+/* ---------- MATE DEL COLE (perfil del niño): lo que ya debe estar aprendiendo, sin candado ---------- */
+function screenKidMath(){setTheme("kid");if(typeof stopGames==="function")stopGames();
+ const mate=EXAM_SUBJECTS.find(function(s){return s.id==="mate";}),us=mate.units.filter(function(u){return u.cur;});
+ render(topbar("screenKidMap()")+subHeader("🔢 Mate del cole")
+  +'<div class="card" style="line-height:1.5;background:linear-gradient(135deg,#FEF3C7,#ECFEFF)"><b>Lo que estás aprendiendo en matemáticas.</b> Empieza fácil ⭐ y va subiendo solo. Tienes pizarra ✏️ y, si te equivocas, verás cómo era.</div>'
+  +us.map(function(u){const sc=exUnitScore(u.id),lv=exLevel(u.id);
+   return '<button class="kbtn white" style="display:flex;align-items:center;gap:12px;text-align:left" onclick="startExamUnit(\''+u.id+'\')"><span style="font-size:2rem">'+u.ic+'</span><span style="flex:1"><span>'+u.nm+'</span><br><span style="font-size:.8rem;opacity:.75;font-weight:600">Nivel '+"⭐".repeat(lv)+(sc.best?" · mejor "+sc.best+"%":"")+'</span></span><span>›</span></button>';}).join("")
+  +'<button class="kbtn green" onclick="startExamSim()">🏁 Reto mixto (12 preguntas)</button>');}

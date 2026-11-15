@@ -117,7 +117,7 @@ function screenEnglishApp(tab){setTheme("teen");
    +'<button class="tbtn" style="text-align:center;margin:0" onclick="screenEnglishApp(\'books\')">📚 Seguir leyendo</button></div>'
    +'<p class="tsection">Cursos y práctica</p><div class="tgrid">'
    +tile("screenAcademyTeen()","🎓","English Academy","unidades")+tile("screenLevelsEN()","📈","Niveles A1→B2","exámenes")
-   +tile("startQuiz('Grammar',B_GRAMMAR)","✍️","Grammar","reto")+tile("startComprension()","🧠","Comprensión","lectura")
+   +tile("enhGrammar()","✍️","Grammar","con explicación")+tile("enhWrite()","📝","Escritura","la IA te corrige")+tile("startComprension()","🧠","Comprensión","lectura")
    +tile("startEar()","🎹","Tu oído","escucha")+tile("screenReadList()","📖","Lecturas cortas","toca y traduce")+'</div>';}
  else if(tab==="books"){
   body='<p class="mut" style="margin-bottom:10px">Toca <b>cualquier palabra</b> para ver su significado, escucharla y guardarla en tus palabras.</p>'
@@ -274,3 +274,87 @@ function enhOrderCheck(){if(ENG.pickd.length<ENG.words.length){toast("Faltan pal
  const ok=ENG.pickd.map(function(x){return x.w;}).join(" ")===ENG.words.join(" ");recordAnswer("Inglés",ok,12);
  if(ok){ENG.ok++;sOK();speakEN(ENG.words.join(" "));toast("✓ Perfect!",true,1000);}else{sNO();toast(ENG.words.join(" "),false,2600);}
  ENG.i++;setTimeout(enhOrderQ,ok?1300:2700);}
+
+/* ============ v10.42: inglés con explicación de cada error + escritura corregida por IA ============ */
+const ENH_GRAMMAR=[
+ {q:"She ___ to school every day.",ops:["goes","go","going","gone"],exp:"Presente simple con he / she / it: el verbo lleva -s o -es (go → goes)."},
+ {q:"They ___ football on Saturdays.",ops:["play","plays","playing","is play"],exp:"Con I / you / we / they el verbo va en su forma base, sin -s."},
+ {q:"He ___ like vegetables.",ops:["doesn't","don't","isn't","not"],exp:"Negación en presente simple: he / she / it + doesn't + verbo base."},
+ {q:"___ you speak English?",ops:["Do","Does","Are","Is"],exp:"Preguntas en presente simple: Do con I / you / we / they; Does con he / she / it."},
+ {q:"Look! The baby ___.",ops:["is sleeping","sleeps","sleep","slept"],exp:"«Look!» indica que pasa AHORA: presente continuo = am / is / are + verbo-ing."},
+ {q:"I ___ my homework right now.",ops:["am doing","do","does","did"],exp:"«right now» = ahora mismo → presente continuo: I am + verbo-ing."},
+ {q:"Yesterday we ___ a movie.",ops:["watched","watch","watching","watches"],exp:"«Yesterday» = pasado simple. Verbos regulares: se agrega -ed (watch → watched)."},
+ {q:"She ___ to the park last Sunday.",ops:["went","goed","goes","gone"],exp:"«go» es irregular: su pasado simple es «went» (no «goed»)."},
+ {q:"I ___ see him yesterday.",ops:["didn't","don't","wasn't","doesn't"],exp:"Negación en pasado simple: didn't + verbo base (didn't see)."},
+ {q:"___ you call me last night?",ops:["Did","Do","Were","Have"],exp:"Preguntas en pasado simple: Did + sujeto + verbo base."},
+ {q:"There ___ two cats in the garden.",ops:["are","is","be","am"],exp:"There are + plural (two cats). There is + singular."},
+ {q:"This is ___ apple.",ops:["an","a","the a","some"],exp:"«an» va antes de sonido de vocal (an apple); «a» antes de consonante (a book)."},
+ {q:"My brother is ___ than me.",ops:["taller","more tall","tallest","tall"],exp:"Comparativo de adjetivos cortos: adjetivo + -er + than (taller than)."},
+ {q:"This book is ___ than that one.",ops:["more interesting","interestinger","most interesting","interesting"],exp:"Adjetivos largos: more + adjetivo + than (more interesting than)."},
+ {q:"She is the ___ student in the class.",ops:["best","better","goodest","most good"],exp:"«good» es irregular: good → better → the best (superlativo)."},
+ {q:"I have ___ homework today.",ops:["a lot of","many","a few","an"],exp:"«homework» no se cuenta: se usa a lot of / much (no many, que es para contables)."},
+ {q:"How ___ apples do you want?",ops:["many","much","a lot","any of"],exp:"How many con cosas que se cuentan (apples); How much con lo que no se cuenta (water)."},
+ {q:"The keys are ___ the table.",ops:["on","in","at","to"],exp:"«on» = sobre una superficie. «in» = dentro de. «at» = en un punto o lugar."},
+ {q:"My birthday is ___ May.",ops:["in","on","at","by"],exp:"Meses y años con «in» (in May). Días y fechas con «on» (on Monday). Horas con «at»."},
+ {q:"We have class ___ 8 o'clock.",ops:["at","in","on","to"],exp:"Las horas llevan «at»: at 8 o'clock."},
+ {q:"You ___ wear a helmet. It's the law.",ops:["must","can","might","would"],exp:"«must» expresa obligación fuerte. «can» = poder; «might» = quizá."},
+ {q:"___ I open the window, please?",ops:["Can","Must","Do","Am"],exp:"Para pedir permiso se usa Can / Could / May + sujeto + verbo base."},
+ {q:"You ___ eat so much sugar. It's bad for you.",ops:["shouldn't","mustn't to","don't can","aren't"],exp:"«should / shouldn't» sirve para dar consejos: shouldn't = no deberías."},
+ {q:"I ___ never been to London.",ops:["have","has","am","did"],exp:"Presente perfecto: have / has + participio. Con I / you / we / they se usa «have»."},
+ {q:"She has ___ her homework.",ops:["finished","finish","finishing","finishes"],exp:"Después de have / has va el participio pasado (finished)."},
+ {q:"I have lived here ___ 2020.",ops:["since","for","from","during"],exp:"«since» + el momento en que empezó (since 2020). «for» + la duración (for five years)."},
+ {q:"We have known each other ___ ten years.",ops:["for","since","ago","in"],exp:"«for» + duración (for ten years). «since» + punto de inicio."},
+ {q:"If it rains, we ___ at home.",ops:["will stay","stayed","would stayed","stays"],exp:"Primer condicional: If + presente simple, will + verbo base (algo posible en el futuro)."},
+ {q:"If you heat ice, it ___.",ops:["melts","will melted","melted","melting"],exp:"Condicional cero (verdades generales): If + presente, presente."},
+ {q:"I'm going ___ my grandmother tomorrow.",ops:["to visit","visit","visiting","visited"],exp:"Planes futuros: be going to + verbo base (I'm going to visit)."},
+ {q:"Look at those clouds! It ___ rain.",ops:["is going to","will to","goes","is"],exp:"Cuando hay evidencia de que algo va a pasar se usa «be going to»."},
+ {q:"She enjoys ___ music.",ops:["listening to","listen to","to listening","listens"],exp:"Después de enjoy / like / love / hate va el verbo con -ing (enjoys listening)."},
+ {q:"I want ___ a doctor.",ops:["to be","be","being","to being"],exp:"Después de want / need / decide / hope va «to + verbo» (want to be)."},
+ {q:"This is the girl ___ lives next door.",ops:["who","which","where","whose"],exp:"«who» para personas, «which» para cosas, «where» para lugares."},
+ {q:"The book ___ I read was amazing.",ops:["that","who","where","what"],exp:"Para cosas se usa «that» o «which» (the book that I read)."},
+ {q:"There isn't ___ milk in the fridge.",ops:["any","some","a","many"],exp:"En negaciones y preguntas se usa «any»; en afirmaciones, «some»."},
+ {q:"She speaks English very ___.",ops:["well","good","goodly","best"],exp:"«good» es adjetivo (a good student); «well» es adverbio (speaks well)."},
+ {q:"He was tired, ___ he went to bed early.",ops:["so","because","but","although"],exp:"«so» introduce la consecuencia; «because» introduce la causa."},
+ {q:"I stayed at home ___ it was raining.",ops:["because","so","but","and"],exp:"«because» + la razón: me quedé en casa PORQUE llovía."},
+ {q:"While I ___ TV, the phone rang.",ops:["was watching","watched","am watching","watch"],exp:"Acción larga interrumpida en el pasado: pasado continuo (was / were + -ing) + pasado simple."},
+ {q:"The letter ___ written by my grandmother.",ops:["was","did","has","is being to"],exp:"Voz pasiva en pasado: was / were + participio (was written)."},
+ {q:"He asked me where I ___.",ops:["lived","live do","do live","am live"],exp:"En estilo indirecto el verbo retrocede un tiempo y NO se invierte el orden: where I lived."}];
+ENH_GRAMMAR.forEach(function(x){x.a=0;});
+function enhGrammar(){setTheme("teen");
+ QZ={subject:"Grammar",bank:null,qs:shuffled(ENH_GRAMMAR).slice(0,8),i:0,ok:0,combo:0,maxCombo:0,score:0,t0:Date.now()};renderQ();}
+
+/* ---- escritura con corrección de la IA ---- */
+const ENH_WRITE=["Describe your best friend (3 or 4 sentences).","What did you do last weekend?","What is your favorite place and why?","Describe your daily routine.","What do you want to be in the future? Why?","Write about a movie or series you like.","What would you do if you had a free day tomorrow?","Describe your family.","What is your favorite food? How do you prepare it?","Write about something you learned this week."];
+let ENW={};
+function enhWrite(){setTheme("teen");
+ ENW={topic:pick(ENH_WRITE)};
+ render(topbar("screenEnglishApp('learn')")+'<h2 style="margin-bottom:8px">📝 Escribe en inglés</h2>'
+  +'<div class="card" style="border-color:var(--teen-cyan);line-height:1.5"><b>'+esc(ENW.topic)+'</b><br><span class="mut" style="font-size:.85rem">Escribe sin miedo a equivocarte: la IA te muestra cada error y por qué.</span></div>'
+  +'<textarea id="enhTxt" rows="6" maxlength="700" placeholder="Write here…" spellcheck="false" style="width:100%;padding:12px;border-radius:14px;border:2px solid #322B52;background:#141127;color:inherit;font-size:1.05rem;box-sizing:border-box;font-family:inherit"></textarea>'
+  +(S.geminiKey?'<button class="tbtn acc" style="text-align:center" onclick="enhWriteCheck()">🤖 Corregir y explicar</button>':'<div class="card mut">La corrección necesita la clave de Gemini (Panel de padres). Mientras tanto, compara tu texto con las reglas de «Grammar con explicación».</div>')
+  +'<button class="tbtn" style="text-align:center" onclick="enhWrite()">🔀 Otro tema</button><div id="enhWr"></div>');}
+async function enhWriteCheck(){
+ const txt=String((document.getElementById("enhTxt")||{}).value||"").trim(),out=document.getElementById("enhWr");if(!out)return;
+ if(txt.split(/\s+/).length<4){out.innerHTML='<div class="card mut">Escribe al menos una oración completa 🙂</div>';return;}
+ out.innerHTML='<div class="card center"><span class="spin">⏳</span> Revisando tu texto…</div>';
+ try{
+  const o=await geminiJSON('You are a kind English teacher for a Colombian 9th-10th grade student (level A2-B1). Topic: "'+ENW.topic+'". Her text: """'+txt.slice(0,700)+'""". '
+   +'Correct it. Reply ONLY valid JSON, no markdown: {"corrected":"the full corrected text in English","score":7,"errors":[{"wrong":"exact wrong fragment","right":"corrected fragment","why":"explicación breve EN ESPAÑOL de la regla"}],"good":"una cosa que hizo bien, en español","tip":"un consejo para mejorar, en español"}. Maximum 6 errors (the most important). score is 1 to 10. If there are no errors, errors must be [].');
+  const errs=(o.errors||[]).slice(0,6);
+  out.innerHTML='<div class="card" style="line-height:1.7;border-color:#16A34A"><b>✅ Versión corregida</b> <span class="mut">· '+esc(String(o.score||""))+'/10</span><div style="margin-top:6px">'+esc(o.corrected||"")+'</div><button class="tbtn" style="text-align:center;margin:8px 0 0" onclick="speakEN('+jsStr(String(o.corrected||"")).replace(/"/g,"&quot;")+')">🔊 Escuchar</button></div>'
+   +(errs.length?'<div class="card" style="line-height:1.6"><b>🔎 Tus errores y por qué</b>'+errs.map(function(e){return '<div style="margin-top:10px"><span style="color:#FCA5A5;text-decoration:line-through">'+esc(e.wrong||"")+'</span> → <b style="color:#86EFAC">'+esc(e.right||"")+'</b><br><span class="mut" style="font-size:.9rem">💡 '+esc(e.why||"")+'</span></div>';}).join("")+'</div>':'<div class="card">🎉 ¡Sin errores!</div>')
+   +(o.good?'<div class="card" style="line-height:1.6">👍 '+esc(o.good)+'</div>':'')+(o.tip?'<div class="card" style="line-height:1.6">💬 '+esc(o.tip)+'</div>':'');
+  const p=prof();p.coins+=3;p.xp+=10;recordAnswer("Inglés-Escritura",(o.score||0)>=6,60);save();
+ }catch(e){out.innerHTML='<div class="card" style="border-color:#DC2626">⚠️ '+esc(e.message||"No se pudo corregir.")+'</div>';}}
+
+/* ---- en las preguntas de los libros: si falla, se muestra la parte del texto donde está la respuesta ---- */
+function enhEvidence(b,q){
+ const words=String(q.ops[q.a]).toLowerCase().replace(/[^a-z ]/g,"").split(" ").filter(function(w){return w.length>3;});let best=-1,bi=0;
+ b.paras.forEach(function(p,i){const t=p[0].toLowerCase();const n=words.filter(function(w){return t.indexOf(w)>=0;}).length;if(n>best){best=n;bi=i;}});
+ return b.paras[bi];}
+function enhBookA(k){const b=ENH_BOOKS.find(function(x){return x.id===ENR.id;}),q=b.quiz[ENR.qi],ok=ENR.order[k].i===q.a;
+ recordAnswer("Inglés",ok,10);const btns=document.querySelectorAll(".opt");btns.forEach(function(x,i){x.disabled=true;if(ENR.order[i].i===q.a){x.style.borderColor="#16A34A";x.style.color="#86EFAC";}});
+ if(ok){ENR.ok++;sOK();toast("✓ Correct!",true,800);ENR.qi++;setTimeout(enhBookQ,850);return;}
+ sNO();const ev=enhEvidence(b,q),d=document.createElement("div");
+ d.innerHTML='<div class="card" style="border-color:#DC2626;line-height:1.7"><b>❌ La respuesta está en esta parte del libro:</b><div style="margin-top:6px">«'+esc(ev[0])+'»</div><div class="mut" style="margin-top:6px">🇪🇸 '+esc(ev[1])+'</div></div><button class="tbtn acc" style="text-align:center" onclick="ENR.qi++;enhBookQ()">Continuar →</button>';
+ if(btns.length)btns[0].parentNode.appendChild(d);d.scrollIntoView({behavior:"smooth",block:"nearest"});}

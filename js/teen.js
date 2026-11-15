@@ -22,7 +22,8 @@ function screenTeenHome(){setTheme("teen");
  +'</div>'
  +sec("🧮 Matemáticas")
  +'<div class="tgrid">'
-  +(typeof screenFactor==="function"?tile("screenFactor()","🧮","Factorización","7 casos · ejercicios infinitos","acc wide"):"")
+  +(typeof screenMathTeen==="function"?tile("screenMathTeen()","📐","Matemáticas 9.º y 10.º","ejercicios que cambian · paso a paso · IA","acc wide"):"")
+  +(typeof screenFactor==="function"?tile("screenFactor()","🧮","Factorización","7 casos"):"")
  +'</div>'
  +(typeof screenSalas==="function"?sec("🌐 En línea")+'<div class="tgrid">'+tile("screenSalas()","🌐","Salas en línea","reta a tu familia","wide")+'</div>':"")
  +sec("🔬 Ciencias y lógica")
@@ -59,8 +60,20 @@ function renderQ(){
 function timeUp(){
  const q=QZ.qs[QZ.i];QZ.combo=0;sNO();
  recordAnswer(QZ.subject,false,20);
- toast("⏱️ ¡Tiempo! Era: "+esc(q.ops[q.a]),false,1900);
- QZ.i++;setTimeout(renderQ,1800);}
+ toast("⏱️ ¡Tiempo!",false,1200);
+ quizExplain(q,null);}
+/* si se equivoca: se detiene, muestra la correcta + explicación (la del banco o, con clave, la de la IA) y sigue al tocar */
+function quizExplain(q,chosen){
+ clearInterval(QZ.tick);QZ.chosen=chosen;
+ const btns=document.querySelectorAll(".opt");
+ btns.forEach(function(b,i){b.disabled=true;if(QZ.order[i]&&QZ.order[i].i===q.a){b.style.borderColor="#16A34A";b.style.color="#86EFAC";}});
+ const host=btns.length?btns[0].parentNode:null;if(!host){QZ.i++;return renderQ();}
+ const d=document.createElement("div");d.id="qzExp";
+ d.innerHTML='<div class="card" style="border-color:#DC2626;line-height:1.6"><b>❌ La correcta es:</b> '+esc(q.ops[q.a])+(q.exp?'<div style="margin-top:6px">💡 '+esc(q.exp)+'</div>':'')+'</div><div id="qzAI"></div>'
+  +(S.geminiKey&&typeof aiExplain==="function"?'<button class="tbtn" style="text-align:center" onclick="quizAskAI()">🤖 Explícame por qué</button>':'')
+  +'<button class="tbtn acc" style="text-align:center" onclick="QZ.i++;renderQ()">Continuar →</button>';
+ host.appendChild(d);d.scrollIntoView({behavior:"smooth",block:"nearest"});}
+function quizAskAI(){const q=QZ.qs[QZ.i];if(!q)return;aiExplain("qzAI",QZ.subject,(q.t?q.t+" — ":"")+q.q,q.ops[q.a],QZ.chosen);}
 function ansQ(k){
  clearInterval(QZ.tick);
  const q=QZ.qs[QZ.i],ok=QZ.order[k].i===q.a;
@@ -75,8 +88,8 @@ function ansQ(k){
   save();sOK();
   if(QZ.combo>=2){const c=document.createElement("div");c.className="combo";c.textContent="⚡ COMBO x"+QZ.combo;document.body.appendChild(c);setTimeout(()=>c.remove(),900);}
   toast("✓ +"+pts+" pts"+(QZ.combo>=2?" · combo x"+QZ.combo:""),true,900);}
- else{QZ.combo=0;sNO();toast("Era: "+esc(q.ops[q.a]),false,2000);}
- QZ.i++;setTimeout(renderQ,ok?950:1950);}
+ else{QZ.combo=0;sNO();const b=document.getElementById("op"+k);if(b){b.style.borderColor="#DC2626";b.style.color="#FCA5A5";}quizExplain(q,QZ.order[k].o);return;}
+ QZ.i++;setTimeout(renderQ,950);}
 function quizEnd(){
  const pct=Math.round(QZ.ok/QZ.qs.length*100);
  const best=prof().best[QZ.subject]||0;
