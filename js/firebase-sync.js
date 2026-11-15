@@ -91,7 +91,7 @@ function afReset(email,cb){if(!afReady){cb({message:"Sin conexión a internet"})
 function afSetKeyWithParent(email,pass,key,cb){
  if(!afReady){cb("Sin conexión a internet");return;}
  key=(key||"").trim();
- if(!/^AIza[\w-]{20,}$/.test(key)){cb("Esa clave no parece válida (empieza por AIza)");return;}
+ if(/\s/.test(key)||key.length<20){cb("Esa clave parece incompleta (sin espacios, 20 caracteres o más)");return;} /* ya no se exige el prefijo AIza: Google cambió el formato de las claves */
  var sAuth=afSecondaryApp().auth();
  sAuth.signInWithEmailAndPassword((email||"").trim(),pass).then(function(cred){
   var puid=cred.user.uid;

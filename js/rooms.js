@@ -50,10 +50,10 @@ function salaErr(e){const c=(e&&(e.code||e.message))||"";
  return"No se pudo conectar con la sala. Intenta de nuevo.";}
 
 /* ---------- pantallas de entrada ---------- */
-function screenSalas(msg){setTheme(profType()==="teen"?"teen":"kid");
+function screenSalas(msg){setTheme(profType()==="kid"?"kid":"teen");
  salaLeave(true);
- const net=salaNet(),teen=profType()==="teen",B=teen?"tbtn":"kbtn",back=teen?"screenTeenHome()":"screenKidMap()";
- const intro='<div class="card" style="line-height:1.55"><b>🌐 Juega con tu familia desde otro celular o tablet.</b><br>Uno crea la sala y comparte el <b>código</b>; los demás se unen. Durante 90 segundos cada quien responde preguntas <b>de su nivel</b>: ¡gana quien más acierte!</div>';
+ const net=salaNet(),teen=profType()!=="kid",B=teen?"tbtn":"kbtn",back=profType()==="adulto"?"screenAdultHome()":teen?"screenTeenHome()":"screenKidMap()";
+ const intro='<div class="card" style="line-height:1.55"><b>🌐 Juega con tu familia desde otro celular o tablet.</b><br>Uno crea la sala y comparte el <b>código</b>; los demás se unen. Juegan a <b>Conquista del saber</b>: un mapa con castillos donde ganas territorios respondiendo preguntas <b>de tu nivel</b> (cada quien las suyas). También hay una carrera rápida de 90 segundos.</div>';
  if(!net)return render(topbar(back)+'<h2 style="margin-bottom:8px">🌐 Salas en línea</h2>'+intro
   +'<div class="card" style="line-height:1.55">🔑 Para jugar en línea hay que <b>iniciar sesión</b> con la cuenta de la familia (Panel de padres → Cuenta en la nube) en cada dispositivo y tener internet.</div>');
  render(topbar(back)+'<div id="salaRoot"></div><h2 style="margin-bottom:8px">🌐 Salas en línea</h2>'+intro
@@ -84,7 +84,7 @@ function salaEnter(code,host){
 function salaLeave(silent){
  if(!SALA||!SALA.code){SALA={};return;}
  const S0=SALA;SALA={};
- try{if(S0.tick)clearInterval(S0.tick);if(S0.unsub)S0.unsub();}catch(e){}
+ try{if(S0.tick)clearInterval(S0.tick);if(S0.unsub)S0.unsub();if(typeof conqStop==="function")conqStop();}catch(e){}
  try{if(S0.host)S0.net.remove(S0.code);else{const patch={};patch["players."+S0.pid]=S0.net.delField();S0.net.patch(S0.code,patch).catch(function(){});}}catch(e){}
  if(!silent)screenSalas();}
 
@@ -94,22 +94,23 @@ function salaOnData(d,err){
  if(!document.getElementById("salaRoot")){salaLeave(true);return;} /* el jugador se fue a otra pantalla */
  if(err||!d){const m=err?salaErr(err):"El anfitrión cerró la sala.";salaLeave(true);return screenSalas(m);}
  SALA.data=d;SALA.host=d.host===SALA.pid;
+ if(d.state==="play"&&d.game==="conq"){if(SALA.tick){clearInterval(SALA.tick);SALA.tick=null;}if(SALA.round!==d.round){SALA.round=d.round;if(typeof CQ!=="undefined"){const h=CQH;CQ={};CQH=h;}}SALA.phase="conq";conqOnData(d);return;}
  if(d.state==="play"&&d.round!==SALA.round){SALA.round=d.round;salaStartGame();return;}
- if(d.state==="lobby"){if(SALA.phase!=="lobby"||true){SALA.phase="lobby";if(SALA.tick){clearInterval(SALA.tick);SALA.tick=null;}salaLobby();}return;}
+ if(d.state==="lobby"){if(SALA.phase==="conq"&&typeof conqStop==="function")conqStop();if(SALA.phase!=="lobby"||true){SALA.phase="lobby";if(SALA.tick){clearInterval(SALA.tick);SALA.tick=null;}salaLobby();}return;}
  if(SALA.phase==="play")salaRankDraw();
  else if(SALA.phase==="end")salaResults();}
 function salaPlayers(){const d=SALA.data||{},P=d.players||{};return Object.keys(P).map(function(k){return Object.assign({id:k},P[k]);}).sort(function(a,b){return(b.s||0)-(a.s||0)||(a.n>b.n?1:-1);});}
-function salaTheme(){const teen=profType()==="teen";setTheme(teen?"teen":"kid");return{teen:teen,B:teen?"tbtn":"kbtn"};}
+function salaTheme(){const teen=profType()!=="kid";setTheme(teen?"teen":"kid");return{teen:teen,B:teen?"tbtn":"kbtn"};}
 function salaLobby(){
  const T=salaTheme(),ps=salaPlayers();
  render(topbar("salaLeave()")+'<div id="salaRoot"></div>'
   +'<div class="card center" style="padding:16px"><div class="mut" style="font-size:.9rem">Código de la sala</div><div style="font-size:3rem;font-weight:900;letter-spacing:.3em;font-family:Fredoka,sans-serif">'+esc(SALA.code)+'</div><div class="mut" style="font-size:.85rem">Compártelo con quien va a jugar</div></div>'
   +'<div class="card"><b>Jugadores ('+ps.length+')</b>'+ps.map(function(p){return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-weight:700"><span style="font-size:1.5rem">'+esc(p.e)+'</span><span style="flex:1">'+esc(p.n)+(p.id===SALA.pid?" (tú)":"")+'</span>'+(p.id===(SALA.data||{}).host?'<span class="mut" style="font-size:.8rem">anfitrión</span>':'')+'</div>';}).join("")+'</div>'
-  +(SALA.host?'<button class="'+T.B+(T.teen?" acc":" green")+'" style="text-align:center" onclick="salaHostStart()">▶ Empezar la carrera'+(ps.length<2?" (solo)":"")+'</button>':'<div class="card center"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</div>')
+  +(SALA.host?'<button class="'+T.B+(T.teen?" acc":" green")+'" style="text-align:center" onclick="conqHostStart()">🗺️ Jugar Conquista del saber'+(ps.filter(function(p){return !p.bot;}).length<3?" (con bots)":"")+'</button><button class="'+T.B+(T.teen?"":" blue")+'" style="text-align:center" onclick="salaHostStart()">🏁 Carrera de aciertos (90 s)</button>':'<div class="card center"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</div>')
   +'<button class="'+T.B+(T.teen?"":" white")+'" style="text-align:center" onclick="salaLeave()">Salir de la sala</button>');}
 function salaHostStart(){
  if(!SALA.host||!SALA.data)return;
- const patch={state:"play",round:(SALA.data.round||0)+1,startedAt:Date.now()};
+ const patch={state:"play",game:"race",round:(SALA.data.round||0)+1,startedAt:Date.now()};
  Object.keys(SALA.data.players||{}).forEach(function(k){patch["players."+k+".s"]=0;patch["players."+k+".ok"]=0;patch["players."+k+".done"]=false;});
  SALA.net.patch(SALA.code,patch).catch(function(e){toast(salaErr(e),false,2600);});}
 

@@ -223,7 +223,7 @@ function screenChildAiKey(){setTheme("kid");
   +'<div class="card"><p style="line-height:1.55">👨‍👩‍👧 <b>Para papá o mamá:</b> pon la clave de Gemini para activar en esta tablet los <b>dibujos, cuentos y voz con IA</b>. Para hacerlo necesitas tu <b>correo y contraseña de padre</b> (por seguridad).</p>'
   +'<input type="email" id="ckMail" placeholder="Correo del padre/madre" autocomplete="username">'
   +'<input type="password" id="ckPass" placeholder="Contraseña del padre/madre" autocomplete="current-password">'
-  +'<input type="text" id="ckKey" placeholder="Clave de Gemini (AIza...)">'
+  +'<input type="text" id="ckKey" placeholder="Clave de Gemini">'
   +'<button class="kbtn green" style="margin-top:6px" onclick="ckSaveKey()">✅ Activar IA</button>'
   +(typeof afRefreshFamilyKey==="function"?'<button class="kbtn blue" style="margin-top:8px" onclick="aiKeyRefresh()">🔄 Usar la clave de la familia (sin escribir nada)</button>':'')
   +'<button class="kbtn white" style="margin-top:8px" onclick="ckTestKey()">🧪 Probar la IA</button>'

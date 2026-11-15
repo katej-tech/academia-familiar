@@ -179,7 +179,7 @@ function screenParentDash(){setTheme("parent");
  +(typeof parentVideosHTML==="function"?parentVideosHTML():"")
  +'<div class="card"><h3>⚙️ Configuración</h3>'
  +'<p class="mut" style="margin:12px 0 4px">Clave de API de Gemini (vive solo en este dispositivo)</p>'
- +'<div style="display:flex;gap:8px;align-items:stretch"><input type="password" id="gkey" style="flex:1;margin:0" placeholder="AIza..." value="'+esc(S.geminiKey)+'">'
+ +'<div style="display:flex;gap:8px;align-items:stretch"><input type="password" id="gkey" style="flex:1;margin:0" placeholder="Pega aquí la clave" value="'+esc(S.geminiKey)+'">'
  +'<button class="pbtn ghost" style="width:auto;padding:0 14px;margin:0" onclick="toggleKeyVisible()" title="Mostrar/ocultar">👁</button></div>'
  +'<button class="pbtn ghost" onclick="testGeminiKey()">🧪 Probar si la clave funciona</button>'
  +'<button class="pbtn ghost" onclick="screenAiDiag()">🩺 Diagnóstico completo de la IA</button><div id="keyfb" style="margin:4px 0"></div>'
@@ -203,9 +203,9 @@ async function testGeminiKey(){
  const k=document.getElementById("gkey").value.trim();
  const fb=document.getElementById("keyfb");
  if(!k){fb.innerHTML='<b style="color:#DC2626">Escribe la clave primero</b>';return;}
- if(!/^AIza[\w-]{30,}$/.test(k)){
-  fb.innerHTML='<b style="color:#D97706">⚠ Esa clave no tiene el formato correcto</b>'
-  +'<p class="mut" style="font-size:.85rem;margin-top:4px">Una clave de Google empieza por <b>AIza</b> y tiene 39 caracteres sin espacios. Cópiala con el botón 📋 desde <b>aistudio.google.com/apikey</b> (no la escribas a mano).</p>';return;}
+ if(/\s/.test(k)||k.length<20){
+  fb.innerHTML='<b style="color:#D97706">⚠ Esa clave parece incompleta</b>'
+  +'<p class="mut" style="font-size:.85rem;margin-top:4px">La clave no lleva espacios ni saltos de línea y es larga (20 caracteres o más). Cópiala con el botón 📋 desde <b>aistudio.google.com/apikey</b> (no la escribas a mano).</p>';return;}
  fb.innerHTML='⏳ Probando con Google…';
  const models=["gemini-2.5-flash","gemini-2.0-flash","gemini-flash-latest"];
  let res=null,m="",status=0;
@@ -285,7 +285,7 @@ function screenAiDiag(){setTheme("parent");
  +'<p class="mut" style="margin-bottom:12px">Prueba la clave de Gemini paso a paso y muestra el error EXACTO de Google (si lo hay).</p>'
  +'<div class="card">'
  +'<p class="mut" style="margin-bottom:4px">Clave a probar (se usa la guardada; puedes pegar otra):</p>'
- +'<input type="password" id="aidKey" placeholder="AIza..." value="'+esc(S.geminiKey||"")+'">'
+ +'<input type="password" id="aidKey" placeholder="Pega aquí la clave" value="'+esc(S.geminiKey||"")+'">'
  +'<button class="pbtn" onclick="aiDiagRun()">▶️ Ejecutar diagnóstico</button>'
  +'<button class="pbtn ghost" onclick="aiDiagImg()">🖼️ Probar también generación de imágenes</button>'
  +'</div>'
@@ -307,9 +307,9 @@ async function aiDiagRun(){
  const push=(icon,title,detail)=>{AID.rows.push(aidRow(icon,title,detail));AID.log.push(title+(detail?" | "+detail:""));aidPaint();};
  // PASO 1: formato
  if(!k)return push("❌","Paso 1: No hay clave","Pega la clave en el campo de arriba.");
- if(!/^AIza[\w-]{30,}$/.test(k)){AID.done=true;AID.verdict="✗ La clave no tiene el formato correcto";AID.fix="Debe empezar por <b>AIza</b> y tener ~39 caracteres, sin espacios ni saltos de línea. Cópiala con el botón de copiar de <b>aistudio.google.com/apikey</b> (no a mano). Largo actual: "+k.length+" caracteres.";
+ if(/\s/.test(k)||k.length<20){AID.done=true;AID.verdict="✗ La clave parece incompleta";AID.fix="No debe tener espacios ni saltos de línea y debe ser larga (20 caracteres o más). Cópiala con el botón de copiar de <b>aistudio.google.com/apikey</b> (no a mano). Largo actual: "+k.length+" caracteres.";
   push("❌","Paso 1: Formato de la clave","Empieza con: "+esc(k.slice(0,6))+"… · largo: "+k.length);aidPaint();return;}
- push("✅","Paso 1: Formato correcto","AIza…"+esc(k.slice(-4))+" · "+k.length+" caracteres");
+ push("✅","Paso 1: Formato correcto","…"+esc(k.slice(-4))+" · "+k.length+" caracteres");
  // PASO 2: listar modelos (verifica clave + restricciones + API habilitada)
  let st=0,msg="",reason="";
  try{
